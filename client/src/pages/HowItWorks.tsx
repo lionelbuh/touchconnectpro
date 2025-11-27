@@ -9,7 +9,7 @@ export default function HowItWorks() {
       id: "01",
       title: "Free Entry & AI Refinement",
       subtitle: "Zero-Barrier Entry Point",
-      desc: "Start refining your idea immediately. No credit card required. Our AI tools help you articulate your value proposition and create a draft business plan.",
+      desc: "Start refining your idea immediately. [BOLD]No credit card required.[/BOLD] Our AI tools help you articulate your value proposition and create a draft business plan.",
       icon: <Sparkles className="h-8 w-8 text-cyan-500" />,
       features: ["AI Idea Refinement", "Draft Business Plan Generation", "Viability Check"],
       color: "cyan"
@@ -18,9 +18,9 @@ export default function HowItWorks() {
       id: "02",
       title: "Mentor Match",
       subtitle: "Evaluation & Acceptance",
-      desc: "Submit your refined plan for review. A dedicated mentor-coach accepts your idea into their portfolio, ensuring a meaningful partnership.",
+      desc: "Submit your refined plan for review. A dedicated mentor approves your idea into his or her portfolio, ensuring a meaningful partnership.",
       icon: <Shield className="h-8 w-8 text-indigo-500" />,
-      features: ["Personalized Evaluation", "Portfolio Acceptance", "Goal Alignment"],
+      features: ["Personalized Evaluation", "Portfolio Approval", "Goal Alignment"],
       color: "indigo"
     },
     {
@@ -36,9 +36,9 @@ export default function HowItWorks() {
       id: "04",
       title: "Investor Ready",
       subtitle: "Angel-Stage Support",
-      desc: "When you're ready to raise, we intensify support. We help with pitch decks and fundraising strategy in exchange for a 10% equity stake in the round.",
+      desc: "When you're ready to raise, we intensify support. We help with pitch decks and fundraising strategy. We have established relationships with Angel Investors who will review all final projects to determine if they want to invest.",
       icon: <TrendingUp className="h-8 w-8 text-amber-500" />,
-      features: ["Investor-Grade Pitch Deck", "Fundraising Strategy", "10% Equity Partnership"],
+      features: ["Investor-Grade Pitch Deck", "Fundraising Strategy", "Angel Network Access"],
       color: "amber"
     }
   ];
@@ -72,7 +72,13 @@ export default function HowItWorks() {
                     {step.title}
                   </h2>
                   <p className="text-slate-600 dark:text-slate-400 mb-6 text-lg leading-relaxed">
-                    {step.desc}
+                    {step.desc.includes('[BOLD]') ? (
+                      <>
+                        {step.desc.split('[BOLD]').map((part, i) => 
+                          i % 2 === 0 ? part : <strong key={i}>{part.replace('[/BOLD]', '')}</strong>
+                        )}
+                      </>
+                    ) : step.desc}
                   </p>
                   <ul className="space-y-2">
                     {step.features.map((feat, i) => (
