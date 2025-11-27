@@ -197,17 +197,18 @@ export default function Home() {
             <div className="md:w-1/2">
               <Badge variant="outline" className="mb-4 border-indigo-500/30 text-indigo-500">Step 2 & 3: Partnership</Badge>
               <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-slate-900 dark:text-white">
-                Dedicated Mentor-Coach <br/>
+                Your Mentor <br/>
                 <span className="text-indigo-500">Matched to Your Goals.</span>
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-                Membership begins after your mentor-coach reviews your AI-prepared materials and accepts your idea into their portfolio. This ensures meaningful, committed partnership.
+                Membership begins after your mentor reviews your AI-prepared materials and accepts your idea into their portfolio. This ensures meaningful, committed partnership.
               </p>
               <ul className="space-y-4 mb-8">
                 {[
                   "30-min Face-to-Face Onboarding (Month 1)", 
                   "Monthly Group Coaching Sessions", 
-                  "Access to Specialized Experts (Legal, Finance, etc.)"
+                  "Access to Specialized Experts (Legal, Finance, etc.)",
+                  "Access to our business tools from our partners"
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
                     <div className="h-6 w-6 rounded-full bg-indigo-500/10 flex items-center justify-center shrink-0">
@@ -217,7 +218,6 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <Button variant="secondary" size="lg">Browse Mentors</Button>
             </div>
              <div className="md:w-1/2">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700 group">
