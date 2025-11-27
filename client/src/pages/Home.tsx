@@ -238,7 +238,7 @@ export default function Home() {
         <div className="container px-4 mx-auto text-center">
            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">Membership: Your Growth Foundation</h2>
            <p className="text-slate-400 text-lg max-w-2xl mx-auto mb-12">
-             $49/month per active member provides predictable revenue and ongoing founder support.
+             For $49/month, our mentor provides personalized support, guiding you every step from starting out to launching your business.
              <br/><span className="text-sm opacity-70">Membership begins *after* mentor acceptance.</span>
            </p>
            
