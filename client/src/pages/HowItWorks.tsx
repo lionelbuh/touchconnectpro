@@ -10,9 +10,9 @@ export default function HowItWorks() {
       title: "Free Entry & AI Refinement",
       subtitle: "Zero-Barrier Entry Point",
       desc: "Start refining your idea immediately. [BOLD]No credit card required.[/BOLD] Our AI tools help you articulate your value proposition and create a draft business plan.",
-      icon: <Sparkles className="h-8 w-8 text-cyan-500" />,
+      icon: <Sparkles className="h-8 w-8 text-indigo-500" />,
       features: ["AI Idea Refinement", "Draft Business Plan Generation", "Viability Check"],
-      color: "cyan"
+      color: "indigo"
     },
     {
       id: "02",
@@ -28,18 +28,18 @@ export default function HowItWorks() {
       title: "Active Development",
       subtitle: "Membership - $49/month",
       desc: "Unlock the full support system. Monthly coaching sessions, community learning, and access to specialized experts in Finance, Legal, and Marketing.",
-      icon: <Users className="h-8 w-8 text-emerald-500" />,
+      icon: <Users className="h-8 w-8 text-indigo-500" />,
       features: ["30-min Onboarding Session", "Monthly Group Coaching", "Specialized Marketplace Access"],
-      color: "emerald"
+      color: "indigo"
     },
     {
       id: "04",
       title: "Investor Ready",
       subtitle: "Angel-Stage Support",
       desc: "When you're ready to raise, we intensify support. We help with pitch decks and fundraising strategy. We have established relationships with Angel Investors who will review all final projects to determine if they want to invest.",
-      icon: <TrendingUp className="h-8 w-8 text-amber-500" />,
+      icon: <TrendingUp className="h-8 w-8 text-indigo-500" />,
       features: ["Investor-Grade Pitch Deck", "Fundraising Strategy", "Angel Network Access"],
-      color: "amber"
+      color: "indigo"
     }
   ];
 
