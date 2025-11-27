@@ -132,7 +132,7 @@ export default function Home() {
               {
                 icon: <TrendingUp className="h-6 w-6 text-amber-500" />,
                 title: "4. Investor Ready",
-                desc: "Refine pitch deck and fundraising strategy for angel investors with 10% equity partnership."
+                desc: "Refine pitch deck and fundraising strategy for angel investors."
               }
             ].map((step, i) => (
               <Card key={i} className="relative overflow-hidden border-none shadow-lg bg-slate-50 dark:bg-slate-900/50 hover:-translate-y-1 transition-transform duration-300">
