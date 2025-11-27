@@ -9,6 +9,7 @@ import IdeaSubmit from "@/pages/IdeaSubmit";
 import Dashboard from "@/pages/Dashboard";
 import MentorDirectory from "@/pages/MentorDirectory";
 import Pricing from "@/pages/Pricing";
+import HowItWorks from "@/pages/HowItWorks";
 import NotFound from "@/pages/not-found";
 
 // Placeholder pages for now
@@ -30,7 +31,7 @@ function Router() {
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/mentors" component={MentorDirectory} />
         <Route path="/pricing" component={Pricing} />
-        <Route path="/how-it-works" component={() => <Placeholder title="How it Works" />} />
+        <Route path="/how-it-works" component={HowItWorks} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

@@ -1,15 +1,16 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Search, Filter, Star, Briefcase } from "lucide-react";
+import { Search, Filter, Star, Briefcase, Scale, BarChart3, Megaphone, Code } from "lucide-react";
 
 const mentors = [
   {
     id: 1,
     name: "Elena Rodriguez",
     role: "Ex-YCombinator Founder",
+    category: "Business Strategy",
     specialties: ["SaaS", "Fundraising", "Product Market Fit"],
     rating: 4.9,
     image: "https://i.pravatar.cc/150?u=elena",
@@ -19,6 +20,7 @@ const mentors = [
     id: 2,
     name: "David Chen",
     role: "Senior PM @ Google",
+    category: "Product",
     specialties: ["Product Strategy", "UX/UI", "Growth"],
     rating: 4.8,
     image: "https://i.pravatar.cc/150?u=david",
@@ -28,6 +30,7 @@ const mentors = [
     id: 3,
     name: "Sarah Miller",
     role: "CMO @ TechGrowth",
+    category: "Marketing",
     specialties: ["Marketing", "Branding", "GTM Strategy"],
     rating: 5.0,
     image: "https://i.pravatar.cc/150?u=sarah",
@@ -37,15 +40,17 @@ const mentors = [
     id: 4,
     name: "James Wilson",
     role: "Angel Investor",
-    specialties: ["Finance", "Pitch Deck", "Networking"],
+    category: "Finance",
+    specialties: ["Finance", "Pitch Deck", "Unit Economics"],
     rating: 4.7,
     image: "https://i.pravatar.cc/150?u=james",
-    bio: "Written checks for 20+ startups. I know what investors want to see in your deck."
+    bio: "Written checks for 20+ startups. I know what investors want to see in your deck and financial models."
   },
   {
     id: 5,
     name: "Anita Patel",
     role: "CTO @ FintechScale",
+    category: "Engineering",
     specialties: ["Tech Stack", "Scaling", "Engineering Management"],
     rating: 4.9,
     image: "https://i.pravatar.cc/150?u=anita",
@@ -54,12 +59,21 @@ const mentors = [
   {
     id: 6,
     name: "Marcus Johnson",
-    role: "Sales Director",
-    specialties: ["B2B Sales", "Negotiation", "Partnerships"],
+    role: "Corporate Attorney",
+    category: "Legal",
+    specialties: ["Entity Formation", "IP Protection", "Contracts"],
     rating: 4.8,
     image: "https://i.pravatar.cc/150?u=marcus",
-    bio: "Closing deals is an art. I'll teach you how to sell your vision to enterprise clients."
+    bio: "Protect your IP from day one. Expert in startup law and founder agreements."
   }
+];
+
+const categories = [
+  { name: "All", icon: null },
+  { name: "Finance", icon: <BarChart3 className="h-4 w-4" /> },
+  { name: "Marketing", icon: <Megaphone className="h-4 w-4" /> },
+  { name: "Engineering", icon: <Code className="h-4 w-4" /> },
+  { name: "Legal", icon: <Scale className="h-4 w-4" /> },
 ];
 
 export default function MentorDirectory() {
@@ -68,8 +82,11 @@ export default function MentorDirectory() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
           <div>
-            <h1 className="text-4xl font-display font-bold text-slate-900 dark:text-white mb-2">Find Your Mentor</h1>
-            <p className="text-muted-foreground max-w-xl">Connect with world-class experts who have walked the path before. Filter by industry, expertise, or role.</p>
+            <h1 className="text-4xl font-display font-bold text-slate-900 dark:text-white mb-2">Specialized Mentor Marketplace</h1>
+            <p className="text-muted-foreground max-w-xl">
+              Access targeted experts in Finance, Marketing, Engineering, and Legal. 
+              Get precisely the help you need through paid sessions.
+            </p>
           </div>
           
           <div className="flex gap-2 w-full md:w-auto">
@@ -83,6 +100,16 @@ export default function MentorDirectory() {
           </div>
         </div>
 
+        {/* Category Pills */}
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+          {categories.map((cat, i) => (
+            <Button key={i} variant={i === 0 ? "default" : "outline"} size="sm" className="rounded-full px-4">
+              {cat.icon && <span className="mr-2">{cat.icon}</span>}
+              {cat.name}
+            </Button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {mentors.map((mentor) => (
             <Card key={mentor.id} className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 overflow-hidden">
@@ -91,6 +118,9 @@ export default function MentorDirectory() {
                   <div className="absolute top-4 right-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-2 py-1 rounded text-xs font-bold flex items-center gap-1 shadow-sm">
                     <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" /> {mentor.rating}
                   </div>
+                  <Badge className="absolute bottom-2 right-4 bg-white/80 text-slate-800 hover:bg-white shadow-sm border-none backdrop-blur">
+                    {mentor.category}
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="px-6 pt-0 pb-4 relative">
@@ -101,7 +131,7 @@ export default function MentorDirectory() {
                   </Avatar>
                   <div className="mt-4">
                      <Button size="sm" variant="outline" className="text-xs h-8 border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-800">
-                       Request
+                       Book Session
                      </Button>
                   </div>
                 </div>
