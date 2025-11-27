@@ -27,10 +27,10 @@ export default function HowItWorks() {
       id: "03",
       title: "Active Development",
       subtitle: "Membership - $49/month",
-      desc: "Unlock the full support system. Monthly coaching sessions, community learning, and access to specialized experts in Finance, Legal, and Marketing.",
-      icon: <Users className="h-8 w-8 text-cyan-500" />,
+      desc: "Unlock the full support system. Monthly coaching sessions, community learning, and access to specialized experts in Finance, Legal, and Marketing. [BOLD]Only available to entrepreneurs approved by a mentor—you have 5 days after approval to activate your membership.[/BOLD]",
+      icon: <Users className="h-8 w-8 text-emerald-500" />,
       features: ["30-min Onboarding Session", "Monthly Group Coaching", "Specialized Marketplace Access"],
-      color: "cyan"
+      color: "emerald"
     },
     {
       id: "04",
