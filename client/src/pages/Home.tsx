@@ -52,6 +52,50 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Mentor Commitment Section */}
+      <section className="py-16 bg-gradient-to-r from-indigo-900/20 via-cyan-900/20 to-indigo-900/20 border-y border-slate-700">
+        <div className="container mx-auto px-4">
+          <Card className="border-indigo-500/30 shadow-xl bg-gradient-to-br from-indigo-950/50 to-slate-950/50 backdrop-blur-sm">
+            <CardContent className="p-10 md:p-16">
+              <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+                <div className="md:w-1/2">
+                  <Shield className="h-16 w-16 text-indigo-400 mb-6" />
+                  <h3 className="text-3xl font-display font-bold text-white mb-4">Your Mentor Is Committed</h3>
+                  <p className="text-lg text-slate-300 leading-relaxed">
+                    Once your idea is approved into a mentor's portfolio, they become your dedicated guide through every stage of your journey — from initial validation, through active development, all the way to securing investor funding.
+                  </p>
+                </div>
+                <div className="md:w-1/2">
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-4 p-4 bg-white/5 rounded-lg border border-white/10 backdrop-blur">
+                      <Check className="h-6 w-6 text-indigo-400 shrink-0 mt-1" />
+                      <div>
+                        <h4 className="font-bold text-white mb-1">Long-Term Partnership</h4>
+                        <p className="text-sm text-slate-300">Not just feedback—a sustained commitment to your success</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4 p-4 bg-white/5 rounded-lg border border-white/10 backdrop-blur">
+                      <Check className="h-6 w-6 text-cyan-400 shrink-0 mt-1" />
+                      <div>
+                        <h4 className="font-bold text-white mb-1">Aligned Incentives</h4>
+                        <p className="text-sm text-slate-300">Mentors benefit when you succeed—creating genuine partnership</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4 p-4 bg-white/5 rounded-lg border border-white/10 backdrop-blur">
+                      <Check className="h-6 w-6 text-emerald-400 shrink-0 mt-1" />
+                      <div>
+                        <h4 className="font-bold text-white mb-1">Complete Support</h4>
+                        <p className="text-sm text-slate-300">From strategy to execution to investor introductions</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* The Journey Steps */}
       <section className="py-24 bg-background">
         <div className="container px-4 mx-auto">
