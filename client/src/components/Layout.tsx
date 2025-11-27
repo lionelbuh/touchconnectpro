@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import logoIcon from "@assets/generated_images/touchconnectpro_minimalist_logo_icon.png";
+import logoFull from "@assets/Logo_TouchConnectPro-removebg-preview_1764217788734.png";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -17,9 +17,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* Navbar */}
       <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-display font-bold text-xl tracking-tight hover:opacity-80 transition-opacity">
-            <img src={logoIcon} alt="TouchConnectPro" className="h-8 w-8 object-contain" />
-            <span>TouchConnectPro</span>
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <img 
+              src={logoFull} 
+              alt="TouchConnectPro" 
+              className="h-10 w-auto object-contain dark:invert dark:hue-rotate-180" 
+            />
           </Link>
 
           {/* Desktop Links */}
@@ -58,9 +61,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <footer className="border-t border-border bg-muted/30 py-12">
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <div className="flex items-center gap-2 font-display font-bold text-lg">
-              <img src={logoIcon} alt="TouchConnectPro" className="h-6 w-6 object-contain" />
-              <span>TouchConnectPro</span>
+            <div className="flex items-center gap-2">
+              <img 
+                src={logoFull} 
+                alt="TouchConnectPro" 
+                className="h-8 w-auto object-contain dark:invert dark:hue-rotate-180" 
+              />
             </div>
             <p className="text-sm text-muted-foreground">
               Empowering entrepreneurs with AI-driven business planning and world-class mentorship.
