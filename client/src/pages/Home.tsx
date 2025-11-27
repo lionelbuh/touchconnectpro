@@ -250,7 +250,7 @@ export default function Home() {
                    <li className="flex items-center gap-2 text-slate-300"><Check className="h-4 w-4 text-cyan-500"/> Draft Business Plan Gen</li>
                    <li className="flex items-center gap-2 text-slate-300"><Check className="h-4 w-4 text-cyan-500"/> Prepare for Mentor Review</li>
                  </ul>
-                 <Link href="/idea-submit">
+                 <Link href="/coming-soon">
                    <Button className="w-full bg-slate-700 hover:bg-slate-600">Start Free - No Credit Card</Button>
                  </Link>
                </CardContent>
