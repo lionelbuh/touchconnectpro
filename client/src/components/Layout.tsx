@@ -68,7 +68,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               />
             </div>
             <p className="text-sm text-muted-foreground">
-              Empowering entrepreneurs with AI-driven business planning and world-class mentorship.
+              Connecting Ideas, Mentors, and Entrepreneurs
+              <br/>
+              AI helps you get ready.
+              <br/>
+              People help you win.
             </p>
           </div>
           
