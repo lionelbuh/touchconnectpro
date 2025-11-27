@@ -52,8 +52,50 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Spacer */}
-      <div className="py-12"></div>
+      {/* The Journey Steps */}
+      <section className="py-24 bg-background">
+        <div className="container px-4 mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-4 text-slate-900 dark:text-white">Your Path to Investor Readiness</h2>
+            <p className="text-muted-foreground text-lg">A structured four-step journey designed to validate, build, and scale your venture.</p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              {
+                icon: <Sparkles className="h-6 w-6 text-cyan-500" />,
+                title: "1. Free Entry",
+                desc: "AI-powered idea refinement and draft business plan generation to structure your thinking."
+              },
+              {
+                icon: <Shield className="h-6 w-6 text-indigo-500" />,
+                title: "2. Mentor Match",
+                desc: "Evaluation and acceptance into a personalized mentorship program with an industry expert."
+              },
+              {
+                icon: <Users className="h-6 w-6 text-emerald-500" />,
+                title: "3. Active Development",
+                desc: "Monthly coaching sessions, community learning, and specialized support to build your foundation."
+              },
+              {
+                icon: <TrendingUp className="h-6 w-6 text-amber-500" />,
+                title: "4. Investor Ready",
+                desc: "Refine pitch deck and fundraising strategy for angel investors."
+              }
+            ].map((step, i) => (
+              <Card key={i} className="relative overflow-hidden border-none shadow-lg bg-slate-50 dark:bg-slate-900/50 hover:-translate-y-1 transition-transform duration-300">
+                <CardContent className="pt-8 pb-8 px-6">
+                  <div className="mb-4 p-3 bg-white dark:bg-slate-800 w-fit rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                    {step.icon}
+                  </div>
+                  <h3 className="text-lg font-bold mb-2 text-slate-900 dark:text-white">{step.title}</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{step.desc}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Mentor Commitment Section */}
       <section className="py-16 bg-gradient-to-r from-indigo-900/20 via-cyan-900/20 to-indigo-900/20 border-y border-slate-700">
@@ -101,51 +143,6 @@ export default function Home() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </section>
-
-      {/* The Journey Steps */}
-      <section className="py-24 bg-background">
-        <div className="container px-4 mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-display font-bold mb-4 text-slate-900 dark:text-white">Your Path to Investor Readiness</h2>
-            <p className="text-muted-foreground text-lg">A structured four-step journey designed to validate, build, and scale your venture.</p>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-6">
-            {[
-              {
-                icon: <Sparkles className="h-6 w-6 text-cyan-500" />,
-                title: "1. Free Entry",
-                desc: "AI-powered idea refinement and draft business plan generation to structure your thinking."
-              },
-              {
-                icon: <Shield className="h-6 w-6 text-indigo-500" />,
-                title: "2. Mentor Match",
-                desc: "Evaluation and acceptance into a personalized mentorship program with an industry expert."
-              },
-              {
-                icon: <Users className="h-6 w-6 text-emerald-500" />,
-                title: "3. Active Development",
-                desc: "Monthly coaching sessions, community learning, and specialized support to build your foundation."
-              },
-              {
-                icon: <TrendingUp className="h-6 w-6 text-amber-500" />,
-                title: "4. Investor Ready",
-                desc: "Refine pitch deck and fundraising strategy for angel investors."
-              }
-            ].map((step, i) => (
-              <Card key={i} className="relative overflow-hidden border-none shadow-lg bg-slate-50 dark:bg-slate-900/50 hover:-translate-y-1 transition-transform duration-300">
-                <CardContent className="pt-8 pb-8 px-6">
-                  <div className="mb-4 p-3 bg-white dark:bg-slate-800 w-fit rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-                    {step.icon}
-                  </div>
-                  <h3 className="text-lg font-bold mb-2 text-slate-900 dark:text-white">{step.title}</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{step.desc}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         </div>
       </section>
 
