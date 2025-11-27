@@ -130,7 +130,9 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <Button size="lg">Try AI Rewrite Demo</Button>
+              <a href="#free-entry">
+                <Button size="lg">Try AI Rewrite Demo</Button>
+              </a>
             </div>
           </div>
         </div>
@@ -180,7 +182,7 @@ export default function Home() {
       </section>
 
       {/* Pricing Teaser */}
-      <section className="py-24 bg-slate-900 text-white">
+      <section id="free-entry" className="py-24 bg-slate-900 text-white scroll-smooth">
         <div className="container px-4 mx-auto text-center">
            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">Membership: Your Growth Foundation</h2>
            <p className="text-slate-400 text-lg max-w-2xl mx-auto mb-12">
