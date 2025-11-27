@@ -198,7 +198,7 @@ export default function Home() {
                 <span className="text-indigo-500">Matched to Your Goals.</span>
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-                Membership begins after your mentor reviews your AI-prepared materials and accepts your idea into their portfolio. This ensures meaningful, committed partnership.
+                Membership begins after your mentor reviews your AI-prepared materials and accepts your idea into his or her portfolio. This ensures meaningful, committed partnership.
               </p>
               <ul className="space-y-4 mb-8">
                 {[
