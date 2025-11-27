@@ -107,7 +107,7 @@ export default function Home() {
                   <Shield className="h-16 w-16 text-indigo-400 mb-6" />
                   <h3 className="text-3xl font-display font-bold text-white mb-4">Your Mentor Is Committed</h3>
                   <p className="text-lg text-slate-300 leading-relaxed mb-6">
-                    Once your idea is approved into a mentor's portfolio, they become your dedicated guide through every stage of your journey — from initial validation, through active development, all the way to securing investor funding.
+                    Once your idea is approved into a mentor's portfolio, your mentor becomes your dedicated guide through every stage of your journey — from initial validation, through active development, all the way to securing investor funding.
                   </p>
                   <div className="bg-white/10 border border-white/20 rounded-lg p-4 backdrop-blur">
                     <p className="text-slate-200 italic text-sm">
