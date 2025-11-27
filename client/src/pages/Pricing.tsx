@@ -117,10 +117,10 @@ export default function Pricing() {
                 </div>
               </div>
               <div className="md:w-1/3 bg-slate-800/50 p-6 rounded-xl border border-slate-700 relative z-10">
-                <h3 className="font-bold text-amber-400 mb-2">Aligned Success Model</h3>
-                <div className="text-4xl font-bold mb-2">10%</div>
-                <p className="text-sm text-slate-300 mb-4">Equity stake in successful fundraising rounds we help facilitate.</p>
-                <p className="text-xs text-slate-500 italic">We succeed only when you succeed.</p>
+                <h3 className="font-bold text-emerald-400 mb-2">Unlock Full Support</h3>
+                <div className="text-4xl font-bold mb-2">$49</div>
+                <p className="text-sm text-slate-300 mb-4">Per month to unlock the full support system you'll need during your journey to reach the market.</p>
+                <p className="text-xs text-slate-500 italic">Available only after mentor approval.</p>
               </div>
             </CardContent>
           </Card>
@@ -132,7 +132,7 @@ export default function Pricing() {
             <AccordionItem value="item-1">
               <AccordionTrigger>When does billing start?</AccordionTrigger>
               <AccordionContent>
-                Billing for the $49/mo membership only begins *after* a mentor reviews your AI-prepared materials and accepts you into their portfolio.
+                Billing for the $49/mo membership only begins *after* a mentor reviews your AI-prepared materials and approves you into their portfolio.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
