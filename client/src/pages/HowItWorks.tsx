@@ -62,12 +62,12 @@ export default function HowItWorks() {
               <div key={index} className={`flex flex-col md:flex-row items-center gap-8 ${index % 2 === 0 ? '' : 'md:flex-row-reverse'}`}>
                 
                 {/* Text Content */}
-                <div className="md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left">
+                <div className="md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left relative z-20">
                   <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl bg-${step.color}-500/10 mb-6 md:hidden`}>
                     {step.icon}
                   </div>
                   <div className={`text-${step.color}-600 font-bold tracking-wider text-sm uppercase mb-2`}>{step.subtitle}</div>
-                  <h2 className="text-3xl font-bold mb-4 text-slate-900 dark:text-white">
+                  <h2 className="text-3xl font-bold mb-4 text-slate-900 dark:text-white relative z-20">
                     <span className="text-slate-300 mr-3 text-2xl font-normal">.{step.id}</span>
                     {step.title}
                   </h2>
