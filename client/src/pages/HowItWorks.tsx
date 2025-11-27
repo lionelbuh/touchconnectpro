@@ -93,10 +93,10 @@ export default function HowItWorks() {
                 <div className="md:w-1/2 w-full">
                   <Card className="overflow-hidden border-none shadow-lg bg-white dark:bg-slate-900">
                      <div className={`h-2 w-full bg-${step.color}-500`}></div>
-                     <CardContent className="p-8 h-64 flex items-center justify-center bg-slate-50/50 dark:bg-slate-800/20">
-                       <div className="text-center opacity-50">
-                         <div className="text-6xl font-bold text-slate-200 dark:text-slate-700 mb-2">{step.id}</div>
-                         <div className="text-sm uppercase tracking-widest">Phase</div>
+                     <CardContent className="p-8 h-80 flex items-center justify-center bg-slate-50/50 dark:bg-slate-800/20">
+                       <div className="text-center">
+                         <div className="text-9xl font-bold text-slate-300 dark:text-slate-600 mb-2 leading-none">{step.id}</div>
+                         <div className="text-sm uppercase tracking-widest text-slate-400 dark:text-slate-500">Phase</div>
                        </div>
                      </CardContent>
                   </Card>
