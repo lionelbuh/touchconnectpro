@@ -25,7 +25,7 @@ export default function Pricing() {
               <p className="text-muted-foreground text-sm">Start refining your idea immediately. No credit card required.</p>
             </CardHeader>
             <CardContent className="p-8 pt-0">
-              <Link href="/idea-submit">
+              <Link href="/coming-soon">
                 <Button variant="outline" className="w-full mb-8">Start Refining Idea</Button>
               </Link>
               <ul className="space-y-4 text-sm">
