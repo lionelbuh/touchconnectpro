@@ -33,11 +33,11 @@ export default function Home() {
             TouchConnectPro bridges the gap between raw ambition and investor readiness. We combine AI-powered tools with expert human mentorship to transform promising ideas into fundable ventures.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/idea-submit">
+            <a href="#free-entry">
               <Button size="lg" className="h-14 px-8 text-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] transition-all hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.6)] hover:scale-105">
                 Start Free - No Credit Card <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-            </Link>
+            </a>
             <Link href="/how-it-works">
               <Button variant="outline" size="lg" className="h-14 px-8 text-lg border-white/20 bg-white/5 hover:bg-white/10 text-white rounded-full backdrop-blur-sm">
                 See the Journey
@@ -201,7 +201,9 @@ export default function Home() {
                    <li className="flex items-center gap-2 text-slate-300"><Check className="h-4 w-4 text-cyan-500"/> Draft Business Plan Gen</li>
                    <li className="flex items-center gap-2 text-slate-300"><Check className="h-4 w-4 text-cyan-500"/> Prepare for Mentor Review</li>
                  </ul>
-                 <Button className="w-full bg-slate-700 hover:bg-slate-600">Start Refining Now</Button>
+                 <Link href="/idea-submit">
+                   <Button className="w-full bg-slate-700 hover:bg-slate-600">Start Free - No Credit Card</Button>
+                 </Link>
                </CardContent>
              </Card>
              
