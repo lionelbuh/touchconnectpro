@@ -8,7 +8,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const links = [
     { href: "/", label: "Home" },
     { href: "/how-it-works", label: "How it works" },
-    { href: "/mentors", label: "Find a Mentor" },
     { href: "/pricing", label: "Pricing" },
   ];
 
@@ -78,7 +77,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/how-it-works">How it works</Link></li>
               <li><Link href="/pricing">Pricing</Link></li>
-              <li><Link href="/mentors">Browse Mentors</Link></li>
             </ul>
           </div>
 

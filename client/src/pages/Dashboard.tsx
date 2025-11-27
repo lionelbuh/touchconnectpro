@@ -30,7 +30,7 @@ export default function Dashboard() {
               <FileText className="mr-2 h-4 w-4" /> My Business Plan
             </Button>
             <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
-              <Users className="mr-2 h-4 w-4" /> Mentors
+              <Users className="mr-2 h-4 w-4" /> Coaches
             </Button>
             <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
               <MessageSquare className="mr-2 h-4 w-4" /> Messages
@@ -78,12 +78,12 @@ export default function Dashboard() {
           {/* Mentor Status */}
           <Card className="border-l-4 border-l-indigo-500 shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Mentor Status</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Coach Status</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">Pending</div>
               <Link href="/mentors">
-                <Button variant="link" className="p-0 h-auto text-xs text-indigo-600 mt-1">Find a Mentor &rarr;</Button>
+                <Button variant="link" className="p-0 h-auto text-xs text-indigo-600 mt-1">Find a Coach &rarr;</Button>
               </Link>
             </CardContent>
           </Card>
@@ -139,24 +139,44 @@ export default function Dashboard() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Recommended Mentors</CardTitle>
+                <CardTitle>Your Mentor</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                 <div className="flex flex-col items-center text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100">
+                    <Avatar className="h-24 w-24 mb-4 border-4 border-white shadow-md">
+                      <AvatarImage src="https://i.pravatar.cc/150?u=sarah" />
+                      <AvatarFallback>SM</AvatarFallback>
+                    </Avatar>
+                    <h3 className="font-bold text-lg">Sarah Miller</h3>
+                    <p className="text-sm text-muted-foreground mb-4">Lead Mentor & Strategist</p>
+                    <div className="flex gap-2 w-full">
+                      <Button size="sm" className="flex-1" variant="outline">Message</Button>
+                      <Button size="sm" className="flex-1">Schedule</Button>
+                    </div>
+                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Recommended Coaches</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer border border-transparent hover:border-slate-200">
                     <Avatar>
                       <AvatarImage src={`https://i.pravatar.cc/150?u=${i}`} />
-                      <AvatarFallback>M{i}</AvatarFallback>
+                      <AvatarFallback>C{i}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <div className="font-semibold text-sm">Sarah Miller</div>
-                      <div className="text-xs text-muted-foreground">SaaS & Marketing</div>
+                      <div className="font-semibold text-sm">David Chen</div>
+                      <div className="text-xs text-muted-foreground">Product Coach</div>
                     </div>
                     <Button size="icon" variant="ghost" className="h-8 w-8 text-indigo-600"><ArrowRight className="h-4 w-4" /></Button>
                   </div>
                 ))}
                 <Link href="/mentors">
-                  <Button variant="outline" className="w-full text-xs">View All Mentors</Button>
+                  <Button variant="outline" className="w-full text-xs">View All Coaches</Button>
                 </Link>
               </CardContent>
             </Card>
