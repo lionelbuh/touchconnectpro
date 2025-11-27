@@ -173,7 +173,7 @@ export default function Home() {
                 Our intelligent tools help you articulate your value proposition, clarify your messaging, and structure your thinking. Receive a mentor-ready business plan outline that demonstrates viability.
               </p>
               <ul className="space-y-4 mb-8">
-                {["Articulate Value Proposition", "Clarify Messaging", "Structure Your Thinking", "Demonstrate Viability"].map((item, i) => (
+                {["Articulate Value Proposition", "Clarify Messaging", "Structure Your Thinking", "Demonstrate Viability with our mentor-ready business plan"].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
                     <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <Check className="h-4 w-4 text-primary" />
