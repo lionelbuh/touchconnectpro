@@ -138,7 +138,7 @@ export default function Pricing() {
             <AccordionItem value="item-2">
               <AccordionTrigger>What if I need specialized help (Legal, Tech)?</AccordionTrigger>
               <AccordionContent>
-                TouchConnectPro facilitates connections with specialized mentors (Finance, Marketing, Engineering, Legal) who offer paid sessions. The coach sets their price, you pay it in full, and we keep a 20% fee to support and sustain the platform.
+                TouchConnectPro facilitates connections with specialized mentors (Finance, Marketing, Engineering, Legal) who offer paid sessions. The coaches set their own price, you pay it in full, and we keep a 20% fee to support and sustain the platform.
               </AccordionContent>
             </AccordionItem>
              <AccordionItem value="item-3">
