@@ -68,11 +68,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               />
             </div>
             <p className="text-sm text-muted-foreground">
-              Connecting Ideas, Mentors, and Entrepreneurs
+              <span className="font-bold">Connecting Ideas, Mentors, and Entrepreneurs</span>
               <br/>
               AI helps you get ready.
               <br/>
-              People help you win.
+              <span className="font-bold">People help you win.</span>
             </p>
           </div>
           
