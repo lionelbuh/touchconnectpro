@@ -264,13 +264,21 @@ export default function Home() {
                  <h3 className="text-2xl font-bold mb-2 text-white">Member</h3>
                  <div className="text-4xl font-display font-bold mb-6 text-white">$49<span className="text-lg text-indigo-300 font-normal">/mo</span></div>
                  <p className="text-indigo-200 mb-8">Upon Mentor Acceptance.</p>
+                 <div className="mb-8 p-4 bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 border border-indigo-400/40 rounded-lg backdrop-blur-sm">
+                   <div className="flex items-start gap-3">
+                     <div className="font-bold text-indigo-300 pt-1">📋</div>
+                     <div>
+                       <p className="font-bold text-indigo-200 mb-1">Waiting List</p>
+                       <p className="text-xs text-indigo-300">Only if your idea is approved and you are in a mentor's portfolio</p>
+                     </div>
+                   </div>
+                 </div>
                  <ul className="space-y-3 mb-8">
                    <li className="flex items-center gap-2 text-white"><Check className="h-4 w-4 text-indigo-400"/> Dedicated Mentor-Coach</li>
                    <li className="flex items-center gap-2 text-white"><Check className="h-4 w-4 text-indigo-400"/> Monthly Group Coaching</li>
                    <li className="flex items-center gap-2 text-white"><Check className="h-4 w-4 text-indigo-400"/> Strategic Frameworks</li>
                    <li className="flex items-center gap-2 text-white"><Check className="h-4 w-4 text-indigo-400"/> Community Access</li>
                  </ul>
-                 <Button className="w-full bg-indigo-600 hover:bg-indigo-500">Waiting list - if approved by a mentor</Button>
                </CardContent>
              </Card>
            </div>
