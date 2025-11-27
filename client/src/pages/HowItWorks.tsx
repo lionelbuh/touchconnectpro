@@ -10,36 +10,36 @@ export default function HowItWorks() {
       title: "Free Entry & AI Refinement",
       subtitle: "Zero-Barrier Entry Point",
       desc: "Start refining your idea immediately. [BOLD]No credit card required.[/BOLD] Our AI tools help you articulate your value proposition and create a draft business plan.",
-      icon: <Sparkles className="h-8 w-8 text-indigo-500" />,
+      icon: <Sparkles className="h-8 w-8 text-cyan-500" />,
       features: ["AI Idea Refinement", "Draft Business Plan Generation", "Viability Check"],
-      color: "indigo"
+      color: "cyan"
     },
     {
       id: "02",
       title: "Mentor Match",
       subtitle: "Evaluation & Acceptance",
       desc: "Submit your refined plan for review. A dedicated mentor approves your idea into his or her portfolio, ensuring a meaningful partnership.",
-      icon: <Shield className="h-8 w-8 text-indigo-500" />,
+      icon: <Shield className="h-8 w-8 text-cyan-500" />,
       features: ["Personalized Evaluation", "Portfolio Approval", "Goal Alignment"],
-      color: "indigo"
+      color: "cyan"
     },
     {
       id: "03",
       title: "Active Development",
       subtitle: "Membership - $49/month",
       desc: "Unlock the full support system. Monthly coaching sessions, community learning, and access to specialized experts in Finance, Legal, and Marketing.",
-      icon: <Users className="h-8 w-8 text-indigo-500" />,
+      icon: <Users className="h-8 w-8 text-cyan-500" />,
       features: ["30-min Onboarding Session", "Monthly Group Coaching", "Specialized Marketplace Access"],
-      color: "indigo"
+      color: "cyan"
     },
     {
       id: "04",
       title: "Investor Ready",
       subtitle: "Angel-Stage Support",
       desc: "When you're ready to raise, we intensify support. We help with pitch decks and fundraising strategy. We have established relationships with Angel Investors who will review all final projects to determine if they want to invest.",
-      icon: <TrendingUp className="h-8 w-8 text-indigo-500" />,
+      icon: <TrendingUp className="h-8 w-8 text-cyan-500" />,
       features: ["Investor-Grade Pitch Deck", "Fundraising Strategy", "Angel Network Access"],
-      color: "indigo"
+      color: "cyan"
     }
   ];
 
