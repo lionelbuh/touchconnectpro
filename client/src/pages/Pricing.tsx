@@ -61,7 +61,15 @@ export default function Pricing() {
               <p className="text-muted-foreground text-sm">Membership begins after mentor acceptance.</p>
             </CardHeader>
             <CardContent className="p-8 pt-0">
-              <Button className="w-full mb-8 bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">Waiting list - if approved by a mentor</Button>
+              <div className="mb-8 p-4 bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-indigo-500/30 rounded-lg backdrop-blur-sm">
+                <div className="flex items-start gap-3">
+                  <div className="font-bold text-indigo-600 dark:text-indigo-400 pt-1">📋</div>
+                  <div>
+                    <p className="font-bold text-indigo-700 dark:text-indigo-300 mb-1">Waiting List</p>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-400">Only if your idea is approved and you are in a mentor's portfolio</p>
+                  </div>
+                </div>
+              </div>
               <ul className="space-y-4 text-sm font-medium">
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-indigo-500 shrink-0" />
