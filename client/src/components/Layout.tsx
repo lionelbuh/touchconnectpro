@@ -15,12 +15,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex flex-col font-sans bg-background text-foreground">
       {/* Navbar */}
       <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 h-48 flex items-center justify-between">
+        <div className="container mx-auto px-4 h-24 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <img 
               src={logoFull} 
               alt="TouchConnectPro" 
-              className="h-40 w-auto object-contain dark:invert dark:hue-rotate-180" 
+              className="h-20 w-auto object-contain dark:invert dark:hue-rotate-180" 
             />
           </Link>
 
@@ -64,7 +64,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <img 
                 src={logoFull} 
                 alt="TouchConnectPro" 
-                className="h-32 w-auto object-contain dark:invert dark:hue-rotate-180" 
+                className="h-16 w-auto object-contain dark:invert dark:hue-rotate-180" 
               />
             </div>
             <p className="text-sm text-muted-foreground">
