@@ -50,7 +50,6 @@ export default function Pricing() {
           <Card className="border-indigo-500 shadow-xl relative overflow-hidden bg-white dark:bg-slate-900 scale-105 z-10">
             <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-indigo-500 to-cyan-500"></div>
             <CardHeader className="p-8">
-              <div className="inline-block px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-4">MOST POPULAR</div>
               <h3 className="text-2xl font-bold mb-2">Founder</h3>
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-4xl font-bold">$49</span>
@@ -59,7 +58,7 @@ export default function Pricing() {
               <p className="text-muted-foreground text-sm">For builders ready to launch and scale.</p>
             </CardHeader>
             <CardContent className="p-8 pt-0">
-              <Button className="w-full mb-8 bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">Subscribe Now</Button>
+              <Button className="w-full mb-8 bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">Waiting list - if approved by a mentor</Button>
               <ul className="space-y-4 text-sm font-medium">
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-indigo-500 shrink-0" />
@@ -86,32 +85,7 @@ export default function Pricing() {
           </Card>
 
           {/* Scale Tier */}
-          <Card className="border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
-             <CardHeader className="p-8">
-              <h3 className="text-2xl font-bold mb-2">Angel / VC</h3>
-              <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold">Custom</span>
-              </div>
-              <p className="text-muted-foreground text-sm">For investors looking for deal flow.</p>
-            </CardHeader>
-            <CardContent className="p-8 pt-0">
-              <Button variant="outline" className="w-full mb-8">Contact Sales</Button>
-              <ul className="space-y-4 text-sm">
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-cyan-500 shrink-0" />
-                  <span>Curated Deal Flow</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-cyan-500 shrink-0" />
-                  <span>Direct Access to Top Founders</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-cyan-500 shrink-0" />
-                  <span>Portfolio Management Dashboard</span>
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
+          {/* Deleted Angel / VC Tier as requested */}
         </div>
 
         <div className="max-w-3xl mx-auto">

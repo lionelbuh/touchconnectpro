@@ -208,7 +208,6 @@ export default function Home() {
              </Card>
              
              <Card className="bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-500/50 text-left relative overflow-hidden">
-               <div className="absolute top-0 right-0 bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">RECOMMENDED</div>
                <CardContent className="p-8">
                  <h3 className="text-2xl font-bold mb-2 text-white">Founder</h3>
                  <div className="text-4xl font-display font-bold mb-6 text-white">$49<span className="text-lg text-indigo-300 font-normal">/mo</span></div>
@@ -218,7 +217,7 @@ export default function Home() {
                    <li className="flex items-center gap-2 text-white"><Check className="h-4 w-4 text-indigo-400"/> Dedicated Mentor Match</li>
                    <li className="flex items-center gap-2 text-white"><Check className="h-4 w-4 text-indigo-400"/> Legal Contract Templates</li>
                  </ul>
-                 <Button className="w-full bg-indigo-600 hover:bg-indigo-500">Start Founder Plan</Button>
+                 <Button className="w-full bg-indigo-600 hover:bg-indigo-500">Waiting list - if approved by a mentor</Button>
                </CardContent>
              </Card>
            </div>
