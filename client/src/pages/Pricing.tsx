@@ -141,12 +141,6 @@ export default function Pricing() {
                 TouchConnectPro facilitates connections with specialized mentors (Finance, Marketing, Engineering, Legal) who offer paid sessions. The coaches set their own price, you pay it in full, and we keep a 20% fee to support and sustain the platform.
               </AccordionContent>
             </AccordionItem>
-             <AccordionItem value="item-3">
-              <AccordionTrigger>What is the Equity Partnership?</AccordionTrigger>
-              <AccordionContent>
-                For founders ready to raise capital, we offer an intensive "Investor Readiness" track. In exchange for this high-level support and access to our investor network, TouchConnectPro takes a 10% equity stake in the successful round we facilitate.
-              </AccordionContent>
-            </AccordionItem>
           </Accordion>
         </div>
       </div>
