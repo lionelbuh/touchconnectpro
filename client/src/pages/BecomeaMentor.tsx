@@ -24,7 +24,7 @@ export default function BecomeaMentor() {
       </section>
 
       {/* Main Content */}
-      <section className="py-24">
+      <section className="py-12">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Introduction */}
           <Card className="mb-12 border-indigo-200 dark:border-indigo-900/30 bg-indigo-50 dark:bg-indigo-950/20">
@@ -81,7 +81,7 @@ export default function BecomeaMentor() {
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Time Commitment</h3>
                   <p className="text-slate-700 dark:text-slate-300">
-                    This represents approximately <strong>1 hour + 30 minutes per new member subscribing</strong> including group sessions, feedback, and follow-up.
+                    This represents approximately <strong>1 hour per month + 30 minutes per new member subscribing</strong> including group sessions, feedback, and follow-up.
                   </p>
                 </div>
                 <div>
