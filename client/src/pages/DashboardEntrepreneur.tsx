@@ -301,6 +301,11 @@ export default function DashboardEntrepreneur() {
     window.scrollTo(0, 0);
   };
 
+  const handleCreateBusinessPlan = () => {
+    const ideaName = formData.ideaName || "My Idea";
+    window.location.href = `/business-plan?ideaName=${encodeURIComponent(ideaName)}`;
+  };
+
   const handleEditAIAnswer = (key: string, value: string) => {
     setAiEnhancedData((prev: any) => ({
       ...prev,
@@ -347,9 +352,11 @@ export default function DashboardEntrepreneur() {
                 <Check className="h-8 w-8 text-white" />
               </div>
             </div>
-            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-3">Great! Your Idea is Submitted</h1>
-            <p className="text-slate-600 dark:text-slate-400 mb-6">Our AI will now analyze your responses and create a refined business plan for you. Check back soon!</p>
-            <Button className="w-full bg-cyan-600 hover:bg-cyan-700" onClick={() => setSubmitted(false)}>Back to Dashboard</Button>
+            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-3">Thank You!</h1>
+            <p className="text-slate-600 dark:text-slate-400 mb-4">Your idea has been submitted and enhanced by our AI.</p>
+            <p className="text-slate-600 dark:text-slate-400 mb-8">Let's create your professional business plan that will impress mentors and investors.</p>
+            <Button className="w-full bg-cyan-600 hover:bg-cyan-700 mb-3" onClick={handleCreateBusinessPlan}>Let's create your AI Draft Business Plan</Button>
+            <Button variant="outline" className="w-full border-slate-300" onClick={() => setSubmitted(false)}>Back to Dashboard</Button>
           </div>
         </main>
       </div>
