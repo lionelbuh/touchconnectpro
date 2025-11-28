@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ChevronDown } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ChevronDown, Globe } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export default function Login() {
@@ -12,6 +12,7 @@ export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [isRecovery, setIsRecovery] = useState(false);
   const [accountType, setAccountType] = useState("entrepreneur");
+  const [country, setCountry] = useState("");
   
   const accountTypes = [
     { value: "entrepreneur", label: "Entrepreneur with an Idea" },
@@ -215,6 +216,23 @@ export default function Login() {
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
+                </div>
+              </div>
+
+              {/* Country Input */}
+              <div className="space-y-2">
+                <Label htmlFor="country" className="text-slate-200">Country</Label>
+                <div className="relative">
+                  <Globe className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+                  <Input
+                    id="country"
+                    type="text"
+                    placeholder="United States"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
+                    data-testid="input-country"
+                  />
                 </div>
               </div>
 

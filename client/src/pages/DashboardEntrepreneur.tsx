@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, Check, AlertCircle } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, Check, AlertCircle, User } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 export default function DashboardEntrepreneur() {
@@ -13,8 +13,17 @@ export default function DashboardEntrepreneur() {
   const [showSuccessPage, setShowSuccessPage] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "idea" | "plan">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "idea" | "plan" | "profile">("overview");
   const [businessPlanData, setBusinessPlanData] = useState<any>(null);
+  const [profileData, setProfileData] = useState({
+    email: "entrepreneur@touchconnectpro.com",
+    fullName: "John Entrepreneur",
+    country: "United States",
+    bio: "",
+    linkedIn: "",
+    profileImage: null as string | null
+  });
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   
   const [formData, setFormData] = useState({
     problem: "",
@@ -420,6 +429,14 @@ export default function DashboardEntrepreneur() {
               >
                 <Target className="mr-2 h-4 w-4" /> Business Plan
               </Button>
+              <Button 
+                variant={activeTab === "profile" ? "secondary" : "ghost"}
+                className="w-full justify-start font-medium text-slate-600"
+                onClick={() => setActiveTab("profile")}
+                data-testid="button-profile-tab"
+              >
+                <User className="mr-2 h-4 w-4" /> Profile
+              </Button>
             </nav>
           </div>
         </aside>
@@ -556,6 +573,169 @@ export default function DashboardEntrepreneur() {
                     </Card>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Profile Tab */}
+            {activeTab === "profile" && (
+              <div>
+                <div className="flex justify-between items-center mb-8">
+                  <div>
+                    <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Entrepreneur Profile</h1>
+                    <p className="text-muted-foreground">Your profile is visible to mentors and admins on our platform.</p>
+                  </div>
+                  <Button 
+                    onClick={() => setIsEditingProfile(!isEditingProfile)}
+                    variant={isEditingProfile ? "destructive" : "default"}
+                    className={isEditingProfile ? "bg-red-600 hover:bg-red-700" : "bg-cyan-600 hover:bg-cyan-700"}
+                    data-testid="button-edit-profile"
+                  >
+                    {isEditingProfile ? "Cancel" : "Edit Profile"}
+                  </Button>
+                </div>
+
+                {isEditingProfile ? (
+                  <Card className="border-cyan-200 dark:border-cyan-900/30 max-w-2xl">
+                    <CardHeader className="bg-cyan-50/50 dark:bg-cyan-950/20">
+                      <CardTitle>Edit Your Profile</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-6 space-y-6">
+                      <div>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Profile Picture</label>
+                        <div className="flex items-center gap-4">
+                          <div className="w-20 h-20 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-2xl">
+                            {profileData.profileImage ? "📷" : "👤"}
+                          </div>
+                          <Button variant="outline" className="border-slate-300" data-testid="button-upload-photo">
+                            Upload Photo
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Full Name *</label>
+                        <Input
+                          value={profileData.fullName}
+                          onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
+                          className="bg-slate-50 dark:bg-slate-800/50"
+                          data-testid="input-profile-name"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Email Address *</label>
+                        <Input
+                          type="email"
+                          value={profileData.email}
+                          onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                          className="bg-slate-50 dark:bg-slate-800/50"
+                          data-testid="input-profile-email"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Country *</label>
+                        <Input
+                          value={profileData.country}
+                          onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
+                          className="bg-slate-50 dark:bg-slate-800/50"
+                          data-testid="input-profile-country"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Short Bio</label>
+                        <textarea
+                          value={profileData.bio}
+                          onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                          placeholder="Tell mentors about yourself..."
+                          rows={4}
+                          className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
+                          data-testid="textarea-profile-bio"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">LinkedIn Profile URL</label>
+                        <Input
+                          value={profileData.linkedIn}
+                          onChange={(e) => setProfileData({ ...profileData, linkedIn: e.target.value })}
+                          placeholder="https://linkedin.com/in/yourprofile"
+                          className="bg-slate-50 dark:bg-slate-800/50"
+                          data-testid="input-profile-linkedin"
+                        />
+                      </div>
+
+                      <div className="flex gap-4 pt-4">
+                        <Button 
+                          variant="outline" 
+                          className="flex-1 border-slate-300"
+                          onClick={() => setIsEditingProfile(false)}
+                          data-testid="button-cancel-profile"
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          className="flex-1 bg-cyan-600 hover:bg-cyan-700"
+                          onClick={() => setIsEditingProfile(false)}
+                          data-testid="button-save-profile"
+                        >
+                          Save Changes
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-6">
+                    <Card className="border-cyan-200 dark:border-cyan-900/30">
+                      <CardContent className="pt-6">
+                        <div className="flex gap-6">
+                          <div className="w-24 h-24 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-5xl flex-shrink-0">
+                            {profileData.profileImage ? "📷" : "👤"}
+                          </div>
+                          <div className="flex-1 space-y-3">
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Full Name</p>
+                              <p className="text-lg font-semibold text-slate-900 dark:text-white">{profileData.fullName}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Email</p>
+                              <p className="text-slate-900 dark:text-white">{profileData.email}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Country</p>
+                              <p className="text-slate-900 dark:text-white">{profileData.country}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {profileData.bio && (
+                      <Card className="border-cyan-200 dark:border-cyan-900/30">
+                        <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
+                          <CardTitle className="text-lg">About</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                          <p className="text-slate-900 dark:text-white">{profileData.bio}</p>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {profileData.linkedIn && (
+                      <Card className="border-cyan-200 dark:border-cyan-900/30">
+                        <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
+                          <CardTitle className="text-lg">LinkedIn</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                          <a href={profileData.linkedIn} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 break-all">
+                            {profileData.linkedIn}
+                          </a>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
