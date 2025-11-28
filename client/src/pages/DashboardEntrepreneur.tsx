@@ -12,6 +12,8 @@ export default function DashboardEntrepreneur() {
   const [submitted, setSubmitted] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<"overview" | "idea" | "plan">("overview");
+  const [businessPlanData, setBusinessPlanData] = useState<any>(null);
   
   const [formData, setFormData] = useState({
     problem: "",
@@ -306,6 +308,11 @@ export default function DashboardEntrepreneur() {
     window.location.href = `/business-plan?ideaName=${encodeURIComponent(ideaName)}`;
   };
 
+  const handleBusinessPlanSubmitted = (plan: any) => {
+    setBusinessPlanData(plan);
+    setActiveTab("plan");
+  };
+
   const handleEditAIAnswer = (key: string, value: string) => {
     setAiEnhancedData((prev: any) => ({
       ...prev,
@@ -323,40 +330,177 @@ export default function DashboardEntrepreneur() {
         <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <Avatar className="h-10 w-10 border border-slate-200 bg-cyan-500">
+              <Avatar className="h-10 w-10 border border-slate-200 bg-amber-500">
                 <AvatarFallback className="text-white">EN</AvatarFallback>
               </Avatar>
               <div>
                 <div className="font-bold text-sm">Entrepreneur</div>
-                <div className="text-xs text-muted-foreground">Onboarding Complete</div>
+                <div className="text-xs text-amber-600 dark:text-amber-400 font-semibold">On Waiting List</div>
               </div>
             </div>
             <nav className="space-y-1">
-              <Button variant="secondary" className="w-full justify-start font-medium">
+              <Button 
+                variant={activeTab === "overview" ? "secondary" : "ghost"}
+                className="w-full justify-start font-medium"
+                onClick={() => setActiveTab("overview")}
+                data-testid="button-overview-tab"
+              >
                 <LayoutDashboard className="mr-2 h-4 w-4" /> Overview
               </Button>
-              <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
+              <Button 
+                variant={activeTab === "idea" ? "secondary" : "ghost"}
+                className="w-full justify-start font-medium text-slate-600"
+                onClick={() => setActiveTab("idea")}
+                data-testid="button-idea-tab"
+              >
                 <Lightbulb className="mr-2 h-4 w-4" /> My Idea
               </Button>
-              <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
+              <Button 
+                variant={activeTab === "plan" ? "secondary" : "ghost"}
+                className="w-full justify-start font-medium text-slate-600"
+                onClick={() => setActiveTab("plan")}
+                data-testid="button-plan-tab"
+              >
                 <Target className="mr-2 h-4 w-4" /> Business Plan
               </Button>
             </nav>
           </div>
         </aside>
 
-        <main className="flex-1 p-8 overflow-y-auto flex items-center justify-center">
-          <div className="max-w-md text-center">
-            <div className="flex justify-center mb-6">
-              <div className="h-16 w-16 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full flex items-center justify-center">
-                <Check className="h-8 w-8 text-white" />
+        <main className="flex-1 p-8 overflow-y-auto">
+          <div className="max-w-4xl">
+            {/* Overview Tab */}
+            {activeTab === "overview" && (
+              <div>
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Project Dashboard</h1>
+                <p className="text-muted-foreground mb-8">Welcome back! Here's what's happening with <span className="font-semibold text-foreground">{formData.ideaName || "Your Idea"}</span>.</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <Card className="border-l-4 border-l-cyan-500 shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Current Stage</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">Business Plan Complete</div>
+                      <p className="text-xs text-muted-foreground mt-1">Awaiting mentor approval</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="border-l-4 border-l-amber-500 shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Status</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">Waiting List</div>
+                      <p className="text-xs text-muted-foreground mt-1">5 business days</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-cyan-500 shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Progress</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">Step 3 of 4</div>
+                      <Progress value={75} className="h-2 mt-2" />
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>What Happens Next</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex gap-4">
+                      <div className="h-8 w-8 bg-cyan-100 dark:bg-cyan-900/50 rounded-full flex items-center justify-center flex-shrink-0 text-cyan-600 font-semibold">1</div>
+                      <div>
+                        <p className="font-semibold text-slate-900 dark:text-white">Mentors Review Your Plan</p>
+                        <p className="text-sm text-muted-foreground">Our mentor committee evaluates your business plan and idea</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="h-8 w-8 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center flex-shrink-0 text-slate-600 font-semibold">2</div>
+                      <div>
+                        <p className="font-semibold text-slate-900 dark:text-white">Mentor Assignment</p>
+                        <p className="text-sm text-muted-foreground">A mentor chooses to work with you and we'll contact you</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="h-8 w-8 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center flex-shrink-0 text-slate-600 font-semibold">3</div>
+                      <div>
+                        <p className="font-semibold text-slate-900 dark:text-white">Active Membership</p>
+                        <p className="text-sm text-muted-foreground">Join as a member and start your mentorship journey ($49/mo)</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            </div>
-            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-3">Thank You!</h1>
-            <p className="text-slate-600 dark:text-slate-400 mb-4">Your idea has been submitted and enhanced by our AI.</p>
-            <p className="text-slate-600 dark:text-slate-400 mb-8">Let's create your professional business plan that will impress mentors and investors.</p>
-            <Button className="w-full bg-cyan-600 hover:bg-cyan-700 mb-3" onClick={handleCreateBusinessPlan}>Let's create your AI Draft Business Plan</Button>
-            <Button variant="outline" className="w-full border-slate-300" onClick={() => setSubmitted(false)}>Back to Dashboard</Button>
+            )}
+
+            {/* My Idea Tab */}
+            {activeTab === "idea" && (
+              <div>
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Your Idea Submission</h1>
+                <p className="text-muted-foreground mb-8">Here's a complete summary of your business idea that was submitted to our mentors.</p>
+
+                <div className="space-y-6">
+                  {steps.map((sec, secIdx) => (
+                    <Card key={secIdx} className="border-cyan-200 dark:border-cyan-900/30">
+                      <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <sec.icon className="h-5 w-5 text-cyan-600" />
+                          {sec.title}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4 pt-6">
+                        {sec.fields.map((field: any) => (
+                          <div key={field.key}>
+                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">{field.label}</p>
+                            <p className="text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg">{formData[field.key as keyof typeof formData] || "Not provided"}</p>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Business Plan Tab */}
+            {activeTab === "plan" && (
+              <div>
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Your Business Plan</h1>
+                <p className="text-muted-foreground mb-8">Here's the business plan that was submitted to our mentors for review.</p>
+
+                <div className="space-y-6">
+                  {[
+                    { key: "executiveSummary", label: "Executive Summary" },
+                    { key: "problemStatement", label: "Problem Statement" },
+                    { key: "solution", label: "Solution" },
+                    { key: "targetMarket", label: "Target Market" },
+                    { key: "marketSize", label: "Market Size & Opportunity" },
+                    { key: "revenue", label: "Revenue Model & Pricing" },
+                    { key: "competitiveAdvantage", label: "Competitive Advantage" },
+                    { key: "roadmap", label: "12-Month Roadmap" },
+                    { key: "fundingNeeds", label: "Funding Requirements" },
+                    { key: "risks", label: "Risks & Mitigation" },
+                    { key: "success", label: "Success Metrics" }
+                  ].map((section) => (
+                    <Card key={section.key} className="border-cyan-200 dark:border-cyan-900/30">
+                      <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
+                        <CardTitle className="text-lg">{section.label}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <p className="text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg whitespace-pre-wrap">
+                          {businessPlanData?.[section.key] || "Business plan not yet submitted"}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </main>
       </div>
