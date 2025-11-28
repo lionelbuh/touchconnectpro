@@ -116,7 +116,10 @@ export default function Login() {
                 <p className="text-slate-400">
                   Don't have an account?{" "}
                   <button
-                    onClick={() => setIsLogin(false)}
+                    onClick={() => {
+                      setIsLogin(false);
+                      window.scrollTo(0, 0);
+                    }}
                     className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors"
                     data-testid="button-signup-link"
                   >
@@ -251,7 +254,10 @@ export default function Login() {
                 <p className="text-slate-400">
                   Already have an account?{" "}
                   <button
-                    onClick={() => setIsLogin(true)}
+                    onClick={() => {
+                      setIsLogin(true);
+                      window.scrollTo(0, 0);
+                    }}
                     className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors"
                     data-testid="button-login-link"
                   >
