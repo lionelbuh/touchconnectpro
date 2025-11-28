@@ -14,6 +14,7 @@ import ComingSoon from "@/pages/ComingSoon";
 import BecomeaMentor from "@/pages/BecomeaMentor";
 import BecomeaCoach from "@/pages/BecomeaCoach";
 import BecomeaInvestor from "@/pages/BecomeaInvestor";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import NotFound from "@/pages/not-found";
 
 // Placeholder pages for now
@@ -40,6 +41,7 @@ function Router() {
         <Route path="/become-mentor" component={BecomeaMentor} />
         <Route path="/become-coach" component={BecomeaCoach} />
         <Route path="/investors" component={BecomeaInvestor} />
+        <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
