@@ -76,7 +76,7 @@ export default function BusinessPlan() {
             </div>
             <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-3">Business Plan Submitted!</h1>
             <p className="text-slate-600 dark:text-slate-400 mb-4">Your business plan has been sent to our mentor review committee.</p>
-            <p className="text-slate-600 dark:text-slate-400 mb-8">You're now on the waiting list. Our team will match you with a mentor within 5 business days. Check your dashboard for updates!</p>
+            <p className="text-slate-600 dark:text-slate-400 mb-8">You're now on the waiting list. Once our Mentors review your idea, the right Mentor may choose to take it on — and when that happens, we will contact you to join as a member. Check your dashboard for updates!</p>
             <Button className="w-full bg-cyan-600 hover:bg-cyan-700">Go to Dashboard</Button>
           </div>
         </main>
