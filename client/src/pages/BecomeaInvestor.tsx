@@ -24,10 +24,10 @@ export default function BecomeaInvestor() {
       </section>
 
       {/* Main Content */}
-      <section className="py-12">
+      <section className="py-0 pt-12">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Two Ways Header */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 -mt-8">
             <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-4">⭐ Two Ways to Invest</h2>
           </div>
 

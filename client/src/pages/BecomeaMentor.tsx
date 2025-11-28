@@ -24,10 +24,10 @@ export default function BecomeaMentor() {
       </section>
 
       {/* Main Content */}
-      <section className="py-12">
+      <section className="py-0">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Introduction */}
-          <Card className="mb-12 border-indigo-200 dark:border-indigo-900/30 bg-indigo-50 dark:bg-indigo-950/20">
+          <Card className="mb-12 -mt-8 border-indigo-200 dark:border-indigo-900/30 bg-indigo-50 dark:bg-indigo-950/20">
             <CardContent className="p-10">
               <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
                 TouchConnectPro is designed to guide founders from their first idea to market launch, supported not only by AI but by real humans who've been there, built things, solved problems, and pushed through the messy middle.

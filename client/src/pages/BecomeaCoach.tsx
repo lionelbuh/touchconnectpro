@@ -24,10 +24,10 @@ export default function BecomeaCoach() {
       </section>
 
       {/* Main Content */}
-      <section className="py-12">
+      <section className="py-0">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Introduction */}
-          <Card className="mb-12 border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
+          <Card className="mb-12 -mt-8 border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
             <CardContent className="p-10">
               <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
                 TouchConnectPro is building a network of experienced professionals offering specialized courses to entrepreneurs who need practical, real-world guidance. Mentors support founders through their journey — and coaches provide the paid skills training they need to move faster and wiser.
