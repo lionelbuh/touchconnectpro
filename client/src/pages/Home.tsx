@@ -206,7 +206,7 @@ export default function Home() {
                   "Monthly Group Coaching Sessions", 
                   "Access to Specialized Experts (Legal, Finance, etc.)",
                   "Access to our business tools from our partners",
-                  "Ongoing mentor follow-through on your project — especially valuable when challenges arise and you're unsure what direction to take."
+                  "Ongoing mentor follow-through on your project — especially valuable when challenges arise and you're unsure what direction to take"
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
                     <div className="h-6 w-6 rounded-full bg-indigo-500/10 flex items-center justify-center shrink-0">
