@@ -32,7 +32,7 @@ export default function BecomeaMentor() {
               <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
                 TouchConnectPro is designed to guide founders from their first idea to market launch, supported not only by AI but by real humans who've been there, built things, solved problems, and pushed through the messy middle.
               </p>
-              <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed mt-4">
+              <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed mt-2">
                 We are currently seeking mentors who bring experience, wisdom, and a genuine desire to help new entrepreneurs succeed.
               </p>
             </CardContent>
@@ -75,13 +75,13 @@ export default function BecomeaMentor() {
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Your Group</h3>
                   <p className="text-slate-700 dark:text-slate-300">
-                    Each mentor will guide and follow a group of at least <strong>10 entrepreneurs</strong>, helping them progress month after month.
+                    Each mentor will guide and follow a group of <strong>10 entrepreneurs</strong>, helping them progress month after month.
                   </p>
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Time Commitment</h3>
                   <p className="text-slate-700 dark:text-slate-300">
-                    This represents approximately <strong>10 hours of participation per month</strong> including group sessions, feedback, and follow-up.
+                    This represents approximately <strong>1 hour + 30 minutes per new member subscribing</strong> including group sessions, feedback, and follow-up.
                   </p>
                 </div>
                 <div>
@@ -119,7 +119,7 @@ export default function BecomeaMentor() {
             <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
               If you believe your experience could change the trajectory of someone's business, we'd love to hear from you.
             </p>
-            <p className="text-slate-400 mb-8">
+            <p className="text-slate-600 dark:text-slate-500 mb-8">
               Our team will review all mentor submissions and connect with those whose profile matches our mission and founders' needs.
             </p>
             <Button size="lg" className="h-14 px-10 text-lg rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold">
