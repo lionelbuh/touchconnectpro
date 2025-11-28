@@ -15,9 +15,9 @@ export default function DashboardEntrepreneur() {
     targetUser: "",
     problemUrgency: "",
     alternatives: "",
+    ideaName: "",
     solution: "",
     valueProposition: "",
-    mvp: "",
     idealCustomer: "",
     marketIndustry: "",
     marketSize: "",
@@ -28,7 +28,6 @@ export default function DashboardEntrepreneur() {
     hasRevenue: "no",
     revenueAmount: "",
     revenueType: "",
-    emailSignups: "",
     monthlyActiveUsers: "",
     businessModel: "",
     pricePoint: "",
@@ -65,8 +64,8 @@ export default function DashboardEntrepreneur() {
       description: "Let's start with the core of your business",
       icon: Lightbulb,
       fields: [
-        { key: "problem", label: "What problem are you solving?", placeholder: "Describe the problem in detail...", type: "textarea", rows: 3 },
-        { key: "targetUser", label: "Who experiences this problem?", placeholder: "Describe your target user/customer...", type: "textarea", rows: 3 },
+        { key: "problem", label: "What problem are you solving? *", placeholder: "Describe the problem in detail...", type: "textarea", rows: 3, required: true },
+        { key: "targetUser", label: "Who experiences this problem? *", placeholder: "Describe your target user/customer...", type: "textarea", rows: 3, required: true },
         { key: "problemUrgency", label: "Why is this problem important to solve now?", placeholder: "What makes this urgent?", type: "textarea", rows: 2 },
         { key: "alternatives", label: "How are people solving it today?", placeholder: "What are the alternatives or competitors?", type: "textarea", rows: 2 }
       ]
@@ -76,9 +75,9 @@ export default function DashboardEntrepreneur() {
       description: "Tell us about your idea",
       icon: Target,
       fields: [
-        { key: "solution", label: "What is your idea or solution in simple words?", placeholder: "Explain your solution...", type: "textarea", rows: 3 },
-        { key: "valueProposition", label: "What is the unique benefit/value proposition?", placeholder: "What makes your solution special?", type: "textarea", rows: 2 },
-        { key: "mvp", label: "What is the simplest version of your product (MVP)?", placeholder: "Describe your MVP...", type: "textarea", rows: 2 }
+        { key: "ideaName", label: "How do you want to call your idea / project / company name on TouchConnectPro? *", placeholder: "Your idea/project/company name...", type: "text", required: true },
+        { key: "solution", label: "What is your idea or solution in simple words? *", placeholder: "Explain your solution...", type: "textarea", rows: 3, required: true },
+        { key: "valueProposition", label: "What is the unique benefit/value proposition?", placeholder: "What makes your solution special?", type: "textarea", rows: 2 }
       ]
     },
     {
@@ -86,10 +85,10 @@ export default function DashboardEntrepreneur() {
       description: "Help us understand your market",
       icon: Users,
       fields: [
-        { key: "idealCustomer", label: "Who is your ideal customer (persona profile)?", placeholder: "Age, industry, pain points, budget...", type: "textarea", rows: 3 },
+        { key: "idealCustomer", label: "Who is your ideal customer (persona profile)? *", placeholder: "Age, industry, pain points, budget...", type: "textarea", rows: 3, required: true },
         { key: "marketIndustry", label: "What market/industry does your solution target?", placeholder: "e.g., Healthcare, SaaS, E-commerce...", type: "text" },
         { key: "marketSize", label: "How large is your potential market?", placeholder: "TAM/SAM/SOM estimates if you have them", type: "textarea", rows: 2 },
-        { key: "marketingChannels", label: "Where or how will you reach your customers?", placeholder: "Social media, content marketing, partnerships...", type: "textarea", rows: 2 }
+        { key: "marketingChannels", label: "Where or how will you reach your customers? *", placeholder: "Social media, content marketing, partnerships...", type: "textarea", rows: 2, required: true }
       ]
     },
     {
@@ -97,9 +96,9 @@ export default function DashboardEntrepreneur() {
       description: "Do you have early traction?",
       icon: Target,
       fields: [
-        { key: "hasCustomers", label: "Do you already have customers/users?", placeholder: "Select...", type: "select", options: ["No", "Yes - Family & friends", "Yes - Friends of friends", "Yes - Strangers (cold customers)", "I'm not sure yet"] },
+        { key: "hasCustomers", label: "Do you already have customers/users? *", placeholder: "Select...", type: "select", options: ["No", "Yes - Family & friends", "Yes - Friends of friends", "Yes - Strangers (cold customers)", "I'm not sure yet"], required: true },
         { key: "customerCount", label: "How many customers/users do you currently have?", placeholder: "Leave blank if N/A", type: "text" },
-        { key: "hasRevenue", label: "Do you already generate revenue from this idea?", placeholder: "Select...", type: "select", options: ["No", "Yes", "I'm not sure yet"] }
+        { key: "hasRevenue", label: "Do you already generate revenue from this idea? *", placeholder: "Select...", type: "select", options: ["No", "Yes", "I'm not sure yet"], required: true }
       ]
     },
     {
@@ -108,8 +107,7 @@ export default function DashboardEntrepreneur() {
       icon: Target,
       fields: [
         { key: "revenueAmount", label: "How much revenue so far?", placeholder: "Leave blank if no revenue", type: "text" },
-        { key: "revenueType", label: "Is revenue recurring or one-time?", placeholder: "Select...", type: "select", options: ["N/A", "Recurring (subscription)", "One-time", "I'm not sure yet"] },
-        { key: "emailSignups", label: "Do you have email signups or a waitlist?", placeholder: "How many?", type: "text" },
+        { key: "revenueType", label: "Is revenue recurring or one-time? *", placeholder: "Select...", type: "select", options: ["N/A", "Recurring (subscription)", "One-time", "I'm not sure yet"], required: true },
         { key: "monthlyActiveUsers", label: "Do customers actively use the product? (MAU if applicable)", placeholder: "Monthly active users...", type: "text" }
       ]
     },
@@ -118,9 +116,9 @@ export default function DashboardEntrepreneur() {
       description: "How will you make money?",
       icon: Target,
       fields: [
-        { key: "businessModel", label: "How will you make money?", placeholder: "Subscription, one-time purchase, ads, commission...", type: "textarea", rows: 2 },
-        { key: "pricePoint", label: "What do you plan to charge?", placeholder: "Price point or pricing strategy", type: "text" },
-        { key: "mainCosts", label: "What are your main costs?", placeholder: "Tech, marketing, fulfillment, hiring...", type: "textarea", rows: 2 },
+        { key: "businessModel", label: "How will you make money? *", placeholder: "Subscription, one-time purchase, ads, commission...", type: "textarea", rows: 2, required: true },
+        { key: "pricePoint", label: "What do you plan to charge? *", placeholder: "Price point or pricing strategy", type: "text", required: true },
+        { key: "mainCosts", label: "What are your main costs? *", placeholder: "Tech, marketing, fulfillment, hiring...", type: "textarea", rows: 2, required: true },
         { key: "success12Months", label: "What does success look like in 12 months?", placeholder: "Revenue targets, user numbers, metrics...", type: "textarea", rows: 2 }
       ]
     },
@@ -129,7 +127,7 @@ export default function DashboardEntrepreneur() {
       description: "Tell us about your competitive advantage",
       icon: Target,
       fields: [
-        { key: "competitors", label: "Who are your direct competitors?", placeholder: "List or describe competitors", type: "textarea", rows: 2 },
+        { key: "competitors", label: "Who are your direct competitors? *", placeholder: "List or describe competitors", type: "textarea", rows: 2, required: true },
         { key: "competitorStrengths", label: "What do competitors do well?", placeholder: "What are their strengths?", type: "textarea", rows: 2 },
         { key: "yourAdvantage", label: "Where can you outperform them?", placeholder: "Your competitive advantage...", type: "textarea", rows: 2 }
       ]
@@ -139,9 +137,9 @@ export default function DashboardEntrepreneur() {
       description: "What stage are you at?",
       icon: Target,
       fields: [
-        { key: "developmentStage", label: "What stage are you currently in?", placeholder: "Select...", type: "select", options: ["Idea only", "Prototype", "MVP built", "Publicly launched", "I'm not sure yet"] },
+        { key: "developmentStage", label: "What stage are you currently in? *", placeholder: "Select...", type: "select", options: ["Idea only", "Prototype", "MVP built", "Publicly launched", "I'm not sure yet"], required: true },
         { key: "hasDemo", label: "Do you have a demo/prototype?", placeholder: "Link or description", type: "text" },
-        { key: "existingFeatures", label: "Which key features already exist?", placeholder: "List existing features...", type: "textarea", rows: 2 },
+        { key: "existingFeatures", label: "Which key features already exist? *", placeholder: "List existing features...", type: "textarea", rows: 2, required: true },
         { key: "neededFeatures", label: "Which features still need to be built?", placeholder: "List features in development...", type: "textarea", rows: 2 }
       ]
     },
@@ -151,8 +149,8 @@ export default function DashboardEntrepreneur() {
       icon: Users,
       fields: [
         { key: "linkedIn", label: "Do you have a LinkedIn profile or website?", placeholder: "Link to your profile", type: "text" },
-        { key: "previousStartup", label: "Have you founded or launched a startup before?", placeholder: "Select...", type: "select", options: ["No", "Yes", "I'm not sure yet"] },
-        { key: "cofounderStatus", label: "Are you working solo or with co-founders?", placeholder: "Solo, or # of co-founders...", type: "text" },
+        { key: "previousStartup", label: "Have you founded or launched a startup before? *", placeholder: "Select...", type: "select", options: ["No", "Yes", "I'm not sure yet"], required: true },
+        { key: "cofounderStatus", label: "Are you working solo or with co-founders? *", placeholder: "Solo, or # of co-founders...", type: "text", required: true },
         { key: "founderSkills", label: "What skills do you personally bring?", placeholder: "Tech, design, business, marketing, sales, other...", type: "textarea", rows: 2 }
       ]
     },
@@ -161,8 +159,8 @@ export default function DashboardEntrepreneur() {
       description: "More about your team",
       icon: Users,
       fields: [
-        { key: "missingSkills", label: "What skills are missing from your team?", placeholder: "What do you need help with?", type: "textarea", rows: 2 },
-        { key: "hoursPerWeek", label: "How much time per week can you dedicate?", placeholder: "Hours per week...", type: "text" }
+        { key: "missingSkills", label: "What skills are missing from your team? *", placeholder: "What do you need help with?", type: "textarea", rows: 2, required: true },
+        { key: "hoursPerWeek", label: "How much time per week can you dedicate? *", placeholder: "Hours per week...", type: "text", required: true }
       ]
     },
     {
@@ -170,10 +168,10 @@ export default function DashboardEntrepreneur() {
       description: "Tell us about funding",
       icon: Target,
       fields: [
-        { key: "personalInvestment", label: "Have you invested personal money? How much?", placeholder: "Amount invested or N/A", type: "text" },
-        { key: "externalFunding", label: "Have you received any external funding yet?", placeholder: "Select...", type: "select", options: ["No", "Yes", "I'm not sure yet"] },
-        { key: "fundingNeeded", label: "How much funding do you think you need now?", placeholder: "Amount or range...", type: "text" },
-        { key: "fundingUse", label: "What would funding be used for specifically?", placeholder: "Product dev, marketing, hiring, operations...", type: "textarea", rows: 2 },
+        { key: "personalInvestment", label: "Have you invested personal money? How much? *", placeholder: "Amount invested or N/A", type: "text", required: true },
+        { key: "externalFunding", label: "Have you received any external funding yet? *", placeholder: "Select...", type: "select", options: ["No", "Yes", "I'm not sure yet"], required: true },
+        { key: "fundingNeeded", label: "How much funding do you think you need now? *", placeholder: "Amount or range...", type: "text", required: true },
+        { key: "fundingUse", label: "What would funding be used for specifically? *", placeholder: "Product dev, marketing, hiring, operations...", type: "textarea", rows: 2, required: true },
         { key: "investorType", label: "What type of investors are you looking for?", placeholder: "Angels, VC, strategic investors...", type: "text" }
       ]
     },
@@ -182,8 +180,8 @@ export default function DashboardEntrepreneur() {
       description: "What's next for you?",
       icon: Target,
       fields: [
-        { key: "nextSteps", label: "What are the next 3 steps you plan to take?", placeholder: "1. ...\n2. ...\n3. ...", type: "textarea", rows: 3 },
-        { key: "biggestObstacle", label: "What is your biggest current obstacle?", placeholder: "What's blocking you the most?", type: "textarea", rows: 2 },
+        { key: "nextSteps", label: "What are the next 3 steps you plan to take? *", placeholder: "1. ...\n2. ...\n3. ...", type: "textarea", rows: 3, required: true },
+        { key: "biggestObstacle", label: "What is your biggest current obstacle? *", placeholder: "What's blocking you the most?", type: "textarea", rows: 2, required: true },
         { key: "mentorHelp", label: "What help do you need from mentors?", placeholder: "Describe specific help needed...", type: "textarea", rows: 2 },
         { key: "techHelp", label: "What help do you need from technical experts?", placeholder: "Development, architecture, tools...", type: "textarea", rows: 2 },
         { key: "investorHelp", label: "What help do you need from investors?", placeholder: "Fundraising advice, connections, guidance...", type: "textarea", rows: 2 }
@@ -202,14 +200,17 @@ export default function DashboardEntrepreneur() {
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
+      window.scrollTo(0, 0);
     } else {
       setShowReview(true);
+      window.scrollTo(0, 0);
     }
   };
 
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+      window.scrollTo(0, 0);
     }
   };
 
