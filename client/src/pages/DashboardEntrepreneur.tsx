@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, Check, AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 export default function DashboardEntrepreneur() {
   const [currentStep, setCurrentStep] = useState(0);
   const [showReview, setShowReview] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [validationError, setValidationError] = useState("");
   
   const [formData, setFormData] = useState({
     problem: "",
@@ -195,9 +196,26 @@ export default function DashboardEntrepreneur() {
 
   const handleInputChange = (key: string, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
+    setValidationError("");
+  };
+
+  const validateCurrentStep = () => {
+    const requiredFields = step.fields.filter((f: any) => f.required);
+    const missingFields = requiredFields.filter((f: any) => !formData[f.key as keyof typeof formData]);
+    
+    if (missingFields.length > 0) {
+      const missingLabels = missingFields.map((f: any) => f.label.replace(" *", "")).join(", ");
+      setValidationError(`Please answer the following mandatory questions: ${missingLabels}`);
+      return false;
+    }
+    return true;
   };
 
   const handleNext = () => {
+    if (!validateCurrentStep()) {
+      return;
+    }
+    
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
       window.scrollTo(0, 0);
@@ -379,6 +397,14 @@ export default function DashboardEntrepreneur() {
             <Progress value={progressPercent} className="h-2" />
           </div>
 
+          {/* Validation Error */}
+          {validationError && (
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg flex gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-700 dark:text-red-300">{validationError}</p>
+            </div>
+          )}
+
           {/* Question Card */}
           <Card className="border-cyan-200 dark:border-cyan-900/30 bg-white dark:bg-slate-900 shadow-lg">
             <CardHeader>
@@ -446,9 +472,10 @@ export default function DashboardEntrepreneur() {
                   </Button>
                 )}
                 <Button
-                  className={`flex-1 ${currentStep === 0 ? "w-full" : ""} bg-cyan-600 hover:bg-cyan-700`}
+                  className={`flex-1 ${currentStep === 0 ? "w-full" : ""} bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed`}
                   onClick={handleNext}
                   data-testid="button-next"
+                  disabled={validationError ? false : false}
                 >
                   {currentStep === steps.length - 1 ? (
                     <>Review & Submit</>
