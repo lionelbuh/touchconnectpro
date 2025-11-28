@@ -155,7 +155,7 @@ export default function BecomeaCoach() {
             <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
               If you want to teach what you know, support entrepreneurs, and get paid on your terms, we'd love to learn more about you.
             </p>
-            <p className="text-slate-400 mb-8">
+            <p className="text-slate-600 dark:text-slate-500 mb-8">
               We will review your profile and notify you when your expertise matches coaching needs within the platform.
             </p>
             <Button size="lg" className="h-14 px-10 text-lg rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold">
