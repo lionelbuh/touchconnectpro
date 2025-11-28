@@ -13,6 +13,7 @@ import HowItWorks from "@/pages/HowItWorks";
 import ComingSoon from "@/pages/ComingSoon";
 import BecomeaMentor from "@/pages/BecomeaMentor";
 import BecomeaCoach from "@/pages/BecomeaCoach";
+import BecomeaInvestor from "@/pages/BecomeaInvestor";
 import NotFound from "@/pages/not-found";
 
 // Placeholder pages for now
@@ -38,6 +39,7 @@ function Router() {
         <Route path="/how-it-works" component={HowItWorks} />
         <Route path="/become-mentor" component={BecomeaMentor} />
         <Route path="/become-coach" component={BecomeaCoach} />
+        <Route path="/investors" component={BecomeaInvestor} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
