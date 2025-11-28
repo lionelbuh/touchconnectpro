@@ -16,6 +16,7 @@ import BecomeaCoach from "@/pages/BecomeaCoach";
 import BecomeaInvestor from "@/pages/BecomeaInvestor";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import Login from "@/pages/Login";
 import NotFound from "@/pages/not-found";
 
 // Placeholder pages for now
@@ -44,6 +45,7 @@ function Router() {
         <Route path="/investors" component={BecomeaInvestor} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms-of-service" component={TermsOfService} />
+        <Route path="/login" component={Login} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
