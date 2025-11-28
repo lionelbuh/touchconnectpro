@@ -17,6 +17,10 @@ import BecomeaInvestor from "@/pages/BecomeaInvestor";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import Login from "@/pages/Login";
+import DashboardEntrepreneur from "@/pages/DashboardEntrepreneur";
+import DashboardCoach from "@/pages/DashboardCoach";
+import DashboardMentor from "@/pages/DashboardMentor";
+import DashboardInvestor from "@/pages/DashboardInvestor";
 import NotFound from "@/pages/not-found";
 
 // Placeholder pages for now
@@ -46,6 +50,10 @@ function Router() {
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms-of-service" component={TermsOfService} />
         <Route path="/login" component={Login} />
+        <Route path="/dashboard-entrepreneur" component={DashboardEntrepreneur} />
+        <Route path="/dashboard-coach" component={DashboardCoach} />
+        <Route path="/dashboard-mentor" component={DashboardMentor} />
+        <Route path="/dashboard-investor" component={DashboardInvestor} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
