@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -63,6 +63,27 @@ export default function DashboardEntrepreneur() {
     techHelp: "",
     investorHelp: ""
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("submitted") === "true") {
+      setSubmitted(true);
+      setBusinessPlanData({
+        executiveSummary: "Your company solves a critical problem in the market with an innovative, user-centric solution. With strong market validation and a clear path to profitability, you're positioned for rapid growth.",
+        problemStatement: "Many entrepreneurs struggle with developing a comprehensive business plan. Our platform bridges this gap through AI-powered insights and expert guidance.",
+        solution: "TouchConnectPro provides an intelligent platform that guides entrepreneurs through structured business planning, leveraging AI to enhance clarity and investor appeal.",
+        targetMarket: "Early-stage entrepreneurs (founders, co-founders) across diverse industries seeking professional business planning and mentor guidance.",
+        marketSize: "$50B+ TAM in the startup advisory and business planning space, with 25M+ entrepreneurs globally seeking structured guidance.",
+        revenue: "Multi-tiered revenue model: Freemium ($0-49/month), Premium ($49-99/month), and Enterprise ($250+/month) for advisor partnerships.",
+        competitiveAdvantage: "Unique combination of AI-powered business plan generation, expert mentor network, and investor connections creates a defensible moat.",
+        roadmap: "Q1: MVP launch, Q2: Mentor marketplace expansion, Q3: Investor integration, Q4: Achieving 10K+ active users.",
+        fundingNeeds: "Seeking $500K seed funding for product development, mentor acquisition, and marketing expansion.",
+        risks: "Market adoption, maintaining mentor quality, competitive pressure from larger platforms.",
+        success: "Success metrics: 10K active users, 500+ mentors, $100K+ ARR by end of Year 1."
+      });
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const steps = [
     {

@@ -79,7 +79,7 @@ export default function BusinessPlan() {
             <p className="text-slate-600 dark:text-slate-400 mb-8">You're now on the waiting list. Once our Mentors review your idea, the right Mentor may choose to take it on — and when that happens, we will contact you to join as a member. Check your dashboard for updates!</p>
             <Button 
               className="w-full bg-cyan-600 hover:bg-cyan-700"
-              onClick={() => window.location.href = "/dashboard-entrepreneur"}
+              onClick={() => window.location.href = "/dashboard-entrepreneur?submitted=true"}
               data-testid="button-go-to-dashboard"
             >
               Go to Dashboard
