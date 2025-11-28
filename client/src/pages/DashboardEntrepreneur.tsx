@@ -11,47 +11,182 @@ export default function DashboardEntrepreneur() {
   const [submitted, setSubmitted] = useState(false);
   
   const [formData, setFormData] = useState({
-    ideaTitle: "",
-    ideaDescription: "",
     problem: "",
+    targetUser: "",
+    problemUrgency: "",
+    alternatives: "",
     solution: "",
-    targetMarket: "",
-    revenueModel: ""
+    valueProposition: "",
+    mvp: "",
+    idealCustomer: "",
+    marketIndustry: "",
+    marketSize: "",
+    marketingChannels: "",
+    hasCustomers: "no",
+    customerType: "",
+    customerCount: "",
+    hasRevenue: "no",
+    revenueAmount: "",
+    revenueType: "",
+    emailSignups: "",
+    monthlyActiveUsers: "",
+    businessModel: "",
+    pricePoint: "",
+    mainCosts: "",
+    success12Months: "",
+    competitors: "",
+    competitorStrengths: "",
+    yourAdvantage: "",
+    developmentStage: "",
+    hasDemo: "",
+    existingFeatures: "",
+    neededFeatures: "",
+    linkedIn: "",
+    previousStartup: "no",
+    cofounderStatus: "",
+    founderSkills: "",
+    missingSkills: "",
+    hoursPerWeek: "",
+    personalInvestment: "",
+    externalFunding: "",
+    fundingNeeded: "",
+    fundingUse: "",
+    investorType: "",
+    nextSteps: "",
+    biggestObstacle: "",
+    mentorHelp: "",
+    techHelp: "",
+    investorHelp: ""
   });
 
   const steps = [
     {
-      title: "What's Your Idea?",
-      description: "Give your startup a name and brief description",
+      title: "1. Problem & Idea",
+      description: "Let's start with the core of your business",
       icon: Lightbulb,
       fields: [
-        { key: "ideaTitle", label: "Startup Name", placeholder: "e.g., AI-powered fitness coach", type: "text" },
-        { key: "ideaDescription", label: "Brief Description", placeholder: "What does your startup do?", type: "textarea", rows: 3 }
+        { key: "problem", label: "What problem are you solving?", placeholder: "Describe the problem in detail...", type: "textarea", rows: 3 },
+        { key: "targetUser", label: "Who experiences this problem?", placeholder: "Describe your target user/customer...", type: "textarea", rows: 3 },
+        { key: "problemUrgency", label: "Why is this problem important to solve now?", placeholder: "What makes this urgent?", type: "textarea", rows: 2 },
+        { key: "alternatives", label: "How are people solving it today?", placeholder: "What are the alternatives or competitors?", type: "textarea", rows: 2 }
       ]
     },
     {
-      title: "Problem & Solution",
-      description: "What problem does your idea solve?",
+      title: "Your Solution",
+      description: "Tell us about your idea",
       icon: Target,
       fields: [
-        { key: "problem", label: "The Problem", placeholder: "What problem exists today?", type: "textarea", rows: 3 },
-        { key: "solution", label: "Your Solution", placeholder: "How does your idea solve this?", type: "textarea", rows: 3 }
+        { key: "solution", label: "What is your idea or solution in simple words?", placeholder: "Explain your solution...", type: "textarea", rows: 3 },
+        { key: "valueProposition", label: "What is the unique benefit/value proposition?", placeholder: "What makes your solution special?", type: "textarea", rows: 2 },
+        { key: "mvp", label: "What is the simplest version of your product (MVP)?", placeholder: "Describe your MVP...", type: "textarea", rows: 2 }
       ]
     },
     {
-      title: "Who's Your Target Market?",
-      description: "Describe your ideal customer",
+      title: "2. Market & Customer Definition",
+      description: "Help us understand your market",
       icon: Users,
       fields: [
-        { key: "targetMarket", label: "Target Market Description", placeholder: "e.g., Health-conscious professionals aged 25-40", type: "textarea", rows: 4 }
+        { key: "idealCustomer", label: "Who is your ideal customer (persona profile)?", placeholder: "Age, industry, pain points, budget...", type: "textarea", rows: 3 },
+        { key: "marketIndustry", label: "What market/industry does your solution target?", placeholder: "e.g., Healthcare, SaaS, E-commerce...", type: "text" },
+        { key: "marketSize", label: "How large is your potential market?", placeholder: "TAM/SAM/SOM estimates if you have them", type: "textarea", rows: 2 },
+        { key: "marketingChannels", label: "Where or how will you reach your customers?", placeholder: "Social media, content marketing, partnerships...", type: "textarea", rows: 2 }
       ]
     },
     {
-      title: "How Will You Make Money?",
-      description: "What's your business model?",
+      title: "3. Traction & Validation (Part 1)",
+      description: "Do you have early traction?",
       icon: Target,
       fields: [
-        { key: "revenueModel", label: "Revenue Model", placeholder: "Select...", type: "select", options: ["Subscription", "One-time purchase", "Commission/Marketplace", "Freemium", "Other"] }
+        { key: "hasCustomers", label: "Do you already have customers/users?", placeholder: "Select...", type: "select", options: ["No", "Yes - Family & friends", "Yes - Friends of friends", "Yes - Strangers (cold customers)", "I'm not sure yet"] },
+        { key: "customerCount", label: "How many customers/users do you currently have?", placeholder: "Leave blank if N/A", type: "text" },
+        { key: "hasRevenue", label: "Do you already generate revenue from this idea?", placeholder: "Select...", type: "select", options: ["No", "Yes", "I'm not sure yet"] }
+      ]
+    },
+    {
+      title: "3. Traction & Validation (Part 2)",
+      description: "Tell us about your validation",
+      icon: Target,
+      fields: [
+        { key: "revenueAmount", label: "How much revenue so far?", placeholder: "Leave blank if no revenue", type: "text" },
+        { key: "revenueType", label: "Is revenue recurring or one-time?", placeholder: "Select...", type: "select", options: ["N/A", "Recurring (subscription)", "One-time", "I'm not sure yet"] },
+        { key: "emailSignups", label: "Do you have email signups or a waitlist?", placeholder: "How many?", type: "text" },
+        { key: "monthlyActiveUsers", label: "Do customers actively use the product? (MAU if applicable)", placeholder: "Monthly active users...", type: "text" }
+      ]
+    },
+    {
+      title: "4. Business Model & Monetization",
+      description: "How will you make money?",
+      icon: Target,
+      fields: [
+        { key: "businessModel", label: "How will you make money?", placeholder: "Subscription, one-time purchase, ads, commission...", type: "textarea", rows: 2 },
+        { key: "pricePoint", label: "What do you plan to charge?", placeholder: "Price point or pricing strategy", type: "text" },
+        { key: "mainCosts", label: "What are your main costs?", placeholder: "Tech, marketing, fulfillment, hiring...", type: "textarea", rows: 2 },
+        { key: "success12Months", label: "What does success look like in 12 months?", placeholder: "Revenue targets, user numbers, metrics...", type: "textarea", rows: 2 }
+      ]
+    },
+    {
+      title: "5. Competition & Positioning",
+      description: "Tell us about your competitive advantage",
+      icon: Target,
+      fields: [
+        { key: "competitors", label: "Who are your direct competitors?", placeholder: "List or describe competitors", type: "textarea", rows: 2 },
+        { key: "competitorStrengths", label: "What do competitors do well?", placeholder: "What are their strengths?", type: "textarea", rows: 2 },
+        { key: "yourAdvantage", label: "Where can you outperform them?", placeholder: "Your competitive advantage...", type: "textarea", rows: 2 }
+      ]
+    },
+    {
+      title: "6. Product Development Stage",
+      description: "What stage are you at?",
+      icon: Target,
+      fields: [
+        { key: "developmentStage", label: "What stage are you currently in?", placeholder: "Select...", type: "select", options: ["Idea only", "Prototype", "MVP built", "Publicly launched", "I'm not sure yet"] },
+        { key: "hasDemo", label: "Do you have a demo/prototype?", placeholder: "Link or description", type: "text" },
+        { key: "existingFeatures", label: "Which key features already exist?", placeholder: "List existing features...", type: "textarea", rows: 2 },
+        { key: "neededFeatures", label: "Which features still need to be built?", placeholder: "List features in development...", type: "textarea", rows: 2 }
+      ]
+    },
+    {
+      title: "7. Founder Profile & Readiness",
+      description: "Tell us about yourself",
+      icon: Users,
+      fields: [
+        { key: "linkedIn", label: "Do you have a LinkedIn profile or website?", placeholder: "Link to your profile", type: "text" },
+        { key: "previousStartup", label: "Have you founded or launched a startup before?", placeholder: "Select...", type: "select", options: ["No", "Yes", "I'm not sure yet"] },
+        { key: "cofounderStatus", label: "Are you working solo or with co-founders?", placeholder: "Solo, or # of co-founders...", type: "text" },
+        { key: "founderSkills", label: "What skills do you personally bring?", placeholder: "Tech, design, business, marketing, sales, other...", type: "textarea", rows: 2 }
+      ]
+    },
+    {
+      title: "7. Founder Profile (Continued)",
+      description: "More about your team",
+      icon: Users,
+      fields: [
+        { key: "missingSkills", label: "What skills are missing from your team?", placeholder: "What do you need help with?", type: "textarea", rows: 2 },
+        { key: "hoursPerWeek", label: "How much time per week can you dedicate?", placeholder: "Hours per week...", type: "text" }
+      ]
+    },
+    {
+      title: "8. Investment & Funding Needs",
+      description: "Tell us about funding",
+      icon: Target,
+      fields: [
+        { key: "personalInvestment", label: "Have you invested personal money? How much?", placeholder: "Amount invested or N/A", type: "text" },
+        { key: "externalFunding", label: "Have you received any external funding yet?", placeholder: "Select...", type: "select", options: ["No", "Yes", "I'm not sure yet"] },
+        { key: "fundingNeeded", label: "How much funding do you think you need now?", placeholder: "Amount or range...", type: "text" },
+        { key: "fundingUse", label: "What would funding be used for specifically?", placeholder: "Product dev, marketing, hiring, operations...", type: "textarea", rows: 2 },
+        { key: "investorType", label: "What type of investors are you looking for?", placeholder: "Angels, VC, strategic investors...", type: "text" }
+      ]
+    },
+    {
+      title: "9. Short-Term Execution Plan",
+      description: "What's next for you?",
+      icon: Target,
+      fields: [
+        { key: "nextSteps", label: "What are the next 3 steps you plan to take?", placeholder: "1. ...\n2. ...\n3. ...", type: "textarea", rows: 3 },
+        { key: "biggestObstacle", label: "What is your biggest current obstacle?", placeholder: "What's blocking you the most?", type: "textarea", rows: 2 },
+        { key: "mentorHelp", label: "What help do you need from mentors?", placeholder: "Describe specific help needed...", type: "textarea", rows: 2 },
+        { key: "techHelp", label: "What help do you need from technical experts?", placeholder: "Development, architecture, tools...", type: "textarea", rows: 2 },
+        { key: "investorHelp", label: "What help do you need from investors?", placeholder: "Fundraising advice, connections, guidance...", type: "textarea", rows: 2 }
       ]
     }
   ];
@@ -162,80 +297,27 @@ export default function DashboardEntrepreneur() {
             <p className="text-muted-foreground mb-8">Check all your answers before submitting. You can edit any section by clicking "Edit".</p>
 
             <div className="space-y-6">
-              {/* Idea Section */}
-              <Card className="border-cyan-200 dark:border-cyan-900/30">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Lightbulb className="h-5 w-5 text-cyan-600" />
-                      Your Idea
-                    </CardTitle>
-                    <button onClick={() => handleEditStep(0)} className="text-sm text-cyan-600 hover:text-cyan-700 font-medium">Edit</button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Startup Name</p>
-                    <p className="text-slate-900 dark:text-white">{formData.ideaTitle || "Not provided"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Description</p>
-                    <p className="text-slate-900 dark:text-white">{formData.ideaDescription || "Not provided"}</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Problem & Solution */}
-              <Card className="border-cyan-200 dark:border-cyan-900/30">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Target className="h-5 w-5 text-cyan-600" />
-                      Problem & Solution
-                    </CardTitle>
-                    <button onClick={() => handleEditStep(1)} className="text-sm text-cyan-600 hover:text-cyan-700 font-medium">Edit</button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Problem</p>
-                    <p className="text-slate-900 dark:text-white">{formData.problem || "Not provided"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Solution</p>
-                    <p className="text-slate-900 dark:text-white">{formData.solution || "Not provided"}</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Target Market */}
-              <Card className="border-cyan-200 dark:border-cyan-900/30">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Users className="h-5 w-5 text-cyan-600" />
-                      Target Market
-                    </CardTitle>
-                    <button onClick={() => handleEditStep(2)} className="text-sm text-cyan-600 hover:text-cyan-700 font-medium">Edit</button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-slate-900 dark:text-white">{formData.targetMarket || "Not provided"}</p>
-                </CardContent>
-              </Card>
-
-              {/* Revenue Model */}
-              <Card className="border-cyan-200 dark:border-cyan-900/30">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg">Revenue Model</CardTitle>
-                    <button onClick={() => handleEditStep(3)} className="text-sm text-cyan-600 hover:text-cyan-700 font-medium">Edit</button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-slate-900 dark:text-white">{formData.revenueModel || "Not provided"}</p>
-                </CardContent>
-              </Card>
+              {steps.map((sec, idx) => (
+                <Card key={idx} className="border-cyan-200 dark:border-cyan-900/30">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <sec.icon className="h-5 w-5 text-cyan-600" />
+                        {sec.title}
+                      </CardTitle>
+                      <button onClick={() => handleEditStep(idx)} className="text-sm text-cyan-600 hover:text-cyan-700 font-medium">Edit</button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {sec.fields.map((field) => (
+                      <div key={field.key}>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">{field.label}</p>
+                        <p className="text-slate-900 dark:text-white">{formData[field.key as keyof typeof formData] || "Not provided"}</p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              ))}
             </div>
 
             <div className="mt-8 flex gap-4">
