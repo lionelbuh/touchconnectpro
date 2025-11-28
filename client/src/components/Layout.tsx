@@ -1,13 +1,16 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
 import logoFull from "@assets/Logo_TouchConnectPro-removebg-preview_1764217788734.png";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setMobileMenuOpen(false);
   }, [location]);
 
   const links = [
@@ -44,16 +47,51 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             ))}
           </div>
 
-          {/* Auth Buttons */}
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-primary hidden sm:block">
+          {/* Auth Buttons - Desktop */}
+          <div className="hidden sm:flex items-center gap-4">
+            <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-primary">
               Log in
             </Link>
             <Link href="/dashboard">
               <Button className="font-medium">Get Started</Button>
             </Link>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-white/10 bg-background/95 backdrop-blur-md">
+            <div className="container mx-auto px-4 py-4 space-y-3">
+              {links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`block px-4 py-2 rounded-lg font-medium transition-colors ${
+                    location === link.href 
+                      ? "bg-primary/20 text-primary" 
+                      : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <Link href="/login" className="block px-4 py-2 rounded-lg font-medium text-muted-foreground hover:bg-white/5 hover:text-foreground">
+                Log in
+              </Link>
+              <Link href="/dashboard">
+                <Button className="w-full font-medium">Get Started</Button>
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Main Content */}

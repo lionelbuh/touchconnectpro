@@ -23,8 +23,8 @@ export default function Home() {
         </div>
 
         <div className="container relative z-10 px-4 text-center max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-1000">
-          <Badge variant="secondary" className="mb-6 px-6 py-3 text-lg bg-white/10 text-cyan-300 border-cyan-500/30 backdrop-blur-sm hover:bg-white/20">
-            AI Helps You Get Ready. People Help You Win.
+          <Badge variant="secondary" className="mb-6 px-4 py-2 md:px-6 md:py-3 text-xs md:text-lg bg-white/10 text-cyan-300 border-cyan-500/30 backdrop-blur-sm hover:bg-white/20 inline-block max-w-full">
+            <span className="block md:inline">AI Helps You Get Ready. People Help You Win.</span>
           </Badge>
           <h1 className="text-5xl md:text-7xl font-display font-bold leading-tight tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-100 to-cyan-400">
             Connecting Ideas, Mentors,<br />and Entrepreneurs
