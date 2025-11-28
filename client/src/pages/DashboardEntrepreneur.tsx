@@ -524,7 +524,7 @@ export default function DashboardEntrepreneur() {
                         <div className="h-16 w-16 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center mx-auto mb-4">
                           <Users className="h-8 w-8 text-cyan-600" />
                         </div>
-                        <p className="text-slate-600 dark:text-slate-400">Your mentor will show up here after approval</p>
+                        <p className="text-slate-600 dark:text-slate-400">Once your project is approved, your assigned mentor will appear in this section.</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -541,7 +541,7 @@ export default function DashboardEntrepreneur() {
                         <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-4">
                           <MessageSquare className="h-8 w-8 text-emerald-600" />
                         </div>
-                        <p className="text-slate-600 dark:text-slate-400">List of coaches will appear here after approvals</p>
+                        <p className="text-slate-600 dark:text-slate-400">Once your project is approved, this space will populate with available coaches.</p>
                       </div>
                     </CardContent>
                   </Card>
