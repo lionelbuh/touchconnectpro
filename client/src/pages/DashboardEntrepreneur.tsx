@@ -8,8 +8,10 @@ import { Progress } from "@/components/ui/progress";
 export default function DashboardEntrepreneur() {
   const [currentStep, setCurrentStep] = useState(0);
   const [showReview, setShowReview] = useState(false);
+  const [showAIReview, setShowAIReview] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [validationError, setValidationError] = useState("");
+  const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
   
   const [formData, setFormData] = useState({
     problem: "",
@@ -237,8 +239,77 @@ export default function DashboardEntrepreneur() {
     setShowReview(false);
   };
 
+  const generateAIEnhancedAnswers = () => {
+    const enhanced: any = {};
+    steps.forEach((sec) => {
+      sec.fields.forEach((field: any) => {
+        const originalAnswer = formData[field.key as keyof typeof formData];
+        if (originalAnswer) {
+          enhanced[field.key] = {
+            original: originalAnswer,
+            aiEnhanced: enhanceAnswer(field.label, originalAnswer),
+            isEdited: false
+          };
+        }
+      });
+    });
+    setAiEnhancedData(enhanced);
+    setShowAIReview(true);
+    window.scrollTo(0, 0);
+  };
+
+  const enhanceAnswer = (question: string, answer: string): string => {
+    const enhancements: { [key: string]: string } = {
+      "problem": "Enhanced: This is a critical pain point affecting thousands of professionals daily. The urgency is clear due to market gaps in current solutions.",
+      "solution": "Enhanced: Our innovative approach directly addresses the core issue with a streamlined, user-centric platform that significantly improves efficiency.",
+      "ideaName": "Enhanced: Clear, memorable brand name that reflects the core value proposition and target market.",
+      "ideal": "Enhanced: High-value customer segment with significant purchasing power and demonstrated willingness to adopt innovative solutions.",
+      "market": "Enhanced: Substantial TAM in a high-growth sector with proven demand signals and expanding market opportunities.",
+      "customers": "Enhanced: Already validated product-market fit with early adopters showing strong engagement and retention.",
+      "revenue": "Enhanced: Demonstrated revenue traction validates business model viability and customer willingness to pay.",
+      "monetization": "Enhanced: Diversified revenue streams with clear path to profitability and strong unit economics.",
+      "competition": "Enhanced: Differentiated positioning with unique value drivers that create defensible competitive advantages.",
+      "stage": "Enhanced: Clear development roadmap with achievable milestones and realistic go-to-market timeline.",
+      "startup": "Enhanced: Relevant founder experience and proven track record in building and scaling ventures.",
+      "team": "Enhanced: Balanced team composition with complementary skills and demonstrated execution ability.",
+      "funding": "Enhanced: Well-defined capital efficiency strategy with clear allocation of resources toward growth initiatives.",
+      "steps": "Enhanced: Concrete action plan with measurable milestones and realistic execution timeline.",
+      "obstacle": "Enhanced: Identified potential challenges with clear mitigation strategies and contingency planning."
+    };
+
+    for (const key in enhancements) {
+      if (question.toLowerCase().includes(key)) {
+        return enhancements[key];
+      }
+    }
+    
+    return `Enhanced: ${answer} - This answer demonstrates clear thinking and market understanding.`;
+  };
+
   const handleSubmit = () => {
     setSubmitted(true);
+  };
+
+  const handleAcceptAIEnhancements = () => {
+    const updatedFormData = { ...formData };
+    Object.keys(aiEnhancedData).forEach((key) => {
+      updatedFormData[key as keyof typeof formData] = aiEnhancedData[key].aiEnhanced;
+    });
+    setFormData(updatedFormData);
+    setShowAIReview(false);
+    setSubmitted(true);
+    window.scrollTo(0, 0);
+  };
+
+  const handleEditAIAnswer = (key: string, value: string) => {
+    setAiEnhancedData((prev: any) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        aiEnhanced: value,
+        isEdited: true
+      }
+    }));
   };
 
   if (submitted) {
@@ -279,6 +350,105 @@ export default function DashboardEntrepreneur() {
             <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-3">Great! Your Idea is Submitted</h1>
             <p className="text-slate-600 dark:text-slate-400 mb-6">Our AI will now analyze your responses and create a refined business plan for you. Check back soon!</p>
             <Button className="w-full bg-cyan-600 hover:bg-cyan-700" onClick={() => setSubmitted(false)}>Back to Dashboard</Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (showAIReview && aiEnhancedData) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
+        <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
+          <div className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <Avatar className="h-10 w-10 border border-slate-200 bg-cyan-500">
+                <AvatarFallback className="text-white">EN</AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="font-bold text-sm">Entrepreneur</div>
+                <div className="text-xs text-muted-foreground">AI Review</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <main className="flex-1 p-8 overflow-y-auto">
+          <div className="max-w-3xl mx-auto">
+            <button 
+              onClick={() => setShowAIReview(false)} 
+              className="flex items-center gap-2 text-cyan-600 hover:text-cyan-700 mb-6 font-medium"
+              data-testid="button-back-to-review"
+            >
+              <ChevronLeft className="h-4 w-4" /> Back to Review
+            </button>
+            
+            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">AI Enhancement Review</h1>
+            <p className="text-muted-foreground mb-8">Our AI has rewritten your answers to make them clearer and more compelling for investors. Review and accept the enhancements, or edit any answer as needed.</p>
+
+            <div className="space-y-6">
+              {steps.map((sec, secIdx) => {
+                const sectionAnswers = sec.fields.filter((f: any) => aiEnhancedData[f.key]);
+                if (sectionAnswers.length === 0) return null;
+                
+                return (
+                  <Card key={secIdx} className="border-cyan-200 dark:border-cyan-900/30">
+                    <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <sec.icon className="h-5 w-5 text-cyan-600" />
+                        {sec.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6 pt-6">
+                      {sectionAnswers.map((field: any) => (
+                        <div key={field.key} className="space-y-3 pb-4 border-b last:border-b-0 last:pb-0">
+                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">{field.label}</p>
+                          
+                          {/* Original Answer */}
+                          <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg">
+                            <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Your Original Answer:</p>
+                            <p className="text-sm text-slate-700 dark:text-slate-300">{aiEnhancedData[field.key].original}</p>
+                          </div>
+
+                          {/* AI Enhanced Answer (Editable) */}
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-cyan-600 dark:text-cyan-400">AI Enhanced Answer:</p>
+                            <textarea
+                              value={aiEnhancedData[field.key].aiEnhanced}
+                              onChange={(e) => handleEditAIAnswer(field.key, e.target.value)}
+                              rows={3}
+                              className="w-full px-4 py-3 border border-cyan-300 dark:border-cyan-700 rounded-lg bg-cyan-50 dark:bg-cyan-950/30 text-slate-900 dark:text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20 focus:outline-none"
+                              data-testid={`textarea-ai-${field.key}`}
+                            />
+                            {aiEnhancedData[field.key].isEdited && (
+                              <p className="text-xs text-amber-600 dark:text-amber-400">✓ You've edited this answer</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            <div className="mt-8 flex gap-4">
+              <Button 
+                variant="outline" 
+                className="flex-1 border-slate-300"
+                onClick={() => setShowAIReview(false)}
+                data-testid="button-back-from-ai"
+              >
+                Back to Review
+              </Button>
+              <Button 
+                className="flex-1 bg-cyan-600 hover:bg-cyan-700"
+                onClick={handleAcceptAIEnhancements}
+                data-testid="button-accept-ai-enhancement"
+              >
+                Accept & Continue
+              </Button>
+            </div>
           </div>
         </main>
       </div>
@@ -350,10 +520,10 @@ export default function DashboardEntrepreneur() {
               </Button>
               <Button 
                 className="flex-1 bg-cyan-600 hover:bg-cyan-700"
-                onClick={handleSubmit}
-                data-testid="button-submit-idea"
+                onClick={generateAIEnhancedAnswers}
+                data-testid="button-submit-to-ai"
               >
-                Submit & Continue
+                Submit to AI for Enhancement
               </Button>
             </div>
           </div>
