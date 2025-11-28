@@ -75,10 +75,20 @@ export default function DashboardEntrepreneur() {
   });
 
   useEffect(() => {
+    const savedFormData = localStorage.getItem("tcp_formData");
+    const savedBusinessPlan = localStorage.getItem("tcp_businessPlan");
+    const savedProfile = localStorage.getItem("tcp_profileData");
+    const savedSubmitted = localStorage.getItem("tcp_submitted");
+    
+    if (savedFormData) setFormData(JSON.parse(savedFormData));
+    if (savedBusinessPlan) setBusinessPlanData(JSON.parse(savedBusinessPlan));
+    if (savedProfile) setProfileData(JSON.parse(savedProfile));
+    if (savedSubmitted) setSubmitted(JSON.parse(savedSubmitted));
+    
     const params = new URLSearchParams(window.location.search);
     if (params.get("submitted") === "true") {
       setSubmitted(true);
-      setBusinessPlanData({
+      const newBusinessPlan = {
         executiveSummary: "Your company solves a critical problem in the market with an innovative, user-centric solution. With strong market validation and a clear path to profitability, you're positioned for rapid growth.",
         problemStatement: "Many entrepreneurs struggle with developing a comprehensive business plan. Our platform bridges this gap through AI-powered insights and expert guidance.",
         solution: "TouchConnectPro provides an intelligent platform that guides entrepreneurs through structured business planning, leveraging AI to enhance clarity and investor appeal.",
@@ -90,10 +100,25 @@ export default function DashboardEntrepreneur() {
         fundingNeeds: "Seeking $500K seed funding for product development, mentor acquisition, and marketing expansion.",
         risks: "Market adoption, maintaining mentor quality, competitive pressure from larger platforms.",
         success: "Success metrics: 10K active users, 500+ mentors, $100K+ ARR by end of Year 1."
-      });
+      };
+      setBusinessPlanData(newBusinessPlan);
+      localStorage.setItem("tcp_businessPlan", JSON.stringify(newBusinessPlan));
+      localStorage.setItem("tcp_submitted", "true");
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("tcp_formData", JSON.stringify(formData));
+  }, [formData]);
+
+  useEffect(() => {
+    localStorage.setItem("tcp_businessPlan", JSON.stringify(businessPlanData));
+  }, [businessPlanData]);
+
+  useEffect(() => {
+    localStorage.setItem("tcp_profileData", JSON.stringify(profileData));
+  }, [profileData]);
 
   const steps = [
     {
