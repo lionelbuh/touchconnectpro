@@ -482,7 +482,7 @@ export default function DashboardEntrepreneur() {
                   </Card>
                 </div>
 
-                <Card>
+                <Card className="mb-8">
                   <CardHeader>
                     <CardTitle>What Happens Next</CardTitle>
                   </CardHeader>
@@ -510,6 +510,42 @@ export default function DashboardEntrepreneur() {
                     </div>
                   </CardContent>
                 </Card>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="border-l-4 border-l-cyan-500">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Users className="h-5 w-5 text-cyan-600" />
+                        My Mentor
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-8">
+                        <div className="h-16 w-16 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center mx-auto mb-4">
+                          <Users className="h-8 w-8 text-cyan-600" />
+                        </div>
+                        <p className="text-slate-600 dark:text-slate-400">Your mentor will show up here after approval</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-emerald-500">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageSquare className="h-5 w-5 text-emerald-600" />
+                        Coaches
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-8">
+                        <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-4">
+                          <MessageSquare className="h-8 w-8 text-emerald-600" />
+                        </div>
+                        <p className="text-slate-600 dark:text-slate-400">List of coaches will appear here after approvals</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             )}
 
