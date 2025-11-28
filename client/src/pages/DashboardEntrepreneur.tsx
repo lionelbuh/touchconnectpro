@@ -10,6 +10,7 @@ export default function DashboardEntrepreneur() {
   const [showReview, setShowReview] = useState(false);
   const [showAIReview, setShowAIReview] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showSuccessPage, setShowSuccessPage] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "idea" | "plan">("overview");
@@ -299,7 +300,7 @@ export default function DashboardEntrepreneur() {
     });
     setFormData(updatedFormData);
     setShowAIReview(false);
-    setSubmitted(true);
+    setShowSuccessPage(true);
     window.scrollTo(0, 0);
   };
 
@@ -323,6 +324,41 @@ export default function DashboardEntrepreneur() {
       }
     }));
   };
+
+  if (showSuccessPage && !submitted) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
+        <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
+          <div className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <Avatar className="h-10 w-10 border border-slate-200 bg-cyan-500">
+                <AvatarFallback className="text-white">EN</AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="font-bold text-sm">Entrepreneur</div>
+                <div className="text-xs text-muted-foreground">Creating Business Plan</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <main className="flex-1 p-8 overflow-y-auto flex items-center justify-center">
+          <div className="max-w-md text-center">
+            <div className="flex justify-center mb-6">
+              <div className="h-16 w-16 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full flex items-center justify-center">
+                <Check className="h-8 w-8 text-white" />
+              </div>
+            </div>
+            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-3">Thank You!</h1>
+            <p className="text-slate-600 dark:text-slate-400 mb-4">Your idea has been submitted and enhanced by our AI.</p>
+            <p className="text-slate-600 dark:text-slate-400 mb-8">Let's create your professional business plan that will impress mentors and investors.</p>
+            <Button className="w-full bg-cyan-600 hover:bg-cyan-700 mb-3" onClick={handleCreateBusinessPlan} data-testid="button-create-business-plan">Let's create your AI Draft Business Plan</Button>
+            <Button variant="outline" className="w-full border-slate-300" onClick={() => setShowSuccessPage(false)} data-testid="button-back-from-success">Back to Dashboard</Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
