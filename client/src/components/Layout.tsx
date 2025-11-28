@@ -1,9 +1,14 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 import logoFull from "@assets/Logo_TouchConnectPro-removebg-preview_1764217788734.png";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
 
   const links = [
     { href: "/", label: "Home" },
