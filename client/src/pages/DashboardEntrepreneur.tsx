@@ -612,14 +612,16 @@ export default function DashboardEntrepreneur() {
                     <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Your Business Plan</h1>
                     <p className="text-muted-foreground">Here's the business plan that was submitted to our mentors for review.</p>
                   </div>
-                  <Button 
-                    onClick={() => setIsEditingPlan(!isEditingPlan)}
-                    variant={isEditingPlan ? "destructive" : "default"}
-                    className={isEditingPlan ? "bg-red-600 hover:bg-red-700" : "bg-cyan-600 hover:bg-cyan-700"}
-                    data-testid="button-edit-plan"
-                  >
-                    {isEditingPlan ? "Cancel" : "Edit Plan"}
-                  </Button>
+                  {!submitted && (
+                    <Button 
+                      onClick={() => setIsEditingPlan(!isEditingPlan)}
+                      variant={isEditingPlan ? "destructive" : "default"}
+                      className={isEditingPlan ? "bg-red-600 hover:bg-red-700" : "bg-cyan-600 hover:bg-cyan-700"}
+                      data-testid="button-edit-plan"
+                    >
+                      {isEditingPlan ? "Cancel" : "Edit Plan"}
+                    </Button>
+                  )}
                 </div>
 
                 <div className="space-y-6">
@@ -641,7 +643,7 @@ export default function DashboardEntrepreneur() {
                         <CardTitle className="text-lg">{section.label}</CardTitle>
                       </CardHeader>
                       <CardContent className="pt-6">
-                        {isEditingPlan ? (
+                        {isEditingPlan && !submitted ? (
                           <textarea
                             value={businessPlanData?.[section.key] || ""}
                             onChange={(e) => setBusinessPlanData({ ...businessPlanData, [section.key]: e.target.value })}
