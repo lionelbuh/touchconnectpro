@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, Check, AlertCircle, User } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, Check, AlertCircle, User, LogOut } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 export default function DashboardEntrepreneur() {
@@ -382,6 +382,14 @@ export default function DashboardEntrepreneur() {
     }));
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("tcp_formData");
+    localStorage.removeItem("tcp_businessPlan");
+    localStorage.removeItem("tcp_profileData");
+    localStorage.removeItem("tcp_submitted");
+    window.location.href = "/";
+  };
+
   if (showSuccessPage && !submitted) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
@@ -465,6 +473,16 @@ export default function DashboardEntrepreneur() {
                 <User className="mr-2 h-4 w-4" /> Profile
               </Button>
             </nav>
+            <div className="mt-auto pt-6 border-t border-slate-200 dark:border-slate-800">
+              <Button 
+                variant="ghost"
+                className="w-full justify-start font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                onClick={handleLogout}
+                data-testid="button-logout"
+              >
+                <LogOut className="mr-2 h-4 w-4" /> Logout
+              </Button>
+            </div>
           </div>
         </aside>
 
