@@ -32,6 +32,7 @@ export default function BusinessPlan() {
   };
 
   const handleSubmitForReview = () => {
+    localStorage.setItem("tcp_businessPlan", JSON.stringify(businessPlan));
     setIsSubmitting(true);
     setTimeout(() => {
       setSubmitted(true);
