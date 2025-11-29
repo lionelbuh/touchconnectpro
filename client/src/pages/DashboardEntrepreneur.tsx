@@ -89,21 +89,6 @@ export default function DashboardEntrepreneur() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("submitted") === "true") {
       setSubmitted(true);
-      const newBusinessPlan = {
-        executiveSummary: "Your company solves a critical problem in the market with an innovative, user-centric solution. With strong market validation and a clear path to profitability, you're positioned for rapid growth.",
-        problemStatement: "Many entrepreneurs struggle with developing a comprehensive business plan. Our platform bridges this gap through AI-powered insights and expert guidance.",
-        solution: "TouchConnectPro provides an intelligent platform that guides entrepreneurs through structured business planning, leveraging AI to enhance clarity and investor appeal.",
-        targetMarket: "Early-stage entrepreneurs (founders, co-founders) across diverse industries seeking professional business planning and mentor guidance.",
-        marketSize: "$50B+ TAM in the startup advisory and business planning space, with 25M+ entrepreneurs globally seeking structured guidance.",
-        revenue: "Multi-tiered revenue model: Freemium ($0-49/month), Premium ($49-99/month), and Enterprise ($250+/month) for advisor partnerships.",
-        competitiveAdvantage: "Unique combination of AI-powered business plan generation, expert mentor network, and investor connections creates a defensible moat.",
-        roadmap: "Q1: MVP launch, Q2: Mentor marketplace expansion, Q3: Investor integration, Q4: Achieving 10K+ active users.",
-        fundingNeeds: "Seeking $500K seed funding for product development, mentor acquisition, and marketing expansion.",
-        risks: "Market adoption, maintaining mentor quality, competitive pressure from larger platforms.",
-        success: "Success metrics: 10K active users, 500+ mentors, $100K+ ARR by end of Year 1."
-      };
-      setBusinessPlanData(newBusinessPlan);
-      localStorage.setItem("tcp_businessPlan", JSON.stringify(newBusinessPlan));
       localStorage.setItem("tcp_submitted", "true");
       window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -320,21 +305,21 @@ export default function DashboardEntrepreneur() {
 
   const enhanceAnswer = (question: string, answer: string): string => {
     const enhancements: { [key: string]: string } = {
-      "problem": "Enhanced: This is a critical pain point affecting thousands of professionals daily. The urgency is clear due to market gaps in current solutions.",
-      "solution": "Enhanced: Our innovative approach directly addresses the core issue with a streamlined, user-centric platform that significantly improves efficiency.",
-      "ideaName": "Enhanced: Clear, memorable brand name that reflects the core value proposition and target market.",
-      "ideal": "Enhanced: High-value customer segment with significant purchasing power and demonstrated willingness to adopt innovative solutions.",
-      "market": "Enhanced: Substantial TAM in a high-growth sector with proven demand signals and expanding market opportunities.",
-      "customers": "Enhanced: Already validated product-market fit with early adopters showing strong engagement and retention.",
-      "revenue": "Enhanced: Demonstrated revenue traction validates business model viability and customer willingness to pay.",
-      "monetization": "Enhanced: Diversified revenue streams with clear path to profitability and strong unit economics.",
-      "competition": "Enhanced: Differentiated positioning with unique value drivers that create defensible competitive advantages.",
-      "stage": "Enhanced: Clear development roadmap with achievable milestones and realistic go-to-market timeline.",
-      "startup": "Enhanced: Relevant founder experience and proven track record in building and scaling ventures.",
-      "team": "Enhanced: Balanced team composition with complementary skills and demonstrated execution ability.",
-      "funding": "Enhanced: Well-defined capital efficiency strategy with clear allocation of resources toward growth initiatives.",
-      "steps": "Enhanced: Concrete action plan with measurable milestones and realistic execution timeline.",
-      "obstacle": "Enhanced: Identified potential challenges with clear mitigation strategies and contingency planning."
+      "problem": "This is a critical pain point affecting thousands of professionals daily. The urgency is clear due to market gaps in current solutions.",
+      "solution": "Our innovative approach directly addresses the core issue with a streamlined, user-centric platform that significantly improves efficiency.",
+      "ideaName": "Clear, memorable brand name that reflects the core value proposition and target market.",
+      "ideal": "High-value customer segment with significant purchasing power and demonstrated willingness to adopt innovative solutions.",
+      "market": "Substantial TAM in a high-growth sector with proven demand signals and expanding market opportunities.",
+      "customers": "Already validated product-market fit with early adopters showing strong engagement and retention.",
+      "revenue": "Demonstrated revenue traction validates business model viability and customer willingness to pay.",
+      "monetization": "Diversified revenue streams with clear path to profitability and strong unit economics.",
+      "competition": "Differentiated positioning with unique value drivers that create defensible competitive advantages.",
+      "stage": "Clear development roadmap with achievable milestones and realistic go-to-market timeline.",
+      "startup": "Relevant founder experience and proven track record in building and scaling ventures.",
+      "team": "Balanced team composition with complementary skills and demonstrated execution ability.",
+      "funding": "Well-defined capital efficiency strategy with clear allocation of resources toward growth initiatives.",
+      "steps": "Concrete action plan with measurable milestones and realistic execution timeline.",
+      "obstacle": "Identified potential challenges with clear mitigation strategies and contingency planning."
     };
 
     for (const key in enhancements) {
@@ -343,7 +328,7 @@ export default function DashboardEntrepreneur() {
       }
     }
     
-    return `Enhanced: ${answer} - This answer demonstrates clear thinking and market understanding.`;
+    return `${answer} - This answer demonstrates clear thinking and market understanding.`;
   };
 
   const handleSubmit = () => {
