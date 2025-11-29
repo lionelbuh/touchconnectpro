@@ -15,7 +15,19 @@ export default function DashboardEntrepreneur() {
   const [validationError, setValidationError] = useState("");
   const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "idea" | "plan" | "profile">("overview");
-  const [businessPlanData, setBusinessPlanData] = useState<any>(null);
+  const [businessPlanData, setBusinessPlanData] = useState<any>({
+    executiveSummary: "",
+    problemStatement: "",
+    solution: "",
+    targetMarket: "",
+    marketSize: "",
+    revenue: "",
+    competitiveAdvantage: "",
+    roadmap: "",
+    fundingNeeds: "",
+    risks: "",
+    success: ""
+  });
   const [profileData, setProfileData] = useState({
     email: "entrepreneur@touchconnectpro.com",
     fullName: "John Entrepreneur",
@@ -328,7 +340,7 @@ export default function DashboardEntrepreneur() {
       }
     }
     
-    return `${answer} - This answer demonstrates clear thinking and market understanding.`;
+    return answer;
   };
 
   const handleSubmit = () => {
