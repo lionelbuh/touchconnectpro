@@ -25,6 +25,7 @@ export default function DashboardEntrepreneur() {
     profileImage: null as string | null
   });
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isEditingPlan, setIsEditingPlan] = useState(false);
   
   const [formData, setFormData] = useState({
     problem: "",
@@ -606,8 +607,20 @@ export default function DashboardEntrepreneur() {
             {/* Business Plan Tab */}
             {activeTab === "plan" && (
               <div>
-                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Your Business Plan</h1>
-                <p className="text-muted-foreground mb-8">Here's the business plan that was submitted to our mentors for review.</p>
+                <div className="flex justify-between items-center mb-8">
+                  <div>
+                    <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Your Business Plan</h1>
+                    <p className="text-muted-foreground">Here's the business plan that was submitted to our mentors for review.</p>
+                  </div>
+                  <Button 
+                    onClick={() => setIsEditingPlan(!isEditingPlan)}
+                    variant={isEditingPlan ? "destructive" : "default"}
+                    className={isEditingPlan ? "bg-red-600 hover:bg-red-700" : "bg-cyan-600 hover:bg-cyan-700"}
+                    data-testid="button-edit-plan"
+                  >
+                    {isEditingPlan ? "Cancel" : "Edit Plan"}
+                  </Button>
+                </div>
 
                 <div className="space-y-6">
                   {[
@@ -628,9 +641,18 @@ export default function DashboardEntrepreneur() {
                         <CardTitle className="text-lg">{section.label}</CardTitle>
                       </CardHeader>
                       <CardContent className="pt-6">
-                        <p className="text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg whitespace-pre-wrap">
-                          {businessPlanData?.[section.key] || "Business plan not yet submitted"}
-                        </p>
+                        {isEditingPlan ? (
+                          <textarea
+                            value={businessPlanData?.[section.key] || ""}
+                            onChange={(e) => setBusinessPlanData({ ...businessPlanData, [section.key]: e.target.value })}
+                            className="w-full min-h-32 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            data-testid={`textarea-plan-${section.key}`}
+                          />
+                        ) : (
+                          <p className="text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg whitespace-pre-wrap">
+                            {businessPlanData?.[section.key] || "Business plan not yet submitted"}
+                          </p>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
