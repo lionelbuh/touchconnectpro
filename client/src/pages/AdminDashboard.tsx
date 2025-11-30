@@ -207,6 +207,9 @@ export default function AdminDashboard() {
   const pendingMentorApplications = mentorApplications.filter(app => app.status === "pending");
   const pendingCoachApplications = coachApplications.filter(app => app.status === "pending");
   const pendingInvestorApplications = investorApplications.filter(app => app.status === "pending");
+  const rejectedMentorApplications = mentorApplications.filter(app => app.status === "rejected");
+  const rejectedCoachApplications = coachApplications.filter(app => app.status === "rejected");
+  const rejectedInvestorApplications = investorApplications.filter(app => app.status === "rejected");
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8">
@@ -526,6 +529,82 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
+
+            {/* Rejected Applications */}
+            {(rejectedMentorApplications.length > 0 || rejectedCoachApplications.length > 0 || rejectedInvestorApplications.length > 0) && (
+              <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+                <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Rejected Applications</h2>
+                
+                {rejectedMentorApplications.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Rejected Mentors ({rejectedMentorApplications.length})</h3>
+                    <div className="space-y-3">
+                      {rejectedMentorApplications.map((app, idx) => (
+                        <Card key={idx} className="border-l-4 border-l-red-500 opacity-75">
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <p className="font-semibold text-slate-900 dark:text-white">{app.fullName}</p>
+                                  <Badge className="bg-red-100 text-red-800">Rejected</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground">{app.email}</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {rejectedCoachApplications.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Rejected Coaches ({rejectedCoachApplications.length})</h3>
+                    <div className="space-y-3">
+                      {rejectedCoachApplications.map((app, idx) => (
+                        <Card key={idx} className="border-l-4 border-l-red-500 opacity-75">
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <p className="font-semibold text-slate-900 dark:text-white">{app.fullName}</p>
+                                  <Badge className="bg-red-100 text-red-800">Rejected</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground">{app.email}</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {rejectedInvestorApplications.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Rejected Investors ({rejectedInvestorApplications.length})</h3>
+                    <div className="space-y-3">
+                      {rejectedInvestorApplications.map((app, idx) => (
+                        <Card key={idx} className="border-l-4 border-l-red-500 opacity-75">
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <p className="font-semibold text-slate-900 dark:text-white">{app.fullName}</p>
+                                  <Badge className="bg-red-100 text-red-800">Rejected</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground">{app.email}</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
