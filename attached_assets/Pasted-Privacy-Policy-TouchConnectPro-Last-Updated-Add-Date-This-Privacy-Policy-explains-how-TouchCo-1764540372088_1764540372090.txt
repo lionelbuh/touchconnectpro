@@ -1,0 +1,101 @@
+Privacy Policy — TouchConnectPro
+
+Last Updated: [Add Date]
+
+This Privacy Policy explains how TouchConnectPro (“we”, “us”, “our”) collects, stores, uses, and protects your personal information when you access or interact with TouchConnectPro.com.
+
+Your privacy is important — and we keep your information safe, transparent, and only used for the purpose of delivering our services.
+
+1. Information We Collect
+
+We collect two types of data:
+
+A) Information you provide directly
+
+Name
+
+Email address
+
+Account details & onboarding information
+
+Information you share with mentors or during pitch building
+
+B) Automatically collected technical data
+
+Cookies and analytics tracking
+
+IP address, browser, device type
+
+Usage behavior to improve website performance
+
+We collect only the data required to operate the platform and help you succeed.
+
+2. How We Use Your Data
+
+Your data is used to:
+
+Create and manage your account
+
+Process membership payments
+
+Communicate onboarding, updates, and service information
+
+Match users with mentors/coaches where relevant
+
+Improve platform features, security, and user experience
+
+We do not sell your data — ever.
+
+3. Third-Party Tools Involved
+
+To operate TouchConnectPro, we securely use trusted external services:
+
+Tool	Purpose
+Stripe	Payment processing
+Mailchimp	Email updates & onboarding
+Analytics/Cookies	Website performance & optimization
+
+These providers may process your data only to perform their services — never to contact you independently or resell your information.
+
+4. Data Protection & Security
+
+We follow reasonable and standard industry measures to protect personal data from unauthorized access, manipulation, loss, or disclosure.
+
+While no digital system can guarantee 100% security, TouchConnectPro continuously monitors systems and will notify users if a data-related risk or breach ever occurs.
+
+5. Cookies
+
+Cookies help us operate the platform, remember logins, and improve your experience.
+
+You may disable cookies in your browser at any time, but some features may not function correctly if disabled.
+
+6. Your Rights Over Your Data
+
+You may request at any time to:
+
+Access the information we hold about you
+
+Correct or update inaccurate details
+
+Request deletion of your personal data
+
+Opt-out of marketing or communications
+
+You remain in control of your privacy.
+To exercise any rights, contact us at:
+
+📩 hello@touchconnectpro.com
+
+7. Data Retention
+
+We keep your information only as long as your account is active, or as required by law for accounting and security purposes. Data can be permanently deleted upon request unless retained by legal requirement.
+
+8. Changes to This Policy
+
+If we update how we use or protect data, we will revise this policy and update the date above. Continued use of the platform implies acceptance of the latest version.
+
+Questions or Concerns?
+
+We’re here to help — contact us anytime:
+
+📩 hello@touchconnectpro.com
