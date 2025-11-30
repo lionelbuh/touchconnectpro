@@ -242,22 +242,6 @@ export default function AdminDashboard() {
           >
             <Users className="mr-2 h-4 w-4" /> Members & Portfolios
           </Button>
-          <Button 
-            variant={activeTab === "messaging" ? "default" : "outline"}
-            onClick={() => setActiveTab("messaging")}
-            className={activeTab === "messaging" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
-            data-testid="button-messaging-tab"
-          >
-            <MessageSquare className="mr-2 h-4 w-4" /> Messaging
-          </Button>
-          <Button 
-            variant={activeTab === "users" ? "default" : "outline"}
-            onClick={() => setActiveTab("users")}
-            className={activeTab === "users" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
-            data-testid="button-users-tab"
-          >
-            <Power className="mr-2 h-4 w-4" /> User Management
-          </Button>
         </div>
 
         {/* Approvals Tab */}
@@ -809,28 +793,97 @@ export default function AdminDashboard() {
               {activeMembersSubTab === "messaging" && (
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Send Messages to Members</h3>
-                <div className="space-y-4">
-                  {members.map((member) => (
-                    <Card key={member.id}>
-                      <CardContent className="pt-6">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
-                            <p className="text-sm text-muted-foreground">{member.email} • {member.type}</p>
-                          </div>
-                          <Button 
-                            onClick={() => {
-                              setSelectedMember(member);
-                              setShowMessageModal(true);
-                            }}
-                            data-testid={`button-message-member-${member.id}`}
-                          >
-                            <MessageSquare className="mr-2 h-4 w-4" /> Send Message
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                <div className="space-y-6">
+                  {/* Entrepreneurs */}
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Entrepreneurs ({members.length})</h4>
+                    <div className="space-y-3">
+                      {members.map((member) => (
+                        <Card key={member.id}>
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
+                                <p className="text-sm text-muted-foreground">{member.email}</p>
+                              </div>
+                              <Button onClick={() => {setSelectedMember(member); setShowMessageModal(true);}} data-testid={`button-message-member-${member.id}`} size="sm">
+                                <MessageSquare className="mr-2 h-4 w-4" /> Message
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Mentors */}
+                  {approvedMentors.length > 0 && (
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">🎓 Mentors ({approvedMentors.length})</h4>
+                    <div className="space-y-3">
+                      {approvedMentors.map((mentor, idx) => (
+                        <Card key={idx}>
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-semibold text-slate-900 dark:text-white">{mentor.fullName}</p>
+                                <p className="text-sm text-muted-foreground">{mentor.email}</p>
+                              </div>
+                              <Button onClick={() => {setSelectedMember({id: `mentor-${idx}`, name: mentor.fullName, email: mentor.email, type: "mentor"}); setShowMessageModal(true);}} data-testid={`button-message-mentor-${idx}`} size="sm">
+                                <MessageSquare className="mr-2 h-4 w-4" /> Message
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                  )}
+                  {/* Coaches */}
+                  {approvedCoaches.length > 0 && (
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💪 Coaches ({approvedCoaches.length})</h4>
+                    <div className="space-y-3">
+                      {approvedCoaches.map((coach, idx) => (
+                        <Card key={idx}>
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
+                                <p className="text-sm text-muted-foreground">{coach.email}</p>
+                              </div>
+                              <Button onClick={() => {setSelectedMember({id: `coach-${idx}`, name: coach.fullName, email: coach.email, type: "coach"}); setShowMessageModal(true);}} data-testid={`button-message-coach-${idx}`} size="sm">
+                                <MessageSquare className="mr-2 h-4 w-4" /> Message
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                  )}
+                  {/* Investors */}
+                  {approvedInvestors.length > 0 && (
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💰 Investors ({approvedInvestors.length})</h4>
+                    <div className="space-y-3">
+                      {approvedInvestors.map((investor, idx) => (
+                        <Card key={idx}>
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-semibold text-slate-900 dark:text-white">{investor.fullName}</p>
+                                <p className="text-sm text-muted-foreground">{investor.email}</p>
+                              </div>
+                              <Button onClick={() => {setSelectedMember({id: `investor-${idx}`, name: investor.fullName, email: investor.email, type: "investor"}); setShowMessageModal(true);}} data-testid={`button-message-investor-${idx}`} size="sm">
+                                <MessageSquare className="mr-2 h-4 w-4" /> Message
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                  )}
                 </div>
               </div>
               )}
@@ -839,43 +892,103 @@ export default function AdminDashboard() {
               {activeMembersSubTab === "management" && (
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Manage User Status</h3>
-                <div className="space-y-4">
-                  {members.map((member) => (
-                    <Card key={member.id} className={member.status === "disabled" ? "opacity-60" : ""}>
-                      <CardContent className="pt-6">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
-                            <p className="text-sm text-muted-foreground">{member.email} • {member.type}</p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button 
-                              variant={member.status === "active" ? "destructive" : "default"}
-                              onClick={() => handleToggleMemberStatus(member.id)}
-                              data-testid={`button-toggle-user-${member.id}`}
-                            >
-                              {member.status === "active" ? (
-                                <>
-                                  <Power className="mr-2 h-4 w-4" /> Disable
-                                </>
-                              ) : (
-                                <>
-                                  <Power className="mr-2 h-4 w-4" /> Enable
-                                </>
-                              )}
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
-                              data-testid={`button-delete-user-${member.id}`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                <div className="space-y-6">
+                  {/* Entrepreneurs */}
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Entrepreneurs ({members.length})</h4>
+                    <div className="space-y-3">
+                      {members.map((member) => (
+                        <Card key={member.id} className={member.status === "disabled" ? "opacity-60" : ""}>
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
+                                <p className="text-sm text-muted-foreground">{member.email}</p>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button variant={member.status === "active" ? "destructive" : "default"} onClick={() => handleToggleMemberStatus(member.id)} data-testid={`button-toggle-user-${member.id}`} size="sm">
+                                  {member.status === "active" ? "Disable" : "Enable"}
+                                </Button>
+                                <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-user-${member.id}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Mentors */}
+                  {approvedMentors.length > 0 && (
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">🎓 Mentors ({approvedMentors.length})</h4>
+                    <div className="space-y-3">
+                      {approvedMentors.map((mentor, idx) => (
+                        <Card key={idx}>
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-semibold text-slate-900 dark:text-white">{mentor.fullName}</p>
+                                <p className="text-sm text-muted-foreground">{mentor.email}</p>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button variant="default" data-testid={`button-toggle-mentor-${idx}`} size="sm">Disable</Button>
+                                <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-mentor-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                  )}
+                  {/* Coaches */}
+                  {approvedCoaches.length > 0 && (
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💪 Coaches ({approvedCoaches.length})</h4>
+                    <div className="space-y-3">
+                      {approvedCoaches.map((coach, idx) => (
+                        <Card key={idx}>
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
+                                <p className="text-sm text-muted-foreground">{coach.email}</p>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button variant="default" data-testid={`button-toggle-coach-${idx}`} size="sm">Disable</Button>
+                                <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-coach-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                  )}
+                  {/* Investors */}
+                  {approvedInvestors.length > 0 && (
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💰 Investors ({approvedInvestors.length})</h4>
+                    <div className="space-y-3">
+                      {approvedInvestors.map((investor, idx) => (
+                        <Card key={idx}>
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-semibold text-slate-900 dark:text-white">{investor.fullName}</p>
+                                <p className="text-sm text-muted-foreground">{investor.email}</p>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button variant="default" data-testid={`button-toggle-investor-${idx}`} size="sm">Disable</Button>
+                                <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-investor-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                  )}
                 </div>
               </div>
               )}
