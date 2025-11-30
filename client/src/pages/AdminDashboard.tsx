@@ -14,6 +14,35 @@ interface MentorApplication {
   experience: string;
   status: "pending" | "approved" | "rejected";
   submittedAt: string;
+  country?: string;
+  state?: string;
+}
+
+interface CoachApplication {
+  fullName: string;
+  email: string;
+  linkedin: string;
+  expertise: string;
+  focusAreas: string;
+  hourlyRate: string;
+  status: "pending" | "approved" | "rejected";
+  submittedAt: string;
+  country?: string;
+  state?: string;
+}
+
+interface InvestorApplication {
+  fullName: string;
+  email: string;
+  linkedin: string;
+  fundName: string;
+  investmentFocus: string;
+  investmentPreference: string;
+  investmentAmount: string;
+  status: "pending" | "approved" | "rejected";
+  submittedAt: string;
+  country?: string;
+  state?: string;
 }
 
 interface User {
@@ -27,6 +56,8 @@ interface User {
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<"approvals" | "members" | "messaging" | "users">("approvals");
   const [mentorApplications, setMentorApplications] = useState<MentorApplication[]>([]);
+  const [coachApplications, setCoachApplications] = useState<CoachApplication[]>([]);
+  const [investorApplications, setInvestorApplications] = useState<InvestorApplication[]>([]);
   const [members, setMembers] = useState<User[]>([
     { id: "m1", name: "Alex Johnson", email: "alex@tech.com", type: "entrepreneur" as const, status: "active" as const },
     { id: "m2", name: "Maria Garcia", email: "maria@startup.com", type: "entrepreneur" as const, status: "active" as const },
@@ -40,9 +71,17 @@ export default function AdminDashboard() {
   const [showPortfolioModal, setShowPortfolioModal] = useState(false);
 
   useEffect(() => {
-    const savedApplications = localStorage.getItem("tcp_mentorApplications");
-    if (savedApplications) {
-      setMentorApplications(JSON.parse(savedApplications));
+    const savedMentorApplications = localStorage.getItem("tcp_mentorApplications");
+    if (savedMentorApplications) {
+      setMentorApplications(JSON.parse(savedMentorApplications));
+    }
+    const savedCoachApplications = localStorage.getItem("tcp_coachApplications");
+    if (savedCoachApplications) {
+      setCoachApplications(JSON.parse(savedCoachApplications));
+    }
+    const savedInvestorApplications = localStorage.getItem("tcp_investorApplications");
+    if (savedInvestorApplications) {
+      setInvestorApplications(JSON.parse(savedInvestorApplications));
     }
   }, []);
 
@@ -72,6 +111,59 @@ export default function AdminDashboard() {
     localStorage.setItem("tcp_mentorApplications", JSON.stringify(updated));
   };
 
+  const handleApproveCoach = (index: number) => {
+    const updated = [...coachApplications];
+    updated[index].status = "approved";
+    setCoachApplications(updated);
+    localStorage.setItem("tcp_coachApplications", JSON.stringify(updated));
+
+    const coachProfile = {
+      fullName: updated[index].fullName,
+      email: updated[index].email,
+      linkedin: updated[index].linkedin,
+      expertise: updated[index].expertise,
+      focusAreas: updated[index].focusAreas,
+      hourlyRate: updated[index].hourlyRate,
+      profileImage: null,
+      approved: true
+    };
+    localStorage.setItem("tcp_coachProfile", JSON.stringify(coachProfile));
+  };
+
+  const handleRejectCoach = (index: number) => {
+    const updated = [...coachApplications];
+    updated[index].status = "rejected";
+    setCoachApplications(updated);
+    localStorage.setItem("tcp_coachApplications", JSON.stringify(updated));
+  };
+
+  const handleApproveInvestor = (index: number) => {
+    const updated = [...investorApplications];
+    updated[index].status = "approved";
+    setInvestorApplications(updated);
+    localStorage.setItem("tcp_investorApplications", JSON.stringify(updated));
+
+    const investorProfile = {
+      fullName: updated[index].fullName,
+      email: updated[index].email,
+      linkedin: updated[index].linkedin,
+      fundName: updated[index].fundName,
+      investmentFocus: updated[index].investmentFocus,
+      investmentPreference: updated[index].investmentPreference,
+      investmentAmount: updated[index].investmentAmount,
+      profileImage: null,
+      approved: true
+    };
+    localStorage.setItem("tcp_investorProfile", JSON.stringify(investorProfile));
+  };
+
+  const handleRejectInvestor = (index: number) => {
+    const updated = [...investorApplications];
+    updated[index].status = "rejected";
+    setInvestorApplications(updated);
+    localStorage.setItem("tcp_investorApplications", JSON.stringify(updated));
+  };
+
   const handleToggleMemberStatus = (id: string) => {
     const updated = members.map(m => 
       m.id === id ? { ...m, status: (m.status === "active" ? "disabled" : "active") as "active" | "disabled" } : m
@@ -97,7 +189,9 @@ export default function AdminDashboard() {
     }
   };
 
-  const pendingApplications = mentorApplications.filter(app => app.status === "pending");
+  const pendingMentorApplications = mentorApplications.filter(app => app.status === "pending");
+  const pendingCoachApplications = coachApplications.filter(app => app.status === "pending");
+  const pendingInvestorApplications = investorApplications.filter(app => app.status === "pending");
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8">
@@ -149,18 +243,19 @@ export default function AdminDashboard() {
 
         {/* Approvals Tab */}
         {activeTab === "approvals" && (
-          <div>
-            <div className="mb-6">
+          <div className="space-y-8">
+            {/* Mentor Approvals */}
+            <div>
               <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Mentor Approvals</h2>
-              {pendingApplications.length === 0 ? (
+              {pendingMentorApplications.length === 0 ? (
                 <Card>
                   <CardContent className="pt-12 pb-12 text-center">
-                    <p className="text-muted-foreground">No pending approvals</p>
+                    <p className="text-muted-foreground">No pending mentor approvals</p>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="space-y-4">
-                  {pendingApplications.map((app, idx) => {
+                  {pendingMentorApplications.map((app, idx) => {
                     const actualIdx = mentorApplications.findIndex(a => a === app);
                     return (
                       <Card key={actualIdx} className="border-l-4 border-l-amber-500">
@@ -192,7 +287,7 @@ export default function AdminDashboard() {
                             <Button 
                               className="flex-1 bg-emerald-600 hover:bg-emerald-700"
                               onClick={() => handleApproveMentor(actualIdx)}
-                              data-testid={`button-admin-approve-${actualIdx}`}
+                              data-testid={`button-admin-approve-mentor-${actualIdx}`}
                             >
                               <Check className="mr-2 h-4 w-4" /> Approve
                             </Button>
@@ -200,7 +295,135 @@ export default function AdminDashboard() {
                               variant="outline"
                               className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
                               onClick={() => handleRejectMentor(actualIdx)}
-                              data-testid={`button-admin-reject-${actualIdx}`}
+                              data-testid={`button-admin-reject-mentor-${actualIdx}`}
+                            >
+                              <X className="mr-2 h-4 w-4" /> Reject
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Coach Approvals */}
+            <div>
+              <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Coach Approvals</h2>
+              {pendingCoachApplications.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-12 pb-12 text-center">
+                    <p className="text-muted-foreground">No pending coach approvals</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {pendingCoachApplications.map((app, idx) => {
+                    const actualIdx = coachApplications.findIndex(a => a === app);
+                    return (
+                      <Card key={actualIdx} className="border-l-4 border-l-cyan-500">
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle>{app.fullName}</CardTitle>
+                              <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                            </div>
+                            <Badge className="bg-cyan-600">Pending</Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
+                              <p className="text-slate-900 dark:text-white">{app.expertise}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Hourly Rate</p>
+                              <p className="text-slate-900 dark:text-white">${app.hourlyRate}</p>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
+                            <p className="text-slate-900 dark:text-white text-sm">{app.focusAreas}</p>
+                          </div>
+                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+                            <Button 
+                              className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                              onClick={() => handleApproveCoach(actualIdx)}
+                              data-testid={`button-admin-approve-coach-${actualIdx}`}
+                            >
+                              <Check className="mr-2 h-4 w-4" /> Approve
+                            </Button>
+                            <Button 
+                              variant="outline"
+                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                              onClick={() => handleRejectCoach(actualIdx)}
+                              data-testid={`button-admin-reject-coach-${actualIdx}`}
+                            >
+                              <X className="mr-2 h-4 w-4" /> Reject
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Investor Approvals */}
+            <div>
+              <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Investor Approvals</h2>
+              {pendingInvestorApplications.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-12 pb-12 text-center">
+                    <p className="text-muted-foreground">No pending investor approvals</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {pendingInvestorApplications.map((app, idx) => {
+                    const actualIdx = investorApplications.findIndex(a => a === app);
+                    return (
+                      <Card key={actualIdx} className="border-l-4 border-l-amber-500">
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle>{app.fullName}</CardTitle>
+                              <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                            </div>
+                            <Badge className="bg-amber-600">Pending</Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Fund Name</p>
+                              <p className="text-slate-900 dark:text-white">{app.fundName}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Amount</p>
+                              <p className="text-slate-900 dark:text-white">{app.investmentAmount}</p>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Focus</p>
+                            <p className="text-slate-900 dark:text-white text-sm">{app.investmentFocus}</p>
+                          </div>
+                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+                            <Button 
+                              className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                              onClick={() => handleApproveInvestor(actualIdx)}
+                              data-testid={`button-admin-approve-investor-${actualIdx}`}
+                            >
+                              <Check className="mr-2 h-4 w-4" /> Approve
+                            </Button>
+                            <Button 
+                              variant="outline"
+                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                              onClick={() => handleRejectInvestor(actualIdx)}
+                              data-testid={`button-admin-reject-investor-${actualIdx}`}
                             >
                               <X className="mr-2 h-4 w-4" /> Reject
                             </Button>

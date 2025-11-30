@@ -14,7 +14,8 @@ export default function DashboardEntrepreneur() {
   const [showSuccessPage, setShowSuccessPage] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "idea" | "plan" | "profile">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile">("overview");
+  const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
   const [businessPlanData, setBusinessPlanData] = useState<any>({
     executiveSummary: "",
     problemStatement: "",
@@ -92,11 +93,19 @@ export default function DashboardEntrepreneur() {
     const savedBusinessPlan = localStorage.getItem("tcp_businessPlan");
     const savedProfile = localStorage.getItem("tcp_profileData");
     const savedSubmitted = localStorage.getItem("tcp_submitted");
+    const savedCoachApplications = localStorage.getItem("tcp_coachApplications");
     
     if (savedFormData) setFormData(JSON.parse(savedFormData));
     if (savedBusinessPlan) setBusinessPlanData(JSON.parse(savedBusinessPlan));
     if (savedProfile) setProfileData(JSON.parse(savedProfile));
     if (savedSubmitted) setSubmitted(JSON.parse(savedSubmitted));
+    
+    // Load approved coaches
+    if (savedCoachApplications) {
+      const coachApps = JSON.parse(savedCoachApplications);
+      const approved = coachApps.filter((app: any) => app.status === "approved");
+      setApprovedCoaches(approved);
+    }
     
     const params = new URLSearchParams(window.location.search);
     if (params.get("submitted") === "true") {

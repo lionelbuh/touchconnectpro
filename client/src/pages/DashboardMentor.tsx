@@ -7,7 +7,8 @@ import { Users, MessageSquare, Calendar, Settings, ChevronRight, Plus, LogOut, B
 
 export default function DashboardMentor() {
   const [mentorStatus, setMentorStatus] = useState<"notApplied" | "pending" | "approved">("notApplied");
-  const [activeTab, setActiveTab] = useState<"overview" | "portfolio" | "messages" | "meetings" | "profile">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "investors" | "portfolio" | "messages" | "meetings" | "profile">("overview");
+  const [approvedInvestors, setApprovedInvestors] = useState<any[]>([]);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [selectedPortfolio, setSelectedPortfolio] = useState<number | null>(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -61,6 +62,7 @@ export default function DashboardMentor() {
     const savedProfile = localStorage.getItem("tcp_mentorProfile");
     const savedApplications = localStorage.getItem("tcp_mentorApplications");
     const savedPortfolios = localStorage.getItem("tcp_mentorPortfolios");
+    const savedInvestorApplications = localStorage.getItem("tcp_investorApplications");
     
     if (savedProfile) {
       const profile = JSON.parse(savedProfile);
@@ -82,6 +84,13 @@ export default function DashboardMentor() {
       }
     } else {
       setMentorStatus("notApplied"); // No profile or applications
+    }
+    
+    // Load approved investors
+    if (savedInvestorApplications) {
+      const investorApps = JSON.parse(savedInvestorApplications);
+      const approved = investorApps.filter((app: any) => app.status === "approved");
+      setApprovedInvestors(approved);
     }
     
     if (savedPortfolios) setPortfolios(JSON.parse(savedPortfolios));
