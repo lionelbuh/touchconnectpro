@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Check, HelpCircle, ShieldCheck } from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Check, ShieldCheck } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Pricing() {
@@ -124,24 +123,6 @@ export default function Pricing() {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger>When does billing start?</AccordionTrigger>
-              <AccordionContent>
-                Billing for the $49/mo membership only begins *after* a mentor reviews your AI-prepared materials and approves you into their portfolio.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-2">
-              <AccordionTrigger>What if I need specialized help (Legal, Tech)?</AccordionTrigger>
-              <AccordionContent>
-                TouchConnectPro facilitates connections with specialized mentors (Finance, Marketing, Engineering, Legal) who offer paid sessions. The coaches set their own price, you pay it in full, and we keep a 20% fee to support and sustain the platform.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
         </div>
       </div>
     </div>

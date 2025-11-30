@@ -17,6 +17,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { href: "/", label: "Home" },
     { href: "/how-it-works", label: "How it works" },
     { href: "/pricing", label: "Pricing" },
+    { href: "/qa", label: "Q&A" },
   ];
 
   return (
