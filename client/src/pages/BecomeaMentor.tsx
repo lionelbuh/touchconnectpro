@@ -154,7 +154,7 @@ export default function BecomeaMentor() {
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Time Commitment</h3>
                   <p className="text-slate-700 dark:text-slate-300">
-                    This represents approximately <strong>1 hour per month + 30 minutes per new member subscribing</strong> including group sessions, feedback, and follow-up.
+                    The estimated time requirement is approximately <strong>2 hours per month for a group of 10 entrepreneurs</strong> (including the monthly 1-hour group coaching session), plus an additional <strong>30 minutes per new subscription during the first month</strong> for onboarding and introductory support.
                   </p>
                 </div>
                 <div>
