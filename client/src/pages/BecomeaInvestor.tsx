@@ -20,7 +20,9 @@ export default function BecomeaInvestor() {
     fundName: "",
     investmentFocus: "",
     investmentPreference: "",
-    investmentAmount: ""
+    investmentAmount: "",
+    country: "",
+    state: ""
   });
   const [submitted, setSubmitted] = useState(false);
 
@@ -31,8 +33,12 @@ export default function BecomeaInvestor() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.email || !formData.fundName || !formData.investmentFocus || !formData.investmentPreference || !formData.investmentAmount) {
+    if (!formData.fullName || !formData.email || !formData.fundName || !formData.investmentFocus || !formData.investmentPreference || !formData.investmentAmount || !formData.country) {
       alert("Please fill in all required fields");
+      return;
+    }
+    if (formData.country.toLowerCase().includes("united states") && !formData.state) {
+      alert("Please provide your state");
       return;
     }
     
@@ -47,7 +53,7 @@ export default function BecomeaInvestor() {
   const handleCloseModal = () => {
     setSubmitted(false);
     setShowForm(false);
-    setFormData({ fullName: "", email: "", linkedin: "", fundName: "", investmentFocus: "", investmentPreference: "", investmentAmount: "" });
+    setFormData({ fullName: "", email: "", linkedin: "", fundName: "", investmentFocus: "", investmentPreference: "", investmentAmount: "", country: "", state: "" });
   };
 
   return (
@@ -325,6 +331,32 @@ export default function BecomeaInvestor() {
                         <option value="1000000plus">$1,000,000+</option>
                       </select>
                     </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Country *</label>
+                      <Input
+                        name="country"
+                        value={formData.country}
+                        onChange={handleInputChange}
+                        placeholder="United States"
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-investor-country"
+                      />
+                    </div>
+
+                    {formData.country.toLowerCase().includes("united states") && (
+                      <div>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">State *</label>
+                        <Input
+                          name="state"
+                          value={formData.state}
+                          onChange={handleInputChange}
+                          placeholder="California"
+                          className="bg-slate-50 dark:bg-slate-800/50"
+                          data-testid="input-investor-state"
+                        />
+                      </div>
+                    )}
 
                     <div className="flex gap-3 pt-6">
                       <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>Cancel</Button>

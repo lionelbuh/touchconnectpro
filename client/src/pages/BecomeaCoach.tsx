@@ -19,7 +19,9 @@ export default function BecomeaCoach() {
     linkedin: "",
     expertise: "",
     focusAreas: "",
-    hourlyRate: ""
+    hourlyRate: "",
+    country: "",
+    state: ""
   });
   const [submitted, setSubmitted] = useState(false);
 
@@ -30,8 +32,12 @@ export default function BecomeaCoach() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.email || !formData.expertise || !formData.focusAreas || !formData.hourlyRate) {
+    if (!formData.fullName || !formData.email || !formData.expertise || !formData.focusAreas || !formData.hourlyRate || !formData.country) {
       alert("Please fill in all required fields");
+      return;
+    }
+    if (formData.country.toLowerCase().includes("united states") && !formData.state) {
+      alert("Please provide your state");
       return;
     }
     
@@ -46,7 +52,7 @@ export default function BecomeaCoach() {
   const handleCloseModal = () => {
     setSubmitted(false);
     setShowForm(false);
-    setFormData({ fullName: "", email: "", linkedin: "", expertise: "", focusAreas: "", hourlyRate: "" });
+    setFormData({ fullName: "", email: "", linkedin: "", expertise: "", focusAreas: "", hourlyRate: "", country: "", state: "" });
   };
 
   return (
@@ -324,6 +330,32 @@ export default function BecomeaCoach() {
                         <p className="text-xs text-slate-500 dark:text-slate-400">TouchConnectPro retains 20% commission — you keep 80% of your earnings</p>
                       </div>
                     </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Country *</label>
+                      <Input
+                        name="country"
+                        value={formData.country}
+                        onChange={handleInputChange}
+                        placeholder="United States"
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-coach-country"
+                      />
+                    </div>
+
+                    {formData.country.toLowerCase().includes("united states") && (
+                      <div>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">State *</label>
+                        <Input
+                          name="state"
+                          value={formData.state}
+                          onChange={handleInputChange}
+                          placeholder="California"
+                          className="bg-slate-50 dark:bg-slate-800/50"
+                          data-testid="input-coach-state"
+                        />
+                      </div>
+                    )}
 
                     <div className="flex gap-3 pt-6">
                       <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>Cancel</Button>

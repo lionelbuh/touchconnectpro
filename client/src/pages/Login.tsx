@@ -12,6 +12,7 @@ export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [isRecovery, setIsRecovery] = useState(false);
   const [country, setCountry] = useState("");
+  const [state, setState] = useState("");
 
   const handleSignup = () => {
     navigate("/dashboard-entrepreneur");
@@ -194,6 +195,22 @@ export default function Login() {
                   />
                 </div>
               </div>
+
+              {/* State Input - Show if USA */}
+              {country.toLowerCase().includes("united states") && (
+                <div className="space-y-2">
+                  <Label htmlFor="state" className="text-slate-200">State *</Label>
+                  <Input
+                    id="state"
+                    type="text"
+                    placeholder="California"
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                    className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
+                    data-testid="input-state"
+                  />
+                </div>
+              )}
 
               {/* Terms Agreement */}
               <p className="text-xs text-slate-400">
