@@ -113,6 +113,12 @@ export default function QA() {
                   We don't fund startups directly, but we connect you with mentors and investors who may be open to funding once your idea reaches the right level of clarity and readiness.
                 </AccordionContent>
               </AccordionItem>
+              <AccordionItem value="item-13">
+                <AccordionTrigger>Can TouchConnectPro help me find funding for my startup?</AccordionTrigger>
+                <AccordionContent>
+                  TouchConnectPro connects entrepreneurs with resources and guidance to become investment-ready. We don't influence investor decisions or guarantee funding, but we help you prepare a strong pitch, refine your business story, and present your project to angel investors we're in contact with. You are also free to use the pitch you create on TouchConnectPro to approach any investors you find independently.
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
           </div>
         </div>
