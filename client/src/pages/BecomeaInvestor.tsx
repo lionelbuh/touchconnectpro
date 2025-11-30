@@ -12,19 +12,21 @@ export default function BecomeaInvestor() {
     email: "",
     linkedin: "",
     fundName: "",
-    investmentFocus: ""
+    investmentFocus: "",
+    investmentPreference: "",
+    investmentAmount: ""
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.email || !formData.linkedin || !formData.fundName || !formData.investmentFocus) {
-      alert("Please fill in all fields");
+    if (!formData.fullName || !formData.email || !formData.fundName || !formData.investmentFocus || !formData.investmentPreference || !formData.investmentAmount) {
+      alert("Please fill in all required fields");
       return;
     }
     
@@ -37,7 +39,7 @@ export default function BecomeaInvestor() {
     setTimeout(() => {
       setShowForm(false);
       setSubmitted(false);
-      setFormData({ fullName: "", email: "", linkedin: "", fundName: "", investmentFocus: "" });
+      setFormData({ fullName: "", email: "", linkedin: "", fundName: "", investmentFocus: "", investmentPreference: "", investmentAmount: "" });
     }, 3000);
   };
 
@@ -220,12 +222,12 @@ export default function BecomeaInvestor() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">LinkedIn Profile *</label>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">LinkedIn Profile</label>
                       <Input
                         name="linkedin"
                         value={formData.linkedin}
                         onChange={handleInputChange}
-                        placeholder="linkedin.com/in/xxx"
+                        placeholder="linkedin.com/in/xxx (optional)"
                         className="bg-slate-50 dark:bg-slate-800/50"
                         data-testid="input-investor-linkedin"
                       />
@@ -253,6 +255,41 @@ export default function BecomeaInvestor() {
                         className="w-full min-h-24 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                         data-testid="textarea-investor-focus"
                       />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">What would you prefer to invest in? *</label>
+                      <select
+                        name="investmentPreference"
+                        value={formData.investmentPreference}
+                        onChange={handleInputChange}
+                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        data-testid="select-investor-preference"
+                      >
+                        <option value="">Select investment type</option>
+                        <option value="platform">TouchConnectPro as a whole</option>
+                        <option value="projects">Individual Projects</option>
+                        <option value="both">Both</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">How much do you usually invest? *</label>
+                      <select
+                        name="investmentAmount"
+                        value={formData.investmentAmount}
+                        onChange={handleInputChange}
+                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        data-testid="select-investor-amount"
+                      >
+                        <option value="">Select investment amount</option>
+                        <option value="5000-10000">$5,000 - $10,000</option>
+                        <option value="20000-50000">$20,000 - $50,000</option>
+                        <option value="50000-100000">$50,000 - $100,000</option>
+                        <option value="100000-500000">$100,000 - $500,000</option>
+                        <option value="500000-1000000">$500,000 - $1,000,000</option>
+                        <option value="1000000plus">$1,000,000+</option>
+                      </select>
                     </div>
 
                     <div className="flex gap-3 pt-6">

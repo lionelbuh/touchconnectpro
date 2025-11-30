@@ -12,18 +12,19 @@ export default function BecomeaCoach() {
     email: "",
     linkedin: "",
     expertise: "",
-    focusAreas: ""
+    focusAreas: "",
+    hourlyRate: ""
   });
   const [submitted, setSubmitted] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target as HTMLInputElement | HTMLTextAreaElement;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.email || !formData.linkedin || !formData.expertise || !formData.focusAreas) {
+    if (!formData.fullName || !formData.email || !formData.linkedin || !formData.expertise || !formData.focusAreas || !formData.hourlyRate) {
       alert("Please fill in all fields");
       return;
     }
@@ -37,7 +38,7 @@ export default function BecomeaCoach() {
     setTimeout(() => {
       setShowForm(false);
       setSubmitted(false);
-      setFormData({ fullName: "", email: "", linkedin: "", expertise: "", focusAreas: "" });
+      setFormData({ fullName: "", email: "", linkedin: "", expertise: "", focusAreas: "", hourlyRate: "" });
     }, 3000);
   };
 
@@ -272,6 +273,22 @@ export default function BecomeaCoach() {
                         className="bg-slate-50 dark:bg-slate-800/50"
                         data-testid="input-coach-focusareas"
                       />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Hourly Rate for Your Services *</label>
+                      <div className="space-y-2">
+                        <Input
+                          name="hourlyRate"
+                          type="number"
+                          value={formData.hourlyRate}
+                          onChange={handleInputChange}
+                          placeholder="e.g., $150"
+                          className="bg-slate-50 dark:bg-slate-800/50"
+                          data-testid="input-coach-hourlyrate"
+                        />
+                        <p className="text-xs text-slate-500 dark:text-slate-400">TouchConnectPro retains 20% commission — you keep 80% of your earnings</p>
+                      </div>
                     </div>
 
                     <div className="flex gap-3 pt-6">
