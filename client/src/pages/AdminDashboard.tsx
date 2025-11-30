@@ -801,6 +801,82 @@ export default function AdminDashboard() {
                   </div>
                 )}
               </div>
+              )}
+
+              {/* Messaging Sub-tab */}
+              {activeMembersSubTab === "messaging" && (
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Send Messages to Members</h3>
+                <div className="space-y-4">
+                  {members.map((member) => (
+                    <Card key={member.id}>
+                      <CardContent className="pt-6">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
+                            <p className="text-sm text-muted-foreground">{member.email} • {member.type}</p>
+                          </div>
+                          <Button 
+                            onClick={() => {
+                              setSelectedMember(member);
+                              setShowMessageModal(true);
+                            }}
+                            data-testid={`button-message-member-${member.id}`}
+                          >
+                            <MessageSquare className="mr-2 h-4 w-4" /> Send Message
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+              )}
+
+              {/* User Management Sub-tab */}
+              {activeMembersSubTab === "management" && (
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Manage User Status</h3>
+                <div className="space-y-4">
+                  {members.map((member) => (
+                    <Card key={member.id} className={member.status === "disabled" ? "opacity-60" : ""}>
+                      <CardContent className="pt-6">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
+                            <p className="text-sm text-muted-foreground">{member.email} • {member.type}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant={member.status === "active" ? "destructive" : "default"}
+                              onClick={() => handleToggleMemberStatus(member.id)}
+                              data-testid={`button-toggle-user-${member.id}`}
+                            >
+                              {member.status === "active" ? (
+                                <>
+                                  <Power className="mr-2 h-4 w-4" /> Disable
+                                </>
+                              ) : (
+                                <>
+                                  <Power className="mr-2 h-4 w-4" /> Enable
+                                </>
+                              )}
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                              data-testid={`button-delete-user-${member.id}`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+              )}
             </div>
           </div>
         )}
