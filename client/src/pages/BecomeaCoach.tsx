@@ -24,8 +24,8 @@ export default function BecomeaCoach() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.email || !formData.linkedin || !formData.expertise || !formData.focusAreas || !formData.hourlyRate) {
-      alert("Please fill in all fields");
+    if (!formData.fullName || !formData.email || !formData.expertise || !formData.focusAreas || !formData.hourlyRate) {
+      alert("Please fill in all required fields");
       return;
     }
     
@@ -240,12 +240,12 @@ export default function BecomeaCoach() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">LinkedIn Profile *</label>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">LinkedIn Profile</label>
                       <Input
                         name="linkedin"
                         value={formData.linkedin}
                         onChange={handleInputChange}
-                        placeholder="linkedin.com/in/xxx"
+                        placeholder="linkedin.com/in/xxx (optional)"
                         className="bg-slate-50 dark:bg-slate-800/50"
                         data-testid="input-coach-linkedin"
                       />
