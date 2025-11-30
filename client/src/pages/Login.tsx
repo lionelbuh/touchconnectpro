@@ -6,6 +6,25 @@ import { Label } from "@/components/ui/label";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Globe } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
+const COUNTRIES = [
+  "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", 
+  "India", "Japan", "Brazil", "Mexico", "Singapore", "Netherlands", "Switzerland",
+  "Sweden", "Ireland", "Israel", "South Korea", "New Zealand", "Spain", "Italy",
+  "China", "Argentina", "Colombia", "Chile", "Peru", "Thailand", "Philippines",
+  "Vietnam", "Indonesia", "Malaysia", "Hong Kong", "Pakistan", "Bangladesh"
+];
+
+const US_STATES = [
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
+  "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+  "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
+  "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
+  "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
+  "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+  "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+  "Wisconsin", "Wyoming", "District of Columbia"
+];
+
 export default function Login() {
   const [, navigate] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
@@ -179,36 +198,41 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Country Input */}
+              {/* Country Select */}
               <div className="space-y-2">
                 <Label htmlFor="country" className="text-slate-200">Country</Label>
-                <div className="relative">
-                  <Globe className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                  <Input
-                    id="country"
-                    type="text"
-                    placeholder="United States"
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
-                    data-testid="input-country"
-                  />
-                </div>
+                <select
+                  id="country"
+                  value={country}
+                  onChange={(e) => {
+                    setCountry(e.target.value);
+                    setState("");
+                  }}
+                  className="w-full bg-slate-800/50 border border-slate-600 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-cyan-500 focus:ring-cyan-500/20"
+                  data-testid="select-country"
+                >
+                  {COUNTRIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
 
-              {/* State Input - Show if USA */}
-              {country.toLowerCase().includes("united states") && (
+              {/* State Select - Show if USA */}
+              {country === "United States" && (
                 <div className="space-y-2">
                   <Label htmlFor="state" className="text-slate-200">State *</Label>
-                  <Input
+                  <select
                     id="state"
-                    type="text"
-                    placeholder="California"
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
-                    data-testid="input-state"
-                  />
+                    className="w-full bg-slate-800/50 border border-slate-600 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-cyan-500 focus:ring-cyan-500/20"
+                    data-testid="select-state"
+                  >
+                    <option value="">Select your state</option>
+                    {US_STATES.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </div>
               )}
 

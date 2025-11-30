@@ -11,6 +11,25 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+const COUNTRIES = [
+  "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", 
+  "India", "Japan", "Brazil", "Mexico", "Singapore", "Netherlands", "Switzerland",
+  "Sweden", "Ireland", "Israel", "South Korea", "New Zealand", "Spain", "Italy",
+  "China", "Argentina", "Colombia", "Chile", "Peru", "Thailand", "Philippines",
+  "Vietnam", "Indonesia", "Malaysia", "Hong Kong", "Pakistan", "Bangladesh"
+];
+
+const US_STATES = [
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
+  "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+  "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
+  "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
+  "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
+  "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+  "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+  "Wisconsin", "Wyoming", "District of Columbia"
+];
+
 export default function BecomeaCoach() {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -36,7 +55,7 @@ export default function BecomeaCoach() {
       alert("Please fill in all required fields");
       return;
     }
-    if (formData.country.toLowerCase().includes("united states") && !formData.state) {
+    if (formData.country === "United States" && !formData.state) {
       alert("Please provide your state");
       return;
     }
@@ -333,27 +352,40 @@ export default function BecomeaCoach() {
 
                     <div>
                       <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Country *</label>
-                      <Input
+                      <select
                         name="country"
                         value={formData.country}
-                        onChange={handleInputChange}
-                        placeholder="United States"
-                        className="bg-slate-50 dark:bg-slate-800/50"
-                        data-testid="input-coach-country"
-                      />
+                        onChange={(e) => {
+                          handleInputChange(e as any);
+                          if (e.target.value !== "United States") {
+                            setFormData(prev => ({ ...prev, state: "" }));
+                          }
+                        }}
+                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        data-testid="select-coach-country"
+                      >
+                        <option value="">Select a country</option>
+                        {COUNTRIES.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
                     </div>
 
-                    {formData.country.toLowerCase().includes("united states") && (
+                    {formData.country === "United States" && (
                       <div>
                         <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">State *</label>
-                        <Input
+                        <select
                           name="state"
                           value={formData.state}
                           onChange={handleInputChange}
-                          placeholder="California"
-                          className="bg-slate-50 dark:bg-slate-800/50"
-                          data-testid="input-coach-state"
-                        />
+                          className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                          data-testid="select-coach-state"
+                        >
+                          <option value="">Select your state</option>
+                          {US_STATES.map((s) => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
                       </div>
                     )}
 
