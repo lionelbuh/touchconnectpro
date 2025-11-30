@@ -1,118 +1,584 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, Heart, Users, MessageSquare, Settings, Briefcase, Award } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, Plus, LogOut, Briefcase } from "lucide-react";
 
 export default function DashboardMentor() {
+  const [activeTab, setActiveTab] = useState<"overview" | "portfolio" | "messages" | "meetings" | "profile">("overview");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [selectedPortfolio, setSelectedPortfolio] = useState<number | null>(null);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showMeetingModal, setShowMeetingModal] = useState(false);
+
+  const [mentorProfile, setMentorProfile] = useState({
+    fullName: "Sarah Chen",
+    email: "sarah@mentorpro.com",
+    linkedin: "linkedin.com/in/sarahchen",
+    bio: "Serial entrepreneur with 10+ years of experience in SaaS and product strategy. Passionate about helping early-stage founders build successful companies.",
+    expertise: "SaaS, Product Strategy, Go-to-Market",
+    yearsExperience: "10+",
+    profileImage: null as string | null
+  });
+
+  const [portfolios, setPortfolios] = useState([
+    {
+      id: 1,
+      name: "Portfolio 1",
+      memberCount: 8,
+      members: [
+        { id: 1, name: "Alex Johnson", company: "TechFlow", stage: "Seed" },
+        { id: 2, name: "Maria Garcia", company: "DataSync", stage: "Pre-seed" },
+        { id: 3, name: "James Wilson", company: "CloudHub", stage: "Series A" },
+        { id: 4, name: "Emily Zhang", company: "AITools", stage: "Seed" },
+        { id: 5, name: "David Brown", company: "FinanceApp", stage: "Pre-seed" },
+        { id: 6, name: "Lisa Anderson", company: "HealthTech", stage: "Seed" },
+        { id: 7, name: "Michael Lee", company: "EduPlatform", stage: "Series A" },
+        { id: 8, name: "Jennifer Davis", company: "MarketPlace", stage: "Pre-seed" }
+      ],
+      lastMeeting: "2024-11-25"
+    }
+  ]);
+
+  const [messages, setMessages] = useState([
+    { id: 1, from: "Alex Johnson", text: "Thanks for the feedback on our pitch deck!", timestamp: "Today 2:30 PM" },
+    { id: 2, from: "Maria Garcia", text: "Can we schedule a call next week?", timestamp: "Yesterday 10:15 AM" },
+    { id: 3, from: "James Wilson", text: "Your advice on GTM was really helpful", timestamp: "2 days ago" }
+  ]);
+
+  const [meetings, setMeetings] = useState([
+    { id: 1, portfolio: 1, date: "2024-12-01", time: "10:00 AM", attendees: 9, topic: "Q4 Planning & Strategy" },
+    { id: 2, portfolio: 1, date: "2024-11-24", time: "2:00 PM", attendees: 9, topic: "Product Roadmap Review" }
+  ]);
+
+  const [newMessage, setNewMessage] = useState("");
+  const [newMeeting, setNewMeeting] = useState({ date: "", time: "", topic: "" });
+
+  useEffect(() => {
+    const savedProfile = localStorage.getItem("tcp_mentorProfile");
+    const savedPortfolios = localStorage.getItem("tcp_mentorPortfolios");
+    if (savedProfile) setMentorProfile(JSON.parse(savedProfile));
+    if (savedPortfolios) setPortfolios(JSON.parse(savedPortfolios));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("tcp_mentorProfile", JSON.stringify(mentorProfile));
+  }, [mentorProfile]);
+
+  useEffect(() => {
+    localStorage.setItem("tcp_mentorPortfolios", JSON.stringify(portfolios));
+  }, [portfolios]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("tcp_mentorProfile");
+    localStorage.removeItem("tcp_mentorPortfolios");
+    window.location.href = "/";
+  };
+
+  const handleAddPortfolio = () => {
+    if (portfolios.length < 20) {
+      const newPortfolio = {
+        id: Math.max(...portfolios.map(p => p.id), 0) + 1,
+        name: `Portfolio ${portfolios.length + 1}`,
+        memberCount: 0,
+        members: [],
+        lastMeeting: ""
+      };
+      setPortfolios([...portfolios, newPortfolio]);
+    }
+  };
+
+  const handleSendMessage = () => {
+    if (newMessage.trim() && selectedPortfolio !== null) {
+      setMessages([
+        {
+          id: messages.length + 1,
+          from: `Message to Portfolio ${selectedPortfolio + 1}`,
+          text: newMessage,
+          timestamp: "Just now"
+        },
+        ...messages
+      ]);
+      setNewMessage("");
+      setShowMessageModal(false);
+    }
+  };
+
+  const handleScheduleMeeting = () => {
+    if (newMeeting.date && newMeeting.time && selectedPortfolio !== null) {
+      setMeetings([
+        {
+          id: meetings.length + 1,
+          portfolio: selectedPortfolio + 1,
+          date: newMeeting.date,
+          time: newMeeting.time,
+          attendees: portfolios[selectedPortfolio].memberCount + 1,
+          topic: newMeeting.topic || "Monthly Check-in"
+        },
+        ...meetings
+      ]);
+      setNewMeeting({ date: "", time: "", topic: "" });
+      setShowMeetingModal(false);
+    }
+  };
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
+      {/* Sidebar */}
       <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
-        <div className="p-6">
+        <div className="p-6 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-6">
-            <Avatar className="h-10 w-10 border border-slate-200 bg-indigo-500">
-              <AvatarFallback className="text-white">ME</AvatarFallback>
+            <Avatar className="h-10 w-10 border border-slate-200 bg-cyan-500">
+              <AvatarFallback className="text-white">SC</AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-bold text-sm">Mentor</div>
-              <div className="text-xs text-muted-foreground">New Account</div>
+              <div className="font-bold text-sm">{mentorProfile.fullName}</div>
+              <div className="text-xs text-muted-foreground">Mentor</div>
             </div>
           </div>
-          <nav className="space-y-1">
-            <Button variant="secondary" className="w-full justify-start font-medium">
-              <LayoutDashboard className="mr-2 h-4 w-4" /> Overview
+          <nav className="space-y-1 flex-1">
+            <Button 
+              variant={activeTab === "overview" ? "secondary" : "ghost"}
+              className="w-full justify-start font-medium"
+              onClick={() => setActiveTab("overview")}
+              data-testid="button-overview-tab"
+            >
+              <Briefcase className="mr-2 h-4 w-4" /> Overview
             </Button>
-            <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
-              <Users className="mr-2 h-4 w-4" /> My Entrepreneurs
+            <Button 
+              variant={activeTab === "portfolio" ? "secondary" : "ghost"}
+              className="w-full justify-start font-medium text-slate-600"
+              onClick={() => setActiveTab("portfolio")}
+              data-testid="button-portfolio-tab"
+            >
+              <Users className="mr-2 h-4 w-4" /> Portfolios
             </Button>
-            <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
-              <Heart className="mr-2 h-4 w-4" /> My Impact
-            </Button>
-            <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
+            <Button 
+              variant={activeTab === "messages" ? "secondary" : "ghost"}
+              className="w-full justify-start font-medium text-slate-600"
+              onClick={() => setActiveTab("messages")}
+              data-testid="button-messages-tab"
+            >
               <MessageSquare className="mr-2 h-4 w-4" /> Messages
             </Button>
-            <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
-              <Settings className="mr-2 h-4 w-4" /> Settings
+            <Button 
+              variant={activeTab === "meetings" ? "secondary" : "ghost"}
+              className="w-full justify-start font-medium text-slate-600"
+              onClick={() => setActiveTab("meetings")}
+              data-testid="button-meetings-tab"
+            >
+              <Calendar className="mr-2 h-4 w-4" /> Meetings
+            </Button>
+            <Button 
+              variant={activeTab === "profile" ? "secondary" : "ghost"}
+              className="w-full justify-start font-medium text-slate-600"
+              onClick={() => setActiveTab("profile")}
+              data-testid="button-profile-tab"
+            >
+              <Settings className="mr-2 h-4 w-4" /> Profile
             </Button>
           </nav>
+          <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
+            <Button 
+              variant="ghost"
+              className="w-full justify-start font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+              onClick={handleLogout}
+              data-testid="button-logout"
+            >
+              <LogOut className="mr-2 h-4 w-4" /> Logout
+            </Button>
+          </div>
         </div>
       </aside>
 
+      {/* Main Content */}
       <main className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-6xl mx-auto">
-          <header className="mb-8">
-            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">Welcome, Mentor!</h1>
-            <p className="text-muted-foreground mt-2">Join our network of experienced mentors. Let's help shape the next generation of entrepreneurs!</p>
-          </header>
+        <div className="max-w-5xl">
+          {/* Overview Tab */}
+          {activeTab === "overview" && (
+            <div>
+              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Dashboard</h1>
+              <p className="text-muted-foreground mb-8">Welcome back, {mentorProfile.fullName}! Manage your portfolios and mentees here.</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Background Card */}
-            <Card className="border-indigo-200 dark:border-indigo-900/30 bg-indigo-50 dark:bg-indigo-950/20">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Briefcase className="h-5 w-5 text-indigo-600" />
-                  Your Background
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">What's your professional background?</p>
-                <select className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500/20" data-testid="select-mentor-background">
-                  <option>Select your background...</option>
-                  <option>Startup Founder</option>
-                  <option>Corporate Executive</option>
-                  <option>Venture Capitalist</option>
-                  <option>Industry Expert</option>
-                  <option>Other</option>
-                </select>
-                <Button className="w-full bg-indigo-600 hover:bg-indigo-700">Next</Button>
-              </CardContent>
-            </Card>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <Card className="border-l-4 border-l-cyan-500 shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Active Portfolios</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{portfolios.length}/20</div>
+                    <p className="text-xs text-muted-foreground mt-1">Out of available slots</p>
+                  </CardContent>
+                </Card>
 
-            {/* Commitment Card */}
-            <Card className="border-indigo-200 dark:border-indigo-900/30 bg-indigo-50 dark:bg-indigo-950/20">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Award className="h-5 w-5 text-indigo-600" />
-                  Your Commitment
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">1 hour/month + 30 min per new member</p>
-                <div className="bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-300 dark:border-indigo-700 rounded p-3">
-                  <p className="text-xs font-semibold text-indigo-900 dark:text-indigo-300">Commitment Summary</p>
-                  <ul className="text-xs text-indigo-800 dark:text-indigo-200 mt-2 space-y-1">
-                    <li>• Group: 10 entrepreneurs max</li>
-                    <li>• 1 hour monthly group session</li>
-                    <li>• 30 min per new member</li>
-                  </ul>
+                <Card className="border-l-4 border-l-emerald-500 shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Mentees</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{portfolios.reduce((sum, p) => sum + p.memberCount, 0)}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Across all portfolios</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-amber-500 shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Unread Messages</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{messages.length}</div>
+                    <p className="text-xs text-muted-foreground mt-1">From your mentees</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-purple-500 shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Upcoming Meetings</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{meetings.length}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Scheduled sessions</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button className="w-full bg-cyan-600 hover:bg-cyan-700" onClick={() => setActiveTab("portfolio")}>
+                    <Plus className="mr-2 h-4 w-4" /> View Portfolios
+                  </Button>
+                  <Button variant="outline" className="w-full" onClick={() => setActiveTab("messages")}>
+                    <MessageSquare className="mr-2 h-4 w-4" /> Check Messages
+                  </Button>
+                  <Button variant="outline" className="w-full" onClick={() => setActiveTab("meetings")}>
+                    <Calendar className="mr-2 h-4 w-4" /> Schedule Meeting
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Portfolio Tab */}
+          {activeTab === "portfolio" && (
+            <div>
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Portfolios</h1>
+                  <p className="text-muted-foreground">Manage your mentee portfolios ({portfolios.length}/20)</p>
                 </div>
-                <Button className="w-full bg-indigo-600 hover:bg-indigo-700">Continue</Button>
-              </CardContent>
-            </Card>
+                {portfolios.length < 20 && (
+                  <Button className="bg-cyan-600 hover:bg-cyan-700" onClick={handleAddPortfolio} data-testid="button-add-portfolio">
+                    <Plus className="mr-2 h-4 w-4" /> Add Portfolio
+                  </Button>
+                )}
+              </div>
 
-            {/* Expertise Card */}
-            <Card className="border-indigo-200 dark:border-indigo-900/30 bg-indigo-50 dark:bg-indigo-950/20 md:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-lg">Your Expertise</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">What areas can you mentor in?</p>
-                <textarea 
-                  placeholder="e.g., Product strategy, fundraising, market validation, team building..."
-                  rows={4}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500/20"
-                  data-testid="input-mentor-expertise"
-                />
-                <Button className="w-full bg-indigo-600 hover:bg-indigo-700">Complete Setup</Button>
-              </CardContent>
-            </Card>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {portfolios.map((portfolio, idx) => (
+                  <Card key={portfolio.id} className="cursor-pointer hover:shadow-lg transition-shadow border-cyan-200 dark:border-cyan-900/30">
+                    <CardHeader className="bg-cyan-50/50 dark:bg-cyan-950/20">
+                      <CardTitle>{portfolio.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-6 space-y-4">
+                      <div>
+                        <p className="text-sm font-semibold text-muted-foreground mb-3">Members: {portfolio.memberCount}/10</p>
+                        {portfolio.members.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {portfolio.members.map((member) => (
+                              <div key={member.id} className="bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full text-xs">
+                                {member.name}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">No members added yet</p>
+                        )}
+                      </div>
+                      <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                        <p className="text-xs text-muted-foreground mb-3">Last meeting: {portfolio.lastMeeting || "No meetings yet"}</p>
+                        <div className="space-y-2">
+                          <Button 
+                            variant="outline" 
+                            className="w-full text-sm"
+                            onClick={() => {
+                              setSelectedPortfolio(idx);
+                              setShowMessageModal(true);
+                            }}
+                            data-testid={`button-message-portfolio-${portfolio.id}`}
+                          >
+                            <MessageSquare className="mr-2 h-3 w-3" /> Message Members
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            className="w-full text-sm"
+                            onClick={() => {
+                              setSelectedPortfolio(idx);
+                              setShowMeetingModal(true);
+                            }}
+                            data-testid={`button-meeting-portfolio-${portfolio.id}`}
+                          >
+                            <Calendar className="mr-2 h-3 w-3" /> Schedule Meeting
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
 
-          <div className="mt-8 p-6 bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/30 rounded-lg">
-            <h3 className="font-semibold text-indigo-900 dark:text-indigo-300 mb-2">Mentor Network</h3>
-            <p className="text-sm text-indigo-800 dark:text-indigo-200">You'll be matched with a group of 10 pre-vetted entrepreneurs. Help them avoid pitfalls, accelerate growth, and connect with resources.</p>
-          </div>
+          {/* Messages Tab */}
+          {activeTab === "messages" && (
+            <div>
+              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-8">Messages</h1>
+              <div className="space-y-4">
+                {messages.map((msg) => (
+                  <Card key={msg.id} className="border-l-4 border-l-cyan-500">
+                    <CardContent className="pt-6">
+                      <div className="flex justify-between items-start mb-2">
+                        <p className="font-semibold text-slate-900 dark:text-white">{msg.from}</p>
+                        <p className="text-xs text-muted-foreground">{msg.timestamp}</p>
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400">{msg.text}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Meetings Tab */}
+          {activeTab === "meetings" && (
+            <div>
+              <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">Meetings</h1>
+                <Button className="bg-cyan-600 hover:bg-cyan-700" onClick={() => setShowMeetingModal(true)} data-testid="button-schedule-meeting">
+                  <Plus className="mr-2 h-4 w-4" /> Schedule Meeting
+                </Button>
+              </div>
+              <div className="space-y-4">
+                {meetings.map((meeting) => (
+                  <Card key={meeting.id} className="border-l-4 border-l-purple-500">
+                    <CardContent className="pt-6">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-semibold text-slate-900 dark:text-white mb-2">{meeting.topic}</p>
+                          <p className="text-sm text-muted-foreground mb-1">Portfolio {meeting.portfolio}</p>
+                          <p className="text-sm text-muted-foreground">{meeting.date} at {meeting.time} • {meeting.attendees} attendees</p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Profile Tab */}
+          {activeTab === "profile" && (
+            <div>
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Profile</h1>
+                  <p className="text-muted-foreground">Your professional profile visible to mentees and admins</p>
+                </div>
+                <Button 
+                  onClick={() => setIsEditingProfile(!isEditingProfile)}
+                  variant={isEditingProfile ? "destructive" : "default"}
+                  className={isEditingProfile ? "bg-red-600 hover:bg-red-700" : "bg-cyan-600 hover:bg-cyan-700"}
+                  data-testid="button-edit-profile"
+                >
+                  {isEditingProfile ? "Cancel" : "Edit Profile"}
+                </Button>
+              </div>
+
+              {isEditingProfile ? (
+                <Card className="border-cyan-200 dark:border-cyan-900/30 max-w-2xl">
+                  <CardHeader className="bg-cyan-50/50 dark:bg-cyan-950/20">
+                    <CardTitle>Edit Your Profile</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-6 space-y-6">
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Full Name *</label>
+                      <Input
+                        value={mentorProfile.fullName}
+                        onChange={(e) => setMentorProfile({ ...mentorProfile, fullName: e.target.value })}
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-mentor-name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Email Address *</label>
+                      <Input
+                        type="email"
+                        value={mentorProfile.email}
+                        onChange={(e) => setMentorProfile({ ...mentorProfile, email: e.target.value })}
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-mentor-email"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">LinkedIn Profile *</label>
+                      <Input
+                        placeholder="https://linkedin.com/in/yourprofile"
+                        value={mentorProfile.linkedin}
+                        onChange={(e) => setMentorProfile({ ...mentorProfile, linkedin: e.target.value })}
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-mentor-linkedin"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Professional Bio *</label>
+                      <textarea
+                        value={mentorProfile.bio}
+                        onChange={(e) => setMentorProfile({ ...mentorProfile, bio: e.target.value })}
+                        className="w-full min-h-24 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        placeholder="Tell mentees about your experience, expertise, and what you bring to mentorship..."
+                        data-testid="textarea-mentor-bio"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Areas of Expertise *</label>
+                      <Input
+                        value={mentorProfile.expertise}
+                        onChange={(e) => setMentorProfile({ ...mentorProfile, expertise: e.target.value })}
+                        placeholder="e.g., SaaS, Product Strategy, Go-to-Market"
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-mentor-expertise"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Years of Experience *</label>
+                      <Input
+                        value={mentorProfile.yearsExperience}
+                        onChange={(e) => setMentorProfile({ ...mentorProfile, yearsExperience: e.target.value })}
+                        placeholder="e.g., 10+"
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-mentor-experience"
+                      />
+                    </div>
+
+                    <Button className="w-full bg-cyan-600 hover:bg-cyan-700" onClick={() => setIsEditingProfile(false)}>
+                      Save Profile
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="border-cyan-200 dark:border-cyan-900/30 max-w-2xl">
+                  <CardContent className="pt-6 space-y-6">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Full Name</p>
+                      <p className="text-slate-900 dark:text-white">{mentorProfile.fullName}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Email</p>
+                      <p className="text-slate-900 dark:text-white">{mentorProfile.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">LinkedIn</p>
+                      <p className="text-cyan-600 dark:text-cyan-400">{mentorProfile.linkedin}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Professional Bio</p>
+                      <p className="text-slate-900 dark:text-white">{mentorProfile.bio}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Expertise</p>
+                      <p className="text-slate-900 dark:text-white">{mentorProfile.expertise}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Experience</p>
+                      <p className="text-slate-900 dark:text-white">{mentorProfile.yearsExperience}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
         </div>
       </main>
+
+      {/* Message Modal */}
+      {showMessageModal && selectedPortfolio !== null && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-96 max-w-md">
+            <CardHeader>
+              <CardTitle>Send Message to Portfolio {selectedPortfolio + 1}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Write your message..."
+                className="w-full min-h-24 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                data-testid="textarea-new-message"
+              />
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setShowMessageModal(false)}>Cancel</Button>
+                <Button className="flex-1 bg-cyan-600 hover:bg-cyan-700" onClick={handleSendMessage} data-testid="button-send-message">Send</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Meeting Modal */}
+      {showMeetingModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-96 max-w-md">
+            <CardHeader>
+              <CardTitle>Schedule Monthly Meeting</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Date</label>
+                <Input
+                  type="date"
+                  value={newMeeting.date}
+                  onChange={(e) => setNewMeeting({ ...newMeeting, date: e.target.value })}
+                  className="bg-slate-50 dark:bg-slate-800/50"
+                  data-testid="input-meeting-date"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Time</label>
+                <Input
+                  type="time"
+                  value={newMeeting.time}
+                  onChange={(e) => setNewMeeting({ ...newMeeting, time: e.target.value })}
+                  className="bg-slate-50 dark:bg-slate-800/50"
+                  data-testid="input-meeting-time"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Topic</label>
+                <Input
+                  placeholder="e.g., Monthly Check-in"
+                  value={newMeeting.topic}
+                  onChange={(e) => setNewMeeting({ ...newMeeting, topic: e.target.value })}
+                  className="bg-slate-50 dark:bg-slate-800/50"
+                  data-testid="input-meeting-topic"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setShowMeetingModal(false)}>Cancel</Button>
+                <Button className="flex-1 bg-cyan-600 hover:bg-cyan-700" onClick={handleScheduleMeeting} data-testid="button-schedule">Schedule</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
