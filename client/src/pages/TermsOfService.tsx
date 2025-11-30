@@ -90,8 +90,14 @@ export default function TermsOfService() {
 
                   <div>
                     <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Coaching Session Fees</h3>
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                      Coaching sessions booked through mentors and coaches are separate from membership fees and are non-refundable. These are managed directly between you and your mentor/coach. Disputes regarding coaching sessions should be addressed with the provider directly.
+                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-2">
+                      Coaching sessions booked through mentors or coaches are separate from membership fees and are arranged directly between you and the mentor/coach.
+                    </p>
+                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-2">
+                      Mentors or coaches are fully responsible for any reimbursements in case of cancellations or disputes.
+                    </p>
+                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">
+                      The 20% TouchConnectPro platform commission for providing access to the list of coaches is non-refundable and is not reimbursed under any circumstances.
                     </p>
                   </div>
                 </div>
