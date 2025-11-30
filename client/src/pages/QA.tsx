@@ -60,7 +60,13 @@ export default function QA() {
               <AccordionItem value="item-7">
                 <AccordionTrigger>Can I switch mentors later?</AccordionTrigger>
                 <AccordionContent>
-                  Yes. If your business evolves or you need a different perspective, you can request a mentor change at any time.
+                  Yes. If your business evolves or you feel you'd benefit from a fresh perspective, you can discuss it with your current mentor to determine the right time for a transition. They'll help guide you and recommend the next mentor who best fits your goals.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-7b">
+                <AccordionTrigger>Will I have the same mentor from the beginning to the end?</AccordionTrigger>
+                <AccordionContent>
+                  Most mentor relationships continue over time, but things can change — your business may evolve or a mentor may become unavailable. If a change is needed, TouchConnectPro will help match you with a new mentor who fits your current goals and stage.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
