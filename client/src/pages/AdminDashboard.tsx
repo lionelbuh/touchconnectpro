@@ -98,6 +98,7 @@ export default function AdminDashboard() {
     const updated = [...mentorApplications];
     updated[index].status = "approved";
     setMentorApplications(updated);
+    setApprovedMentors(updated.filter((app: any) => app.status === "approved"));
     localStorage.setItem("tcp_mentorApplications", JSON.stringify(updated));
 
     const mentorProfile = {
@@ -117,6 +118,7 @@ export default function AdminDashboard() {
     const updated = [...mentorApplications];
     updated[index].status = "rejected";
     setMentorApplications(updated);
+    setApprovedMentors(updated.filter((app: any) => app.status === "approved"));
     localStorage.setItem("tcp_mentorApplications", JSON.stringify(updated));
   };
 
@@ -124,6 +126,7 @@ export default function AdminDashboard() {
     const updated = [...coachApplications];
     updated[index].status = "approved";
     setCoachApplications(updated);
+    setApprovedCoaches(updated.filter((app: any) => app.status === "approved"));
     localStorage.setItem("tcp_coachApplications", JSON.stringify(updated));
 
     const coachProfile = {
@@ -143,6 +146,7 @@ export default function AdminDashboard() {
     const updated = [...coachApplications];
     updated[index].status = "rejected";
     setCoachApplications(updated);
+    setApprovedCoaches(updated.filter((app: any) => app.status === "approved"));
     localStorage.setItem("tcp_coachApplications", JSON.stringify(updated));
   };
 
@@ -150,6 +154,7 @@ export default function AdminDashboard() {
     const updated = [...investorApplications];
     updated[index].status = "approved";
     setInvestorApplications(updated);
+    setApprovedInvestors(updated.filter((app: any) => app.status === "approved"));
     localStorage.setItem("tcp_investorApplications", JSON.stringify(updated));
 
     const investorProfile = {
@@ -170,6 +175,7 @@ export default function AdminDashboard() {
     const updated = [...investorApplications];
     updated[index].status = "rejected";
     setInvestorApplications(updated);
+    setApprovedInvestors(updated.filter((app: any) => app.status === "approved"));
     localStorage.setItem("tcp_investorApplications", JSON.stringify(updated));
   };
 
