@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Users, MessageSquare, Calendar, Settings, ChevronRight, Plus, LogOut, Briefcase, AlertCircle } from "lucide-react";
 
 export default function DashboardMentor() {
-  const [isApproved, setIsApproved] = useState(false);
+  const [mentorStatus, setMentorStatus] = useState<"notApplied" | "pending" | "approved">("notApplied");
   const [activeTab, setActiveTab] = useState<"overview" | "portfolio" | "messages" | "meetings" | "profile">("overview");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [selectedPortfolio, setSelectedPortfolio] = useState<number | null>(null);
@@ -65,14 +65,23 @@ export default function DashboardMentor() {
     if (savedProfile) {
       const profile = JSON.parse(savedProfile);
       setMentorProfile(profile);
-      setIsApproved(profile.approved === true);
+      // Check if profile is approved
+      if (profile.approved === true) {
+        setMentorStatus("approved");
+      } else {
+        setMentorStatus("pending");
+      }
     } else if (savedApplications) {
       // Check if there's a pending application
       const applications = JSON.parse(savedApplications);
       const hasPendingApp = applications.some((app: any) => app.status === "pending");
       if (hasPendingApp) {
-        setIsApproved(false); // Show approval pending
+        setMentorStatus("pending"); // Has pending application
+      } else {
+        setMentorStatus("notApplied"); // Has applications but all rejected
       }
+    } else {
+      setMentorStatus("notApplied"); // No profile or applications
     }
     
     if (savedPortfolios) setPortfolios(JSON.parse(savedPortfolios));
@@ -139,7 +148,28 @@ export default function DashboardMentor() {
     }
   };
 
-  if (!isApproved) {
+  if (mentorStatus === "notApplied") {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950 p-4">
+        <Card className="max-w-md border-slate-300 dark:border-slate-700">
+          <CardContent className="pt-8 pb-8">
+            <div className="flex justify-center mb-4">
+              <AlertCircle className="h-12 w-12 text-slate-400" />
+            </div>
+            <h2 className="text-2xl font-display font-bold text-center mb-2 text-slate-900 dark:text-white">Not Yet Applied</h2>
+            <p className="text-center text-slate-600 dark:text-slate-400 mb-6">
+              To access the mentor dashboard, you need to apply first. Click the button below to get started.
+            </p>
+            <Button className="w-full bg-cyan-600 hover:bg-cyan-700" onClick={() => window.location.href = "/become-mentor"}>
+              Go to Application
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (mentorStatus === "pending") {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950 p-4">
         <Card className="max-w-md border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
