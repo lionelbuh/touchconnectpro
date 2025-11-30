@@ -2,8 +2,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, TrendingUp, Mail, ArrowRight } from "lucide-react";
+import { Check, Star, TrendingUp, Mail, ArrowRight, CheckCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function BecomeaCoach() {
   const [showForm, setShowForm] = useState(false);
@@ -35,16 +41,43 @@ export default function BecomeaCoach() {
     localStorage.setItem("tcp_coachApplications", JSON.stringify(existingCoaches));
     
     setSubmitted(true);
-    window.scrollTo(0, 0);
-    setTimeout(() => {
-      setShowForm(false);
-      setSubmitted(false);
-      setFormData({ fullName: "", email: "", linkedin: "", expertise: "", focusAreas: "", hourlyRate: "" });
-    }, 6000);
+  };
+
+  const handleCloseModal = () => {
+    setSubmitted(false);
+    setShowForm(false);
+    setFormData({ fullName: "", email: "", linkedin: "", expertise: "", focusAreas: "", hourlyRate: "" });
   };
 
   return (
     <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
+      {/* Thank You Modal */}
+      <Dialog open={submitted} onOpenChange={handleCloseModal}>
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl font-display font-bold text-slate-900 dark:text-white flex items-center justify-center gap-3">
+              <CheckCircle className="h-8 w-8 text-green-500" />
+              Thank You!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-6">
+            <p className="text-center text-lg text-slate-700 dark:text-slate-300">
+              Your coach application has been received.
+            </p>
+            <p className="text-center text-base text-slate-600 dark:text-slate-400">
+              Our team will review your application and get back to you within <strong>24-48 hours</strong>. We look forward to having you join the TouchConnectPro coaching team!
+            </p>
+          </div>
+          <Button
+            onClick={handleCloseModal}
+            className="w-full bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold"
+            data-testid="button-thank-you-ok-coach"
+          >
+            I Understand
+          </Button>
+        </DialogContent>
+      </Dialog>
+
       {/* Hero Section */}
       <section className="py-24 bg-gradient-to-b from-cyan-900/30 to-background">
         <div className="container mx-auto px-4">
