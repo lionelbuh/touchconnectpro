@@ -53,6 +53,7 @@ export default function SetPassword() {
         coach.hasPassword = true;
         localStorage.setItem("tcp_coachApplications", JSON.stringify(coaches));
         localStorage.removeItem("tcp_setPasswordPending");
+        window.scrollTo(0, 0);
         navigate("/dashboard-coach");
       }
     } else if (userType === "mentor") {
@@ -63,6 +64,7 @@ export default function SetPassword() {
         mentor.hasPassword = true;
         localStorage.setItem("tcp_mentorApplications", JSON.stringify(mentors));
         localStorage.removeItem("tcp_setPasswordPending");
+        window.scrollTo(0, 0);
         navigate("/dashboard-mentor");
       }
     } else if (userType === "investor") {
@@ -73,6 +75,7 @@ export default function SetPassword() {
         investor.hasPassword = true;
         localStorage.setItem("tcp_investorApplications", JSON.stringify(investors));
         localStorage.removeItem("tcp_setPasswordPending");
+        window.scrollTo(0, 0);
         navigate("/dashboard-investor");
       }
     }

@@ -36,11 +36,12 @@ export default function BecomeaInvestor() {
     localStorage.setItem("tcp_investorApplications", JSON.stringify(existingInvestors));
     
     setSubmitted(true);
+    window.scrollTo(0, 0);
     setTimeout(() => {
       setShowForm(false);
       setSubmitted(false);
       setFormData({ fullName: "", email: "", linkedin: "", fundName: "", investmentFocus: "", investmentPreference: "", investmentAmount: "" });
-    }, 3000);
+    }, 6000);
   };
 
   return (

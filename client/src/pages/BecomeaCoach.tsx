@@ -35,11 +35,12 @@ export default function BecomeaCoach() {
     localStorage.setItem("tcp_coachApplications", JSON.stringify(existingCoaches));
     
     setSubmitted(true);
+    window.scrollTo(0, 0);
     setTimeout(() => {
       setShowForm(false);
       setSubmitted(false);
       setFormData({ fullName: "", email: "", linkedin: "", expertise: "", focusAreas: "", hourlyRate: "" });
-    }, 3000);
+    }, 6000);
   };
 
   return (

@@ -36,11 +36,12 @@ export default function BecomeaMentor() {
     localStorage.setItem("tcp_mentorApplications", JSON.stringify(existingMentors));
     
     setSubmitted(true);
+    window.scrollTo(0, 0);
     setTimeout(() => {
       setShowForm(false);
       setSubmitted(false);
       setFormData({ fullName: "", email: "", linkedin: "", bio: "", expertise: "", experience: "" });
-    }, 3000);
+    }, 6000);
   };
 
   return (

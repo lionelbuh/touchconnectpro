@@ -43,9 +43,11 @@ export default function Login() {
       if (!coach.hasPassword) {
         // First login - need to set password
         localStorage.setItem("tcp_setPasswordPending", JSON.stringify({ email: professionalEmail, userType: "coach" }));
+        window.scrollTo(0, 0);
         navigate("/set-password");
       } else if (coach.password === professionalPassword) {
         // Correct password
+        window.scrollTo(0, 0);
         navigate("/dashboard-coach");
       } else {
         setProfessionalError("Incorrect password");
@@ -54,9 +56,11 @@ export default function Login() {
       if (!mentor.hasPassword) {
         // First login - need to set password
         localStorage.setItem("tcp_setPasswordPending", JSON.stringify({ email: professionalEmail, userType: "mentor" }));
+        window.scrollTo(0, 0);
         navigate("/set-password");
       } else if (mentor.password === professionalPassword) {
         // Correct password
+        window.scrollTo(0, 0);
         navigate("/dashboard-mentor");
       } else {
         setProfessionalError("Incorrect password");
@@ -65,9 +69,11 @@ export default function Login() {
       if (!investor.hasPassword) {
         // First login - need to set password
         localStorage.setItem("tcp_setPasswordPending", JSON.stringify({ email: professionalEmail, userType: "investor" }));
+        window.scrollTo(0, 0);
         navigate("/set-password");
       } else if (investor.password === professionalPassword) {
         // Correct password
+        window.scrollTo(0, 0);
         navigate("/dashboard-investor");
       } else {
         setProfessionalError("Incorrect password");
