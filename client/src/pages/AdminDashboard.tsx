@@ -58,6 +58,9 @@ export default function AdminDashboard() {
   const [mentorApplications, setMentorApplications] = useState<MentorApplication[]>([]);
   const [coachApplications, setCoachApplications] = useState<CoachApplication[]>([]);
   const [investorApplications, setInvestorApplications] = useState<InvestorApplication[]>([]);
+  const [approvedMentors, setApprovedMentors] = useState<any[]>([]);
+  const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
+  const [approvedInvestors, setApprovedInvestors] = useState<any[]>([]);
   const [members, setMembers] = useState<User[]>([
     { id: "m1", name: "Alex Johnson", email: "alex@tech.com", type: "entrepreneur" as const, status: "active" as const },
     { id: "m2", name: "Maria Garcia", email: "maria@startup.com", type: "entrepreneur" as const, status: "active" as const },
@@ -73,15 +76,21 @@ export default function AdminDashboard() {
   useEffect(() => {
     const savedMentorApplications = localStorage.getItem("tcp_mentorApplications");
     if (savedMentorApplications) {
-      setMentorApplications(JSON.parse(savedMentorApplications));
+      const allMentors = JSON.parse(savedMentorApplications);
+      setMentorApplications(allMentors);
+      setApprovedMentors(allMentors.filter((app: any) => app.status === "approved"));
     }
     const savedCoachApplications = localStorage.getItem("tcp_coachApplications");
     if (savedCoachApplications) {
-      setCoachApplications(JSON.parse(savedCoachApplications));
+      const allCoaches = JSON.parse(savedCoachApplications);
+      setCoachApplications(allCoaches);
+      setApprovedCoaches(allCoaches.filter((app: any) => app.status === "approved"));
     }
     const savedInvestorApplications = localStorage.getItem("tcp_investorApplications");
     if (savedInvestorApplications) {
-      setInvestorApplications(JSON.parse(savedInvestorApplications));
+      const allInvestors = JSON.parse(savedInvestorApplications);
+      setInvestorApplications(allInvestors);
+      setApprovedInvestors(allInvestors.filter((app: any) => app.status === "approved"));
     }
   }, []);
 
@@ -516,40 +525,160 @@ export default function AdminDashboard() {
 
         {/* Members & Portfolios Tab */}
         {activeTab === "members" && (
-          <div>
-            <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-6">Members & Portfolio Assignment</h2>
-            <div className="space-y-4">
-              {members.map((member) => (
-                <Card key={member.id} className="border-l-4 border-l-cyan-500">
-                  <CardContent className="pt-6">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
-                          <Badge variant="secondary">{member.type}</Badge>
-                          <Badge className={member.status === "active" ? "bg-emerald-600" : "bg-slate-500"}>
-                            {member.status === "active" ? "Active" : "Disabled"}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{member.email}</p>
-                      </div>
-                      {member.type === "entrepreneur" && (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => {
-                            setSelectedMember(member);
-                            setShowPortfolioModal(true);
-                          }}
-                          data-testid={`button-assign-portfolio-${member.id}`}
-                        >
-                          Assign to Portfolio
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-6">Members & Portfolio Assignment</h2>
+              
+              {/* Entrepreneurs */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <span className="text-emerald-600">👨‍💼</span> Entrepreneurs
+                  <Badge className="bg-emerald-100 text-emerald-800">{members.length}</Badge>
+                </h3>
+                {members.length === 0 ? (
+                  <Card>
+                    <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                      No entrepreneurs yet
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {members.map((member) => (
+                      <Card key={member.id} className="border-l-4 border-l-emerald-500">
+                        <CardContent className="pt-6">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
+                                <Badge className={member.status === "active" ? "bg-emerald-600" : "bg-slate-500"}>
+                                  {member.status === "active" ? "Active" : "Disabled"}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">{member.email}</p>
+                            </div>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                setSelectedMember(member);
+                                setShowPortfolioModal(true);
+                              }}
+                              data-testid={`button-assign-portfolio-${member.id}`}
+                            >
+                              Assign to Portfolio
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Mentors */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <span className="text-amber-600">🎓</span> Mentors (Approved)
+                  <Badge className="bg-amber-100 text-amber-800">{approvedMentors.length}</Badge>
+                </h3>
+                {approvedMentors.length === 0 ? (
+                  <Card>
+                    <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                      No approved mentors yet
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {approvedMentors.map((mentor, idx) => (
+                      <Card key={idx} className="border-l-4 border-l-amber-500">
+                        <CardContent className="pt-6">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <p className="font-semibold text-slate-900 dark:text-white">{mentor.fullName}</p>
+                                <Badge className="bg-amber-100 text-amber-800">Mentor</Badge>
+                                <Badge className="bg-emerald-600">Approved</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">{mentor.email}</p>
+                              <p className="text-xs text-slate-500">Expertise: {mentor.expertise}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Coaches */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <span className="text-cyan-600">💪</span> Coaches (Approved)
+                  <Badge className="bg-cyan-100 text-cyan-800">{approvedCoaches.length}</Badge>
+                </h3>
+                {approvedCoaches.length === 0 ? (
+                  <Card>
+                    <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                      No approved coaches yet
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {approvedCoaches.map((coach, idx) => (
+                      <Card key={idx} className="border-l-4 border-l-cyan-500">
+                        <CardContent className="pt-6">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
+                                <Badge className="bg-cyan-100 text-cyan-800">Coach</Badge>
+                                <Badge className="bg-emerald-600">Approved</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">{coach.email}</p>
+                              <p className="text-xs text-slate-500">Hourly Rate: ${coach.hourlyRate} • Expertise: {coach.expertise}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Investors */}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <span className="text-blue-600">💰</span> Investors (Approved)
+                  <Badge className="bg-blue-100 text-blue-800">{approvedInvestors.length}</Badge>
+                </h3>
+                {approvedInvestors.length === 0 ? (
+                  <Card>
+                    <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                      No approved investors yet
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {approvedInvestors.map((investor, idx) => (
+                      <Card key={idx} className="border-l-4 border-l-blue-500">
+                        <CardContent className="pt-6">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <p className="font-semibold text-slate-900 dark:text-white">{investor.fullName}</p>
+                                <Badge className="bg-blue-100 text-blue-800">Investor</Badge>
+                                <Badge className="bg-emerald-600">Approved</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">{investor.email}</p>
+                              <p className="text-xs text-slate-500">Fund: {investor.fundName} • Investment: {investor.investmentAmount}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
