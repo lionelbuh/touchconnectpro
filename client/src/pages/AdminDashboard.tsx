@@ -73,6 +73,8 @@ export default function AdminDashboard() {
   const [messageText, setMessageText] = useState("");
   const [portfolioAssignment, setPortfolioAssignment] = useState("");
   const [showPortfolioModal, setShowPortfolioModal] = useState(false);
+  const [messageHistory, setMessageHistory] = useState<any[]>([]);
+  const [disabledProfessionals, setDisabledProfessionals] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     const savedMentorApplications = localStorage.getItem("tcp_mentorApplications");
@@ -92,6 +94,14 @@ export default function AdminDashboard() {
       const allInvestors = JSON.parse(savedInvestorApplications);
       setInvestorApplications(allInvestors);
       setApprovedInvestors(allInvestors.filter((app: any) => app.status === "approved"));
+    }
+    const savedMessages = localStorage.getItem("tcp_messageHistory");
+    if (savedMessages) {
+      setMessageHistory(JSON.parse(savedMessages));
+    }
+    const savedDisabled = localStorage.getItem("tcp_disabledProfessionals");
+    if (savedDisabled) {
+      setDisabledProfessionals(JSON.parse(savedDisabled));
     }
   }, []);
 
@@ -189,11 +199,29 @@ export default function AdminDashboard() {
 
   const handleSendMessage = () => {
     if (messageText.trim() && selectedMember) {
+      const newMessage = {
+        id: Date.now(),
+        from: "Admin",
+        to: selectedMember.name,
+        toEmail: selectedMember.email,
+        message: messageText,
+        timestamp: new Date().toISOString()
+      };
+      const updated = [...messageHistory, newMessage];
+      setMessageHistory(updated);
+      localStorage.setItem("tcp_messageHistory", JSON.stringify(updated));
       console.log(`Message sent to ${selectedMember.name}: ${messageText}`);
       setMessageText("");
       setShowMessageModal(false);
       setSelectedMember(null);
     }
+  };
+
+  const handleToggleProfessionalStatus = (type: "mentor" | "coach" | "investor", idx: number) => {
+    const key = `${type}-${idx}`;
+    const updated = { ...disabledProfessionals, [key]: !disabledProfessionals[key] };
+    setDisabledProfessionals(updated);
+    localStorage.setItem("tcp_disabledProfessionals", JSON.stringify(updated));
   };
 
   const handleAssignPortfolio = () => {
@@ -922,8 +950,10 @@ export default function AdminDashboard() {
                   <div>
                     <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">🎓 Mentors ({approvedMentors.length})</h4>
                     <div className="space-y-3">
-                      {approvedMentors.map((mentor, idx) => (
-                        <Card key={idx}>
+                      {approvedMentors.map((mentor, idx) => {
+                        const isDisabled = disabledProfessionals[`mentor-${idx}`];
+                        return (
+                        <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
                           <CardContent className="pt-6">
                             <div className="flex justify-between items-center">
                               <div>
@@ -931,13 +961,14 @@ export default function AdminDashboard() {
                                 <p className="text-sm text-muted-foreground">{mentor.email}</p>
                               </div>
                               <div className="flex gap-2">
-                                <Button variant="default" data-testid={`button-toggle-mentor-${idx}`} size="sm">Disable</Button>
+                                <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("mentor", idx)} data-testid={`button-toggle-mentor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
                                 <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-mentor-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
                               </div>
                             </div>
                           </CardContent>
                         </Card>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                   )}
@@ -946,8 +977,10 @@ export default function AdminDashboard() {
                   <div>
                     <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💪 Coaches ({approvedCoaches.length})</h4>
                     <div className="space-y-3">
-                      {approvedCoaches.map((coach, idx) => (
-                        <Card key={idx}>
+                      {approvedCoaches.map((coach, idx) => {
+                        const isDisabled = disabledProfessionals[`coach-${idx}`];
+                        return (
+                        <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
                           <CardContent className="pt-6">
                             <div className="flex justify-between items-center">
                               <div>
@@ -955,13 +988,14 @@ export default function AdminDashboard() {
                                 <p className="text-sm text-muted-foreground">{coach.email}</p>
                               </div>
                               <div className="flex gap-2">
-                                <Button variant="default" data-testid={`button-toggle-coach-${idx}`} size="sm">Disable</Button>
+                                <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("coach", idx)} data-testid={`button-toggle-coach-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
                                 <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-coach-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
                               </div>
                             </div>
                           </CardContent>
                         </Card>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                   )}
@@ -970,8 +1004,10 @@ export default function AdminDashboard() {
                   <div>
                     <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💰 Investors ({approvedInvestors.length})</h4>
                     <div className="space-y-3">
-                      {approvedInvestors.map((investor, idx) => (
-                        <Card key={idx}>
+                      {approvedInvestors.map((investor, idx) => {
+                        const isDisabled = disabledProfessionals[`investor-${idx}`];
+                        return (
+                        <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
                           <CardContent className="pt-6">
                             <div className="flex justify-between items-center">
                               <div>
@@ -979,13 +1015,14 @@ export default function AdminDashboard() {
                                 <p className="text-sm text-muted-foreground">{investor.email}</p>
                               </div>
                               <div className="flex gap-2">
-                                <Button variant="default" data-testid={`button-toggle-investor-${idx}`} size="sm">Disable</Button>
+                                <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("investor", idx)} data-testid={`button-toggle-investor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
                                 <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-investor-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
                               </div>
                             </div>
                           </CardContent>
                         </Card>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                   )}
@@ -1047,11 +1084,25 @@ export default function AdminDashboard() {
       {/* Messaging Modal */}
       {showMessageModal && selectedMember && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-2xl max-h-96 overflow-y-auto">
             <CardHeader>
               <CardTitle>Send Message to {selectedMember.name}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {messageHistory.filter(m => m.toEmail === selectedMember.email).length > 0 && (
+              <div className="mb-4 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Message History</h4>
+                <div className="space-y-2 max-h-24 overflow-y-auto">
+                  {messageHistory.filter(m => m.toEmail === selectedMember.email).map(msg => (
+                    <div key={msg.id} className="text-xs bg-white dark:bg-slate-700 p-2 rounded">
+                      <p className="font-semibold text-slate-700 dark:text-slate-200">{msg.from} → {msg.to}</p>
+                      <p className="text-slate-600 dark:text-slate-400">{msg.message}</p>
+                      <p className="text-slate-500 text-xs">{new Date(msg.timestamp).toLocaleString()}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              )}
               <textarea
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
