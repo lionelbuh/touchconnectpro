@@ -517,17 +517,7 @@ export default function DashboardEntrepreneur() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">Waiting List</div>
-                      <p className="text-xs text-muted-foreground mt-1">5 business days</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-l-4 border-l-cyan-500 shadow-sm">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">Progress</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">Step 3 of 4</div>
-                      <Progress value={75} className="h-2 mt-2" />
+                      <p className="text-xs text-muted-foreground mt-1">not yet fully approved in your Mentor's portfolio</p>
                     </CardContent>
                   </Card>
                 </div>
