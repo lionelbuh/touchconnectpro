@@ -59,12 +59,22 @@ export default function DashboardMentor() {
 
   useEffect(() => {
     const savedProfile = localStorage.getItem("tcp_mentorProfile");
+    const savedApplications = localStorage.getItem("tcp_mentorApplications");
     const savedPortfolios = localStorage.getItem("tcp_mentorPortfolios");
+    
     if (savedProfile) {
       const profile = JSON.parse(savedProfile);
       setMentorProfile(profile);
       setIsApproved(profile.approved === true);
+    } else if (savedApplications) {
+      // Check if there's a pending application
+      const applications = JSON.parse(savedApplications);
+      const hasPendingApp = applications.some((app: any) => app.status === "pending");
+      if (hasPendingApp) {
+        setIsApproved(false); // Show approval pending
+      }
     }
+    
     if (savedPortfolios) setPortfolios(JSON.parse(savedPortfolios));
   }, []);
 
