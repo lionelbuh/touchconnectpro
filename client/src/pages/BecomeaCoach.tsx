@@ -246,6 +246,18 @@ export default function BecomeaCoach() {
             </Card>
           </div>
 
+          {/* Quality Standards */}
+          <div className="mb-16">
+            <h2 className="text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">Our Quality Standards</h2>
+            <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
+              <CardContent className="p-10">
+                <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
+                  TouchConnectPro values a positive and reliable coaching experience for all users. If a coach's rating drops below 3 stars out of 5, we may pause or deactivate the account until quality standards are met again.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* CTA Section */}
           {!showForm ? (
             <div className="bg-gradient-to-r from-cyan-900/50 to-slate-900/50 rounded-2xl p-12 text-center border border-cyan-500/30">
