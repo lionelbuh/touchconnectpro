@@ -181,9 +181,17 @@ export default function DashboardMentor() {
             <p className="text-center text-slate-600 dark:text-slate-400 mb-6">
               Your mentor application is being reviewed by our admin team. You'll be able to access your dashboard once approved.
             </p>
-            <p className="text-center text-sm text-amber-700 dark:text-amber-300">
+            <p className="text-center text-sm text-amber-700 dark:text-amber-300 mb-6">
               This typically takes 24-48 hours. Check your email for updates.
             </p>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => window.location.href = "/"}
+              data-testid="button-go-home"
+            >
+              Go Home
+            </Button>
           </CardContent>
         </Card>
       </div>
