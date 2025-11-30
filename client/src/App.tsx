@@ -17,6 +17,7 @@ import BecomeaInvestor from "@/pages/BecomeaInvestor";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import Login from "@/pages/Login";
+import SetPassword from "@/pages/SetPassword";
 import DashboardEntrepreneur from "@/pages/DashboardEntrepreneur";
 import DashboardCoach from "@/pages/DashboardCoach";
 import DashboardMentor from "@/pages/DashboardMentor";
@@ -53,6 +54,7 @@ function Router() {
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms-of-service" component={TermsOfService} />
         <Route path="/login" component={Login} />
+        <Route path="/set-password" component={SetPassword} />
         <Route path="/dashboard-entrepreneur" component={DashboardEntrepreneur} />
         <Route path="/dashboard-coach" component={DashboardCoach} />
         <Route path="/dashboard-mentor" component={DashboardMentor} />
