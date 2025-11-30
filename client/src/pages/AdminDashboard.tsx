@@ -261,7 +261,7 @@ export default function AdminDashboard() {
                       <Card key={actualIdx} className="border-l-4 border-l-amber-500">
                         <CardHeader>
                           <div className="flex justify-between items-start">
-                            <div>
+                            <div className="flex-1">
                               <CardTitle>{app.fullName}</CardTitle>
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
@@ -269,19 +269,43 @@ export default function AdminDashboard() {
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                              <p className="text-slate-900 dark:text-white">{app.fullName}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                              <p className="text-slate-900 dark:text-white">{app.email}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                              <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Years Experience</p>
+                              <p className="text-slate-900 dark:text-white">{app.experience}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                              <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
+                              <p className="text-slate-900 dark:text-white">{app.state || "—"}</p>
+                            </div>
                             <div>
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
                               <p className="text-slate-900 dark:text-white">{app.expertise}</p>
                             </div>
                             <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Experience</p>
-                              <p className="text-slate-900 dark:text-white">{app.experience}</p>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
+                              <p className="text-slate-900 dark:text-white text-xs">{new Date(app.submittedAt).toLocaleDateString()}</p>
                             </div>
                           </div>
                           <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
-                            <p className="text-slate-900 dark:text-white text-sm">{app.bio}</p>
+                            <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.bio}</p>
                           </div>
                           <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
                             <Button 
@@ -325,7 +349,7 @@ export default function AdminDashboard() {
                       <Card key={actualIdx} className="border-l-4 border-l-cyan-500">
                         <CardHeader>
                           <div className="flex justify-between items-start">
-                            <div>
+                            <div className="flex-1">
                               <CardTitle>{app.fullName}</CardTitle>
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
@@ -333,19 +357,43 @@ export default function AdminDashboard() {
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
-                              <p className="text-slate-900 dark:text-white">{app.expertise}</p>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                              <p className="text-slate-900 dark:text-white">{app.fullName}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                              <p className="text-slate-900 dark:text-white">{app.email}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                              <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
                             </div>
                             <div>
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Hourly Rate</p>
                               <p className="text-slate-900 dark:text-white">${app.hourlyRate}</p>
                             </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
+                              <p className="text-slate-900 dark:text-white">{app.expertise}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                              <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
+                              <p className="text-slate-900 dark:text-white">{app.state || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
+                              <p className="text-slate-900 dark:text-white text-xs">{new Date(app.submittedAt).toLocaleDateString()}</p>
+                            </div>
                           </div>
                           <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
-                            <p className="text-slate-900 dark:text-white text-sm">{app.focusAreas}</p>
+                            <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.focusAreas}</p>
                           </div>
                           <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
                             <Button 
@@ -389,7 +437,7 @@ export default function AdminDashboard() {
                       <Card key={actualIdx} className="border-l-4 border-l-amber-500">
                         <CardHeader>
                           <div className="flex justify-between items-start">
-                            <div>
+                            <div className="flex-1">
                               <CardTitle>{app.fullName}</CardTitle>
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
@@ -397,7 +445,19 @@ export default function AdminDashboard() {
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                              <p className="text-slate-900 dark:text-white">{app.fullName}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                              <p className="text-slate-900 dark:text-white">{app.email}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                              <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                            </div>
                             <div>
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Fund Name</p>
                               <p className="text-slate-900 dark:text-white">{app.fundName}</p>
@@ -406,10 +466,26 @@ export default function AdminDashboard() {
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Amount</p>
                               <p className="text-slate-900 dark:text-white">{app.investmentAmount}</p>
                             </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Preference</p>
+                              <p className="text-slate-900 dark:text-white">{app.investmentPreference}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                              <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
+                              <p className="text-slate-900 dark:text-white">{app.state || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
+                              <p className="text-slate-900 dark:text-white text-xs">{new Date(app.submittedAt).toLocaleDateString()}</p>
+                            </div>
                           </div>
                           <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Focus</p>
-                            <p className="text-slate-900 dark:text-white text-sm">{app.investmentFocus}</p>
+                            <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.investmentFocus}</p>
                           </div>
                           <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
                             <Button 
