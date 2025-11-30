@@ -9,13 +9,13 @@ export default function TermsOfService() {
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 text-slate-900 dark:text-white">
-              Terms of Service
+              Terms & Conditions + Refund Policy
             </h1>
             <p className="text-lg text-slate-600 dark:text-slate-400">
-              Last updated: 11/30/2025
+              Last Updated: 11/30/2025
             </p>
             <p className="text-slate-600 dark:text-slate-400 mt-2">
-              Please read these Terms of Service carefully before using www.TouchConnectPro.com
+              Welcome to TouchConnectPro.com. By using our website, creating an account, booking a coach, or purchasing a membership, you agree to the Terms & Conditions outlined below. If you do not agree, please discontinue use of the platform.
             </p>
           </div>
         </div>
@@ -25,42 +25,54 @@ export default function TermsOfService() {
       <section className="py-16">
         <div className="container mx-auto px-4 max-w-3xl">
           <div className="space-y-8">
-            {/* 1. Acceptance of Terms */}
+            {/* 1. Overview of the Platform */}
             <Card className="border-slate-200 dark:border-slate-700">
               <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">1. Acceptance of Terms</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  By accessing and using www.TouchConnectPro.com (the "Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">1. Overview of the Platform</h2>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
+                  TouchConnectPro connects entrepreneurs with mentors, coaches, experts, and resources to grow their business. We provide:
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2 mb-4">
+                  <li>AI-assisted pitch & business material creation</li>
+                  <li>Mentor portfolio placement (upon approval)</li>
+                  <li>Paid 1:1 and group coaching access</li>
+                  <li>Investor presentation preparation</li>
+                  <li>Platform for growth, strategy, and learning</li>
+                </ul>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">
+                  We guide entrepreneurs — but we do not guarantee business results, coaching outcomes, or investor funding decisions.
                 </p>
               </CardContent>
             </Card>
 
-            {/* 2. Use License */}
+            {/* 2. Membership & Subscription */}
             <Card className="border-slate-200 dark:border-slate-700">
               <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">2. User Responsibilities</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  By using TouchConnectPro, you agree to:
-                </p>
-                <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300">
-                  <li>Provide accurate and complete information during sign-up and onboarding</li>
-                  <li>Maintain the confidentiality of your account credentials</li>
-                  <li>Use the platform only for lawful purposes and in a way that does not infringe upon the rights of others</li>
-                  <li>Not engage in any conduct that restricts or inhibits anyone's use or enjoyment of the Service</li>
-                  <li>Not attempt to gain unauthorized access to the platform or its systems</li>
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">2. Membership & Subscription</h2>
+                <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2">
+                  <li>Membership begins only after your project is accepted by a mentor.</li>
+                  <li>Once active, membership is billed monthly through Stripe until canceled.</li>
+                  <li>You may cancel at any time from your dashboard.</li>
+                  <li>Membership pricing may change with notice before renewal.</li>
+                  <li>Coaching sessions purchased separately are not included in your membership fee.</li>
                 </ul>
               </CardContent>
             </Card>
 
-            {/* 3. Membership & Billing */}
+            {/* 3. Mentor Availability & Changes */}
             <Card className="border-slate-200 dark:border-slate-700">
               <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">3. Membership & Billing</h2>
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">3. Mentor Availability & Changes</h2>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  TouchConnectPro membership is only available after a mentor approves your application and you're added to their portfolio. Once approved, your membership billing will begin at the agreed-upon rate ($49/month for standard membership). By continuing to use TouchConnectPro after approval, you authorize us to charge your payment method.
+                  Mentorship continuity is supported, however changes may occur if:
                 </p>
+                <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2 mb-4">
+                  <li>Your needs evolve</li>
+                  <li>A mentor becomes unavailable</li>
+                  <li>A new professional becomes a better fit</li>
+                </ul>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  Billing cycles are monthly and will continue until you cancel your membership. You are responsible for keeping your billing information current.
+                  If a change is required, TouchConnectPro will help transition you to a new suitable mentor.
                 </p>
               </CardContent>
             </Card>
@@ -70,51 +82,56 @@ export default function TermsOfService() {
               <CardContent className="p-8">
                 <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">4. Refund & Cancellation Policy</h2>
                 
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Cancellation</h3>
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                      You can cancel your TouchConnectPro membership at any time with one click from your dashboard. Cancellation takes effect immediately, and you will retain access to your account through the end of the current billing cycle.
-                    </p>
+                    <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Membership Cancellation</h3>
+                    <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2">
+                      <li>You may cancel your membership anytime through your dashboard.</li>
+                      <li>Cancellation stops future billing, and your access remains active until the end of the billing cycle.</li>
+                    </ul>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Refunds</h3>
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-2">
-                      We offer a 7-day refund window for new members. If you cancel within 7 days of your first billing cycle, we will issue a full refund to your original payment method.
-                    </p>
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                      After 7 days, membership fees are non-refundable. However, you can cancel anytime to stop future charges. No refunds will be issued for partial months or unused portions of your membership.
-                    </p>
+                    <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Membership Refunds</h3>
+                    <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2">
+                      <li>We offer a 7-day refund window for new members.</li>
+                      <li>If you cancel within 7 days of your first charge, you may request a full refund.</li>
+                      <li>After 7 days, membership fees become non-refundable.</li>
+                      <li>No refunds are issued for partial months, unused time, or missed platform use.</li>
+                    </ul>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Coaching Session Fees</h3>
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-2">
-                      Coaching sessions booked through mentors or coaches are separate from membership fees and are arranged directly between you and the mentor/coach.
-                    </p>
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-2">
-                      Mentors or coaches are fully responsible for any reimbursements in case of cancellations or disputes.
-                    </p>
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">
-                      The 20% TouchConnectPro platform commission for providing access to the list of coaches is non-refundable and is not reimbursed under any circumstances.
-                    </p>
+                    <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Coaching Session Fees</h3>
+                    <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2">
+                      <li>Coaching or consulting sessions are third-party services offered by mentors and are not included in the membership price.</li>
+                      <li>Coaches are responsible for approving or denying refund requests.</li>
+                      <li>TouchConnectPro retains a non-refundable 20% platform commission for providing access to a network of coaches.</li>
+                      <li className="font-semibold">No reimbursement of the TouchConnectPro service fee is issued under any circumstance.</li>
+                    </ul>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* 5. Disclaimer */}
-            <Card className="border-slate-200 dark:border-slate-700 bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/30">
+            {/* 5. Data Protection & Privacy */}
+            <Card className="border-slate-200 dark:border-slate-700">
               <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
-                  <AlertCircle className="h-6 w-6" /> 5. Disclaimer
-                </h2>
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">5. Data Protection & Privacy</h2>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  The materials on TouchConnectPro.com are provided on an "as is" basis. TouchConnectPro makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
+                  Your privacy matters to us.
+                </p>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
+                  By using the platform, you also agree to our Privacy Policy, which explains how we collect, use, and protect your data. Information such as name, email address, usage data, and cookies may be collected to operate the platform, improve user experience, process payments, and maintain account access.
+                </p>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
+                  We do not sell personal information — and only share data when required for payment processing, communication (e.g. Mailchimp), or legal compliance.
                 </p>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  TouchConnectPro is not responsible for the accuracy or outcomes of mentorship relationships, coaching sessions, or investment opportunities. Mentor guidance and business advice are provided as educational resources and should not be considered professional financial, legal, or business advice.
+                  Users may request access, correction, or deletion of their data anytime by contacting:
+                </p>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mt-2 font-semibold">
+                  📩 hello@touchconnectpro.com
                 </p>
               </CardContent>
             </Card>
@@ -123,69 +140,72 @@ export default function TermsOfService() {
             <Card className="border-slate-200 dark:border-slate-700">
               <CardContent className="p-8">
                 <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">6. Intellectual Property</h2>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                  All material, branding, guides, content, templates, and digital assets belong to TouchConnectPro. Users may not resell, duplicate, copy, or distribute platform materials for commercial or competitive use.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* 7. No Guarantee of Funding */}
+            <Card className="border-slate-200 dark:border-slate-700">
+              <CardContent className="p-8">
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">7. No Guarantee of Funding</h2>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  All content on TouchConnectPro.com, including text, graphics, logos, images, and software, is the property of TouchConnectPro or its content suppliers and is protected by international copyright laws.
+                  We help entrepreneurs prepare pitches and may introduce investment opportunities — however:
                 </p>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  You retain ownership of any content you create or upload to your TouchConnectPro account (such as your business pitch or project information). However, by uploading content, you grant TouchConnectPro and your assigned mentor/coach a license to use, copy, and display that content for the purposes of your membership and mentorship relationship.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* 7. Limitations of Liability */}
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">7. Limitations of Liability</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  In no event shall TouchConnectPro or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on TouchConnectPro.com, even if TouchConnectPro or a TouchConnectPro authorized representative has been notified orally or in writing of the possibility of such damage.
+                <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2 mb-4">
+                  <li>Investor decisions are independent</li>
+                  <li>Funding is not guaranteed</li>
+                  <li>Outcomes depend on the founder's execution and readiness</li>
+                </ul>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">
+                  TouchConnectPro is a support system — not a funding provider.
                 </p>
               </CardContent>
             </Card>
 
-            {/* 8. Third-Party Links */}
-            <Card className="border-slate-200 dark:border-slate-700">
+            {/* 8. Limitation of Liability */}
+            <Card className="border-slate-200 dark:border-slate-700 bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/30">
               <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">8. Third-Party Links</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  TouchConnectPro may contain links to third-party websites and resources. We are not responsible for the availability or content of these external sites, and linking to them does not imply endorsement. Your use of third-party websites is at your own risk and subject to their terms of service.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* 9. Modifications to Service */}
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">9. Modifications to Service</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  TouchConnectPro reserves the right to modify or discontinue the Service (or any part thereof) at any time with or without notice. We may also revise these Terms of Service at any time. By continuing to use the Service after any such modification, you accept and agree to be bound by the revised Terms of Service.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* 10. Dispute Resolution */}
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">10. Dispute Resolution</h2>
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                  <AlertCircle className="h-6 w-6" /> 8. Limitation of Liability
+                </h2>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  If you have a dispute with TouchConnectPro, please first contact us at hello@touchconnectpro.com to attempt to resolve the issue informally. If the dispute cannot be resolved within 30 days, either party may pursue formal legal action.
+                  Users are responsible for decisions and outcomes arising from mentorship, coaching sessions, and investor interactions. TouchConnectPro is not liable for:
                 </p>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  These Terms are governed by and construed in accordance with the laws of the United States, and you irrevocably submit to the exclusive jurisdiction of the courts in that location.
+                <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2 mb-4">
+                  <li>Business performance or losses</li>
+                  <li>Investment acceptance or rejection</li>
+                  <li>Miscommunication or disputes between users & coaches</li>
+                  <li>Missed sessions or external agreements</li>
+                </ul>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">
+                  Use of the platform is voluntary and at your own discretion.
                 </p>
               </CardContent>
             </Card>
 
-            {/* 11. Contact Information */}
+            {/* 9. Changes to Terms */}
+            <Card className="border-slate-200 dark:border-slate-700">
+              <CardContent className="p-8">
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">9. Changes to Terms</h2>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
+                  Terms & Conditions may be updated as the platform evolves.
+                </p>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                  The most recent version will always be available here with a revised "Last Updated" date.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Contact Us */}
             <Card className="border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
               <CardContent className="p-8">
                 <h2 className="text-2xl font-display font-bold mb-6 text-slate-900 dark:text-white flex items-center gap-2">
-                  <Mail className="h-6 w-6" /> 11. Contact Us
+                  <Mail className="h-6 w-6" /> Questions? Contact Us
                 </h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  For any questions about these Terms of Service or to report violations, please contact us at:
-                </p>
                 <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                  hello@touchconnectpro.com
+                  📩 hello@touchconnectpro.com
                 </p>
               </CardContent>
             </Card>
