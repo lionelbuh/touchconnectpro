@@ -1,9 +1,46 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Star, TrendingUp, Target, ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export default function BecomeaInvestor() {
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    linkedin: "",
+    fundName: "",
+    investmentFocus: ""
+  });
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.fullName || !formData.email || !formData.linkedin || !formData.fundName || !formData.investmentFocus) {
+      alert("Please fill in all fields");
+      return;
+    }
+    
+    const investorData = { ...formData, status: "pending", submittedAt: new Date().toISOString() };
+    const existingInvestors = JSON.parse(localStorage.getItem("tcp_investorApplications") || "[]");
+    existingInvestors.push(investorData);
+    localStorage.setItem("tcp_investorApplications", JSON.stringify(existingInvestors));
+    
+    setSubmitted(true);
+    setTimeout(() => {
+      setShowForm(false);
+      setSubmitted(false);
+      setFormData({ fullName: "", email: "", linkedin: "", fundName: "", investmentFocus: "" });
+    }, 3000);
+  };
+
   return (
     <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
       {/* Hero Section */}
@@ -131,18 +168,102 @@ export default function BecomeaInvestor() {
           </div>
 
           {/* CTA Section */}
-          <div className="bg-gradient-to-r from-amber-900/50 to-slate-900/50 rounded-2xl p-12 text-center border border-amber-500/30">
-            <h2 className="text-3xl font-display font-bold mb-6 text-white">Ready to Invest?</h2>
-            <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
-              If you'd like to discuss alignment, investment terms, SAFE notes, or upcoming rounds — we're ready to talk.
-            </p>
-            <p className="text-slate-600 dark:text-slate-500 mb-8">
-              Let's build futures together.
-            </p>
-            <Button size="lg" className="h-14 px-10 text-lg rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold">
-              Get in Touch <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
+          {!showForm ? (
+            <div className="bg-gradient-to-r from-amber-900/50 to-slate-900/50 rounded-2xl p-12 text-center border border-amber-500/30">
+              <h2 className="text-3xl font-display font-bold mb-6 text-white">Ready to Invest?</h2>
+              <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
+                If you'd like to discuss alignment, investment terms, SAFE notes, or upcoming rounds — we're ready to talk.
+              </p>
+              <p className="text-slate-600 dark:text-slate-500 mb-8">
+                Let's build futures together.
+              </p>
+              <Button size="lg" className="h-14 px-10 text-lg rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold" onClick={() => setShowForm(true)} data-testid="button-get-in-touch-investor">
+                Get in Touch <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          ) : (
+            <Card className="border-amber-200 dark:border-amber-900/30 bg-white dark:bg-slate-900">
+              <CardContent className="p-12">
+                <h2 className="text-3xl font-display font-bold mb-2 text-slate-900 dark:text-white">Investor Profile</h2>
+                <p className="text-muted-foreground mb-8">Tell us about your investment focus. Our team will review and contact you within 48 hours.</p>
+
+                {submitted ? (
+                  <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-lg p-6 text-center">
+                    <p className="text-emerald-700 dark:text-emerald-300 font-semibold mb-2">Application Submitted!</p>
+                    <p className="text-emerald-600 dark:text-emerald-400">We'll review your profile and get back to you soon.</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Full Name *</label>
+                      <Input
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleInputChange}
+                        placeholder="Your full name"
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-investor-fullname"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Email Address *</label>
+                      <Input
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="your@email.com"
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-investor-email"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">LinkedIn Profile *</label>
+                      <Input
+                        name="linkedin"
+                        value={formData.linkedin}
+                        onChange={handleInputChange}
+                        placeholder="linkedin.com/in/xxx"
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-investor-linkedin"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Fund Name / Organization *</label>
+                      <Input
+                        name="fundName"
+                        value={formData.fundName}
+                        onChange={handleInputChange}
+                        placeholder="e.g., Your Fund Name or Company"
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-investor-fundname"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Investment Focus / Thesis *</label>
+                      <textarea
+                        name="investmentFocus"
+                        value={formData.investmentFocus}
+                        onChange={handleInputChange}
+                        placeholder="e.g., Early-stage SaaS, climate tech, biotech"
+                        className="w-full min-h-24 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        data-testid="textarea-investor-focus"
+                      />
+                    </div>
+
+                    <div className="flex gap-3 pt-6">
+                      <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>Cancel</Button>
+                      <Button type="submit" className="flex-1 bg-amber-600 hover:bg-amber-700" data-testid="button-submit-investor-form">Submit Information</Button>
+                    </div>
+                  </form>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </section>
     </div>
