@@ -21,6 +21,7 @@ import DashboardEntrepreneur from "@/pages/DashboardEntrepreneur";
 import DashboardCoach from "@/pages/DashboardCoach";
 import DashboardMentor from "@/pages/DashboardMentor";
 import DashboardInvestor from "@/pages/DashboardInvestor";
+import AdminMentorApproval from "@/pages/AdminMentorApproval";
 import BusinessPlan from "@/pages/BusinessPlan";
 import NotFound from "@/pages/not-found";
 
@@ -55,6 +56,7 @@ function Router() {
         <Route path="/dashboard-coach" component={DashboardCoach} />
         <Route path="/dashboard-mentor" component={DashboardMentor} />
         <Route path="/dashboard-investor" component={DashboardInvestor} />
+        <Route path="/admin-mentor-approval" component={AdminMentorApproval} />
         <Route path="/business-plan" component={BusinessPlan} />
         <Route component={NotFound} />
       </Switch>

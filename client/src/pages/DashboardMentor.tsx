@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Users, MessageSquare, Calendar, Settings, ChevronRight, Plus, LogOut, Briefcase } from "lucide-react";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, Plus, LogOut, Briefcase, AlertCircle } from "lucide-react";
 
 export default function DashboardMentor() {
+  const [isApproved, setIsApproved] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "portfolio" | "messages" | "meetings" | "profile">("overview");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [selectedPortfolio, setSelectedPortfolio] = useState<number | null>(null);
@@ -19,7 +20,8 @@ export default function DashboardMentor() {
     bio: "Serial entrepreneur with 10+ years of experience in SaaS and product strategy. Passionate about helping early-stage founders build successful companies.",
     expertise: "SaaS, Product Strategy, Go-to-Market",
     yearsExperience: "10+",
-    profileImage: null as string | null
+    profileImage: null as string | null,
+    approved: false
   });
 
   const [portfolios, setPortfolios] = useState([
@@ -58,7 +60,11 @@ export default function DashboardMentor() {
   useEffect(() => {
     const savedProfile = localStorage.getItem("tcp_mentorProfile");
     const savedPortfolios = localStorage.getItem("tcp_mentorPortfolios");
-    if (savedProfile) setMentorProfile(JSON.parse(savedProfile));
+    if (savedProfile) {
+      const profile = JSON.parse(savedProfile);
+      setMentorProfile(profile);
+      setIsApproved(profile.approved === true);
+    }
     if (savedPortfolios) setPortfolios(JSON.parse(savedPortfolios));
   }, []);
 
@@ -122,6 +128,27 @@ export default function DashboardMentor() {
       setShowMeetingModal(false);
     }
   };
+
+  if (!isApproved) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950 p-4">
+        <Card className="max-w-md border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
+          <CardContent className="pt-8 pb-8">
+            <div className="flex justify-center mb-4">
+              <AlertCircle className="h-12 w-12 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h2 className="text-2xl font-display font-bold text-center mb-2 text-slate-900 dark:text-white">Approval Pending</h2>
+            <p className="text-center text-slate-600 dark:text-slate-400 mb-6">
+              Your mentor application is being reviewed by our admin team. You'll be able to access your dashboard once approved.
+            </p>
+            <p className="text-center text-sm text-amber-700 dark:text-amber-300">
+              This typically takes 24-48 hours. Check your email for updates.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
