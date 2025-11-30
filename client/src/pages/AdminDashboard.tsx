@@ -648,6 +648,7 @@ export default function AdminDashboard() {
                 </Button>
               </div>
 
+              <>
               {/* Portfolio Assignment Sub-tab */}
               {activeMembersSubTab === "portfolio" && (
               <div>
@@ -877,6 +878,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               )}
+              </>
             </div>
           </div>
         )}
