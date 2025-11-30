@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ChevronDown, Globe } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Globe } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export default function Login() {
@@ -11,25 +11,10 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [isRecovery, setIsRecovery] = useState(false);
-  const [accountType, setAccountType] = useState("entrepreneur");
   const [country, setCountry] = useState("");
-  
-  const accountTypes = [
-    { value: "entrepreneur", label: "Entrepreneur with an Idea" },
-    { value: "coach", label: "Coach" },
-    { value: "investor", label: "Angel Investor" },
-    { value: "mentor", label: "Mentor" }
-  ];
 
   const handleSignup = () => {
-    // Navigate to the correct dashboard based on account type
-    const dashboardRoutes: Record<string, string> = {
-      entrepreneur: "/dashboard-entrepreneur",
-      coach: "/dashboard-coach",
-      investor: "/dashboard-investor",
-      mentor: "/dashboard-mentor"
-    };
-    navigate(dashboardRoutes[accountType]);
+    navigate("/dashboard-entrepreneur");
   };
 
   return (
@@ -149,25 +134,9 @@ export default function Login() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
-              {/* Account Type Dropdown */}
+              {/* Account Type Label */}
               <div className="space-y-2">
-                <Label htmlFor="accounttype" className="text-slate-200">Who are you?</Label>
-                <div className="relative">
-                  <select
-                    id="accounttype"
-                    value={accountType}
-                    onChange={(e) => setAccountType(e.target.value)}
-                    className="w-full bg-slate-800/50 border border-slate-600 text-white px-4 py-2 rounded-md focus:border-cyan-500 focus:ring-cyan-500/20 focus:outline-none appearance-none cursor-pointer"
-                    data-testid="select-account-type"
-                  >
-                    {accountTypes.map((type) => (
-                      <option key={type.value} value={type.value} className="bg-slate-900">
-                        {type.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-3 h-5 w-5 text-slate-400 pointer-events-none" />
-                </div>
+                <p className="text-slate-300 font-medium">You are an Entrepreneur with an idea</p>
               </div>
 
               {/* Full Name Input */}
