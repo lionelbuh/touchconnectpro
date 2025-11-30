@@ -74,7 +74,7 @@ export default function AdminDashboard() {
 
   const handleToggleMemberStatus = (id: string) => {
     const updated = members.map(m => 
-      m.id === id ? { ...m, status: m.status === "active" ? "disabled" : "active" } : m
+      m.id === id ? { ...m, status: (m.status === "active" ? "disabled" : "active") as "active" | "disabled" } : m
     );
     setMembers(updated);
   };
