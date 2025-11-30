@@ -613,8 +613,44 @@ export default function AdminDashboard() {
         {activeTab === "members" && (
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-6">Members & Portfolio Assignment</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white">Members & Portfolio Management</h2>
+              </div>
               
+              {/* Sub-tabs */}
+              <div className="flex gap-2 mb-6 flex-wrap">
+                <Button 
+                  variant={activeMembersSubTab === "portfolio" ? "default" : "outline"}
+                  onClick={() => setActiveMembersSubTab("portfolio")}
+                  className={activeMembersSubTab === "portfolio" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
+                  size="sm"
+                  data-testid="button-members-subtab-portfolio"
+                >
+                  Portfolio Assignment
+                </Button>
+                <Button 
+                  variant={activeMembersSubTab === "messaging" ? "default" : "outline"}
+                  onClick={() => setActiveMembersSubTab("messaging")}
+                  className={activeMembersSubTab === "messaging" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
+                  size="sm"
+                  data-testid="button-members-subtab-messaging"
+                >
+                  <MessageSquare className="mr-2 h-4 w-4" /> Send Messages
+                </Button>
+                <Button 
+                  variant={activeMembersSubTab === "management" ? "default" : "outline"}
+                  onClick={() => setActiveMembersSubTab("management")}
+                  className={activeMembersSubTab === "management" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
+                  size="sm"
+                  data-testid="button-members-subtab-management"
+                >
+                  <Power className="mr-2 h-4 w-4" /> User Management
+                </Button>
+              </div>
+
+              {/* Portfolio Assignment Sub-tab */}
+              {activeMembersSubTab === "portfolio" && (
+              <div>
               {/* Entrepreneurs */}
               <div className="mb-8">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
@@ -769,80 +805,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Messaging Tab */}
-        {activeTab === "messaging" && (
-          <div>
-            <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-6">Send Messages</h2>
-            <div className="space-y-4">
-              {members.map((member) => (
-                <Card key={member.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
-                        <p className="text-sm text-muted-foreground">{member.email} • {member.type}</p>
-                      </div>
-                      <Button 
-                        onClick={() => {
-                          setSelectedMember(member);
-                          setShowMessageModal(true);
-                        }}
-                        data-testid={`button-message-member-${member.id}`}
-                      >
-                        <MessageSquare className="mr-2 h-4 w-4" /> Send Message
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* User Management Tab */}
-        {activeTab === "users" && (
-          <div>
-            <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-6">User Management</h2>
-            <div className="space-y-4">
-              {members.map((member) => (
-                <Card key={member.id} className={member.status === "disabled" ? "opacity-60" : ""}>
-                  <CardContent className="pt-6">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
-                        <p className="text-sm text-muted-foreground">{member.email} • {member.type}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant={member.status === "active" ? "destructive" : "default"}
-                          onClick={() => handleToggleMemberStatus(member.id)}
-                          data-testid={`button-toggle-user-${member.id}`}
-                        >
-                          {member.status === "active" ? (
-                            <>
-                              <Power className="mr-2 h-4 w-4" /> Disable
-                            </>
-                          ) : (
-                            <>
-                              <Power className="mr-2 h-4 w-4" /> Enable
-                            </>
-                          )}
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
-                          data-testid={`button-delete-user-${member.id}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Portfolio Assignment Modal */}
