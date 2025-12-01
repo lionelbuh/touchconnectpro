@@ -45,6 +45,16 @@ interface InvestorApplication {
   state?: string;
 }
 
+interface EntrepreneurApplication {
+  fullName: string;
+  email: string;
+  ideaName: string;
+  problem: string;
+  solution: string;
+  status: "pending" | "approved" | "rejected";
+  submittedAt: string;
+}
+
 interface User {
   id: string;
   name: string;
@@ -59,6 +69,7 @@ export default function AdminDashboard() {
   const [mentorApplications, setMentorApplications] = useState<MentorApplication[]>([]);
   const [coachApplications, setCoachApplications] = useState<CoachApplication[]>([]);
   const [investorApplications, setInvestorApplications] = useState<InvestorApplication[]>([]);
+  const [entrepreneurApplications, setEntrepreneurApplications] = useState<EntrepreneurApplication[]>([]);
   const [approvedMentors, setApprovedMentors] = useState<any[]>([]);
   const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
   const [approvedInvestors, setApprovedInvestors] = useState<any[]>([]);
@@ -102,6 +113,10 @@ export default function AdminDashboard() {
     const savedDisabled = localStorage.getItem("tcp_disabledProfessionals");
     if (savedDisabled) {
       setDisabledProfessionals(JSON.parse(savedDisabled));
+    }
+    const savedEntrepreneurApplications = localStorage.getItem("tcp_entrepreneurApplications");
+    if (savedEntrepreneurApplications) {
+      setEntrepreneurApplications(JSON.parse(savedEntrepreneurApplications));
     }
   }, []);
 
@@ -224,6 +239,20 @@ export default function AdminDashboard() {
     localStorage.setItem("tcp_disabledProfessionals", JSON.stringify(updated));
   };
 
+  const handleApproveEntrepreneur = (index: number) => {
+    const updated = [...entrepreneurApplications];
+    updated[index].status = "approved";
+    setEntrepreneurApplications(updated);
+    localStorage.setItem("tcp_entrepreneurApplications", JSON.stringify(updated));
+  };
+
+  const handleRejectEntrepreneur = (index: number) => {
+    const updated = [...entrepreneurApplications];
+    updated[index].status = "rejected";
+    setEntrepreneurApplications(updated);
+    localStorage.setItem("tcp_entrepreneurApplications", JSON.stringify(updated));
+  };
+
   const handleAssignPortfolio = () => {
     if (portfolioAssignment && selectedMember) {
       console.log(`Assigned ${selectedMember.name} to portfolio ${portfolioAssignment}`);
@@ -233,9 +262,11 @@ export default function AdminDashboard() {
     }
   };
 
+  const pendingEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "pending");
   const pendingMentorApplications = mentorApplications.filter(app => app.status === "pending");
   const pendingCoachApplications = coachApplications.filter(app => app.status === "pending");
   const pendingInvestorApplications = investorApplications.filter(app => app.status === "pending");
+  const rejectedEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "rejected");
   const rejectedMentorApplications = mentorApplications.filter(app => app.status === "rejected");
   const rejectedCoachApplications = coachApplications.filter(app => app.status === "rejected");
   const rejectedInvestorApplications = investorApplications.filter(app => app.status === "rejected");
@@ -275,6 +306,82 @@ export default function AdminDashboard() {
         {/* Approvals Tab */}
         {activeTab === "approvals" && (
           <div className="space-y-8">
+            {/* Entrepreneur Approvals */}
+            <div>
+              <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Entrepreneur Approvals</h2>
+              {pendingEntrepreneurApplications.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-12 pb-12 text-center">
+                    <p className="text-muted-foreground">No pending entrepreneur approvals</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {pendingEntrepreneurApplications.map((app, idx) => {
+                    const actualIdx = entrepreneurApplications.findIndex(a => a === app);
+                    return (
+                      <Card key={actualIdx} className="border-l-4 border-l-emerald-500">
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <CardTitle>{app.fullName}</CardTitle>
+                              <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                            </div>
+                            <Badge className="bg-emerald-600">Pending</Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                              <p className="text-slate-900 dark:text-white">{app.fullName}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                              <p className="text-slate-900 dark:text-white">{app.email}</p>
+                            </div>
+                            <div className="col-span-2">
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Idea/Company Name</p>
+                              <p className="text-slate-900 dark:text-white">{app.ideaName}</p>
+                            </div>
+                            <div className="col-span-2">
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Problem</p>
+                              <p className="text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.problem}</p>
+                            </div>
+                            <div className="col-span-2">
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Solution</p>
+                              <p className="text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.solution}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
+                              <p className="text-slate-900 dark:text-white text-xs">{new Date(app.submittedAt).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+                            <Button 
+                              className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                              onClick={() => handleApproveEntrepreneur(actualIdx)}
+                              data-testid={`button-admin-approve-entrepreneur-${actualIdx}`}
+                            >
+                              <Check className="mr-2 h-4 w-4" /> Approve
+                            </Button>
+                            <Button 
+                              variant="outline"
+                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                              onClick={() => handleRejectEntrepreneur(actualIdx)}
+                              data-testid={`button-admin-reject-entrepreneur-${actualIdx}`}
+                            >
+                              <X className="mr-2 h-4 w-4" /> Reject
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             {/* Mentor Approvals */}
             <div>
               <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Mentor Approvals</h2>
