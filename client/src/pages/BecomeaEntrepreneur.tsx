@@ -399,9 +399,6 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
     localStorage.setItem("tcp_entrepreneurApplications", JSON.stringify(existingApplications));
     
     setSubmitted(true);
-    setTimeout(() => {
-      window.location.href = `/admin-dashboard`;
-    }, 2000);
   };
 
   const handleCloseModal = () => {
@@ -423,6 +420,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       personalInvestment: "", externalFunding: "", fundingNeeded: "", fundingUseCase: "", investorType: "",
       nextSteps: "", currentObstacle: "", mentorHelp: "", technicalExpertHelp: ""
     });
+    window.location.href = `/`;
   };
 
   const progressPercent = showingAiReview ? 66 : showingBusinessPlan ? 90 : ((currentStep + 1) / 2) * 100;
