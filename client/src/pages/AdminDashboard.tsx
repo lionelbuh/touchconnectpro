@@ -285,13 +285,17 @@ export default function AdminDashboard() {
   const rejectedInvestorApplications = investorApplications.filter(app => app.status === "rejected");
 
   const filterAndSort = (items: any[], nameField: string) => {
-    return items
-      .filter(item => item[nameField]?.toLowerCase().includes(searchTerm.toLowerCase()))
-      .sort((a, b) => {
-        const nameA = a[nameField]?.toLowerCase() || "";
-        const nameB = b[nameField]?.toLowerCase() || "";
-        return sortOrder === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
-      });
+    const filtered = items.filter(item => item[nameField]?.toLowerCase().includes(searchTerm.toLowerCase()));
+    const sorted = [...filtered].sort((a, b) => {
+      const nameA = (a[nameField] || "").toString().toLowerCase();
+      const nameB = (b[nameField] || "").toString().toLowerCase();
+      if (sortOrder === "asc") {
+        return nameA.localeCompare(nameB);
+      } else {
+        return nameB.localeCompare(nameA);
+      }
+    });
+    return sorted;
   };
 
   return (
