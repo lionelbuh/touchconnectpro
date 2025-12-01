@@ -31,16 +31,52 @@ const US_STATES = [
   "Wisconsin", "Wyoming", "District of Columbia"
 ];
 
-// Mock AI responses
+// Mock AI responses - All 43 Questions
 const generateAIReview = (formData: any) => {
   return {
-    coreIdea: formData.ideaDescription || "Your innovative solution to market problem",
-    problemSolution: `You're addressing a critical gap where ${formData.problem || "the target market faces a specific challenge"}. Your solution uniquely tackles this by focusing on ${formData.valueProposition || "your unique value proposition"}.`,
-    whyNow: formData.problemImportance || "Clear market need and timing advantage",
-    marketOpportunity: `Your primary customers are ${formData.idealCustomer || "early adopters and innovators"}, who currently rely on ${formData.currentSolutions || "fragmented solutions"}. You differentiate by ${formData.valueProposition || "offering better user experience and efficiency"}.`,
-    currentProgress: `You're at the ${formData.currentStage || "ideation"} phase. Your immediate next step is to ${formData.nextSteps || "build and test with first users"}.`,
-    businessModel: `Revenue will be generated through ${formData.monetization || "a scalable subscription model"}. You're targeting ${formData.successIn12Months || "profitability within 12 months"} through focused execution.`,
-    commitment: `You're dedicating ${formData.timePerWeek || "significant hours"} weekly and actively seeking mentorship in ${formData.mentorHelp || "go-to-market strategy and product development"}}.`,
+    problem: formData.problem || "Problem not provided",
+    whoExperiences: formData.whoExperiences || "Target audience not specified",
+    problemImportance: formData.problemImportance || "Urgency to be determined",
+    currentSolutions: formData.currentSolutions || "Current solution landscape not detailed",
+    ideaName: formData.ideaName || "Project name pending",
+    ideaDescription: formData.ideaDescription || "Solution description pending",
+    valueProposition: formData.valueProposition || "Unique value to be articulated",
+    idealCustomer: formData.idealCustomer || "Customer profile to be refined",
+    targetMarket: formData.targetMarket || "Market segment to be defined",
+    marketSize: formData.marketSize || "Market sizing analysis needed",
+    customerReach: formData.customerReach || "Customer acquisition strategy pending",
+    hasCustomers: formData.hasCustomers || "Customer validation status unknown",
+    customerCount: formData.customerCount || "No customer metrics provided",
+    hasRevenue: formData.hasRevenue || "Revenue status not confirmed",
+    revenueAmount: formData.revenueAmount || "Revenue figures not disclosed",
+    revenueRecurring: formData.revenueRecurring || "Revenue model pattern not specified",
+    productUsage: formData.productUsage || "Usage metrics to be tracked",
+    monetization: formData.monetization || "Monetization strategy pending",
+    pricing: formData.pricing || "Pricing model to be finalized",
+    mainCosts: formData.mainCosts || "Cost structure analysis needed",
+    successIn12Months: formData.successIn12Months || "12-month targets to be set",
+    directCompetitors: formData.directCompetitors || "Competitive landscape analysis pending",
+    competitorStrengths: formData.competitorStrengths || "Competitor strengths to be analyzed",
+    competitorWeakness: formData.competitorWeakness || "Your competitive advantage to be defined",
+    currentStage: formData.currentStage || "Development stage unclear",
+    hasDemo: formData.hasDemo || "Demo status not specified",
+    existingFeatures: formData.existingFeatures || "Feature roadmap pending",
+    featuresToBuild: formData.featuresToBuild || "Build priority list pending",
+    linkedinWebsite: formData.linkedinWebsite || "Professional profile not provided",
+    foundedBefore: formData.foundedBefore || "Entrepreneurial experience level unclear",
+    soloOrCoFounders: formData.soloOrCoFounders || "Team composition not specified",
+    personalSkills: formData.personalSkills || "Founder skills profile pending",
+    missingSkills: formData.missingSkills || "Skill gaps to be addressed",
+    timePerWeek: formData.timePerWeek || "Time commitment level not specified",
+    personalInvestment: formData.personalInvestment || "Personal financial commitment unclear",
+    externalFunding: formData.externalFunding || "Funding history not provided",
+    fundingNeeded: formData.fundingNeeded || "Funding requirements pending",
+    fundingUseCase: formData.fundingUseCase || "Use of funds to be detailed",
+    investorType: formData.investorType || "Investor preference not specified",
+    nextSteps: formData.nextSteps || "Action plan pending",
+    currentObstacle: formData.currentObstacle || "Key challenges to be addressed",
+    mentorHelp: formData.mentorHelp || "Mentorship needs not specified",
+    technicalExpertHelp: formData.technicalExpertHelp || "Technical support needs pending"
   };
 };
 
