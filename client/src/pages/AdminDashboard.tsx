@@ -1049,7 +1049,7 @@ export default function AdminDashboard() {
                 <div className="space-y-6">
                   {/* Entrepreneurs */}
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Entrepreneurs ({members.length})</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Entrepreneurs ({members.length + approvedEntrepreneurs.length})</h4>
                     <div className="space-y-3">
                       {members.map((member) => (
                         <Card key={member.id}>
@@ -1060,6 +1060,21 @@ export default function AdminDashboard() {
                                 <p className="text-sm text-muted-foreground">{member.email}</p>
                               </div>
                               <Button onClick={() => {setSelectedMember(member); setShowMessageModal(true);}} data-testid={`button-message-member-${member.id}`} size="sm">
+                                <MessageSquare className="mr-2 h-4 w-4" /> Message
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                      {approvedEntrepreneurs.map((entrepreneur, idx) => (
+                        <Card key={`approved-msg-${entrepreneur.id}`}>
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
+                                <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
+                              </div>
+                              <Button onClick={() => {setSelectedMember({id: entrepreneur.id, name: entrepreneur.fullName, email: entrepreneur.email, type: "entrepreneur"}); setShowMessageModal(true);}} data-testid={`button-message-entrepreneur-${idx}`} size="sm">
                                 <MessageSquare className="mr-2 h-4 w-4" /> Message
                               </Button>
                             </div>
@@ -1148,7 +1163,7 @@ export default function AdminDashboard() {
                 <div className="space-y-6">
                   {/* Entrepreneurs */}
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Entrepreneurs ({members.length})</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Entrepreneurs ({members.length + approvedEntrepreneurs.length})</h4>
                     <div className="space-y-3">
                       {members.map((member) => (
                         <Card key={member.id} className={member.status === "disabled" ? "opacity-60" : ""}>
@@ -1168,6 +1183,25 @@ export default function AdminDashboard() {
                           </CardContent>
                         </Card>
                       ))}
+                      {approvedEntrepreneurs.map((entrepreneur, idx) => {
+                        const isDisabled = disabledProfessionals[`entrepreneur-${idx}`];
+                        return (
+                        <Card key={`approved-mgmt-${entrepreneur.id}`} className={isDisabled ? "opacity-60" : ""}>
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
+                                <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("entrepreneur", idx)} data-testid={`button-toggle-entrepreneur-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
+                                <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-entrepreneur-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                        );
+                      })}
                     </div>
                   </div>
                   {/* Mentors */}
