@@ -53,6 +53,11 @@ interface EntrepreneurApplication {
   solution: string;
   status: "pending" | "approved" | "rejected";
   submittedAt: string;
+  id: string;
+  ideaReview?: any;
+  businessPlan?: any;
+  portfolio?: string;
+  [key: string]: any;
 }
 
 interface User {
@@ -86,6 +91,9 @@ export default function AdminDashboard() {
   const [showPortfolioModal, setShowPortfolioModal] = useState(false);
   const [messageHistory, setMessageHistory] = useState<any[]>([]);
   const [disabledProfessionals, setDisabledProfessionals] = useState<{[key: string]: boolean}>({});
+  const [expandedProposal, setExpandedProposal] = useState<{[key: string]: boolean}>({});
+  const [expandedBusinessPlan, setExpandedBusinessPlan] = useState<{[key: string]: boolean}>({});
+  const [portfolioForApp, setPortfolioForApp] = useState<{[key: string]: string}>({});
 
   useEffect(() => {
     const savedMentorApplications = localStorage.getItem("tcp_mentorApplications");
@@ -242,6 +250,7 @@ export default function AdminDashboard() {
   const handleApproveEntrepreneur = (index: number) => {
     const updated = [...entrepreneurApplications];
     updated[index].status = "approved";
+    updated[index].portfolio = portfolioForApp[updated[index].id] || "General";
     setEntrepreneurApplications(updated);
     localStorage.setItem("tcp_entrepreneurApplications", JSON.stringify(updated));
   };
@@ -316,9 +325,11 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {pendingEntrepreneurApplications.map((app, idx) => {
                     const actualIdx = entrepreneurApplications.findIndex(a => a === app);
+                    const isProposalExpanded = expandedProposal[app.id];
+                    const isBusinessPlanExpanded = expandedBusinessPlan[app.id];
                     return (
                       <Card key={actualIdx} className="border-l-4 border-l-emerald-500">
                         <CardHeader>
@@ -344,19 +355,85 @@ export default function AdminDashboard() {
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Idea/Company Name</p>
                               <p className="text-slate-900 dark:text-white">{app.ideaName}</p>
                             </div>
-                            <div className="col-span-2">
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Problem</p>
-                              <p className="text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.problem}</p>
-                            </div>
-                            <div className="col-span-2">
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Solution</p>
-                              <p className="text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.solution}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
-                              <p className="text-slate-900 dark:text-white text-xs">{new Date(app.submittedAt).toLocaleDateString()}</p>
-                            </div>
                           </div>
+
+                          {/* Idea Proposal Section */}
+                          <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start text-cyan-600 hover:text-cyan-700 font-semibold"
+                              onClick={() => setExpandedProposal({...expandedProposal, [app.id]: !isProposalExpanded})}
+                              data-testid={`button-expand-proposal-${actualIdx}`}
+                            >
+                              {isProposalExpanded ? "▼" : "▶"} Idea Proposal (43 Questions)
+                            </Button>
+                            {isProposalExpanded && app.ideaReview && (
+                              <div className="mt-4 space-y-3 max-h-96 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-4 rounded">
+                                {Object.entries(app.ideaReview).map(([key, value]: [string, any], i) => (
+                                  <div key={i} className="text-sm">
+                                    <p className="font-semibold text-slate-700 dark:text-slate-300 capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
+                                    <p className="text-slate-600 dark:text-slate-400 mt-1">{String(value || 'N/A')}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Business Plan Section */}
+                          <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start text-cyan-600 hover:text-cyan-700 font-semibold"
+                              onClick={() => setExpandedBusinessPlan({...expandedBusinessPlan, [app.id]: !isBusinessPlanExpanded})}
+                              data-testid={`button-expand-businessplan-${actualIdx}`}
+                            >
+                              {isBusinessPlanExpanded ? "▼" : "▶"} Business Plan AI Draft (11 Sections)
+                            </Button>
+                            {isBusinessPlanExpanded && app.businessPlan && (
+                              <div className="mt-4 space-y-3 max-h-96 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-4 rounded">
+                                <div className="text-sm">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">Executive Summary</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1">{app.businessPlan.executiveSummary || 'N/A'}</p>
+                                </div>
+                                <div className="text-sm">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">Problem</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1">{app.businessPlan.problem || 'N/A'}</p>
+                                </div>
+                                <div className="text-sm">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">Market Size</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1">{app.businessPlan.marketSize || 'N/A'}</p>
+                                </div>
+                                <div className="text-sm">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">Revenue Model</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1">{app.businessPlan.revenueModel || 'N/A'}</p>
+                                </div>
+                                <div className="text-sm">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">Year 1 Goal</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1">{app.businessPlan.year1Goal || 'N/A'}</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Portfolio Assignment */}
+                          <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                            <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Assign to Portfolio</p>
+                            <select 
+                              value={portfolioForApp[app.id] || "General"}
+                              onChange={(e) => setPortfolioForApp({...portfolioForApp, [app.id]: e.target.value})}
+                              data-testid={`select-portfolio-${actualIdx}`}
+                              className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                            >
+                              <option value="General">General</option>
+                              <option value="SaaS">SaaS</option>
+                              <option value="Fintech">Fintech</option>
+                              <option value="Healthcare">Healthcare</option>
+                              <option value="E-Commerce">E-Commerce</option>
+                              <option value="AI/ML">AI/ML</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+
                           <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
                             <Button 
                               className="flex-1 bg-emerald-600 hover:bg-emerald-700"
