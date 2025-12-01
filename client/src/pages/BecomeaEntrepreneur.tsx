@@ -251,9 +251,7 @@ export default function BecomeaEntrepreneur() {
     setEditedBusinessPlan(plan);
     setShowingBusinessPlan(true);
     setTimeout(() => {
-      const elem = document.querySelector('[data-section="business-plan"]');
-      elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setTimeout(() => window.scrollBy(0, -150), 300);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 250);
   };
 
@@ -336,20 +334,14 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
     if (currentStep === 1) {
       handleGenerateAiReview();
       setTimeout(() => {
-        const titleElem = document.querySelector('[data-section="ai-review"] h2');
-        if (titleElem) {
-          titleElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          setTimeout(() => window.scrollBy(0, -250), 400);
-        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 300);
       return;
     }
     if (currentStep < 1) {
       setCurrentStep(currentStep + 1);
       setTimeout(() => {
-        const elem = document.querySelector('[data-section="step-2"]');
-        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(() => window.scrollBy(0, -150), 300);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 250);
     }
   };
@@ -359,29 +351,21 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       setShowingBusinessPlan(false);
       setShowingAiReview(true);
       setTimeout(() => {
-        const titleElem = document.querySelector('[data-section="ai-review"] h2');
-        if (titleElem) {
-          titleElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          setTimeout(() => window.scrollBy(0, -250), 400);
-        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 150);
       return;
     }
     if (showingAiReview) {
       setShowingAiReview(false);
       setTimeout(() => {
-        const elem = document.querySelector('[data-section="step-2"]');
-        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(() => window.scrollBy(0, -150), 200);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 100);
       return;
     }
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
       setTimeout(() => {
-        const elem = document.querySelector(`[data-section="step-${currentStep}"]`);
-        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(() => window.scrollBy(0, -150), 200);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 100);
     }
   };
