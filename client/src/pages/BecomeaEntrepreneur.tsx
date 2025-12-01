@@ -190,18 +190,17 @@ export default function BecomeaEntrepreneur() {
           return { valid: false, missingField: null };
         }
         return { valid: true, missingField: null };
-      case 1: // Idea Questions
+      case 1: // Idea Questions - Only required fields (marked with *)
         const missingFieldsMap = [];
         if (!formData.problem) missingFieldsMap.push({ name: "Problem", id: "problem" });
         if (!formData.whoExperiences) missingFieldsMap.push({ name: "Who Experiences This", id: "whoExperiences" });
         if (!formData.ideaName) missingFieldsMap.push({ name: "Idea Name", id: "ideaName" });
         if (!formData.ideaDescription) missingFieldsMap.push({ name: "Idea Description", id: "ideaDescription" });
-        if (!formData.valueProposition) missingFieldsMap.push({ name: "Value Proposition", id: "valueProposition" });
         if (!formData.idealCustomer) missingFieldsMap.push({ name: "Ideal Customer", id: "idealCustomer" });
-        if (!formData.targetMarket) missingFieldsMap.push({ name: "Target Market", id: "targetMarket" });
         if (!formData.customerReach) missingFieldsMap.push({ name: "Customer Reach", id: "customerReach" });
         if (!formData.hasCustomers) missingFieldsMap.push({ name: "Do you have customers?", id: "hasCustomers" });
         if (!formData.hasRevenue) missingFieldsMap.push({ name: "Do you have revenue?", id: "hasRevenue" });
+        if (!formData.revenueRecurring) missingFieldsMap.push({ name: "Revenue Type", id: "revenueRecurring" });
         if (!formData.monetization) missingFieldsMap.push({ name: "Monetization", id: "monetization" });
         if (!formData.pricing) missingFieldsMap.push({ name: "Pricing", id: "pricing" });
         if (!formData.mainCosts) missingFieldsMap.push({ name: "Main Costs", id: "mainCosts" });
@@ -253,7 +252,7 @@ export default function BecomeaEntrepreneur() {
     setShowingBusinessPlan(true);
     setTimeout(() => {
       const elem = document.querySelector('[data-section="business-plan"]');
-      elem?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 250);
   };
 
@@ -337,7 +336,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       handleGenerateAiReview();
       setTimeout(() => {
         const elem = document.querySelector('[data-section="ai-review"]');
-        elem?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 250);
       return;
     }
@@ -345,7 +344,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       setCurrentStep(currentStep + 1);
       setTimeout(() => {
         const elem = document.querySelector('[data-section="step-2"]');
-        elem?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 250);
     }
   };
