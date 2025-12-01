@@ -253,8 +253,8 @@ export default function BecomeaEntrepreneur() {
     setShowingBusinessPlan(true);
     setTimeout(() => {
       const elem = document.querySelector('[data-section="business-plan"]');
-      elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+      elem?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 250);
   };
 
   const handleSubmitApplication = () => {
@@ -338,15 +338,15 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       setTimeout(() => {
         const elem = document.querySelector('[data-section="ai-review"]');
         elem?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 150);
+      }, 250);
       return;
     }
     if (currentStep < 1) {
       setCurrentStep(currentStep + 1);
       setTimeout(() => {
         const elem = document.querySelector('[data-section="step-2"]');
-        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+        elem?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 250);
     }
   };
 
