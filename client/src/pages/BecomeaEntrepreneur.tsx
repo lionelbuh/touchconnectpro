@@ -34,13 +34,13 @@ const US_STATES = [
 // Mock AI responses
 const generateAIReview = (formData: any) => {
   return {
-    coreIdea: formData.coreIdea || "Your innovative solution to market problem",
-    problemSolution: `You're addressing a critical gap where ${formData.problem || "the target market faces a specific challenge"}. Your solution uniquely tackles this by focusing on ${formData.differentiation || "your unique value proposition"}.`,
-    whyNow: formData.whyNow || "Clear market need and timing advantage",
-    marketOpportunity: `Your primary customers are ${formData.idealCustomers || "early adopters and innovators"}, who currently rely on ${formData.alternatives || "fragmented solutions"}. You differentiate by ${formData.differentiation || "offering better user experience and efficiency"}.`,
-    currentProgress: `You're at the ${formData.currentStage || "ideation"} phase and have already ${formData.completed || "validated initial assumptions"}. Your immediate next step is to ${formData.nextStep || "build and test with first users"}.`,
-    businessModel: `Revenue will be generated through ${formData.revenueModel || "a scalable subscription model"}. You're targeting ${formData.successMetrics || "profitability within 12 months"} through focused execution.`,
-    commitment: `You're dedicating ${formData.hoursPerWeek || "significant hours"} weekly and actively seeking mentorship in ${formData.mentorshipNeeds || "go-to-market strategy and product development"}}.`,
+    coreIdea: formData.ideaDescription || "Your innovative solution to market problem",
+    problemSolution: `You're addressing a critical gap where ${formData.problem || "the target market faces a specific challenge"}. Your solution uniquely tackles this by focusing on ${formData.valueProposition || "your unique value proposition"}.`,
+    whyNow: formData.problemImportance || "Clear market need and timing advantage",
+    marketOpportunity: `Your primary customers are ${formData.idealCustomer || "early adopters and innovators"}, who currently rely on ${formData.currentSolutions || "fragmented solutions"}. You differentiate by ${formData.valueProposition || "offering better user experience and efficiency"}.`,
+    currentProgress: `You're at the ${formData.currentStage || "ideation"} phase. Your immediate next step is to ${formData.nextSteps || "build and test with first users"}.`,
+    businessModel: `Revenue will be generated through ${formData.monetization || "a scalable subscription model"}. You're targeting ${formData.successIn12Months || "profitability within 12 months"} through focused execution.`,
+    commitment: `You're dedicating ${formData.timePerWeek || "significant hours"} weekly and actively seeking mentorship in ${formData.mentorHelp || "go-to-market strategy and product development"}}.`,
   };
 };
 
@@ -339,26 +339,17 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
     setShowingAiReview(false);
     setShowingBusinessPlan(false);
     setFormData({
-      fullName: "",
-      email: "",
-      linkedin: "",
-      country: "United States",
-      state: "",
-      coreIdea: "",
-      problem: "",
-      whyNow: "",
-      idealCustomers: "",
-      alternatives: "",
-      differentiation: "",
-      currentStage: "",
-      completed: "",
-      nextStep: "",
-      revenueModel: "",
-      successMetrics: "",
-      mentorshipNeeds: "",
-      hoursPerWeek: "",
-      readyForFeedback: "",
-      businessPlanFinal: "",
+      fullName: "", email: "", linkedin: "", country: "United States", state: "",
+      problem: "", whoExperiences: "", problemImportance: "", currentSolutions: "",
+      ideaName: "", ideaDescription: "", valueProposition: "",
+      idealCustomer: "", targetMarket: "", marketSize: "", customerReach: "",
+      hasCustomers: "", customerCount: "", hasRevenue: "", revenueAmount: "", revenueRecurring: "", productUsage: "",
+      monetization: "", pricing: "", mainCosts: "", successIn12Months: "",
+      directCompetitors: "", competitorStrengths: "", competitorWeakness: "",
+      currentStage: "", hasDemo: "", existingFeatures: "", featuresToBuild: "",
+      linkedinWebsite: "", foundedBefore: "", soloOrCoFounders: "", personalSkills: "", missingSkills: "", timePerWeek: "",
+      personalInvestment: "", externalFunding: "", fundingNeeded: "", fundingUseCase: "", investorType: "",
+      nextSteps: "", currentObstacle: "", mentorHelp: "", technicalExpertHelp: ""
     });
   };
 
@@ -731,227 +722,275 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                     </div>
 
                     <form className="space-y-6 max-h-[70vh] overflow-y-auto pr-4">
-                      {/* About the Idea */}
+                      {/* Problem & Market Definition */}
                       <div className="border-l-4 border-emerald-500 pl-6">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">About the Idea</h3>
-
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Problem & Market</h3>
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What is the core idea in one sentence? *</label>
-                            <textarea
-                              name="coreIdea"
-                              value={formData.coreIdea}
-                              onChange={handleInputChange}
-                              placeholder="Describe your core idea..."
-                              rows={2}
-                              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                              data-testid="textarea-entrepreneur-coreidea"
-                            />
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What problem are you solving? *</label>
+                            <textarea name="problem" value={formData.problem} onChange={handleInputChange} placeholder="Describe the problem..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-problem" />
                           </div>
-
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What problem are you solving and for who? *</label>
-                            <textarea
-                              name="problem"
-                              value={formData.problem}
-                              onChange={handleInputChange}
-                              placeholder="Describe the problem and target user..."
-                              rows={2}
-                              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                              data-testid="textarea-entrepreneur-problem"
-                            />
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Who experiences this problem? *</label>
+                            <textarea name="whoExperiences" value={formData.whoExperiences} onChange={handleInputChange} placeholder="Describe who has this problem..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-who" />
                           </div>
-
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Why is this problem worth solving now? *</label>
-                            <textarea
-                              name="whyNow"
-                              value={formData.whyNow}
-                              onChange={handleInputChange}
-                              placeholder="What makes this urgent and timely?"
-                              rows={2}
-                              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                              data-testid="textarea-entrepreneur-whynow"
-                            />
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Why is this problem important to solve now?</label>
+                            <textarea name="problemImportance" value={formData.problemImportance} onChange={handleInputChange} placeholder="Why now?" rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-importance" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How are people solving it today?</label>
+                            <textarea name="currentSolutions" value={formData.currentSolutions} onChange={handleInputChange} placeholder="Current solutions..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-current" />
                           </div>
                         </div>
                       </div>
 
-                      {/* Market & Differentiation */}
+                      {/* Your Solution */}
                       <div className="border-l-4 border-blue-500 pl-6">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Market & Differentiation</h3>
-
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Your Solution</h3>
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Who are your ideal first users/customers? *</label>
-                            <textarea
-                              name="idealCustomers"
-                              value={formData.idealCustomers}
-                              onChange={handleInputChange}
-                              placeholder="Describe your ideal customer profile..."
-                              rows={2}
-                              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                              data-testid="textarea-entrepreneur-customers"
-                            />
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Project/Company name on TouchConnectPro? *</label>
+                            <Input name="ideaName" value={formData.ideaName} onChange={handleInputChange} placeholder="Your project name..." className="w-full" data-testid="input-idea-name" />
                           </div>
-
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What alternative solutions exist today? *</label>
-                            <textarea
-                              name="alternatives"
-                              value={formData.alternatives}
-                              onChange={handleInputChange}
-                              placeholder="Describe current solutions and competitors..."
-                              rows={2}
-                              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                              data-testid="textarea-entrepreneur-alternatives"
-                            />
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What is your idea/solution in simple words? *</label>
+                            <textarea name="ideaDescription" value={formData.ideaDescription} onChange={handleInputChange} placeholder="Describe your solution..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-idea-desc" />
                           </div>
-
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How is your approach different or better? *</label>
-                            <textarea
-                              name="differentiation"
-                              value={formData.differentiation}
-                              onChange={handleInputChange}
-                              placeholder="What's your unique advantage?"
-                              rows={2}
-                              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                              data-testid="textarea-entrepreneur-differentiation"
-                            />
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What is the unique benefit/value proposition?</label>
+                            <textarea name="valueProposition" value={formData.valueProposition} onChange={handleInputChange} placeholder="Your unique value..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-value" />
                           </div>
                         </div>
                       </div>
 
-                      {/* Progress & Feasibility */}
+                      {/* Market & Customer */}
                       <div className="border-l-4 border-purple-500 pl-6">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Progress & Feasibility</h3>
-
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Market & Customer</h3>
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What stage are you currently at? *</label>
-                            <select
-                              name="currentStage"
-                              value={formData.currentStage}
-                              onChange={handleInputChange}
-                              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                              data-testid="select-entrepreneur-stage"
-                            >
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Who is your ideal customer? *</label>
+                            <textarea name="idealCustomer" value={formData.idealCustomer} onChange={handleInputChange} placeholder="Customer profile..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-customer" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What market/industry does your solution target?</label>
+                            <Input name="targetMarket" value={formData.targetMarket} onChange={handleInputChange} placeholder="Target market..." className="w-full" data-testid="input-target-market" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How large is your potential market?</label>
+                            <Input name="marketSize" value={formData.marketSize} onChange={handleInputChange} placeholder="Market size..." className="w-full" data-testid="input-market-size" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Where or how will you reach your customers? *</label>
+                            <textarea name="customerReach" value={formData.customerReach} onChange={handleInputChange} placeholder="How you'll reach customers..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-reach" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Traction & Validation */}
+                      <div className="border-l-4 border-cyan-500 pl-6">
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Traction & Validation</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Do you already have customers/users? *</label>
+                            <select name="hasCustomers" value={formData.hasCustomers} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-customers">
                               <option value="">Select...</option>
-                              <option value="Idea only">Idea only</option>
-                              <option value="Mockup">Mockup</option>
-                              <option value="MVP">MVP</option>
-                              <option value="First users">First users</option>
-                              <option value="Revenue">Revenue</option>
+                              <option value="Yes">Yes</option>
+                              <option value="No">No</option>
+                              <option value="In beta">In beta</option>
                             </select>
                           </div>
-
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What have you already done so far? *</label>
-                            <textarea
-                              name="completed"
-                              value={formData.completed}
-                              onChange={handleInputChange}
-                              placeholder="Describe your progress to date..."
-                              rows={2}
-                              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                              data-testid="textarea-entrepreneur-completed"
-                            />
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How many customers/users do you currently have?</label>
+                            <Input name="customerCount" value={formData.customerCount} onChange={handleInputChange} placeholder="Number of users..." className="w-full" data-testid="input-customer-count" />
                           </div>
-
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What is your next concrete step? *</label>
-                            <textarea
-                              name="nextStep"
-                              value={formData.nextStep}
-                              onChange={handleInputChange}
-                              placeholder="What's your immediate next action?"
-                              rows={2}
-                              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                              data-testid="textarea-entrepreneur-nextstep"
-                            />
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Do you already generate revenue? *</label>
+                            <select name="hasRevenue" value={formData.hasRevenue} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-revenue">
+                              <option value="">Select...</option>
+                              <option value="Yes">Yes</option>
+                              <option value="No">No</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How much revenue so far?</label>
+                            <Input name="revenueAmount" value={formData.revenueAmount} onChange={handleInputChange} placeholder="Revenue amount..." className="w-full" data-testid="input-revenue" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Is revenue recurring or one-time? *</label>
+                            <select name="revenueRecurring" value={formData.revenueRecurring} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-recurring">
+                              <option value="">Select...</option>
+                              <option value="Recurring">Recurring</option>
+                              <option value="One-time">One-time</option>
+                              <option value="Mix">Mix</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Do customers actively use the product?</label>
+                            <Input name="productUsage" value={formData.productUsage} onChange={handleInputChange} placeholder="Usage metrics..." className="w-full" data-testid="input-usage" />
                           </div>
                         </div>
                       </div>
 
                       {/* Business Model */}
-                      <div className="border-l-4 border-cyan-500 pl-6">
+                      <div className="border-l-4 border-pink-500 pl-6">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Business Model</h3>
-
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How will this idea generate revenue? *</label>
-                            <textarea
-                              name="revenueModel"
-                              value={formData.revenueModel}
-                              onChange={handleInputChange}
-                              placeholder="Describe your revenue model and pricing..."
-                              rows={2}
-                              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                              data-testid="textarea-entrepreneur-revenue"
-                            />
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How will you make money? *</label>
+                            <textarea name="monetization" value={formData.monetization} onChange={handleInputChange} placeholder="Revenue model..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-monetization" />
                           </div>
-
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What would success look like in the first 12 months? *</label>
-                            <textarea
-                              name="successMetrics"
-                              value={formData.successMetrics}
-                              onChange={handleInputChange}
-                              placeholder="Define your success metrics and goals..."
-                              rows={2}
-                              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                              data-testid="textarea-entrepreneur-success"
-                            />
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What do you plan to charge? *</label>
+                            <Input name="pricing" value={formData.pricing} onChange={handleInputChange} placeholder="Your pricing..." className="w-full" data-testid="input-pricing" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What are your main costs? *</label>
+                            <textarea name="mainCosts" value={formData.mainCosts} onChange={handleInputChange} placeholder="Your main costs..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-costs" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What does success look like in 12 months? *</label>
+                            <textarea name="successIn12Months" value={formData.successIn12Months} onChange={handleInputChange} placeholder="Success metrics..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-success-12m" />
                           </div>
                         </div>
                       </div>
 
-                      {/* Commitment & Support */}
-                      <div className="border-l-4 border-pink-500 pl-6">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Commitment & Support Needed</h3>
-
+                      {/* Competition */}
+                      <div className="border-l-4 border-indigo-500 pl-6">
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Competition</h3>
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What help do you expect from your mentor? *</label>
-                            <textarea
-                              name="mentorshipNeeds"
-                              value={formData.mentorshipNeeds}
-                              onChange={handleInputChange}
-                              placeholder="e.g., UX design, storytelling, development, go-to-market strategy..."
-                              rows={2}
-                              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                              data-testid="textarea-entrepreneur-mentorship"
-                            />
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Who are your direct competitors? *</label>
+                            <textarea name="directCompetitors" value={formData.directCompetitors} onChange={handleInputChange} placeholder="Your competitors..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-competitors" />
                           </div>
-
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How many hours per week can you commit? *</label>
-                            <Input
-                              type="text"
-                              name="hoursPerWeek"
-                              value={formData.hoursPerWeek}
-                              onChange={handleInputChange}
-                              placeholder="e.g., 20 hours/week"
-                              className="w-full"
-                              data-testid="input-entrepreneur-hours"
-                            />
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What do competitors do well?</label>
+                            <textarea name="competitorStrengths" value={formData.competitorStrengths} onChange={handleInputChange} placeholder="Their strengths..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-comp-strengths" />
                           </div>
-
                           <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Are you ready to accept feedback and adapt your idea if needed? *</label>
-                            <select
-                              name="readyForFeedback"
-                              value={formData.readyForFeedback}
-                              onChange={handleInputChange}
-                              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                              data-testid="select-entrepreneur-feedback"
-                            >
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Where can you outperform them? *</label>
+                            <textarea name="competitorWeakness" value={formData.competitorWeakness} onChange={handleInputChange} placeholder="Your advantage..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-comp-weakness" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Product Development */}
+                      <div className="border-l-4 border-orange-500 pl-6">
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Product Development</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What stage are you currently in? *</label>
+                            <select name="currentStage" value={formData.currentStage} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-stage">
                               <option value="">Select...</option>
-                              <option value="Yes, absolutely">Yes, absolutely</option>
-                              <option value="Somewhat">Somewhat</option>
-                              <option value="Need to think about it">Need to think about it</option>
+                              <option value="Idea only">Idea only</option>
+                              <option value="Mockup">Mockup</option>
+                              <option value="MVP">MVP</option>
+                              <option value="Beta">Beta</option>
+                              <option value="Live">Live</option>
                             </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Do you have a demo/prototype?</label>
+                            <Input name="hasDemo" value={formData.hasDemo} onChange={handleInputChange} placeholder="Demo/prototype..." className="w-full" data-testid="input-demo" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Which key features already exist? *</label>
+                            <textarea name="existingFeatures" value={formData.existingFeatures} onChange={handleInputChange} placeholder="Existing features..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-features" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Which features still need to be built?</label>
+                            <textarea name="featuresToBuild" value={formData.featuresToBuild} onChange={handleInputChange} placeholder="Features to build..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-build-features" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Founder Profile */}
+                      <div className="border-l-4 border-red-500 pl-6">
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Founder Profile</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">LinkedIn profile or website?</label>
+                            <Input name="linkedinWebsite" value={formData.linkedinWebsite} onChange={handleInputChange} placeholder="Your LinkedIn/website..." className="w-full" data-testid="input-linkedin-web" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Have you founded or launched a startup before? *</label>
+                            <select name="foundedBefore" value={formData.foundedBefore} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-founded">
+                              <option value="">Select...</option>
+                              <option value="Yes">Yes</option>
+                              <option value="No">No</option>
+                              <option value="In progress">In progress</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Solo or with co-founders? *</label>
+                            <select name="soloOrCoFounders" value={formData.soloOrCoFounders} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-founders">
+                              <option value="">Select...</option>
+                              <option value="Solo">Solo</option>
+                              <option value="2 co-founders">2 co-founders</option>
+                              <option value="3+ co-founders">3+ co-founders</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What skills do you personally bring? *</label>
+                            <textarea name="personalSkills" value={formData.personalSkills} onChange={handleInputChange} placeholder="Your skills..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-skills" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What skills are missing from your team? *</label>
+                            <textarea name="missingSkills" value={formData.missingSkills} onChange={handleInputChange} placeholder="Missing skills..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-missing" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How much time per week can you dedicate? *</label>
+                            <Input name="timePerWeek" value={formData.timePerWeek} onChange={handleInputChange} placeholder="Hours per week..." className="w-full" data-testid="input-time-week" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Funding */}
+                      <div className="border-l-4 border-yellow-500 pl-6">
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Funding & Investment</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Have you invested personal money? *</label>
+                            <Input name="personalInvestment" value={formData.personalInvestment} onChange={handleInputChange} placeholder="Amount invested..." className="w-full" data-testid="input-personal-invest" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Have you received any external funding? *</label>
+                            <Input name="externalFunding" value={formData.externalFunding} onChange={handleInputChange} placeholder="External funding..." className="w-full" data-testid="input-external-fund" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How much funding do you think you need now? *</label>
+                            <Input name="fundingNeeded" value={formData.fundingNeeded} onChange={handleInputChange} placeholder="Funding amount..." className="w-full" data-testid="input-funding-needed" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What would funding be used for? *</label>
+                            <textarea name="fundingUseCase" value={formData.fundingUseCase} onChange={handleInputChange} placeholder="Use of funds..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-use-case" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What type of investors are you looking for?</label>
+                            <Input name="investorType" value={formData.investorType} onChange={handleInputChange} placeholder="Investor types..." className="w-full" data-testid="input-investors" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Execution Plan */}
+                      <div className="border-l-4 border-green-500 pl-6">
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Execution Plan</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What are the next 3 steps you plan to take? *</label>
+                            <textarea name="nextSteps" value={formData.nextSteps} onChange={handleInputChange} placeholder="Next steps..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-next-steps" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What is your biggest current obstacle? *</label>
+                            <textarea name="currentObstacle" value={formData.currentObstacle} onChange={handleInputChange} placeholder="Biggest challenge..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-obstacle" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What help do you need from mentors?</label>
+                            <textarea name="mentorHelp" value={formData.mentorHelp} onChange={handleInputChange} placeholder="Mentor support..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-mentor-help" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What help do you need from technical experts?</label>
+                            <textarea name="technicalExpertHelp" value={formData.technicalExpertHelp} onChange={handleInputChange} placeholder="Technical support..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-tech-help" />
                           </div>
                         </div>
                       </div>
@@ -979,51 +1018,6 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                   </div>
                 )}
 
-                {/* Business Plan Editing Step */}
-                {!showingAiReview && !showingBusinessPlan && currentStep === 2 && (
-                  <div className="space-y-6">
-                    <div>
-                      <h2 className="text-3xl font-display font-bold mb-2 text-slate-900 dark:text-white">Step 3: Your Business Plan</h2>
-                      <p className="text-slate-600 dark:text-slate-400 mb-6">Edit and customize your business plan before submitting</p>
-                      <Progress value={100} className="h-2" />
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Business Plan *</label>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">Edit and customize every section with your specific details, numbers, and timeline.</p>
-                        <textarea
-                          name="businessPlanFinal"
-                          value={formData.businessPlanFinal}
-                          onChange={handleInputChange}
-                          placeholder="Edit your business plan here..."
-                          rows={18}
-                          className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 font-mono text-sm leading-relaxed"
-                          data-testid="textarea-entrepreneur-businessplan"
-                        />
-                      </div>
-
-                      <div className="flex gap-3 pt-8 border-t border-slate-200 dark:border-slate-700">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handlePrevious}
-                          className="flex-1"
-                          data-testid="button-plan-back-edit"
-                        >
-                          <ChevronLeft className="mr-2 h-4 w-4" /> Back
-                        </Button>
-                        <Button
-                          type="submit"
-                          className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white font-semibold"
-                          data-testid="button-entrepreneur-submit"
-                        >
-                          Submit Application
-                        </Button>
-                      </div>
-                    </form>
-                  </div>
-                )}
               </CardContent>
             </Card>
           )}
