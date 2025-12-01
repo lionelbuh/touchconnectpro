@@ -78,6 +78,7 @@ export default function AdminDashboard() {
   const [approvedMentors, setApprovedMentors] = useState<any[]>([]);
   const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
   const [approvedInvestors, setApprovedInvestors] = useState<any[]>([]);
+  const [approvedEntrepreneurs, setApprovedEntrepreneurs] = useState<any[]>([]);
   const [members, setMembers] = useState<User[]>([
     { id: "m1", name: "Alex Johnson", email: "alex@tech.com", type: "entrepreneur" as const, status: "active" as const },
     { id: "m2", name: "Maria Garcia", email: "maria@startup.com", type: "entrepreneur" as const, status: "active" as const },
@@ -124,7 +125,9 @@ export default function AdminDashboard() {
     }
     const savedEntrepreneurApplications = localStorage.getItem("tcp_entrepreneurApplications");
     if (savedEntrepreneurApplications) {
-      setEntrepreneurApplications(JSON.parse(savedEntrepreneurApplications));
+      const allEntrepreneurs = JSON.parse(savedEntrepreneurApplications);
+      setEntrepreneurApplications(allEntrepreneurs);
+      setApprovedEntrepreneurs(allEntrepreneurs.filter((app: any) => app.status === "approved"));
     }
   }, []);
 
@@ -855,10 +858,10 @@ export default function AdminDashboard() {
               {/* Entrepreneurs */}
               <div className="mb-8">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                  <span className="text-emerald-600">👨‍💼</span> Entrepreneurs
-                  <Badge className="bg-emerald-100 text-emerald-800">{members.length}</Badge>
+                  <span className="text-emerald-600">👨‍💼</span> Entrepreneurs (Approved)
+                  <Badge className="bg-emerald-100 text-emerald-800">{members.length + approvedEntrepreneurs.length}</Badge>
                 </h3>
-                {members.length === 0 ? (
+                {members.length === 0 && approvedEntrepreneurs.length === 0 ? (
                   <Card>
                     <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
                       No entrepreneurs yet
@@ -887,6 +890,40 @@ export default function AdminDashboard() {
                                 setShowPortfolioModal(true);
                               }}
                               data-testid={`button-assign-portfolio-${member.id}`}
+                            >
+                              Assign to Portfolio
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    {approvedEntrepreneurs.map((entrepreneur, idx) => (
+                      <Card key={`approved-${entrepreneur.id}`} className="border-l-4 border-l-emerald-500">
+                        <CardContent className="pt-6">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
+                                <Badge className="bg-emerald-600">Active</Badge>
+                                <Badge className="bg-cyan-100 text-cyan-800">{entrepreneur.ideaName}</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
+                              <p className="text-xs text-slate-500 mt-2">{entrepreneur.portfolio || "Unassigned"}</p>
+                            </div>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                setSelectedMember({
+                                  id: entrepreneur.id,
+                                  name: entrepreneur.fullName,
+                                  email: entrepreneur.email,
+                                  type: "entrepreneur" as const,
+                                  status: "active" as const
+                                });
+                                setShowPortfolioModal(true);
+                              }}
+                              data-testid={`button-assign-portfolio-entrepreneur-${idx}`}
                             >
                               Assign to Portfolio
                             </Button>
