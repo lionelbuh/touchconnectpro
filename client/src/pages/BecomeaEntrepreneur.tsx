@@ -253,6 +253,7 @@ export default function BecomeaEntrepreneur() {
     setTimeout(() => {
       const elem = document.querySelector('[data-section="business-plan"]');
       elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => window.scrollBy(0, -60), 300);
     }, 250);
   };
 
@@ -337,6 +338,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       setTimeout(() => {
         const elem = document.querySelector('[data-section="ai-review"]');
         elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => window.scrollBy(0, -60), 300);
       }, 250);
       return;
     }
@@ -345,6 +347,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       setTimeout(() => {
         const elem = document.querySelector('[data-section="step-2"]');
         elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => window.scrollBy(0, -60), 300);
       }, 250);
     }
   };
@@ -356,6 +359,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       setTimeout(() => {
         const elem = document.querySelector('[data-section="ai-review"]');
         elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => window.scrollBy(0, -60), 200);
       }, 100);
       return;
     }
@@ -364,6 +368,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       setTimeout(() => {
         const elem = document.querySelector('[data-section="step-2"]');
         elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => window.scrollBy(0, -60), 200);
       }, 100);
       return;
     }
@@ -372,6 +377,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       setTimeout(() => {
         const elem = document.querySelector(`[data-section="step-${currentStep}"]`);
         elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => window.scrollBy(0, -60), 200);
       }, 100);
     }
   };
