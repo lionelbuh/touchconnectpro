@@ -95,6 +95,8 @@ export default function AdminDashboard() {
   const [expandedProposal, setExpandedProposal] = useState<{[key: string]: boolean}>({});
   const [expandedBusinessPlan, setExpandedBusinessPlan] = useState<{[key: string]: boolean}>({});
   const [portfolioForApp, setPortfolioForApp] = useState<{[key: string]: string}>({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     const savedMentorApplications = localStorage.getItem("tcp_mentorApplications");
@@ -281,6 +283,16 @@ export default function AdminDashboard() {
   const rejectedMentorApplications = mentorApplications.filter(app => app.status === "rejected");
   const rejectedCoachApplications = coachApplications.filter(app => app.status === "rejected");
   const rejectedInvestorApplications = investorApplications.filter(app => app.status === "rejected");
+
+  const filterAndSort = (items: any[], nameField: string) => {
+    return items
+      .filter(item => item[nameField]?.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => {
+        const nameA = a[nameField]?.toLowerCase() || "";
+        const nameB = b[nameField]?.toLowerCase() || "";
+        return sortOrder === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+      });
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8">
@@ -863,6 +875,42 @@ export default function AdminDashboard() {
                 </Button>
               </div>
 
+              {/* Search and Sort Controls */}
+              <div className="flex gap-4 mb-6 flex-wrap items-end">
+                <div className="flex-1 min-w-64">
+                  <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Search by Name</label>
+                  <input 
+                    type="text" 
+                    placeholder="Search members..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    data-testid="input-search-members"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <label className="text-sm font-semibold text-slate-900 dark:text-white">Sort:</label>
+                  <Button 
+                    variant={sortOrder === "asc" ? "default" : "outline"}
+                    onClick={() => setSortOrder("asc")}
+                    size="sm"
+                    className={sortOrder === "asc" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
+                    data-testid="button-sort-asc"
+                  >
+                    A-Z
+                  </Button>
+                  <Button 
+                    variant={sortOrder === "desc" ? "default" : "outline"}
+                    onClick={() => setSortOrder("desc")}
+                    size="sm"
+                    className={sortOrder === "desc" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
+                    data-testid="button-sort-desc"
+                  >
+                    Z-A
+                  </Button>
+                </div>
+              </div>
+
               <>
               {/* Portfolio Assignment Sub-tab */}
               {activeMembersSubTab === "portfolio" && (
@@ -881,7 +929,7 @@ export default function AdminDashboard() {
                   </Card>
                 ) : (
                   <div className="space-y-3">
-                    {members.map((member) => (
+                    {filterAndSort(members, "name").map((member) => (
                       <Card key={member.id} className="border-l-4 border-l-emerald-500">
                         <CardContent className="pt-6">
                           <div className="flex justify-between items-start">
@@ -909,7 +957,7 @@ export default function AdminDashboard() {
                         </CardContent>
                       </Card>
                     ))}
-                    {approvedEntrepreneurs.map((entrepreneur, idx) => (
+                    {filterAndSort(approvedEntrepreneurs, "fullName").map((entrepreneur, idx) => (
                       <Card key={`approved-${entrepreneur.id}`} className="border-l-4 border-l-emerald-500">
                         <CardContent className="pt-6">
                           <div className="flex justify-between items-start">
@@ -962,7 +1010,7 @@ export default function AdminDashboard() {
                   </Card>
                 ) : (
                   <div className="space-y-3">
-                    {approvedMentors.map((mentor, idx) => (
+                    {filterAndSort(approvedMentors, "fullName").map((mentor, idx) => (
                       <Card key={idx} className="border-l-4 border-l-amber-500">
                         <CardContent className="pt-6">
                           <div className="flex justify-between items-start">
@@ -997,7 +1045,7 @@ export default function AdminDashboard() {
                   </Card>
                 ) : (
                   <div className="space-y-3">
-                    {approvedCoaches.map((coach, idx) => (
+                    {filterAndSort(approvedCoaches, "fullName").map((coach, idx) => (
                       <Card key={idx} className="border-l-4 border-l-cyan-500">
                         <CardContent className="pt-6">
                           <div className="flex justify-between items-start">
@@ -1032,7 +1080,7 @@ export default function AdminDashboard() {
                   </Card>
                 ) : (
                   <div className="space-y-3">
-                    {approvedInvestors.map((investor, idx) => (
+                    {filterAndSort(approvedInvestors, "fullName").map((investor, idx) => (
                       <Card key={idx} className="border-l-4 border-l-blue-500">
                         <CardContent className="pt-6">
                           <div className="flex justify-between items-start">
@@ -1064,7 +1112,7 @@ export default function AdminDashboard() {
                   <div>
                     <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Entrepreneurs ({members.length + approvedEntrepreneurs.length})</h4>
                     <div className="space-y-3">
-                      {members.map((member) => (
+                      {filterAndSort(members, "name").map((member) => (
                         <Card key={member.id}>
                           <CardContent className="pt-6">
                             <div className="flex justify-between items-center">
@@ -1079,7 +1127,7 @@ export default function AdminDashboard() {
                           </CardContent>
                         </Card>
                       ))}
-                      {approvedEntrepreneurs.map((entrepreneur, idx) => (
+                      {filterAndSort(approvedEntrepreneurs, "fullName").map((entrepreneur, idx) => (
                         <Card key={`approved-msg-${entrepreneur.id}`}>
                           <CardContent className="pt-6">
                             <div className="flex justify-between items-center">
@@ -1101,7 +1149,7 @@ export default function AdminDashboard() {
                   <div>
                     <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">🎓 Mentors ({approvedMentors.length})</h4>
                     <div className="space-y-3">
-                      {approvedMentors.map((mentor, idx) => (
+                      {filterAndSort(approvedMentors, "fullName").map((mentor, idx) => (
                         <Card key={idx}>
                           <CardContent className="pt-6">
                             <div className="flex justify-between items-center">
@@ -1124,7 +1172,7 @@ export default function AdminDashboard() {
                   <div>
                     <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💪 Coaches ({approvedCoaches.length})</h4>
                     <div className="space-y-3">
-                      {approvedCoaches.map((coach, idx) => (
+                      {filterAndSort(approvedCoaches, "fullName").map((coach, idx) => (
                         <Card key={idx}>
                           <CardContent className="pt-6">
                             <div className="flex justify-between items-center">
@@ -1147,7 +1195,7 @@ export default function AdminDashboard() {
                   <div>
                     <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💰 Investors ({approvedInvestors.length})</h4>
                     <div className="space-y-3">
-                      {approvedInvestors.map((investor, idx) => (
+                      {filterAndSort(approvedInvestors, "fullName").map((investor, idx) => (
                         <Card key={idx}>
                           <CardContent className="pt-6">
                             <div className="flex justify-between items-center">
@@ -1178,7 +1226,7 @@ export default function AdminDashboard() {
                   <div>
                     <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Entrepreneurs ({members.length + approvedEntrepreneurs.length})</h4>
                     <div className="space-y-3">
-                      {members.map((member) => (
+                      {filterAndSort(members, "name").map((member) => (
                         <Card key={member.id} className={member.status === "disabled" ? "opacity-60" : ""}>
                           <CardContent className="pt-6">
                             <div className="flex justify-between items-center">
@@ -1196,7 +1244,7 @@ export default function AdminDashboard() {
                           </CardContent>
                         </Card>
                       ))}
-                      {approvedEntrepreneurs.map((entrepreneur, idx) => {
+                      {filterAndSort(approvedEntrepreneurs, "fullName").map((entrepreneur, idx) => {
                         const isDisabled = disabledProfessionals[`entrepreneur-${idx}`];
                         return (
                         <Card key={`approved-mgmt-${entrepreneur.id}`} className={isDisabled ? "opacity-60" : ""}>
@@ -1222,7 +1270,7 @@ export default function AdminDashboard() {
                   <div>
                     <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">🎓 Mentors ({approvedMentors.length})</h4>
                     <div className="space-y-3">
-                      {approvedMentors.map((mentor, idx) => {
+                      {filterAndSort(approvedMentors, "fullName").map((mentor, idx) => {
                         const isDisabled = disabledProfessionals[`mentor-${idx}`];
                         return (
                         <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
@@ -1249,7 +1297,7 @@ export default function AdminDashboard() {
                   <div>
                     <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💪 Coaches ({approvedCoaches.length})</h4>
                     <div className="space-y-3">
-                      {approvedCoaches.map((coach, idx) => {
+                      {filterAndSort(approvedCoaches, "fullName").map((coach, idx) => {
                         const isDisabled = disabledProfessionals[`coach-${idx}`];
                         return (
                         <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
@@ -1276,7 +1324,7 @@ export default function AdminDashboard() {
                   <div>
                     <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💰 Investors ({approvedInvestors.length})</h4>
                     <div className="space-y-3">
-                      {approvedInvestors.map((investor, idx) => {
+                      {filterAndSort(approvedInvestors, "fullName").map((investor, idx) => {
                         const isDisabled = disabledProfessionals[`investor-${idx}`];
                         return (
                         <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
