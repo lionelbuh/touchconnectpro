@@ -94,20 +94,16 @@ export default function BecomeaEntrepreneur() {
   const [businessPlanDraft, setBusinessPlanDraft] = useState<any>({});
   const [editedBusinessPlan, setEditedBusinessPlan] = useState<any>({
     executiveSummary: "",
-    problem: "",
-    targetUsers: "",
-    urgency: "",
+    problemStatement: "",
+    solution: "",
+    targetMarket: "",
     marketSize: "",
-    competitors: "",
-    yourEdge: "",
-    goToMarket: "",
     revenueModel: "",
-    financialProjections: "",
-    fundingNeeded: "",
-    currentStage: "",
-    nextSteps: [],
-    metrics: [],
-    risks: []
+    competitiveAdvantage: "",
+    roadmap12Month: "",
+    fundingRequirements: "",
+    risksAndMitigation: "",
+    successMetrics: ""
   });
   const [showingBusinessPlan, setShowingBusinessPlan] = useState(false);
 
@@ -119,33 +115,50 @@ export default function BecomeaEntrepreneur() {
     country: "United States",
     state: "",
 
-    // Step 1: Idea Questions
-    // About the Idea
-    coreIdea: "",
+    // Step 1: Comprehensive Idea Questions
     problem: "",
-    whyNow: "",
-    
-    // Market & Differentiation
-    idealCustomers: "",
-    alternatives: "",
-    differentiation: "",
-    
-    // Progress & Feasibility
+    whoExperiences: "",
+    problemImportance: "",
+    currentSolutions: "",
+    ideaName: "",
+    ideaDescription: "",
+    valueProposition: "",
+    idealCustomer: "",
+    targetMarket: "",
+    marketSize: "",
+    customerReach: "",
+    hasCustomers: "",
+    customerCount: "",
+    hasRevenue: "",
+    revenueAmount: "",
+    revenueRecurring: "",
+    productUsage: "",
+    monetization: "",
+    pricing: "",
+    mainCosts: "",
+    successIn12Months: "",
+    directCompetitors: "",
+    competitorStrengths: "",
+    competitorWeakness: "",
     currentStage: "",
-    completed: "",
-    nextStep: "",
-    
-    // Business Model
-    revenueModel: "",
-    successMetrics: "",
-    
-    // Commitment & Support
-    mentorshipNeeds: "",
-    hoursPerWeek: "",
-    readyForFeedback: "",
-
-    // Step 2: Business Plan (editable)
-    businessPlanFinal: "",
+    hasDemo: "",
+    existingFeatures: "",
+    featuresToBuild: "",
+    linkedinWebsite: "",
+    foundedBefore: "",
+    soloOrCoFounders: "",
+    personalSkills: "",
+    missingSkills: "",
+    timePerWeek: "",
+    personalInvestment: "",
+    externalFunding: "",
+    fundingNeeded: "",
+    fundingUseCase: "",
+    investorType: "",
+    nextSteps: "",
+    currentObstacle: "",
+    mentorHelp: "",
+    technicalExpertHelp: ""
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -166,18 +179,17 @@ export default function BecomeaEntrepreneur() {
         }
         return true;
       case 1: // Idea Questions
-        if (!formData.coreIdea || !formData.problem || !formData.whyNow || 
-            !formData.idealCustomers || !formData.alternatives || !formData.differentiation ||
-            !formData.currentStage || !formData.completed || !formData.nextStep ||
-            !formData.revenueModel || !formData.successMetrics ||
-            !formData.mentorshipNeeds || !formData.hoursPerWeek || !formData.readyForFeedback) {
+        if (!formData.problem || !formData.whoExperiences || !formData.ideaName || 
+            !formData.ideaDescription || !formData.valueProposition ||
+            !formData.idealCustomer || !formData.targetMarket || !formData.customerReach ||
+            !formData.hasCustomers || !formData.hasRevenue || !formData.monetization ||
+            !formData.pricing || !formData.mainCosts || !formData.successIn12Months ||
+            !formData.directCompetitors || !formData.competitorWeakness || !formData.currentStage ||
+            !formData.existingFeatures || !formData.foundedBefore || !formData.soloOrCoFounders ||
+            !formData.personalSkills || !formData.missingSkills || !formData.timePerWeek ||
+            !formData.personalInvestment || !formData.externalFunding || !formData.fundingNeeded ||
+            !formData.fundingUseCase || !formData.nextSteps || !formData.currentObstacle) {
           alert("Please fill in all required fields");
-          return false;
-        }
-        return true;
-      case 2: // Business Plan
-        if (!formData.businessPlanFinal) {
-          alert("Please review and finalize your business plan");
           return false;
         }
         return true;
@@ -203,12 +215,16 @@ export default function BecomeaEntrepreneur() {
 
   const handleApproveIdeaAndContinue = () => {
     setShowingAiReview(false);
-    // Generate business plan draft using edited review values
     const plan = generateBusinessPlan(formData);
     setBusinessPlanDraft(plan);
     setEditedBusinessPlan(plan);
     setShowingBusinessPlan(true);
     window.scrollTo(0, 0);
+  };
+
+  const handleSubmitApplication = () => {
+    // Submit with the business plan data
+    handleSubmit(new Event('submit') as any);
   };
 
   const handleGenerateBusinessPlan = () => {
@@ -271,11 +287,11 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
   const handleNext = () => {
     if (!validateStep()) return;
     if (currentStep === 1) {
-      // After step 1, show AI review before going to step 2
+      // After step 1, show AI review before going to business plan
       handleGenerateAiReview();
       return;
     }
-    if (currentStep < 2) {
+    if (currentStep < 1) {
       setCurrentStep(currentStep + 1);
       window.scrollTo(0, 0);
     }
@@ -346,7 +362,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
     });
   };
 
-  const progressPercent = showingAiReview ? 66 : showingBusinessPlan ? 80 : ((currentStep + 1) / 3) * 100;
+  const progressPercent = showingAiReview ? 66 : showingBusinessPlan ? 90 : ((currentStep + 1) / 2) * 100;
 
   return (
     <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
@@ -543,15 +559,16 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                     <div className="space-y-6">
                       {[
                         { key: "executiveSummary", label: "Executive Summary" },
-                        { key: "problem", label: "Problem Statement" },
-                        { key: "targetUsers", label: "Target Market" },
+                        { key: "problemStatement", label: "Problem Statement" },
+                        { key: "solution", label: "Solution" },
+                        { key: "targetMarket", label: "Target Market" },
                         { key: "marketSize", label: "Market Size & Opportunity" },
-                        { key: "competitors", label: "Competitive Landscape" },
-                        { key: "yourEdge", label: "Competitive Advantage" },
                         { key: "revenueModel", label: "Revenue Model & Pricing" },
-                        { key: "financialProjections", label: "Financial Projections" },
-                        { key: "goToMarket", label: "Go-to-Market Strategy" },
-                        { key: "fundingNeeded", label: "Funding Requirements" }
+                        { key: "competitiveAdvantage", label: "Competitive Advantage" },
+                        { key: "roadmap12Month", label: "12-Month Roadmap" },
+                        { key: "fundingRequirements", label: "Funding Requirements" },
+                        { key: "risksAndMitigation", label: "Risks & Mitigation" },
+                        { key: "successMetrics", label: "Success Metrics" }
                       ].map((section) => (
                         <Card key={section.key} className="border-cyan-200 dark:border-cyan-900/30">
                           <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
@@ -559,7 +576,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                           </CardHeader>
                           <CardContent className="pt-6">
                             <textarea
-                              value={editedBusinessPlan[section.key as keyof typeof editedBusinessPlan] || ""}
+                              value={editedBusinessPlan[section.key] || ""}
                               onChange={(e) => handleEditPlanField(section.key, e.target.value)}
                               className="w-full min-h-24 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                               data-testid={`textarea-plan-${section.key}`}
@@ -567,51 +584,6 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                           </CardContent>
                         </Card>
                       ))}
-                      
-                      {/* Metrics Card */}
-                      <Card className="border-cyan-200 dark:border-cyan-900/30">
-                        <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
-                          <CardTitle className="text-lg">Key Metrics to Track</CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                          <textarea
-                            value={editedBusinessPlan.metrics?.join("\n") || ""}
-                            onChange={(e) => handleEditPlanField("metrics", e.target.value.split("\n"))}
-                            className="w-full min-h-24 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                            data-testid="textarea-plan-metrics"
-                          />
-                        </CardContent>
-                      </Card>
-
-                      {/* Risks Card */}
-                      <Card className="border-cyan-200 dark:border-cyan-900/30">
-                        <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
-                          <CardTitle className="text-lg">Risks & Mitigation</CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                          <textarea
-                            value={editedBusinessPlan.risks?.join("\n") || ""}
-                            onChange={(e) => handleEditPlanField("risks", e.target.value.split("\n"))}
-                            className="w-full min-h-24 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                            data-testid="textarea-plan-risks"
-                          />
-                        </CardContent>
-                      </Card>
-
-                      {/* Next Steps Card */}
-                      <Card className="border-cyan-200 dark:border-cyan-900/30">
-                        <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
-                          <CardTitle className="text-lg">90-Day Action Plan</CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                          <textarea
-                            value={editedBusinessPlan.nextSteps?.join("\n") || ""}
-                            onChange={(e) => handleEditPlanField("nextSteps", e.target.value.split("\n"))}
-                            className="w-full min-h-24 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                            data-testid="textarea-plan-steps"
-                          />
-                        </CardContent>
-                      </Card>
                     </div>
 
                     <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
@@ -630,7 +602,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                         </Button>
                         <Button
                           type="button"
-                          onClick={handleEditBusinessPlan}
+                          onClick={handleSubmitApplication}
                           className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white font-semibold"
                           data-testid="button-submit-application"
                         >
@@ -753,12 +725,12 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                 {!showingAiReview && !showingBusinessPlan && currentStep === 1 && (
                   <div className="space-y-6">
                     <div>
-                      <h2 className="text-3xl font-display font-bold mb-2 text-slate-900 dark:text-white">Step 2: Your Idea</h2>
-                      <p className="text-slate-600 dark:text-slate-400 mb-6">Tell us everything about your idea</p>
-                      <Progress value={66} className="h-2" />
+                      <h2 className="text-3xl font-display font-bold mb-2 text-slate-900 dark:text-white">Step 2: Tell Us About Your Idea</h2>
+                      <p className="text-slate-600 dark:text-slate-400 mb-6">Help us understand your vision and business opportunity</p>
+                      <Progress value={50} className="h-2" />
                     </div>
 
-                    <form className="space-y-8">
+                    <form className="space-y-6 max-h-[70vh] overflow-y-auto pr-4">
                       {/* About the Idea */}
                       <div className="border-l-4 border-emerald-500 pl-6">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">About the Idea</h3>
