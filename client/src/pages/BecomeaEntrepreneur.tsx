@@ -92,7 +92,23 @@ export default function BecomeaEntrepreneur() {
   const [editedReview, setEditedReview] = useState<any>({});
   const [showingAiReview, setShowingAiReview] = useState(false);
   const [businessPlanDraft, setBusinessPlanDraft] = useState<any>({});
-  const [editedBusinessPlan, setEditedBusinessPlan] = useState<any>({});
+  const [editedBusinessPlan, setEditedBusinessPlan] = useState<any>({
+    executiveSummary: "",
+    problem: "",
+    targetUsers: "",
+    urgency: "",
+    marketSize: "",
+    competitors: "",
+    yourEdge: "",
+    goToMarket: "",
+    revenueModel: "",
+    financialProjections: "",
+    fundingNeeded: "",
+    currentStage: "",
+    nextSteps: [],
+    metrics: [],
+    risks: []
+  });
   const [showingBusinessPlan, setShowingBusinessPlan] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -181,7 +197,7 @@ export default function BecomeaEntrepreneur() {
     setEditedReview((prev: any) => ({ ...prev, [field]: value }));
   };
 
-  const handleEditPlanField = (field: string, value: string) => {
+  const handleEditPlanField = (field: string, value: string | string[]) => {
     setEditedBusinessPlan((prev: any) => ({ ...prev, [field]: value }));
   };
 
@@ -190,6 +206,7 @@ export default function BecomeaEntrepreneur() {
     // Generate business plan draft using edited review values
     const plan = generateBusinessPlan(formData);
     setBusinessPlanDraft(plan);
+    setEditedBusinessPlan(plan);
     setShowingBusinessPlan(true);
   };
 
