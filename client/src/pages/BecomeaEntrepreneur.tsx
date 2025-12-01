@@ -35,12 +35,12 @@ const US_STATES = [
 const generateAIReview = (formData: any) => {
   return {
     coreIdea: formData.coreIdea || "Your innovative solution to market problem",
-    problemSolution: `You're addressing a critical gap where ${formData.problem || "the target market faces a specific challenge"}. Your solution uniquely tackles this by focusing on ${formData.differentiation || "your unique value proposition"}}.`,
+    problemSolution: `You're addressing a critical gap where ${formData.problem || "the target market faces a specific challenge"}. Your solution uniquely tackles this by focusing on ${formData.differentiation || "your unique value proposition"}.`,
     whyNow: formData.whyNow || "Clear market need and timing advantage",
-    marketOpportunity: `Your primary customers are ${formData.idealCustomers || "early adopters and innovators"}}, who currently rely on ${formData.alternatives || "fragmented solutions"}}. You differentiate by ${formData.differentiation || "offering better user experience and efficiency"}}.`,
-    currentProgress: `You're at the ${formData.currentStage || "ideation"}} phase and have already ${formData.completed || "validated initial assumptions"}}. Your immediate next step is to ${formData.nextStep || "build and test with first users"}}.`,
-    businessModel: `Revenue will be generated through ${formData.revenueModel || "a scalable subscription model"}}. You're targeting ${formData.successMetrics || "profitability within 12 months"}} through focused execution.`,
-    commitment: `You're dedicating ${formData.hoursPerWeek || "significant hours"}} weekly and actively seeking mentorship in ${formData.mentorshipNeeds || "go-to-market strategy and product development"}}.`,
+    marketOpportunity: `Your primary customers are ${formData.idealCustomers || "early adopters and innovators"}, who currently rely on ${formData.alternatives || "fragmented solutions"}. You differentiate by ${formData.differentiation || "offering better user experience and efficiency"}.`,
+    currentProgress: `You're at the ${formData.currentStage || "ideation"} phase and have already ${formData.completed || "validated initial assumptions"}. Your immediate next step is to ${formData.nextStep || "build and test with first users"}.`,
+    businessModel: `Revenue will be generated through ${formData.revenueModel || "a scalable subscription model"}. You're targeting ${formData.successMetrics || "profitability within 12 months"} through focused execution.`,
+    commitment: `You're dedicating ${formData.hoursPerWeek || "significant hours"} weekly and actively seeking mentorship in ${formData.mentorshipNeeds || "go-to-market strategy and product development"}}.`,
   };
 };
 
@@ -77,6 +77,7 @@ export default function BecomeaEntrepreneur() {
   const [currentStep, setCurrentStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [aiReview, setAiReview] = useState<any>({});
+  const [editedReview, setEditedReview] = useState<any>({});
   const [showingAiReview, setShowingAiReview] = useState(false);
   const [businessPlanDraft, setBusinessPlanDraft] = useState<any>({});
   const [showingBusinessPlan, setShowingBusinessPlan] = useState(false);
@@ -159,12 +160,17 @@ export default function BecomeaEntrepreneur() {
   const handleGenerateAiReview = () => {
     const review = generateAIReview(formData);
     setAiReview(review);
+    setEditedReview(review);
     setShowingAiReview(true);
+  };
+
+  const handleEditReviewField = (field: string, value: string) => {
+    setEditedReview((prev: any) => ({ ...prev, [field]: value }));
   };
 
   const handleApproveIdeaAndContinue = () => {
     setShowingAiReview(false);
-    // Generate business plan draft
+    // Generate business plan draft using edited review values
     const plan = generateBusinessPlan(formData);
     setBusinessPlanDraft(plan);
     setShowingBusinessPlan(true);
@@ -436,49 +442,91 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                       {/* Core Idea */}
                       <div className="bg-gradient-to-br from-emerald-50 to-emerald-50/50 dark:from-emerald-950/30 dark:to-emerald-950/10 border border-emerald-200 dark:border-emerald-900/30 rounded-lg p-6">
                         <h3 className="text-lg font-bold text-emerald-900 dark:text-emerald-200 mb-3">Core Idea</h3>
-                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{aiReview.coreIdea}</p>
+                        <textarea
+                          value={editedReview.coreIdea}
+                          onChange={(e) => handleEditReviewField("coreIdea", e.target.value)}
+                          rows={2}
+                          className="w-full px-3 py-2 border border-emerald-300 dark:border-emerald-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                          data-testid="textarea-review-coreidea"
+                        />
                       </div>
 
                       {/* Problem & Solution */}
                       <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 border border-blue-200 dark:border-blue-900/30 rounded-lg p-6">
                         <h3 className="text-lg font-bold text-blue-900 dark:text-blue-200 mb-3">Problem & Solution</h3>
-                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{aiReview.problemSolution}</p>
+                        <textarea
+                          value={editedReview.problemSolution}
+                          onChange={(e) => handleEditReviewField("problemSolution", e.target.value)}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                          data-testid="textarea-review-problem"
+                        />
                       </div>
 
                       {/* Why Now */}
                       <div className="bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/10 border border-purple-200 dark:border-purple-900/30 rounded-lg p-6">
                         <h3 className="text-lg font-bold text-purple-900 dark:text-purple-200 mb-3">Why Now?</h3>
-                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{aiReview.whyNow}</p>
+                        <textarea
+                          value={editedReview.whyNow}
+                          onChange={(e) => handleEditReviewField("whyNow", e.target.value)}
+                          rows={2}
+                          className="w-full px-3 py-2 border border-purple-300 dark:border-purple-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                          data-testid="textarea-review-whynow"
+                        />
                       </div>
 
                       {/* Market Opportunity */}
                       <div className="bg-gradient-to-br from-cyan-50 to-cyan-50/50 dark:from-cyan-950/30 dark:to-cyan-950/10 border border-cyan-200 dark:border-cyan-900/30 rounded-lg p-6">
                         <h3 className="text-lg font-bold text-cyan-900 dark:text-cyan-200 mb-3">Market Opportunity</h3>
-                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{aiReview.marketOpportunity}</p>
+                        <textarea
+                          value={editedReview.marketOpportunity}
+                          onChange={(e) => handleEditReviewField("marketOpportunity", e.target.value)}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-cyan-300 dark:border-cyan-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                          data-testid="textarea-review-market"
+                        />
                       </div>
 
                       {/* Current Progress */}
                       <div className="bg-gradient-to-br from-pink-50 to-pink-50/50 dark:from-pink-950/30 dark:to-pink-950/10 border border-pink-200 dark:border-pink-900/30 rounded-lg p-6">
                         <h3 className="text-lg font-bold text-pink-900 dark:text-pink-200 mb-3">Current Progress & Next Steps</h3>
-                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{aiReview.currentProgress}</p>
+                        <textarea
+                          value={editedReview.currentProgress}
+                          onChange={(e) => handleEditReviewField("currentProgress", e.target.value)}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-pink-300 dark:border-pink-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                          data-testid="textarea-review-progress"
+                        />
                       </div>
 
                       {/* Business Model */}
                       <div className="bg-gradient-to-br from-indigo-50 to-indigo-50/50 dark:from-indigo-950/30 dark:to-indigo-950/10 border border-indigo-200 dark:border-indigo-900/30 rounded-lg p-6">
                         <h3 className="text-lg font-bold text-indigo-900 dark:text-indigo-200 mb-3">Business Model</h3>
-                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{aiReview.businessModel}</p>
+                        <textarea
+                          value={editedReview.businessModel}
+                          onChange={(e) => handleEditReviewField("businessModel", e.target.value)}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-indigo-300 dark:border-indigo-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                          data-testid="textarea-review-business"
+                        />
                       </div>
 
                       {/* Commitment */}
                       <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-950/10 border border-orange-200 dark:border-orange-900/30 rounded-lg p-6">
                         <h3 className="text-lg font-bold text-orange-900 dark:text-orange-200 mb-3">Your Commitment</h3>
-                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{aiReview.commitment}</p>
+                        <textarea
+                          value={editedReview.commitment}
+                          onChange={(e) => handleEditReviewField("commitment", e.target.value)}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-orange-300 dark:border-orange-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                          data-testid="textarea-review-commitment"
+                        />
                       </div>
                     </div>
 
                     <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                       <p className="text-sm text-slate-600 dark:text-slate-400">
-                        <strong>Does this capture your idea accurately?</strong> If you'd like to make changes, go back to edit your answers.
+                        <strong>Edit any section directly above</strong> if you'd like to refine the AI's rephrasing. Then continue to build your business plan.
                       </p>
                       <div className="flex gap-3">
                         <Button
