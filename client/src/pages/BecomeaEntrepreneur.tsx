@@ -589,7 +589,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                   </div>
                 )}
 
-                {/* Business Plan Screen - READ ONLY */}
+                {/* Business Plan Screen - EDITABLE */}
                 {showingBusinessPlan && (
                   <div className="space-y-6">
                     <div>
@@ -597,56 +597,95 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                         <Sparkles className="h-6 w-6 text-amber-500" />
                         <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white">AI-Generated Business Plan</h2>
                       </div>
-                      <p className="text-slate-600 dark:text-slate-400 mb-6">Review your complete business plan below. Use the "Previous" button to go back and edit your idea review if needed.</p>
+                      <p className="text-slate-600 dark:text-slate-400 mb-6">Edit each section directly below to customize your plan. The AI has generated detailed content - refine it to match your specific vision.</p>
                     </div>
 
                     <div className="space-y-5">
                       {/* Executive Summary */}
                       <div className="bg-gradient-to-br from-slate-50 to-slate-50/50 dark:from-slate-800 dark:to-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-6">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3">Executive Summary</h3>
-                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{businessPlanDraft.executiveSummary}</p>
+                        <textarea
+                          value={editedBusinessPlan.executiveSummary}
+                          onChange={(e) => handleEditPlanField("executiveSummary", e.target.value)}
+                          rows={4}
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                          data-testid="textarea-plan-executive"
+                        />
                       </div>
 
                       {/* Problem & Opportunity */}
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="bg-gradient-to-br from-red-50 to-red-50/50 dark:from-red-950/30 dark:to-red-950/10 border border-red-200 dark:border-red-900/30 rounded-lg p-6">
                           <h4 className="font-bold text-red-900 dark:text-red-200 mb-3">The Problem</h4>
-                          <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm">{businessPlanDraft.problem}</p>
+                          <textarea
+                            value={editedBusinessPlan.problem}
+                            onChange={(e) => handleEditPlanField("problem", e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-red-300 dark:border-red-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                            data-testid="textarea-plan-problem"
+                          />
                         </div>
                         <div className="bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-950/10 border border-green-200 dark:border-green-900/30 rounded-lg p-6">
                           <h4 className="font-bold text-green-900 dark:text-green-200 mb-3">Target Users</h4>
-                          <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm">{businessPlanDraft.targetUsers}</p>
+                          <textarea
+                            value={editedBusinessPlan.targetUsers}
+                            onChange={(e) => handleEditPlanField("targetUsers", e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-green-300 dark:border-green-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                            data-testid="textarea-plan-users"
+                          />
                         </div>
                       </div>
 
                       {/* Market & Competition */}
                       <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 border border-blue-200 dark:border-blue-900/30 rounded-lg p-6">
                         <h3 className="text-lg font-bold text-blue-900 dark:text-blue-200 mb-4">Market Size & Opportunity</h3>
-                        <div className="space-y-3">
-                          <div>
-                            <p className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">Market Size:</p>
-                            <p className="text-slate-700 dark:text-slate-300">{businessPlanDraft.marketSize}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">Competitive Landscape:</p>
-                            <p className="text-slate-700 dark:text-slate-300">{businessPlanDraft.competitors}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">Your Competitive Edge:</p>
-                            <p className="text-slate-700 dark:text-slate-300">{businessPlanDraft.yourEdge}</p>
-                          </div>
-                        </div>
+                        <textarea
+                          value={editedBusinessPlan.marketSize}
+                          onChange={(e) => handleEditPlanField("marketSize", e.target.value)}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 mb-4"
+                          data-testid="textarea-plan-market"
+                        />
+                        <h4 className="font-bold text-blue-900 dark:text-blue-200 mb-2">Competitive Landscape</h4>
+                        <textarea
+                          value={editedBusinessPlan.competitors}
+                          onChange={(e) => handleEditPlanField("competitors", e.target.value)}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 mb-4"
+                          data-testid="textarea-plan-competitors"
+                        />
+                        <h4 className="font-bold text-blue-900 dark:text-blue-200 mb-2">Your Competitive Edge</h4>
+                        <textarea
+                          value={editedBusinessPlan.yourEdge}
+                          onChange={(e) => handleEditPlanField("yourEdge", e.target.value)}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                          data-testid="textarea-plan-edge"
+                        />
                       </div>
 
                       {/* Revenue & Financials */}
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/10 border border-purple-200 dark:border-purple-900/30 rounded-lg p-6">
                           <h4 className="font-bold text-purple-900 dark:text-purple-200 mb-3">Revenue Model</h4>
-                          <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{businessPlanDraft.revenueModel}</p>
+                          <textarea
+                            value={editedBusinessPlan.revenueModel}
+                            onChange={(e) => handleEditPlanField("revenueModel", e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-purple-300 dark:border-purple-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                            data-testid="textarea-plan-revenue"
+                          />
                         </div>
                         <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-950/10 border border-orange-200 dark:border-orange-900/30 rounded-lg p-6">
                           <h4 className="font-bold text-orange-900 dark:text-orange-200 mb-3">Financial Projections</h4>
-                          <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{businessPlanDraft.financialProjections}</p>
+                          <textarea
+                            value={editedBusinessPlan.financialProjections}
+                            onChange={(e) => handleEditPlanField("financialProjections", e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-orange-300 dark:border-orange-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                            data-testid="textarea-plan-financials"
+                          />
                         </div>
                       </div>
 
@@ -654,57 +693,63 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="bg-gradient-to-br from-cyan-50 to-cyan-50/50 dark:from-cyan-950/30 dark:to-cyan-950/10 border border-cyan-200 dark:border-cyan-900/30 rounded-lg p-6">
                           <h4 className="font-bold text-cyan-900 dark:text-cyan-200 mb-3">Go-to-Market Strategy</h4>
-                          <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{businessPlanDraft.goToMarket}</p>
+                          <textarea
+                            value={editedBusinessPlan.goToMarket}
+                            onChange={(e) => handleEditPlanField("goToMarket", e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-cyan-300 dark:border-cyan-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                            data-testid="textarea-plan-gtm"
+                          />
                         </div>
                         <div className="bg-gradient-to-br from-indigo-50 to-indigo-50/50 dark:from-indigo-950/30 dark:to-indigo-950/10 border border-indigo-200 dark:border-indigo-900/30 rounded-lg p-6">
                           <h4 className="font-bold text-indigo-900 dark:text-indigo-200 mb-3">Funding Needed</h4>
-                          <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{businessPlanDraft.fundingNeeded}</p>
+                          <textarea
+                            value={editedBusinessPlan.fundingNeeded}
+                            onChange={(e) => handleEditPlanField("fundingNeeded", e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-indigo-300 dark:border-indigo-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                            data-testid="textarea-plan-funding"
+                          />
                         </div>
                       </div>
 
-                      {/* Metrics & Risks */}
+                      {/* Key Metrics */}
                       <div className="bg-gradient-to-br from-pink-50 to-pink-50/50 dark:from-pink-950/30 dark:to-pink-950/10 border border-pink-200 dark:border-pink-900/30 rounded-lg p-6">
                         <h3 className="text-lg font-bold text-pink-900 dark:text-pink-200 mb-4">Success Metrics & Risk Management</h3>
-                        <div className="space-y-4">
-                          <div>
-                            <h4 className="font-bold text-pink-900 dark:text-pink-200 mb-2">Key Metrics to Track:</h4>
-                            <ul className="space-y-1">
-                              {businessPlanDraft.metrics.map((metric: string, idx: number) => (
-                                <li key={idx} className="flex gap-2 text-slate-700 dark:text-slate-300 text-sm">
-                                  <span className="text-pink-600 dark:text-pink-400">•</span>
-                                  <span>{metric}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-pink-900 dark:text-pink-200 mb-2">Risks & Mitigation:</h4>
-                            <ul className="space-y-1">
-                              {businessPlanDraft.risks.map((risk: string, idx: number) => (
-                                <li key={idx} className="text-slate-700 dark:text-slate-300 text-sm">{risk}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
+                        <h4 className="font-bold text-pink-900 dark:text-pink-200 mb-2">Key Metrics to Track</h4>
+                        <textarea
+                          value={editedBusinessPlan.metrics.join("\n")}
+                          onChange={(e) => handleEditPlanField("metrics", e.target.value.split("\n"))}
+                          rows={4}
+                          className="w-full px-3 py-2 border border-pink-300 dark:border-pink-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 mb-4 text-sm"
+                          data-testid="textarea-plan-metrics"
+                        />
+                        <h4 className="font-bold text-pink-900 dark:text-pink-200 mb-2">Risks & Mitigation</h4>
+                        <textarea
+                          value={editedBusinessPlan.risks.join("\n")}
+                          onChange={(e) => handleEditPlanField("risks", e.target.value.split("\n"))}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-pink-300 dark:border-pink-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                          data-testid="textarea-plan-risks"
+                        />
                       </div>
 
-                      {/* 90-Day Plan */}
+                      {/* Next Steps */}
                       <div className="bg-gradient-to-br from-teal-50 to-teal-50/50 dark:from-teal-950/30 dark:to-teal-950/10 border border-teal-200 dark:border-teal-900/30 rounded-lg p-6">
                         <h3 className="text-lg font-bold text-teal-900 dark:text-teal-200 mb-4">90-Day Action Plan</h3>
-                        <ol className="space-y-2">
-                          {businessPlanDraft.nextSteps.map((step: string, idx: number) => (
-                            <li key={idx} className="flex gap-3 text-slate-700 dark:text-slate-300">
-                              <span className="font-bold text-teal-600 dark:text-teal-400">{idx + 1}.</span>
-                              <span>{step}</span>
-                            </li>
-                          ))}
-                        </ol>
+                        <textarea
+                          value={editedBusinessPlan.nextSteps.join("\n")}
+                          onChange={(e) => handleEditPlanField("nextSteps", e.target.value.split("\n"))}
+                          rows={4}
+                          className="w-full px-3 py-2 border border-teal-300 dark:border-teal-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                          data-testid="textarea-plan-steps"
+                        />
                       </div>
                     </div>
 
                     <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                       <p className="text-sm text-slate-600 dark:text-slate-400">
-                        <strong>Ready to submit?</strong> Click "Submit Application" to complete your submission. Use "Previous" if you need to review or modify your idea responses.
+                        <strong>Customize all sections</strong> above to match your vision. Use "Previous" to go back to your idea review if needed.
                       </p>
                       <div className="flex gap-3">
                         <Button
