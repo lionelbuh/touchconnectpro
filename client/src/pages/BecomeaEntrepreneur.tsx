@@ -841,11 +841,11 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                       <div className="border-l-4 border-emerald-500 pl-6">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Problem & Market</h3>
                         <div className="space-y-4">
-                          <div>
+                          <div data-field="problem">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What problem are you solving? *</label>
                             <textarea name="problem" value={formData.problem} onChange={handleInputChange} placeholder="Describe the problem..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-problem" />
                           </div>
-                          <div>
+                          <div data-field="whoExperiences">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Who experiences this problem? *</label>
                             <textarea name="whoExperiences" value={formData.whoExperiences} onChange={handleInputChange} placeholder="Describe who has this problem..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-who" />
                           </div>
@@ -866,13 +866,13 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                         <div className="space-y-4">
                           <div>
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Project/Company name on TouchConnectPro? *</label>
-                            <Input name="ideaName" value={formData.ideaName} onChange={handleInputChange} placeholder="Your project name..." className="w-full" data-testid="input-idea-name" />
+                            <Input name="ideaName" value={formData.ideaName} onChange={handleInputChange} placeholder="Your project name..." className="w-full" data-testid="input-idea-name" data-field="ideaName" />
                           </div>
-                          <div>
+                          <div data-field="ideaDescription">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What is your idea/solution in simple words? *</label>
                             <textarea name="ideaDescription" value={formData.ideaDescription} onChange={handleInputChange} placeholder="Describe your solution..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-idea-desc" />
                           </div>
-                          <div>
+                          <div data-field="valueProposition">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What is the unique benefit/value proposition?</label>
                             <textarea name="valueProposition" value={formData.valueProposition} onChange={handleInputChange} placeholder="Your unique value..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-value" />
                           </div>
@@ -883,19 +883,19 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                       <div className="border-l-4 border-purple-500 pl-6">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Market & Customer</h3>
                         <div className="space-y-4">
-                          <div>
+                          <div data-field="idealCustomer">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Who is your ideal customer? *</label>
                             <textarea name="idealCustomer" value={formData.idealCustomer} onChange={handleInputChange} placeholder="Customer profile..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-customer" />
                           </div>
-                          <div>
+                          <div data-field="targetMarket">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What market/industry does your solution target?</label>
-                            <Input name="targetMarket" value={formData.targetMarket} onChange={handleInputChange} placeholder="Target market..." className="w-full" data-testid="input-target-market" />
+                            <Input name="targetMarket" value={formData.targetMarket} onChange={handleInputChange} placeholder="Target market..." className="w-full" data-testid="input-target-market" data-field="targetMarket" />
                           </div>
-                          <div>
+                          <div data-field="marketSize">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How large is your potential market?</label>
-                            <Input name="marketSize" value={formData.marketSize} onChange={handleInputChange} placeholder="Market size..." className="w-full" data-testid="input-market-size" />
+                            <Input name="marketSize" value={formData.marketSize} onChange={handleInputChange} placeholder="Market size..." className="w-full" data-testid="input-market-size" data-field="marketSize" />
                           </div>
-                          <div>
+                          <div data-field="customerReach">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Where or how will you reach your customers? *</label>
                             <textarea name="customerReach" value={formData.customerReach} onChange={handleInputChange} placeholder="How you'll reach customers..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-reach" />
                           </div>
@@ -906,9 +906,9 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                       <div className="border-l-4 border-cyan-500 pl-6">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Traction & Validation</h3>
                         <div className="space-y-4">
-                          <div>
+                          <div data-field="hasCustomers">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Do you already have customers/users? *</label>
-                            <select name="hasCustomers" value={formData.hasCustomers} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-customers">
+                            <select name="hasCustomers" value={formData.hasCustomers} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-customers" data-field="hasCustomers">
                               <option value="">Select...</option>
                               <option value="Yes">Yes</option>
                               <option value="No">No</option>
@@ -919,9 +919,9 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How many customers/users do you currently have?</label>
                             <Input name="customerCount" value={formData.customerCount} onChange={handleInputChange} placeholder="Number of users..." className="w-full" data-testid="input-customer-count" />
                           </div>
-                          <div>
+                          <div data-field="hasRevenue">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Do you already generate revenue? *</label>
-                            <select name="hasRevenue" value={formData.hasRevenue} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-revenue">
+                            <select name="hasRevenue" value={formData.hasRevenue} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-revenue" data-field="hasRevenue">
                               <option value="">Select...</option>
                               <option value="Yes">Yes</option>
                               <option value="No">No</option>
@@ -931,9 +931,9 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How much revenue so far?</label>
                             <Input name="revenueAmount" value={formData.revenueAmount} onChange={handleInputChange} placeholder="Revenue amount..." className="w-full" data-testid="input-revenue" />
                           </div>
-                          <div>
+                          <div data-field="revenueRecurring">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Is revenue recurring or one-time? *</label>
-                            <select name="revenueRecurring" value={formData.revenueRecurring} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-recurring">
+                            <select name="revenueRecurring" value={formData.revenueRecurring} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-recurring" data-field="revenueRecurring">
                               <option value="">Select...</option>
                               <option value="Recurring">Recurring</option>
                               <option value="One-time">One-time</option>
@@ -951,19 +951,19 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                       <div className="border-l-4 border-pink-500 pl-6">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Business Model</h3>
                         <div className="space-y-4">
-                          <div>
+                          <div data-field="monetization">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How will you make money? *</label>
                             <textarea name="monetization" value={formData.monetization} onChange={handleInputChange} placeholder="Revenue model..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-monetization" />
                           </div>
-                          <div>
+                          <div data-field="pricing">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What do you plan to charge? *</label>
-                            <Input name="pricing" value={formData.pricing} onChange={handleInputChange} placeholder="Your pricing..." className="w-full" data-testid="input-pricing" />
+                            <Input name="pricing" value={formData.pricing} onChange={handleInputChange} placeholder="Your pricing..." className="w-full" data-testid="input-pricing" data-field="pricing" />
                           </div>
-                          <div>
+                          <div data-field="mainCosts">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What are your main costs? *</label>
                             <textarea name="mainCosts" value={formData.mainCosts} onChange={handleInputChange} placeholder="Your main costs..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-costs" />
                           </div>
-                          <div>
+                          <div data-field="successIn12Months">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What does success look like in 12 months? *</label>
                             <textarea name="successIn12Months" value={formData.successIn12Months} onChange={handleInputChange} placeholder="Success metrics..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-success-12m" />
                           </div>
@@ -974,7 +974,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                       <div className="border-l-4 border-indigo-500 pl-6">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Competition</h3>
                         <div className="space-y-4">
-                          <div>
+                          <div data-field="directCompetitors">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Who are your direct competitors? *</label>
                             <textarea name="directCompetitors" value={formData.directCompetitors} onChange={handleInputChange} placeholder="Your competitors..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-competitors" />
                           </div>
@@ -982,7 +982,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What do competitors do well?</label>
                             <textarea name="competitorStrengths" value={formData.competitorStrengths} onChange={handleInputChange} placeholder="Their strengths..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-comp-strengths" />
                           </div>
-                          <div>
+                          <div data-field="competitorWeakness">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Where can you outperform them? *</label>
                             <textarea name="competitorWeakness" value={formData.competitorWeakness} onChange={handleInputChange} placeholder="Your advantage..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-comp-weakness" />
                           </div>
@@ -993,9 +993,9 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                       <div className="border-l-4 border-orange-500 pl-6">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Product Development</h3>
                         <div className="space-y-4">
-                          <div>
+                          <div data-field="currentStage">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What stage are you currently in? *</label>
-                            <select name="currentStage" value={formData.currentStage} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-stage">
+                            <select name="currentStage" value={formData.currentStage} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-stage" data-field="currentStage">
                               <option value="">Select...</option>
                               <option value="Idea only">Idea only</option>
                               <option value="Mockup">Mockup</option>
@@ -1008,7 +1008,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Do you have a demo/prototype?</label>
                             <Input name="hasDemo" value={formData.hasDemo} onChange={handleInputChange} placeholder="Demo/prototype..." className="w-full" data-testid="input-demo" />
                           </div>
-                          <div>
+                          <div data-field="existingFeatures">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Which key features already exist? *</label>
                             <textarea name="existingFeatures" value={formData.existingFeatures} onChange={handleInputChange} placeholder="Existing features..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-features" />
                           </div>
@@ -1027,35 +1027,35 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">LinkedIn profile or website?</label>
                             <Input name="linkedinWebsite" value={formData.linkedinWebsite} onChange={handleInputChange} placeholder="Your LinkedIn/website..." className="w-full" data-testid="input-linkedin-web" />
                           </div>
-                          <div>
+                          <div data-field="foundedBefore">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Have you founded or launched a startup before? *</label>
-                            <select name="foundedBefore" value={formData.foundedBefore} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-founded">
+                            <select name="foundedBefore" value={formData.foundedBefore} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-founded" data-field="foundedBefore">
                               <option value="">Select...</option>
                               <option value="Yes">Yes</option>
                               <option value="No">No</option>
                               <option value="In progress">In progress</option>
                             </select>
                           </div>
-                          <div>
+                          <div data-field="soloOrCoFounders">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Solo or with co-founders? *</label>
-                            <select name="soloOrCoFounders" value={formData.soloOrCoFounders} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-founders">
+                            <select name="soloOrCoFounders" value={formData.soloOrCoFounders} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-founders" data-field="soloOrCoFounders">
                               <option value="">Select...</option>
                               <option value="Solo">Solo</option>
                               <option value="2 co-founders">2 co-founders</option>
                               <option value="3+ co-founders">3+ co-founders</option>
                             </select>
                           </div>
-                          <div>
+                          <div data-field="personalSkills">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What skills do you personally bring? *</label>
                             <textarea name="personalSkills" value={formData.personalSkills} onChange={handleInputChange} placeholder="Your skills..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-skills" />
                           </div>
-                          <div>
+                          <div data-field="missingSkills">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What skills are missing from your team? *</label>
                             <textarea name="missingSkills" value={formData.missingSkills} onChange={handleInputChange} placeholder="Missing skills..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-missing" />
                           </div>
-                          <div>
+                          <div data-field="timePerWeek">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How much time per week can you dedicate? *</label>
-                            <Input name="timePerWeek" value={formData.timePerWeek} onChange={handleInputChange} placeholder="Hours per week..." className="w-full" data-testid="input-time-week" />
+                            <Input name="timePerWeek" value={formData.timePerWeek} onChange={handleInputChange} placeholder="Hours per week..." className="w-full" data-testid="input-time-week" data-field="timePerWeek" />
                           </div>
                         </div>
                       </div>
@@ -1064,25 +1064,25 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                       <div className="border-l-4 border-yellow-500 pl-6">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Funding & Investment</h3>
                         <div className="space-y-4">
-                          <div>
+                          <div data-field="personalInvestment">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Have you invested personal money? *</label>
-                            <Input name="personalInvestment" value={formData.personalInvestment} onChange={handleInputChange} placeholder="Amount invested..." className="w-full" data-testid="input-personal-invest" />
+                            <Input name="personalInvestment" value={formData.personalInvestment} onChange={handleInputChange} placeholder="Amount invested..." className="w-full" data-testid="input-personal-invest" data-field="personalInvestment" />
                           </div>
-                          <div>
+                          <div data-field="externalFunding">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Have you received any external funding? *</label>
-                            <Input name="externalFunding" value={formData.externalFunding} onChange={handleInputChange} placeholder="External funding..." className="w-full" data-testid="input-external-fund" />
+                            <Input name="externalFunding" value={formData.externalFunding} onChange={handleInputChange} placeholder="External funding..." className="w-full" data-testid="input-external-fund" data-field="externalFunding" />
                           </div>
-                          <div>
+                          <div data-field="fundingNeeded">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">How much funding do you think you need now? *</label>
-                            <Input name="fundingNeeded" value={formData.fundingNeeded} onChange={handleInputChange} placeholder="Funding amount..." className="w-full" data-testid="input-funding-needed" />
+                            <Input name="fundingNeeded" value={formData.fundingNeeded} onChange={handleInputChange} placeholder="Funding amount..." className="w-full" data-testid="input-funding-needed" data-field="fundingNeeded" />
                           </div>
-                          <div>
+                          <div data-field="fundingUseCase">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What would funding be used for? *</label>
                             <textarea name="fundingUseCase" value={formData.fundingUseCase} onChange={handleInputChange} placeholder="Use of funds..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-use-case" />
                           </div>
-                          <div>
+                          <div data-field="investorType">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What type of investors are you looking for?</label>
-                            <Input name="investorType" value={formData.investorType} onChange={handleInputChange} placeholder="Investor types..." className="w-full" data-testid="input-investors" />
+                            <Input name="investorType" value={formData.investorType} onChange={handleInputChange} placeholder="Investor types..." className="w-full" data-testid="input-investors" data-field="investorType" />
                           </div>
                         </div>
                       </div>
@@ -1091,19 +1091,19 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                       <div className="border-l-4 border-green-500 pl-6">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Execution Plan</h3>
                         <div className="space-y-4">
-                          <div>
+                          <div data-field="nextSteps">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What are the next 3 steps you plan to take? *</label>
                             <textarea name="nextSteps" value={formData.nextSteps} onChange={handleInputChange} placeholder="Next steps..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-next-steps" />
                           </div>
-                          <div>
+                          <div data-field="currentObstacle">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What is your biggest current obstacle? *</label>
                             <textarea name="currentObstacle" value={formData.currentObstacle} onChange={handleInputChange} placeholder="Biggest challenge..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-obstacle" />
                           </div>
-                          <div>
+                          <div data-field="mentorHelp">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What help do you need from mentors?</label>
                             <textarea name="mentorHelp" value={formData.mentorHelp} onChange={handleInputChange} placeholder="Mentor support..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-mentor-help" />
                           </div>
-                          <div>
+                          <div data-field="technicalExpertHelp">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">What help do you need from technical experts?</label>
                             <textarea name="technicalExpertHelp" value={formData.technicalExpertHelp} onChange={handleInputChange} placeholder="Technical support..." rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500" data-testid="textarea-tech-help" />
                           </div>
