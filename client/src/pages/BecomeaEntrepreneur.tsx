@@ -251,7 +251,7 @@ export default function BecomeaEntrepreneur() {
     setEditedBusinessPlan(plan);
     setShowingBusinessPlan(true);
     setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 950, behavior: 'smooth' });
     }, 250);
   };
 
@@ -334,14 +334,14 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
     if (currentStep === 1) {
       handleGenerateAiReview();
       setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 950, behavior: 'smooth' });
       }, 300);
       return;
     }
     if (currentStep < 1) {
       setCurrentStep(currentStep + 1);
       setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 950, behavior: 'smooth' });
       }, 250);
     }
   };
@@ -351,21 +351,21 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       setShowingBusinessPlan(false);
       setShowingAiReview(true);
       setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 950, behavior: 'smooth' });
       }, 150);
       return;
     }
     if (showingAiReview) {
       setShowingAiReview(false);
       setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 950, behavior: 'smooth' });
       }, 100);
       return;
     }
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
       setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 950, behavior: 'smooth' });
       }, 100);
     }
   };
