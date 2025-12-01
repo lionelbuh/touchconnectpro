@@ -53,7 +53,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-primary">
               Log in
             </Link>
-            <Link href="/dashboard">
+            <Link href="/#free-entry">
               <Button className="font-medium">Get Started</Button>
             </Link>
           </div>
@@ -87,7 +87,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <Link href="/login" className="block px-4 py-2 rounded-lg font-medium text-muted-foreground hover:bg-white/5 hover:text-foreground">
                 Log in
               </Link>
-              <Link href="/dashboard">
+              <Link href="/#free-entry">
                 <Button className="w-full font-medium">Get Started</Button>
               </Link>
             </div>
