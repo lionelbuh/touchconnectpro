@@ -336,10 +336,12 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
     if (currentStep === 1) {
       handleGenerateAiReview();
       setTimeout(() => {
-        const elem = document.querySelector('[data-section="ai-review"]');
-        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(() => window.scrollBy(0, -150), 300);
-      }, 250);
+        const titleElem = document.querySelector('[data-section="ai-review"] h2');
+        if (titleElem) {
+          titleElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          setTimeout(() => window.scrollBy(0, -250), 400);
+        }
+      }, 300);
       return;
     }
     if (currentStep < 1) {
@@ -357,10 +359,12 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       setShowingBusinessPlan(false);
       setShowingAiReview(true);
       setTimeout(() => {
-        const elem = document.querySelector('[data-section="ai-review"]');
-        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(() => window.scrollBy(0, -150), 200);
-      }, 100);
+        const titleElem = document.querySelector('[data-section="ai-review"] h2');
+        if (titleElem) {
+          titleElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          setTimeout(() => window.scrollBy(0, -250), 400);
+        }
+      }, 150);
       return;
     }
     if (showingAiReview) {
