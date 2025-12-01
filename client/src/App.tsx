@@ -15,6 +15,7 @@ import ComingSoon from "@/pages/ComingSoon";
 import BecomeaMentor from "@/pages/BecomeaMentor";
 import BecomeaCoach from "@/pages/BecomeaCoach";
 import BecomeaInvestor from "@/pages/BecomeaInvestor";
+import BecomeaEntrepreneur from "@/pages/BecomeaEntrepreneur";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import Login from "@/pages/Login";
@@ -50,6 +51,7 @@ function Router() {
         <Route path="/pricing" component={Pricing} />
         <Route path="/qa" component={QA} />
         <Route path="/how-it-works" component={HowItWorks} />
+        <Route path="/become-entrepreneur" component={BecomeaEntrepreneur} />
         <Route path="/become-mentor" component={BecomeaMentor} />
         <Route path="/become-coach" component={BecomeaCoach} />
         <Route path="/investors" component={BecomeaInvestor} />

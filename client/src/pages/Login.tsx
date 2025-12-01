@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Globe } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Globe, Lightbulb, Star, Briefcase, TrendingUp } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 const COUNTRIES = [
@@ -30,11 +30,19 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [isRecovery, setIsRecovery] = useState(false);
+  const [showRoles, setShowRoles] = useState(false);
   const [country, setCountry] = useState("");
   const [state, setState] = useState("");
 
   const handleSignup = () => {
     navigate("/dashboard-entrepreneur");
+  };
+
+  const handleRoleSelection = (role: string) => {
+    if (role === "entrepreneur") navigate("/become-entrepreneur");
+    else if (role === "mentor") navigate("/become-mentor");
+    else if (role === "coach") navigate("/become-coach");
+    else if (role === "investor") navigate("/investors");
   };
 
   return (
@@ -113,7 +121,7 @@ export default function Login() {
                   Don't have an account?{" "}
                   <button
                     onClick={() => {
-                      setIsLogin(false);
+                      setShowRoles(true);
                       window.scrollTo(0, 0);
                     }}
                     className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors"
@@ -134,8 +142,88 @@ export default function Login() {
           </Card>
         )}
 
+        {/* Role Selection Card */}
+        {!isRecovery && !isLogin && showRoles && (
+          <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl shadow-2xl">
+            <CardHeader className="space-y-2 pb-6">
+              <CardTitle className="text-3xl font-display font-bold text-white">Join TouchConnectPro</CardTitle>
+              <CardDescription className="text-slate-400">
+                Select your role to get started
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 gap-3">
+                <button
+                  onClick={() => handleRoleSelection("entrepreneur")}
+                  className="flex items-center gap-4 p-4 rounded-lg border border-slate-600 hover:border-cyan-500 hover:bg-slate-800/50 transition-all text-left"
+                  data-testid="button-role-entrepreneur"
+                >
+                  <Lightbulb className="h-6 w-6 text-emerald-500 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-white">I'm an Entrepreneur</p>
+                    <p className="text-sm text-slate-400">Submit your idea and get guidance</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleRoleSelection("mentor")}
+                  className="flex items-center gap-4 p-4 rounded-lg border border-slate-600 hover:border-cyan-500 hover:bg-slate-800/50 transition-all text-left"
+                  data-testid="button-role-mentor"
+                >
+                  <Star className="h-6 w-6 text-indigo-500 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-white">I'm a Mentor</p>
+                    <p className="text-sm text-slate-400">Guide and support entrepreneurs</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleRoleSelection("coach")}
+                  className="flex items-center gap-4 p-4 rounded-lg border border-slate-600 hover:border-cyan-500 hover:bg-slate-800/50 transition-all text-left"
+                  data-testid="button-role-coach"
+                >
+                  <Briefcase className="h-6 w-6 text-cyan-500 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-white">I'm a Coach</p>
+                    <p className="text-sm text-slate-400">Offer coaching services hourly</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleRoleSelection("investor")}
+                  className="flex items-center gap-4 p-4 rounded-lg border border-slate-600 hover:border-cyan-500 hover:bg-slate-800/50 transition-all text-left"
+                  data-testid="button-role-investor"
+                >
+                  <TrendingUp className="h-6 w-6 text-amber-500 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-white">I'm an Investor</p>
+                    <p className="text-sm text-slate-400">Invest in startups and founders</p>
+                  </div>
+                </button>
+              </div>
+
+              <button
+                onClick={() => {
+                  setShowRoles(false);
+                  setIsLogin(true);
+                }}
+                className="w-full text-center py-3 text-slate-400 hover:text-slate-300 transition-colors font-medium"
+                data-testid="button-back-to-login-roles"
+              >
+                Back to Sign In
+              </button>
+
+              <Link href="/" className="block">
+                <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800/50">
+                  Back to Home
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Signup Card */}
-        {!isRecovery && !isLogin && (
+        {!isRecovery && !isLogin && !showRoles && (
           <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl shadow-2xl">
             <CardHeader className="space-y-2 pb-6">
               <CardTitle className="text-3xl font-display font-bold text-white">Get Started</CardTitle>
