@@ -183,51 +183,50 @@ export default function BecomeaEntrepreneur() {
       case 0: // Basic Info
         if (!formData.fullName || !formData.email || !formData.country) {
           alert("Please fill in Full Name, Email, and Country");
-          return false;
+          return { valid: false, missingField: null };
         }
         if (formData.country === "United States" && !formData.state) {
           alert("Please select your state");
-          return false;
+          return { valid: false, missingField: null };
         }
-        return true;
+        return { valid: true, missingField: null };
       case 1: // Idea Questions
-        const missingFields = [];
-        if (!formData.problem) missingFields.push("Problem");
-        if (!formData.whoExperiences) missingFields.push("Who Experiences This");
-        if (!formData.ideaName) missingFields.push("Idea Name");
-        if (!formData.ideaDescription) missingFields.push("Idea Description");
-        if (!formData.valueProposition) missingFields.push("Value Proposition");
-        if (!formData.idealCustomer) missingFields.push("Ideal Customer");
-        if (!formData.targetMarket) missingFields.push("Target Market");
-        if (!formData.customerReach) missingFields.push("Customer Reach");
-        if (!formData.hasCustomers) missingFields.push("Do you have customers?");
-        if (!formData.hasRevenue) missingFields.push("Do you have revenue?");
-        if (!formData.monetization) missingFields.push("Monetization");
-        if (!formData.pricing) missingFields.push("Pricing");
-        if (!formData.mainCosts) missingFields.push("Main Costs");
-        if (!formData.successIn12Months) missingFields.push("12-Month Success");
-        if (!formData.directCompetitors) missingFields.push("Direct Competitors");
-        if (!formData.competitorWeakness) missingFields.push("Competitive Advantage");
-        if (!formData.currentStage) missingFields.push("Current Stage");
-        if (!formData.existingFeatures) missingFields.push("Existing Features");
-        if (!formData.foundedBefore) missingFields.push("Founded Before");
-        if (!formData.soloOrCoFounders) missingFields.push("Team Composition");
-        if (!formData.personalSkills) missingFields.push("Your Skills");
-        if (!formData.missingSkills) missingFields.push("Missing Skills");
-        if (!formData.timePerWeek) missingFields.push("Time Commitment");
-        if (!formData.personalInvestment) missingFields.push("Personal Investment");
-        if (!formData.externalFunding) missingFields.push("External Funding");
-        if (!formData.fundingNeeded) missingFields.push("Funding Needed");
-        if (!formData.fundingUseCase) missingFields.push("Use of Funds");
-        if (!formData.nextSteps) missingFields.push("Next Steps");
-        if (!formData.currentObstacle) missingFields.push("Current Obstacle");
-        if (missingFields.length > 0) {
-          alert(`Please complete these fields:\n\n${missingFields.slice(0, 5).join("\n")}${missingFields.length > 5 ? `\n... and ${missingFields.length - 5} more` : ""}`);
-          return false;
+        const missingFieldsMap = [];
+        if (!formData.problem) missingFieldsMap.push({ name: "Problem", id: "problem" });
+        if (!formData.whoExperiences) missingFieldsMap.push({ name: "Who Experiences This", id: "whoExperiences" });
+        if (!formData.ideaName) missingFieldsMap.push({ name: "Idea Name", id: "ideaName" });
+        if (!formData.ideaDescription) missingFieldsMap.push({ name: "Idea Description", id: "ideaDescription" });
+        if (!formData.valueProposition) missingFieldsMap.push({ name: "Value Proposition", id: "valueProposition" });
+        if (!formData.idealCustomer) missingFieldsMap.push({ name: "Ideal Customer", id: "idealCustomer" });
+        if (!formData.targetMarket) missingFieldsMap.push({ name: "Target Market", id: "targetMarket" });
+        if (!formData.customerReach) missingFieldsMap.push({ name: "Customer Reach", id: "customerReach" });
+        if (!formData.hasCustomers) missingFieldsMap.push({ name: "Do you have customers?", id: "hasCustomers" });
+        if (!formData.hasRevenue) missingFieldsMap.push({ name: "Do you have revenue?", id: "hasRevenue" });
+        if (!formData.monetization) missingFieldsMap.push({ name: "Monetization", id: "monetization" });
+        if (!formData.pricing) missingFieldsMap.push({ name: "Pricing", id: "pricing" });
+        if (!formData.mainCosts) missingFieldsMap.push({ name: "Main Costs", id: "mainCosts" });
+        if (!formData.successIn12Months) missingFieldsMap.push({ name: "12-Month Success", id: "successIn12Months" });
+        if (!formData.directCompetitors) missingFieldsMap.push({ name: "Direct Competitors", id: "directCompetitors" });
+        if (!formData.competitorWeakness) missingFieldsMap.push({ name: "Competitive Advantage", id: "competitorWeakness" });
+        if (!formData.currentStage) missingFieldsMap.push({ name: "Current Stage", id: "currentStage" });
+        if (!formData.existingFeatures) missingFieldsMap.push({ name: "Existing Features", id: "existingFeatures" });
+        if (!formData.foundedBefore) missingFieldsMap.push({ name: "Founded Before", id: "foundedBefore" });
+        if (!formData.soloOrCoFounders) missingFieldsMap.push({ name: "Team Composition", id: "soloOrCoFounders" });
+        if (!formData.personalSkills) missingFieldsMap.push({ name: "Your Skills", id: "personalSkills" });
+        if (!formData.missingSkills) missingFieldsMap.push({ name: "Missing Skills", id: "missingSkills" });
+        if (!formData.timePerWeek) missingFieldsMap.push({ name: "Time Commitment", id: "timePerWeek" });
+        if (!formData.personalInvestment) missingFieldsMap.push({ name: "Personal Investment", id: "personalInvestment" });
+        if (!formData.externalFunding) missingFieldsMap.push({ name: "External Funding", id: "externalFunding" });
+        if (!formData.fundingNeeded) missingFieldsMap.push({ name: "Funding Needed", id: "fundingNeeded" });
+        if (!formData.fundingUseCase) missingFieldsMap.push({ name: "Use of Funds", id: "fundingUseCase" });
+        if (!formData.nextSteps) missingFieldsMap.push({ name: "Next Steps", id: "nextSteps" });
+        if (!formData.currentObstacle) missingFieldsMap.push({ name: "Current Obstacle", id: "currentObstacle" });
+        if (missingFieldsMap.length > 0) {
+          return { valid: false, missingField: missingFieldsMap[0].id };
         }
-        return true;
+        return { valid: true, missingField: null };
       default:
-        return true;
+        return { valid: true, missingField: null };
     }
   };
 
@@ -321,13 +320,25 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
   };
 
   const handleNext = () => {
-    if (!validateStep()) return;
+    const validation = validateStep();
+    if (!validation.valid) {
+      if (validation.missingField) {
+        setTimeout(() => {
+          const elem = document.querySelector(`[data-field="${validation.missingField}"]`);
+          if (elem) {
+            elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            (elem as any).focus();
+          }
+        }, 100);
+      }
+      return;
+    }
     if (currentStep === 1) {
       handleGenerateAiReview();
       setTimeout(() => {
         const elem = document.querySelector('[data-section="ai-review"]');
-        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+        elem?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
       return;
     }
     if (currentStep < 1) {
@@ -368,7 +379,18 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateStep()) return;
+    const validation = validateStep();
+    if (!validation.valid) {
+      if (validation.missingField) {
+        setTimeout(() => {
+          const elem = document.querySelector(`[data-field="${validation.missingField}"]`);
+          if (elem) {
+            elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+      }
+      return;
+    }
 
     // Save to localStorage with pending status
     const entrepreneurData = { 
