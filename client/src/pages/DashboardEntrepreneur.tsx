@@ -52,10 +52,10 @@ export default function DashboardEntrepreneur() {
     marketIndustry: "",
     marketSize: "",
     marketingChannels: "",
-    hasCustomers: "no",
+    hasCustomers: "",
     customerType: "",
     customerCount: "",
-    hasRevenue: "no",
+    hasRevenue: "",
     revenueAmount: "",
     revenueType: "",
     monthlyActiveUsers: "",
@@ -269,7 +269,15 @@ export default function DashboardEntrepreneur() {
 
   const validateCurrentStep = () => {
     const requiredFields = step.fields.filter((f: any) => f.required);
-    const missingFields = requiredFields.filter((f: any) => !formData[f.key as keyof typeof formData]);
+    const missingFields = requiredFields.filter((f: any) => {
+      const value = formData[f.key as keyof typeof formData];
+      // For select fields, check if value is empty or still the placeholder
+      if (f.type === "select") {
+        return !value || value === "" || value === "Select...";
+      }
+      // For other field types, check if empty
+      return !value || value.trim() === "";
+    });
     
     if (missingFields.length > 0) {
       const missingLabels = missingFields.map((f: any) => f.label.replace(" *", "")).join(", ");
