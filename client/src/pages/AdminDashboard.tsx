@@ -933,69 +933,89 @@ export default function AdminDashboard() {
                   </Card>
                 ) : (
                   <div className="space-y-3">
-                    {filterAndSort(members, "name").map((member) => (
-                      <Card key={member.id} className="border-l-4 border-l-emerald-500">
-                        <CardContent className="pt-6">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
-                                <Badge className={member.status === "active" ? "bg-emerald-600" : "bg-slate-500"}>
-                                  {member.status === "active" ? "Active" : "Disabled"}
-                                </Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">{member.email}</p>
-                            </div>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => {
-                                setSelectedMember(member);
-                                setShowPortfolioModal(true);
-                              }}
-                              data-testid={`button-assign-portfolio-${member.id}`}
-                            >
-                              Assign to Portfolio
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                    {filterAndSort(approvedEntrepreneurs, "fullName").map((entrepreneur, idx) => (
-                      <Card key={`approved-${entrepreneur.id}`} className="border-l-4 border-l-emerald-500">
-                        <CardContent className="pt-6">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
-                                <Badge className="bg-emerald-600">Active</Badge>
-                                <Badge className="bg-cyan-100 text-cyan-800">{entrepreneur.ideaName}</Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
-                              <p className="text-xs text-slate-500 mt-2">{entrepreneur.linkedin || "—"} • {entrepreneur.country || "—"}{entrepreneur.state ? `, ${entrepreneur.state}` : ""}</p>
-                              <p className="text-xs text-slate-500 mt-1">{entrepreneur.portfolio || "Unassigned"}</p>
-                            </div>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => {
-                                setSelectedMember({
-                                  id: entrepreneur.id,
-                                  name: entrepreneur.fullName,
-                                  email: entrepreneur.email,
-                                  type: "entrepreneur" as const,
-                                  status: "active" as const
-                                });
-                                setShowPortfolioModal(true);
-                              }}
-                              data-testid={`button-assign-portfolio-entrepreneur-${idx}`}
-                            >
-                              Assign to Portfolio
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                    {(() => {
+                      const combinedEntrepreneurs = [
+                        ...members.map(m => ({ ...m, displayName: m.name, isApproved: false })),
+                        ...approvedEntrepreneurs.map(a => ({ ...a, displayName: a.fullName, isApproved: true }))
+                      ];
+                      const searchLower = searchTerm.toLowerCase();
+                      const filtered = combinedEntrepreneurs.filter(item => item.displayName?.toLowerCase().includes(searchLower));
+                      const sorted = [...filtered].sort((a, b) => {
+                        const nameA = (a.displayName || "").toString().toLowerCase();
+                        const nameB = (b.displayName || "").toString().toLowerCase();
+                        return sortOrder === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+                      });
+                      return sorted.map((item, idx) => {
+                        if (item.isApproved) {
+                          const entrepreneur = item as any;
+                          return (
+                            <Card key={`approved-${entrepreneur.id}`} className="border-l-4 border-l-emerald-500">
+                              <CardContent className="pt-6">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
+                                      <Badge className="bg-emerald-600">Active</Badge>
+                                      <Badge className="bg-cyan-100 text-cyan-800">{entrepreneur.ideaName}</Badge>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
+                                    <p className="text-xs text-slate-500 mt-2">{entrepreneur.linkedin || "—"} • {entrepreneur.country || "—"}{entrepreneur.state ? `, ${entrepreneur.state}` : ""}</p>
+                                    <p className="text-xs text-slate-500 mt-1">{entrepreneur.portfolio || "Unassigned"}</p>
+                                  </div>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedMember({
+                                        id: entrepreneur.id,
+                                        name: entrepreneur.fullName,
+                                        email: entrepreneur.email,
+                                        type: "entrepreneur" as const,
+                                        status: "active" as const
+                                      });
+                                      setShowPortfolioModal(true);
+                                    }}
+                                    data-testid={`button-assign-portfolio-entrepreneur-${idx}`}
+                                  >
+                                    Assign to Portfolio
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        } else {
+                          const member = item as any;
+                          return (
+                            <Card key={member.id} className="border-l-4 border-l-emerald-500">
+                              <CardContent className="pt-6">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
+                                      <Badge className={member.status === "active" ? "bg-emerald-600" : "bg-slate-500"}>
+                                        {member.status === "active" ? "Active" : "Disabled"}
+                                      </Badge>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">{member.email}</p>
+                                  </div>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedMember(member);
+                                      setShowPortfolioModal(true);
+                                    }}
+                                    data-testid={`button-assign-portfolio-${member.id}`}
+                                  >
+                                    Assign to Portfolio
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        }
+                      });
+                    })()}
                   </div>
                 )}
               </div>
