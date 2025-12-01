@@ -121,6 +121,7 @@ export default function Login() {
                   Don't have an account?{" "}
                   <button
                     onClick={() => {
+                      setIsLogin(false);
                       setShowRoles(true);
                       window.scrollTo(0, 0);
                     }}
