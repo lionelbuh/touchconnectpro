@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Lightbulb, Mail, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -470,96 +470,36 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                   <div className="space-y-6">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="h-6 w-6 text-amber-500" />
-                        <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white">AI Review of Your Idea</h2>
+                        <Sparkles className="h-6 w-6 text-cyan-600" />
+                        <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">AI Review of Your Idea</h2>
                       </div>
-                      <p className="text-slate-600 dark:text-slate-400 mb-6">Here's how our AI has reviewed and enhanced your idea submission. Review each section for accuracy.</p>
+                      <p className="text-slate-600 dark:text-slate-400">Here's a complete review of your idea submission. Edit any section if you'd like to refine it.</p>
                     </div>
 
                     <div className="space-y-4">
-                      {/* Core Idea */}
-                      <div className="bg-gradient-to-br from-emerald-50 to-emerald-50/50 dark:from-emerald-950/30 dark:to-emerald-950/10 border border-emerald-200 dark:border-emerald-900/30 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-emerald-900 dark:text-emerald-200 mb-3">Core Idea</h3>
-                        <textarea
-                          value={editedReview.coreIdea}
-                          onChange={(e) => handleEditReviewField("coreIdea", e.target.value)}
-                          rows={2}
-                          className="w-full px-3 py-2 border border-emerald-300 dark:border-emerald-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                          data-testid="textarea-review-coreidea"
-                        />
-                      </div>
-
-                      {/* Problem & Solution */}
-                      <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 border border-blue-200 dark:border-blue-900/30 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-blue-900 dark:text-blue-200 mb-3">Problem & Solution</h3>
-                        <textarea
-                          value={editedReview.problemSolution}
-                          onChange={(e) => handleEditReviewField("problemSolution", e.target.value)}
-                          rows={3}
-                          className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                          data-testid="textarea-review-problem"
-                        />
-                      </div>
-
-                      {/* Why Now */}
-                      <div className="bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/10 border border-purple-200 dark:border-purple-900/30 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-purple-900 dark:text-purple-200 mb-3">Why Now?</h3>
-                        <textarea
-                          value={editedReview.whyNow}
-                          onChange={(e) => handleEditReviewField("whyNow", e.target.value)}
-                          rows={2}
-                          className="w-full px-3 py-2 border border-purple-300 dark:border-purple-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                          data-testid="textarea-review-whynow"
-                        />
-                      </div>
-
-                      {/* Market Opportunity */}
-                      <div className="bg-gradient-to-br from-cyan-50 to-cyan-50/50 dark:from-cyan-950/30 dark:to-cyan-950/10 border border-cyan-200 dark:border-cyan-900/30 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-cyan-900 dark:text-cyan-200 mb-3">Market Opportunity</h3>
-                        <textarea
-                          value={editedReview.marketOpportunity}
-                          onChange={(e) => handleEditReviewField("marketOpportunity", e.target.value)}
-                          rows={3}
-                          className="w-full px-3 py-2 border border-cyan-300 dark:border-cyan-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                          data-testid="textarea-review-market"
-                        />
-                      </div>
-
-                      {/* Current Progress */}
-                      <div className="bg-gradient-to-br from-pink-50 to-pink-50/50 dark:from-pink-950/30 dark:to-pink-950/10 border border-pink-200 dark:border-pink-900/30 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-pink-900 dark:text-pink-200 mb-3">Current Progress & Next Steps</h3>
-                        <textarea
-                          value={editedReview.currentProgress}
-                          onChange={(e) => handleEditReviewField("currentProgress", e.target.value)}
-                          rows={3}
-                          className="w-full px-3 py-2 border border-pink-300 dark:border-pink-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                          data-testid="textarea-review-progress"
-                        />
-                      </div>
-
-                      {/* Business Model */}
-                      <div className="bg-gradient-to-br from-indigo-50 to-indigo-50/50 dark:from-indigo-950/30 dark:to-indigo-950/10 border border-indigo-200 dark:border-indigo-900/30 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-indigo-900 dark:text-indigo-200 mb-3">Business Model</h3>
-                        <textarea
-                          value={editedReview.businessModel}
-                          onChange={(e) => handleEditReviewField("businessModel", e.target.value)}
-                          rows={3}
-                          className="w-full px-3 py-2 border border-indigo-300 dark:border-indigo-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                          data-testid="textarea-review-business"
-                        />
-                      </div>
-
-                      {/* Commitment */}
-                      <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-950/10 border border-orange-200 dark:border-orange-900/30 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-orange-900 dark:text-orange-200 mb-3">Your Commitment</h3>
-                        <textarea
-                          value={editedReview.commitment}
-                          onChange={(e) => handleEditReviewField("commitment", e.target.value)}
-                          rows={3}
-                          className="w-full px-3 py-2 border border-orange-300 dark:border-orange-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                          data-testid="textarea-review-commitment"
-                        />
-                      </div>
+                      {[
+                        { key: "coreIdea", label: "Core Idea" },
+                        { key: "problemSolution", label: "Problem & Solution" },
+                        { key: "whyNow", label: "Why Now?" },
+                        { key: "marketOpportunity", label: "Market Opportunity" },
+                        { key: "currentProgress", label: "Current Progress & Next Steps" },
+                        { key: "businessModel", label: "Business Model" },
+                        { key: "commitment", label: "Your Commitment" }
+                      ].map((section) => (
+                        <Card key={section.key} className="border-cyan-200 dark:border-cyan-900/30">
+                          <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
+                            <CardTitle className="text-lg">{section.label}</CardTitle>
+                          </CardHeader>
+                          <CardContent className="pt-6">
+                            <textarea
+                              value={editedReview[section.key as keyof typeof editedReview]}
+                              onChange={(e) => handleEditReviewField(section.key, e.target.value)}
+                              className="w-full min-h-20 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                              data-testid={`textarea-review-${section.key}`}
+                            />
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
 
                     <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
@@ -594,157 +534,84 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                   <div className="space-y-6">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="h-6 w-6 text-amber-500" />
-                        <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white">AI-Generated Business Plan</h2>
+                        <Sparkles className="h-6 w-6 text-cyan-600" />
+                        <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">Your Business Plan</h2>
                       </div>
-                      <p className="text-slate-600 dark:text-slate-400 mb-6">Edit each section directly below to customize your plan. The AI has generated detailed content - refine it to match your specific vision.</p>
+                      <p className="text-muted-foreground">Here's the business plan that was generated by AI. Edit each section to customize it for your needs.</p>
                     </div>
 
-                    <div className="space-y-5">
-                      {/* Executive Summary */}
-                      <div className="bg-gradient-to-br from-slate-50 to-slate-50/50 dark:from-slate-800 dark:to-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3">Executive Summary</h3>
-                        <textarea
-                          value={editedBusinessPlan.executiveSummary}
-                          onChange={(e) => handleEditPlanField("executiveSummary", e.target.value)}
-                          rows={4}
-                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                          data-testid="textarea-plan-executive"
-                        />
-                      </div>
-
-                      {/* Problem & Opportunity */}
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="bg-gradient-to-br from-red-50 to-red-50/50 dark:from-red-950/30 dark:to-red-950/10 border border-red-200 dark:border-red-900/30 rounded-lg p-6">
-                          <h4 className="font-bold text-red-900 dark:text-red-200 mb-3">The Problem</h4>
+                    <div className="space-y-6">
+                      {[
+                        { key: "executiveSummary", label: "Executive Summary" },
+                        { key: "problem", label: "Problem Statement" },
+                        { key: "targetUsers", label: "Target Market" },
+                        { key: "marketSize", label: "Market Size & Opportunity" },
+                        { key: "competitors", label: "Competitive Landscape" },
+                        { key: "yourEdge", label: "Competitive Advantage" },
+                        { key: "revenueModel", label: "Revenue Model & Pricing" },
+                        { key: "financialProjections", label: "Financial Projections" },
+                        { key: "goToMarket", label: "Go-to-Market Strategy" },
+                        { key: "fundingNeeded", label: "Funding Requirements" }
+                      ].map((section) => (
+                        <Card key={section.key} className="border-cyan-200 dark:border-cyan-900/30">
+                          <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
+                            <CardTitle className="text-lg">{section.label}</CardTitle>
+                          </CardHeader>
+                          <CardContent className="pt-6">
+                            <textarea
+                              value={editedBusinessPlan[section.key as keyof typeof editedBusinessPlan] || ""}
+                              onChange={(e) => handleEditPlanField(section.key, e.target.value)}
+                              className="w-full min-h-24 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                              data-testid={`textarea-plan-${section.key}`}
+                            />
+                          </CardContent>
+                        </Card>
+                      ))}
+                      
+                      {/* Metrics Card */}
+                      <Card className="border-cyan-200 dark:border-cyan-900/30">
+                        <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
+                          <CardTitle className="text-lg">Key Metrics to Track</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6">
                           <textarea
-                            value={editedBusinessPlan.problem}
-                            onChange={(e) => handleEditPlanField("problem", e.target.value)}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-red-300 dark:border-red-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
-                            data-testid="textarea-plan-problem"
+                            value={editedBusinessPlan.metrics?.join("\n") || ""}
+                            onChange={(e) => handleEditPlanField("metrics", e.target.value.split("\n"))}
+                            className="w-full min-h-24 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            data-testid="textarea-plan-metrics"
                           />
-                        </div>
-                        <div className="bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-950/10 border border-green-200 dark:border-green-900/30 rounded-lg p-6">
-                          <h4 className="font-bold text-green-900 dark:text-green-200 mb-3">Target Users</h4>
-                          <textarea
-                            value={editedBusinessPlan.targetUsers}
-                            onChange={(e) => handleEditPlanField("targetUsers", e.target.value)}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-green-300 dark:border-green-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
-                            data-testid="textarea-plan-users"
-                          />
-                        </div>
-                      </div>
+                        </CardContent>
+                      </Card>
 
-                      {/* Market & Competition */}
-                      <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 border border-blue-200 dark:border-blue-900/30 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-blue-900 dark:text-blue-200 mb-4">Market Size & Opportunity</h3>
-                        <textarea
-                          value={editedBusinessPlan.marketSize}
-                          onChange={(e) => handleEditPlanField("marketSize", e.target.value)}
-                          rows={3}
-                          className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 mb-4"
-                          data-testid="textarea-plan-market"
-                        />
-                        <h4 className="font-bold text-blue-900 dark:text-blue-200 mb-2">Competitive Landscape</h4>
-                        <textarea
-                          value={editedBusinessPlan.competitors}
-                          onChange={(e) => handleEditPlanField("competitors", e.target.value)}
-                          rows={3}
-                          className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 mb-4"
-                          data-testid="textarea-plan-competitors"
-                        />
-                        <h4 className="font-bold text-blue-900 dark:text-blue-200 mb-2">Your Competitive Edge</h4>
-                        <textarea
-                          value={editedBusinessPlan.yourEdge}
-                          onChange={(e) => handleEditPlanField("yourEdge", e.target.value)}
-                          rows={3}
-                          className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                          data-testid="textarea-plan-edge"
-                        />
-                      </div>
-
-                      {/* Revenue & Financials */}
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/10 border border-purple-200 dark:border-purple-900/30 rounded-lg p-6">
-                          <h4 className="font-bold text-purple-900 dark:text-purple-200 mb-3">Revenue Model</h4>
+                      {/* Risks Card */}
+                      <Card className="border-cyan-200 dark:border-cyan-900/30">
+                        <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
+                          <CardTitle className="text-lg">Risks & Mitigation</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6">
                           <textarea
-                            value={editedBusinessPlan.revenueModel}
-                            onChange={(e) => handleEditPlanField("revenueModel", e.target.value)}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-purple-300 dark:border-purple-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
-                            data-testid="textarea-plan-revenue"
+                            value={editedBusinessPlan.risks?.join("\n") || ""}
+                            onChange={(e) => handleEditPlanField("risks", e.target.value.split("\n"))}
+                            className="w-full min-h-24 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            data-testid="textarea-plan-risks"
                           />
-                        </div>
-                        <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-950/10 border border-orange-200 dark:border-orange-900/30 rounded-lg p-6">
-                          <h4 className="font-bold text-orange-900 dark:text-orange-200 mb-3">Financial Projections</h4>
-                          <textarea
-                            value={editedBusinessPlan.financialProjections}
-                            onChange={(e) => handleEditPlanField("financialProjections", e.target.value)}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-orange-300 dark:border-orange-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
-                            data-testid="textarea-plan-financials"
-                          />
-                        </div>
-                      </div>
+                        </CardContent>
+                      </Card>
 
-                      {/* Go-to-Market & Funding */}
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="bg-gradient-to-br from-cyan-50 to-cyan-50/50 dark:from-cyan-950/30 dark:to-cyan-950/10 border border-cyan-200 dark:border-cyan-900/30 rounded-lg p-6">
-                          <h4 className="font-bold text-cyan-900 dark:text-cyan-200 mb-3">Go-to-Market Strategy</h4>
+                      {/* Next Steps Card */}
+                      <Card className="border-cyan-200 dark:border-cyan-900/30">
+                        <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
+                          <CardTitle className="text-lg">90-Day Action Plan</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6">
                           <textarea
-                            value={editedBusinessPlan.goToMarket}
-                            onChange={(e) => handleEditPlanField("goToMarket", e.target.value)}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-cyan-300 dark:border-cyan-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
-                            data-testid="textarea-plan-gtm"
+                            value={editedBusinessPlan.nextSteps?.join("\n") || ""}
+                            onChange={(e) => handleEditPlanField("nextSteps", e.target.value.split("\n"))}
+                            className="w-full min-h-24 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            data-testid="textarea-plan-steps"
                           />
-                        </div>
-                        <div className="bg-gradient-to-br from-indigo-50 to-indigo-50/50 dark:from-indigo-950/30 dark:to-indigo-950/10 border border-indigo-200 dark:border-indigo-900/30 rounded-lg p-6">
-                          <h4 className="font-bold text-indigo-900 dark:text-indigo-200 mb-3">Funding Needed</h4>
-                          <textarea
-                            value={editedBusinessPlan.fundingNeeded}
-                            onChange={(e) => handleEditPlanField("fundingNeeded", e.target.value)}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-indigo-300 dark:border-indigo-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
-                            data-testid="textarea-plan-funding"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Key Metrics */}
-                      <div className="bg-gradient-to-br from-pink-50 to-pink-50/50 dark:from-pink-950/30 dark:to-pink-950/10 border border-pink-200 dark:border-pink-900/30 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-pink-900 dark:text-pink-200 mb-4">Success Metrics & Risk Management</h3>
-                        <h4 className="font-bold text-pink-900 dark:text-pink-200 mb-2">Key Metrics to Track</h4>
-                        <textarea
-                          value={editedBusinessPlan.metrics.join("\n")}
-                          onChange={(e) => handleEditPlanField("metrics", e.target.value.split("\n"))}
-                          rows={4}
-                          className="w-full px-3 py-2 border border-pink-300 dark:border-pink-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 mb-4 text-sm"
-                          data-testid="textarea-plan-metrics"
-                        />
-                        <h4 className="font-bold text-pink-900 dark:text-pink-200 mb-2">Risks & Mitigation</h4>
-                        <textarea
-                          value={editedBusinessPlan.risks.join("\n")}
-                          onChange={(e) => handleEditPlanField("risks", e.target.value.split("\n"))}
-                          rows={3}
-                          className="w-full px-3 py-2 border border-pink-300 dark:border-pink-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
-                          data-testid="textarea-plan-risks"
-                        />
-                      </div>
-
-                      {/* Next Steps */}
-                      <div className="bg-gradient-to-br from-teal-50 to-teal-50/50 dark:from-teal-950/30 dark:to-teal-950/10 border border-teal-200 dark:border-teal-900/30 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-teal-900 dark:text-teal-200 mb-4">90-Day Action Plan</h3>
-                        <textarea
-                          value={editedBusinessPlan.nextSteps.join("\n")}
-                          onChange={(e) => handleEditPlanField("nextSteps", e.target.value.split("\n"))}
-                          rows={4}
-                          className="w-full px-3 py-2 border border-teal-300 dark:border-teal-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
-                          data-testid="textarea-plan-steps"
-                        />
-                      </div>
+                        </CardContent>
+                      </Card>
                     </div>
 
                     <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
