@@ -191,17 +191,38 @@ export default function BecomeaEntrepreneur() {
         }
         return true;
       case 1: // Idea Questions
-        if (!formData.problem || !formData.whoExperiences || !formData.ideaName || 
-            !formData.ideaDescription || !formData.valueProposition ||
-            !formData.idealCustomer || !formData.targetMarket || !formData.customerReach ||
-            !formData.hasCustomers || !formData.hasRevenue || !formData.monetization ||
-            !formData.pricing || !formData.mainCosts || !formData.successIn12Months ||
-            !formData.directCompetitors || !formData.competitorWeakness || !formData.currentStage ||
-            !formData.existingFeatures || !formData.foundedBefore || !formData.soloOrCoFounders ||
-            !formData.personalSkills || !formData.missingSkills || !formData.timePerWeek ||
-            !formData.personalInvestment || !formData.externalFunding || !formData.fundingNeeded ||
-            !formData.fundingUseCase || !formData.nextSteps || !formData.currentObstacle) {
-          alert("Please fill in all required fields");
+        const missingFields = [];
+        if (!formData.problem) missingFields.push("Problem");
+        if (!formData.whoExperiences) missingFields.push("Who Experiences This");
+        if (!formData.ideaName) missingFields.push("Idea Name");
+        if (!formData.ideaDescription) missingFields.push("Idea Description");
+        if (!formData.valueProposition) missingFields.push("Value Proposition");
+        if (!formData.idealCustomer) missingFields.push("Ideal Customer");
+        if (!formData.targetMarket) missingFields.push("Target Market");
+        if (!formData.customerReach) missingFields.push("Customer Reach");
+        if (!formData.hasCustomers) missingFields.push("Do you have customers?");
+        if (!formData.hasRevenue) missingFields.push("Do you have revenue?");
+        if (!formData.monetization) missingFields.push("Monetization");
+        if (!formData.pricing) missingFields.push("Pricing");
+        if (!formData.mainCosts) missingFields.push("Main Costs");
+        if (!formData.successIn12Months) missingFields.push("12-Month Success");
+        if (!formData.directCompetitors) missingFields.push("Direct Competitors");
+        if (!formData.competitorWeakness) missingFields.push("Competitive Advantage");
+        if (!formData.currentStage) missingFields.push("Current Stage");
+        if (!formData.existingFeatures) missingFields.push("Existing Features");
+        if (!formData.foundedBefore) missingFields.push("Founded Before");
+        if (!formData.soloOrCoFounders) missingFields.push("Team Composition");
+        if (!formData.personalSkills) missingFields.push("Your Skills");
+        if (!formData.missingSkills) missingFields.push("Missing Skills");
+        if (!formData.timePerWeek) missingFields.push("Time Commitment");
+        if (!formData.personalInvestment) missingFields.push("Personal Investment");
+        if (!formData.externalFunding) missingFields.push("External Funding");
+        if (!formData.fundingNeeded) missingFields.push("Funding Needed");
+        if (!formData.fundingUseCase) missingFields.push("Use of Funds");
+        if (!formData.nextSteps) missingFields.push("Next Steps");
+        if (!formData.currentObstacle) missingFields.push("Current Obstacle");
+        if (missingFields.length > 0) {
+          alert(`Please complete these fields:\n\n${missingFields.slice(0, 5).join("\n")}${missingFields.length > 5 ? `\n... and ${missingFields.length - 5} more` : ""}`);
           return false;
         }
         return true;
@@ -231,7 +252,10 @@ export default function BecomeaEntrepreneur() {
     setBusinessPlanDraft(plan);
     setEditedBusinessPlan(plan);
     setShowingBusinessPlan(true);
-    window.scrollTo(0, 0);
+    setTimeout(() => {
+      const elem = document.querySelector('[data-section="business-plan"]');
+      elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   const handleSubmitApplication = () => {
@@ -349,14 +373,20 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
     // Save to localStorage with pending status
     const entrepreneurData = { 
       ...formData, 
+      businessPlan: editedBusinessPlan,
+      ideaReview: editedReview,
       status: "pending", 
-      submittedAt: new Date().toISOString() 
+      submittedAt: new Date().toISOString(),
+      id: Math.random().toString(36).substr(2, 9)
     };
     const existingApplications = JSON.parse(localStorage.getItem("tcp_entrepreneurApplications") || "[]");
     existingApplications.push(entrepreneurData);
     localStorage.setItem("tcp_entrepreneurApplications", JSON.stringify(existingApplications));
     
     setSubmitted(true);
+    setTimeout(() => {
+      window.location.href = `/admin-dashboard`;
+    }, 2000);
   };
 
   const handleCloseModal = () => {
@@ -601,7 +631,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
 
                 {/* Business Plan Screen - EDITABLE */}
                 {showingBusinessPlan && (
-                  <div className="space-y-6">
+                  <div className="space-y-6" data-section="business-plan">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <Sparkles className="h-6 w-6 text-cyan-600" />
@@ -630,7 +660,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                           </CardHeader>
                           <CardContent className="pt-6">
                             <textarea
-                              value={editedBusinessPlan[section.key] || ""}
+                              value={(editedBusinessPlan[section.key] || "").replace(/}/g, "")}
                               onChange={(e) => handleEditPlanField(section.key, e.target.value)}
                               className="w-full min-h-24 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                               data-testid={`textarea-plan-${section.key}`}
