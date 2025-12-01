@@ -82,41 +82,17 @@ const generateAIReview = (formData: any) => {
 
 const generateBusinessPlan = (formData: any) => {
   return {
-    executiveSummary: `${formData.coreIdea || "Your core idea"} is a transformative solution that addresses a critical market gap. The opportunity combines strong market demand, a clear competitive advantage, and multiple revenue streams. We project significant growth potential with market opportunity estimated at several hundred million dollars. The founding team brings relevant expertise and is committed to rapid execution. This business plan outlines our path to profitability and market leadership within 24-36 months.`,
-    problem: `${formData.problem || "Market gap identified"}. This challenge affects thousands of potential customers daily, creating significant pain points and lost opportunities. Current solutions are fragmented, expensive, and difficult to use, creating frustration and inefficiency across the industry.`,
-    targetUsers: `Our primary customers are ${formData.idealCustomers || "early adopters and innovators"}. Secondary segments include established companies looking to modernize. We estimate a total addressable market (TAM) of $500M+ with a serviceable obtainable market (SOM) of $50M+ in Year 3.`,
-    urgency: `${formData.whyNow || "Clear market need and timing advantage"}. Market conditions have shifted dramatically due to emerging technologies, changing consumer behavior, and regulatory developments. First-mover advantage is critical in this space.`,
-    marketSize: "Total Addressable Market (TAM) estimated at $500M+. Growing at 25-35% annually. Serviceable addressable market (SAM) of $100M+ achievable by year 2. Significant expansion potential into adjacent markets.",
-    competitors: `Current competitors include ${formData.alternatives || "fragmented solutions"}}. While these players have market presence, they are burdened with legacy infrastructure, poor user experience, and inflexible pricing. Our solution offers 3-5x better performance at 40% lower cost.`,
-    yourEdge: `${formData.differentiation || "Superior UX, better pricing, or innovative approach"}}. Additionally, our proprietary technology, customer-centric approach, and experienced founding team create defensible competitive advantages. We have early validation from 20+ beta customers with 85%+ satisfaction.`,
-    goToMarket: "Phase 1 (Months 1-3): Build MVP, conduct 50+ customer discovery interviews, establish partnerships. Phase 2 (Months 4-6): Launch product, acquire first 100 customers, iterate based on feedback. Phase 3 (Months 7-12): Scale sales and marketing, expand team, build investor relationships.",
-    revenueModel: `${formData.revenueModel || "Subscription-based SaaS model with tiered pricing"}}. Base pricing starts at $99/month with enterprise tiers at $999+/month. Additional revenue streams include implementation services (15-20% margin) and premium features (20% adoption expected).`,
-    financialProjections: "Year 1: 100 customers, $120K MRR, -$500K net (investment phase). Year 2: 1000 customers, $1.2M MRR, breakeven achieved. Year 3: 5000 customers, $6M MRR, 40% net margins. Assumes standard SaaS unit economics with 30% YoY gross margin expansion.",
-    fundingNeeded: formData.mentorshipNeeds ? `$500K-$1M seed round to fund: (1) Engineering team ($250K), (2) Sales & Marketing ($200K), (3) Operations & Infrastructure ($50K)` : "$500K seed funding for team expansion and marketing.",
-    currentStage: `Currently at ${formData.currentStage || "idea validation"} phase. Completed market research with 50+ customer interviews. Have alpha product with core functionality. Building MVP for closed beta by Q1.`,
-    nextSteps: [
-      formData.nextStep || "Complete MVP development and launch closed beta",
-      "Recruit 50-100 beta customers and collect detailed feedback",
-      "Refine product based on user feedback and retention metrics",
-      "Begin strategic partnership discussions with complementary services",
-      "Prepare pitch deck and fundraising materials"
-    ],
-    metrics: [
-      "Monthly Recurring Revenue (MRR) and growth rate",
-      "Customer Acquisition Cost (CAC) and payback period",
-      "Monthly active users and engagement metrics",
-      "Net Revenue Retention (NRR) and churn rate",
-      "Customer satisfaction score (NPS) and support metrics",
-      "Product usage depth and feature adoption",
-      "Burn rate and runway",
-      "Pipeline value and sales cycle length"
-    ],
-    risks: [
-      "Market adoption slower than projected - Mitigation: Extensive customer discovery, flexible pricing",
-      "Competitive response from well-funded incumbents - Mitigation: Focus on differentiation and speed",
-      "Key person dependency - Mitigation: Hire experienced operators, build strong culture",
-      "Technology/scaling challenges - Mitigation: Use proven architecture, hire strong engineers"
-    ]
+    executiveSummary: `${formData.ideaName || "Your solution"} addresses the critical problem of "${formData.problem || "market inefficiency"}" for ${formData.idealCustomer || "our target market"}}. With a market opportunity of ${formData.marketSize || "$500M+"}}, we project significant growth. Our competitive advantage lies in ${formData.valueProposition || "superior technology and user experience"}}. We plan to reach profitability within 24 months by targeting ${formData.customerReach || "customers through strategic channels"}}. Initial funding requirement: ${formData.fundingNeeded || "$500K"}}. Our team is ${formData.soloOrCoFounders || "committed to execution"}} with expertise in ${formData.personalSkills || "key business areas"}}. This plan outlines our path to market leadership.`,
+    problemStatement: `Problem: ${formData.problem || "Market gap identified"}}. Affected Users: ${formData.whoExperiences || "target audience"}}. Impact: ${formData.problemImportance || "significant pain points across the market"}}. Current Solutions: ${formData.currentSolutions || "existing approaches are fragmented and inefficient"}}. Why It Matters Now: Market conditions have shifted dramatically. First-mover advantage is critical. Estimated TAM: ${formData.marketSize || "$500M+"}}.`,
+    solution: `Solution: ${formData.ideaDescription || "Innovative approach"}}. Key Value: ${formData.valueProposition || "superior solution"}}. What We've Built: ${formData.existingFeatures || "core functionality"}}. What's Coming: ${formData.featuresToBuild || "advanced features in development"}}. How We Differentiate: While competitors focus on ${formData.competitorStrengths || "legacy approaches"}}, we outperform by ${formData.competitorWeakness || "innovating where they fail"}}. Current Status: ${formData.currentStage || "MVP stage"}}. Demo Available: ${formData.hasDemo || "custom demo available"}}.`,
+    targetMarket: `Ideal Customer: ${formData.idealCustomer || "early adopters and innovators"}}. Industry: ${formData.targetMarket || "target market segment"}}. Market Size: TAM of ${formData.marketSize || "$500M+"}} growing at 25-35% annually. How We Reach Them: ${formData.customerReach || "multi-channel strategy including direct sales and partnerships"}}. Existing Traction: ${formData.hasCustomers === "Yes" ? `We have ${formData.customerCount || "active"}} customers` : "Validated through customer discovery"}}. Usage: ${formData.productUsage || "strong engagement metrics"}}. Revenue Status: ${formData.hasRevenue === "Yes" ? `Already generating $${formData.revenueAmount || "revenue"}` : "Pre-revenue, launching monetization Q1"}}.`,
+    marketSize: `Total Addressable Market (TAM): ${formData.marketSize || "$500M+"}}, growing at 25-35% annually. Serviceable Addressable Market (SAM): $100M-$200M in Year 1-2. Serviceable Obtainable Market (SOM): $10M-$50M in Year 3 with focused execution. Current Customers: ${formData.customerCount || "Targeting customers through"}} ${formData.customerReach || "strategic channels"}}. Revenue Type: ${formData.revenueRecurring || "recurring subscription"}} model. Expansion Potential: Adjacent markets worth additional $200M+ opportunity.`,
+    revenueModel: `Monetization Strategy: ${formData.monetization || "Subscription-based SaaS model"}}. Pricing Structure: ${formData.pricing || "$99-$999/month tiered"}}. Additional Revenue Streams: Professional services (15-20% margin), premium features (20% adoption). Current Revenue: ${formData.hasRevenue === "Yes" ? `$${formData.revenueAmount || "revenue generating"}` : "Pre-revenue"}}. Year 1 Target: 100+ customers, $120K MRR. Year 2: 1000 customers, $1.2M MRR, breakeven. Year 3: 5000+ customers, $6M+ MRR with 40% net margins. Cost Structure: ${formData.mainCosts || "Engineering, Sales & Marketing, Operations"}}.`,
+    competitiveAdvantage: `Direct Competitors: ${formData.directCompetitors || "legacy solutions and emerging startups"}}. Their Strengths: ${formData.competitorStrengths || "market presence and brand"}}. Where We Win: ${formData.competitorWeakness || "superior technology, better UX, 40% lower cost"}}. Our Defensibility: Proprietary technology (${formData.valueProposition || "innovation focus"}}), customer-centric approach, experienced team (${formData.personalSkills || "core competencies"}}). Time to Build: ${formData.existingFeatures || "Core features complete"}}, roadmap: ${formData.featuresToBuild || "advanced features in development"}}.`,
+    roadmap12Month: `Month 1-3: ${formData.existingFeatures || "Complete MVP"}}. Conduct 50+ customer interviews. Establish partnerships. Month 4-6: Launch to ${formData.hasCustomers === "Yes" ? "expand current customer base" : "first 100 beta customers"}}. Optimize based on feedback. Hire key team members. Month 7-9: Scale to ${formData.successIn12Months || "significant customer base"}}. Expand enterprise offerings. Month 10-12: Reach 1000+ customers. Expand team to 8-10 people. Close ${formData.fundingNeeded || "$500K-$1M"}} seed round. Immediate Actions: ${formData.nextSteps || "Product development and customer outreach"}}.`,
+    fundingRequirements: `Total Funding Needed: ${formData.fundingNeeded || "$500K seed round"}}. Use of Funds: Engineering/Product ($250K), Sales & Marketing ($150K), Operations ($100K). Current Stage: ${formData.currentStage || "MVP stage"}}. Previous Investment: ${formData.personalInvestment || "founder investment already deployed"}}. Prior Funding: ${formData.externalFunding || "no external funding to date"}}. Investor Profile: ${formData.investorType || "seed-stage venture capital and angels"}}. Timeline: Seeking capital immediately. Team: ${formData.soloOrCoFounders || "experienced founders"}} with ${formData.personalSkills || "complementary expertise"}}.`,
+    risksAndMitigation: `Risk 1: Market adoption slower than projected. Mitigation: ${formData.hasCustomers === "Yes" ? "Already validated with paying customers" : "Extensive customer discovery planned"}}. Flexible pricing. Risk 2: Competitive response. Mitigation: Focus on ${formData.valueProposition || "differentiation"}}. Speed to market. Risk 3: Key person dependency. Mitigation: Hire experienced team. Build strong culture. Risk 4: Technical challenges. Mitigation: Use proven architecture. Hire strong engineers. Risk 5: Funding constraints. Mitigation: Conservative burn (${formData.mainCosts || "cost-efficient model"}}). Focus on unit economics. Risk 6: Execution delays. Mitigation: ${formData.currentObstacle || "clear action plan"}}.`,
+    successMetrics: `Primary KPIs: (1) MRR - Target $120K by Month 12, (2) CAC - Target $500 with 12-month payback, (3) Active Users - Target 1000+ by Month 12, (4) NRR - Target 110%+, (5) Churn - Target <5% monthly. Secondary: NPS Target 50+, Feature Adoption 70%+, Support Response <2 hours. Success Criteria: Achieve {{currentStage === "Revenue" ? "10x revenue growth" : formData.successIn12Months || "500+ customers by end of Year 1"}}. Customer Satisfaction: >80% NPS and retention. Team Goals: Expand to {{soloOrCoFounders === "Solo" ? "3-4 person team" : "8-10 person team"}} by Month 12.`
   };
 };
 
@@ -323,13 +299,19 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
   const handleNext = () => {
     if (!validateStep()) return;
     if (currentStep === 1) {
-      // After step 1, show AI review before going to business plan
       handleGenerateAiReview();
+      setTimeout(() => {
+        const elem = document.querySelector('[data-section="ai-review"]');
+        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
       return;
     }
     if (currentStep < 1) {
       setCurrentStep(currentStep + 1);
-      window.scrollTo(0, 0);
+      setTimeout(() => {
+        const elem = document.querySelector('[data-section="step-2"]');
+        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
   };
 
@@ -337,17 +319,26 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
     if (showingBusinessPlan) {
       setShowingBusinessPlan(false);
       setShowingAiReview(true);
-      window.scrollTo(0, 0);
+      setTimeout(() => {
+        const elem = document.querySelector('[data-section="ai-review"]');
+        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
       return;
     }
     if (showingAiReview) {
       setShowingAiReview(false);
-      window.scrollTo(0, 0);
+      setTimeout(() => {
+        const elem = document.querySelector('[data-section="step-2"]');
+        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
       return;
     }
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
-      window.scrollTo(0, 0);
+      setTimeout(() => {
+        const elem = document.querySelector(`[data-section="step-${currentStep}"]`);
+        elem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
   };
 
@@ -510,34 +501,70 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
               <CardContent className="p-10">
                 {/* AI Review Screen */}
                 {showingAiReview && (
-                  <div className="space-y-6">
+                  <div className="space-y-6" data-section="ai-review">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <Sparkles className="h-6 w-6 text-cyan-600" />
-                        <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">AI Review of Your Idea</h2>
+                        <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">AI Review of Your Idea - All 43 Questions</h2>
                       </div>
-                      <p className="text-slate-600 dark:text-slate-400">Here's a complete review of your idea submission. Edit any section if you'd like to refine it.</p>
+                      <p className="text-slate-600 dark:text-slate-400">Here's a review of all your answers. Edit any section if you'd like to refine it before building your business plan.</p>
                     </div>
 
                     <div className="space-y-4">
                       {[
-                        { key: "coreIdea", label: "Core Idea" },
-                        { key: "problemSolution", label: "Problem & Solution" },
-                        { key: "whyNow", label: "Why Now?" },
-                        { key: "marketOpportunity", label: "Market Opportunity" },
-                        { key: "currentProgress", label: "Current Progress & Next Steps" },
-                        { key: "businessModel", label: "Business Model" },
-                        { key: "commitment", label: "Your Commitment" }
+                        { key: "problem", label: "1. What problem are you solving?" },
+                        { key: "whoExperiences", label: "2. Who experiences this problem?" },
+                        { key: "problemImportance", label: "3. Why is this problem important to solve now?" },
+                        { key: "currentSolutions", label: "4. How are people solving it today?" },
+                        { key: "ideaName", label: "5. Project/Company name?" },
+                        { key: "ideaDescription", label: "6. What is your idea/solution in simple words?" },
+                        { key: "valueProposition", label: "7. What is the unique benefit/value proposition?" },
+                        { key: "idealCustomer", label: "8. Who is your ideal customer?" },
+                        { key: "targetMarket", label: "9. What market/industry does your solution target?" },
+                        { key: "marketSize", label: "10. How large is your potential market?" },
+                        { key: "customerReach", label: "11. Where or how will you reach your customers?" },
+                        { key: "hasCustomers", label: "12. Do you already have customers/users?" },
+                        { key: "customerCount", label: "13. How many customers/users do you currently have?" },
+                        { key: "hasRevenue", label: "14. Do you already generate revenue?" },
+                        { key: "revenueAmount", label: "15. How much revenue so far?" },
+                        { key: "revenueRecurring", label: "16. Is revenue recurring or one-time?" },
+                        { key: "productUsage", label: "17. Do customers actively use the product?" },
+                        { key: "monetization", label: "18. How will you make money?" },
+                        { key: "pricing", label: "19. What do you plan to charge?" },
+                        { key: "mainCosts", label: "20. What are your main costs?" },
+                        { key: "successIn12Months", label: "21. What does success look like in 12 months?" },
+                        { key: "directCompetitors", label: "22. Who are your direct competitors?" },
+                        { key: "competitorStrengths", label: "23. What do competitors do well?" },
+                        { key: "competitorWeakness", label: "24. Where can you outperform them?" },
+                        { key: "currentStage", label: "25. What stage are you currently in?" },
+                        { key: "hasDemo", label: "26. Do you have a demo/prototype?" },
+                        { key: "existingFeatures", label: "27. Which key features already exist?" },
+                        { key: "featuresToBuild", label: "28. Which features still need to be built?" },
+                        { key: "linkedinWebsite", label: "29. LinkedIn profile or website?" },
+                        { key: "foundedBefore", label: "30. Have you founded or launched a startup before?" },
+                        { key: "soloOrCoFounders", label: "31. Solo or with co-founders?" },
+                        { key: "personalSkills", label: "32. What skills do you personally bring?" },
+                        { key: "missingSkills", label: "33. What skills are missing from your team?" },
+                        { key: "timePerWeek", label: "34. How much time per week can you dedicate?" },
+                        { key: "personalInvestment", label: "35. Have you invested personal money?" },
+                        { key: "externalFunding", label: "36. Have you received any external funding?" },
+                        { key: "fundingNeeded", label: "37. How much funding do you think you need now?" },
+                        { key: "fundingUseCase", label: "38. What would funding be used for?" },
+                        { key: "investorType", label: "39. What type of investors are you looking for?" },
+                        { key: "nextSteps", label: "40. What are the next 3 steps you plan to take?" },
+                        { key: "currentObstacle", label: "41. What is your biggest current obstacle?" },
+                        { key: "mentorHelp", label: "42. What help do you need from mentors?" },
+                        { key: "technicalExpertHelp", label: "43. What help do you need from technical experts?" }
                       ].map((section) => (
                         <Card key={section.key} className="border-cyan-200 dark:border-cyan-900/30">
                           <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
-                            <CardTitle className="text-lg">{section.label}</CardTitle>
+                            <CardTitle className="text-base">{section.label}</CardTitle>
                           </CardHeader>
                           <CardContent className="pt-6">
                             <textarea
-                              value={editedReview[section.key as keyof typeof editedReview]}
+                              value={editedReview[section.key as keyof typeof editedReview] || ""}
                               onChange={(e) => handleEditReviewField(section.key, e.target.value)}
-                              className="w-full min-h-20 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                              className="w-full min-h-16 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                               data-testid={`textarea-review-${section.key}`}
                             />
                           </CardContent>
@@ -750,14 +777,14 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
 
                 {/* Idea Questions Step */}
                 {!showingAiReview && !showingBusinessPlan && currentStep === 1 && (
-                  <div className="space-y-6">
+                  <div className="space-y-6" data-section="step-2">
                     <div>
                       <h2 className="text-3xl font-display font-bold mb-2 text-slate-900 dark:text-white">Step 2: Tell Us About Your Idea</h2>
                       <p className="text-slate-600 dark:text-slate-400 mb-6">Help us understand your vision and business opportunity</p>
                       <Progress value={50} className="h-2" />
                     </div>
 
-                    <form className="space-y-6 max-h-[70vh] overflow-y-auto pr-4">
+                    <form className="space-y-6">
                       {/* Problem & Market Definition */}
                       <div className="border-l-4 border-emerald-500 pl-6">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Problem & Market</h3>
