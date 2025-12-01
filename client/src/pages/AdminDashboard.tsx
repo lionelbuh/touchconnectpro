@@ -353,6 +353,18 @@ export default function AdminDashboard() {
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
                               <p className="text-slate-900 dark:text-white">{app.email}</p>
                             </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                              <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                              <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
+                              <p className="text-slate-900 dark:text-white">{app.state || "—"}</p>
+                            </div>
                             <div className="col-span-2">
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Idea/Company Name</p>
                               <p className="text-slate-900 dark:text-white">{app.ideaName}</p>
@@ -908,7 +920,8 @@ export default function AdminDashboard() {
                                 <Badge className="bg-cyan-100 text-cyan-800">{entrepreneur.ideaName}</Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
-                              <p className="text-xs text-slate-500 mt-2">{entrepreneur.portfolio || "Unassigned"}</p>
+                              <p className="text-xs text-slate-500 mt-2">{entrepreneur.linkedin || "—"} • {entrepreneur.country || "—"}{entrepreneur.state ? `, ${entrepreneur.state}` : ""}</p>
+                              <p className="text-xs text-slate-500 mt-1">{entrepreneur.portfolio || "Unassigned"}</p>
                             </div>
                             <Button 
                               variant="outline" 
