@@ -389,26 +389,50 @@ export default function AdminDashboard() {
                               {isBusinessPlanExpanded ? "▼" : "▶"} Business Plan AI Draft (11 Sections)
                             </Button>
                             {isBusinessPlanExpanded && app.businessPlan && (
-                              <div className="mt-4 space-y-3 max-h-96 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-4 rounded">
-                                <div className="text-sm">
-                                  <p className="font-semibold text-slate-700 dark:text-slate-300">Executive Summary</p>
-                                  <p className="text-slate-600 dark:text-slate-400 mt-1">{app.businessPlan.executiveSummary || 'N/A'}</p>
+                              <div className="mt-4 space-y-4 max-h-96 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-4 rounded">
+                                <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">1. Executive Summary</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.executiveSummary || 'N/A'}</p>
+                                </div>
+                                <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">2. Problem Statement</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.problemStatement || 'N/A'}</p>
+                                </div>
+                                <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">3. Solution</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.solution || 'N/A'}</p>
+                                </div>
+                                <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">4. Target Market</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.targetMarket || 'N/A'}</p>
+                                </div>
+                                <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">5. Market Size</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.marketSize || 'N/A'}</p>
+                                </div>
+                                <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">6. Revenue Model</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.revenueModel || 'N/A'}</p>
+                                </div>
+                                <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">7. Competitive Advantage</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.competitiveAdvantage || 'N/A'}</p>
+                                </div>
+                                <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">8. 12-Month Roadmap</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.roadmap12Month || 'N/A'}</p>
+                                </div>
+                                <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">9. Funding Requirements</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.fundingRequirements || 'N/A'}</p>
+                                </div>
+                                <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">10. Risks & Mitigation</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.risksAndMitigation || 'N/A'}</p>
                                 </div>
                                 <div className="text-sm">
-                                  <p className="font-semibold text-slate-700 dark:text-slate-300">Problem</p>
-                                  <p className="text-slate-600 dark:text-slate-400 mt-1">{app.businessPlan.problem || 'N/A'}</p>
-                                </div>
-                                <div className="text-sm">
-                                  <p className="font-semibold text-slate-700 dark:text-slate-300">Market Size</p>
-                                  <p className="text-slate-600 dark:text-slate-400 mt-1">{app.businessPlan.marketSize || 'N/A'}</p>
-                                </div>
-                                <div className="text-sm">
-                                  <p className="font-semibold text-slate-700 dark:text-slate-300">Revenue Model</p>
-                                  <p className="text-slate-600 dark:text-slate-400 mt-1">{app.businessPlan.revenueModel || 'N/A'}</p>
-                                </div>
-                                <div className="text-sm">
-                                  <p className="font-semibold text-slate-700 dark:text-slate-300">Year 1 Goal</p>
-                                  <p className="text-slate-600 dark:text-slate-400 mt-1">{app.businessPlan.year1Goal || 'N/A'}</p>
+                                  <p className="font-semibold text-slate-700 dark:text-slate-300">11. Success Metrics</p>
+                                  <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.successMetrics || 'N/A'}</p>
                                 </div>
                               </div>
                             )}
