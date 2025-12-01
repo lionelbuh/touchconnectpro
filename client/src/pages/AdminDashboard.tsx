@@ -250,7 +250,6 @@ export default function AdminDashboard() {
   const handleApproveEntrepreneur = (index: number) => {
     const updated = [...entrepreneurApplications];
     updated[index].status = "approved";
-    updated[index].portfolio = portfolioForApp[updated[index].id] || "General";
     setEntrepreneurApplications(updated);
     localStorage.setItem("tcp_entrepreneurApplications", JSON.stringify(updated));
   };
@@ -413,25 +412,6 @@ export default function AdminDashboard() {
                                 </div>
                               </div>
                             )}
-                          </div>
-
-                          {/* Portfolio Assignment */}
-                          <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
-                            <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Assign to Portfolio</p>
-                            <select 
-                              value={portfolioForApp[app.id] || "General"}
-                              onChange={(e) => setPortfolioForApp({...portfolioForApp, [app.id]: e.target.value})}
-                              data-testid={`select-portfolio-${actualIdx}`}
-                              className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                            >
-                              <option value="General">General</option>
-                              <option value="SaaS">SaaS</option>
-                              <option value="Fintech">Fintech</option>
-                              <option value="Healthcare">Healthcare</option>
-                              <option value="E-Commerce">E-Commerce</option>
-                              <option value="AI/ML">AI/ML</option>
-                              <option value="Other">Other</option>
-                            </select>
                           </div>
 
                           <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
