@@ -46,28 +46,40 @@ const generateAIReview = (formData: any) => {
 
 const generateBusinessPlan = (formData: any) => {
   return {
-    executiveSummary: `${formData.coreIdea || "Your core idea"} addresses a significant market need by providing a unique solution. The opportunity is substantial, with a clear path to revenue generation and sustainable growth.`,
-    problem: formData.problem || "Market gap identified",
-    targetUsers: formData.idealCustomers || "Early adopters and innovators",
-    urgency: formData.whyNow || "Clear market need and timing advantage",
-    marketSize: "Large addressable market with growing demand",
-    competitors: formData.alternatives || "Current alternatives are fragmented and inefficient",
-    yourEdge: formData.differentiation || "Superior UX, better pricing, or innovative approach",
-    revenueModel: formData.revenueModel || "Subscription-based SaaS model with tiered pricing",
-    year1Goal: formData.successMetrics || "Achieve product-market fit and 100 paying customers",
-    currentStage: formData.currentStage || "Idea validation",
-    resourcesNeeded: formData.mentorshipNeeds || "Technical expertise, go-to-market guidance, investor connections",
+    executiveSummary: `${formData.coreIdea || "Your core idea"} is a transformative solution that addresses a critical market gap. The opportunity combines strong market demand, a clear competitive advantage, and multiple revenue streams. We project significant growth potential with market opportunity estimated at several hundred million dollars. The founding team brings relevant expertise and is committed to rapid execution. This business plan outlines our path to profitability and market leadership within 24-36 months.`,
+    problem: `${formData.problem || "Market gap identified"}. This challenge affects thousands of potential customers daily, creating significant pain points and lost opportunities. Current solutions are fragmented, expensive, and difficult to use, creating frustration and inefficiency across the industry.`,
+    targetUsers: `Our primary customers are ${formData.idealCustomers || "early adopters and innovators"}. Secondary segments include established companies looking to modernize. We estimate a total addressable market (TAM) of $500M+ with a serviceable obtainable market (SOM) of $50M+ in Year 3.`,
+    urgency: `${formData.whyNow || "Clear market need and timing advantage"}. Market conditions have shifted dramatically due to emerging technologies, changing consumer behavior, and regulatory developments. First-mover advantage is critical in this space.`,
+    marketSize: "Total Addressable Market (TAM) estimated at $500M+. Growing at 25-35% annually. Serviceable addressable market (SAM) of $100M+ achievable by year 2. Significant expansion potential into adjacent markets.",
+    competitors: `Current competitors include ${formData.alternatives || "fragmented solutions"}}. While these players have market presence, they are burdened with legacy infrastructure, poor user experience, and inflexible pricing. Our solution offers 3-5x better performance at 40% lower cost.`,
+    yourEdge: `${formData.differentiation || "Superior UX, better pricing, or innovative approach"}}. Additionally, our proprietary technology, customer-centric approach, and experienced founding team create defensible competitive advantages. We have early validation from 20+ beta customers with 85%+ satisfaction.`,
+    goToMarket: "Phase 1 (Months 1-3): Build MVP, conduct 50+ customer discovery interviews, establish partnerships. Phase 2 (Months 4-6): Launch product, acquire first 100 customers, iterate based on feedback. Phase 3 (Months 7-12): Scale sales and marketing, expand team, build investor relationships.",
+    revenueModel: `${formData.revenueModel || "Subscription-based SaaS model with tiered pricing"}}. Base pricing starts at $99/month with enterprise tiers at $999+/month. Additional revenue streams include implementation services (15-20% margin) and premium features (20% adoption expected).`,
+    financialProjections: "Year 1: 100 customers, $120K MRR, -$500K net (investment phase). Year 2: 1000 customers, $1.2M MRR, breakeven achieved. Year 3: 5000 customers, $6M MRR, 40% net margins. Assumes standard SaaS unit economics with 30% YoY gross margin expansion.",
+    fundingNeeded: formData.mentorshipNeeds ? `$500K-$1M seed round to fund: (1) Engineering team ($250K), (2) Sales & Marketing ($200K), (3) Operations & Infrastructure ($50K)` : "$500K seed funding for team expansion and marketing.",
+    currentStage: `Currently at ${formData.currentStage || "idea validation"} phase. Completed market research with 50+ customer interviews. Have alpha product with core functionality. Building MVP for closed beta by Q1.`,
     nextSteps: [
-      formData.nextStep || "Build and test MVP with first 5-10 users",
-      "Gather feedback and iterate quickly",
-      "Begin outreach to target customers and gather testimonials"
+      formData.nextStep || "Complete MVP development and launch closed beta",
+      "Recruit 50-100 beta customers and collect detailed feedback",
+      "Refine product based on user feedback and retention metrics",
+      "Begin strategic partnership discussions with complementary services",
+      "Prepare pitch deck and fundraising materials"
     ],
     metrics: [
-      "User acquisition rate",
-      "Product usage/engagement",
-      "Customer feedback & NPS score",
-      "Revenue per customer",
-      "Burn rate (if applicable)"
+      "Monthly Recurring Revenue (MRR) and growth rate",
+      "Customer Acquisition Cost (CAC) and payback period",
+      "Monthly active users and engagement metrics",
+      "Net Revenue Retention (NRR) and churn rate",
+      "Customer satisfaction score (NPS) and support metrics",
+      "Product usage depth and feature adoption",
+      "Burn rate and runway",
+      "Pipeline value and sales cycle length"
+    ],
+    risks: [
+      "Market adoption slower than projected - Mitigation: Extensive customer discovery, flexible pricing",
+      "Competitive response from well-funded incumbents - Mitigation: Focus on differentiation and speed",
+      "Key person dependency - Mitigation: Hire experienced operators, build strong culture",
+      "Technology/scaling challenges - Mitigation: Use proven architecture, hire strong engineers"
     ]
   };
 };
@@ -80,6 +92,7 @@ export default function BecomeaEntrepreneur() {
   const [editedReview, setEditedReview] = useState<any>({});
   const [showingAiReview, setShowingAiReview] = useState(false);
   const [businessPlanDraft, setBusinessPlanDraft] = useState<any>({});
+  const [editedBusinessPlan, setEditedBusinessPlan] = useState<any>({});
   const [showingBusinessPlan, setShowingBusinessPlan] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -168,6 +181,10 @@ export default function BecomeaEntrepreneur() {
     setEditedReview((prev: any) => ({ ...prev, [field]: value }));
   };
 
+  const handleEditPlanField = (field: string, value: string) => {
+    setEditedBusinessPlan((prev: any) => ({ ...prev, [field]: value }));
+  };
+
   const handleApproveIdeaAndContinue = () => {
     setShowingAiReview(false);
     // Generate business plan draft using edited review values
@@ -179,6 +196,7 @@ export default function BecomeaEntrepreneur() {
   const handleGenerateBusinessPlan = () => {
     const plan = generateBusinessPlan(formData);
     setBusinessPlanDraft(plan);
+    setEditedBusinessPlan(plan);
     setShowingBusinessPlan(true);
   };
 
@@ -559,89 +577,159 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                         <Sparkles className="h-6 w-6 text-amber-500" />
                         <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white">AI-Generated Business Plan</h2>
                       </div>
-                      <p className="text-slate-600 dark:text-slate-400 mb-6">Based on your idea, our AI has created a draft. Review each section and you'll be able to customize it on the next screen.</p>
+                      <p className="text-slate-600 dark:text-slate-400 mb-6">Edit each section directly below to customize your plan. The AI has generated detailed content - refine it to match your specific vision.</p>
                     </div>
 
-                    <div className="space-y-5 max-h-96 overflow-y-auto pr-4">
+                    <div className="space-y-4 max-h-96 overflow-y-auto pr-4">
                       {/* Executive Summary */}
                       <div className="bg-gradient-to-br from-slate-50 to-slate-50/50 dark:from-slate-800 dark:to-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-6">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3">Executive Summary</h3>
-                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{businessPlanDraft.executiveSummary}</p>
+                        <textarea
+                          value={editedBusinessPlan.executiveSummary}
+                          onChange={(e) => handleEditPlanField("executiveSummary", e.target.value)}
+                          rows={4}
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                          data-testid="textarea-plan-executive"
+                        />
                       </div>
 
                       {/* Problem & Opportunity */}
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="bg-gradient-to-br from-red-50 to-red-50/50 dark:from-red-950/30 dark:to-red-950/10 border border-red-200 dark:border-red-900/30 rounded-lg p-4">
                           <h4 className="font-bold text-red-900 dark:text-red-200 mb-2">The Problem</h4>
-                          <p className="text-sm text-slate-700 dark:text-slate-300">{businessPlanDraft.problem}</p>
+                          <textarea
+                            value={editedBusinessPlan.problem}
+                            onChange={(e) => handleEditPlanField("problem", e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-red-300 dark:border-red-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                            data-testid="textarea-plan-problem"
+                          />
                         </div>
                         <div className="bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-950/10 border border-green-200 dark:border-green-900/30 rounded-lg p-4">
                           <h4 className="font-bold text-green-900 dark:text-green-200 mb-2">Target Users</h4>
-                          <p className="text-sm text-slate-700 dark:text-slate-300">{businessPlanDraft.targetUsers}</p>
+                          <textarea
+                            value={editedBusinessPlan.targetUsers}
+                            onChange={(e) => handleEditPlanField("targetUsers", e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-green-300 dark:border-green-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                            data-testid="textarea-plan-users"
+                          />
                         </div>
                       </div>
 
                       {/* Market & Competition */}
                       <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 border border-blue-200 dark:border-blue-900/30 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-blue-900 dark:text-blue-200 mb-4">Market & Competition</h3>
-                        <div className="space-y-3">
-                          <div>
-                            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Market Size:</p>
-                            <p className="text-slate-700 dark:text-slate-400">{businessPlanDraft.marketSize}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Competitors:</p>
-                            <p className="text-slate-700 dark:text-slate-400">{businessPlanDraft.competitors}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Your Edge:</p>
-                            <p className="text-slate-700 dark:text-slate-400">{businessPlanDraft.yourEdge}</p>
-                          </div>
-                        </div>
+                        <h3 className="text-lg font-bold text-blue-900 dark:text-blue-200 mb-4">Market Size & Opportunity</h3>
+                        <textarea
+                          value={editedBusinessPlan.marketSize}
+                          onChange={(e) => handleEditPlanField("marketSize", e.target.value)}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 mb-4"
+                          data-testid="textarea-plan-market"
+                        />
+                        <h4 className="font-bold text-blue-900 dark:text-blue-200 mb-2">Competitive Landscape</h4>
+                        <textarea
+                          value={editedBusinessPlan.competitors}
+                          onChange={(e) => handleEditPlanField("competitors", e.target.value)}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 mb-4"
+                          data-testid="textarea-plan-competitors"
+                        />
+                        <h4 className="font-bold text-blue-900 dark:text-blue-200 mb-2">Your Competitive Edge</h4>
+                        <textarea
+                          value={editedBusinessPlan.yourEdge}
+                          onChange={(e) => handleEditPlanField("yourEdge", e.target.value)}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                          data-testid="textarea-plan-edge"
+                        />
                       </div>
 
                       {/* Revenue & Financials */}
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/10 border border-purple-200 dark:border-purple-900/30 rounded-lg p-4">
                           <h4 className="font-bold text-purple-900 dark:text-purple-200 mb-2">Revenue Model</h4>
-                          <p className="text-sm text-slate-700 dark:text-slate-300">{businessPlanDraft.revenueModel}</p>
+                          <textarea
+                            value={editedBusinessPlan.revenueModel}
+                            onChange={(e) => handleEditPlanField("revenueModel", e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-purple-300 dark:border-purple-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                            data-testid="textarea-plan-revenue"
+                          />
                         </div>
                         <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-950/10 border border-orange-200 dark:border-orange-900/30 rounded-lg p-4">
-                          <h4 className="font-bold text-orange-900 dark:text-orange-200 mb-2">Year 1 Goal</h4>
-                          <p className="text-sm text-slate-700 dark:text-slate-300">{businessPlanDraft.year1Goal}</p>
+                          <h4 className="font-bold text-orange-900 dark:text-orange-200 mb-2">Financial Projections</h4>
+                          <textarea
+                            value={editedBusinessPlan.financialProjections}
+                            onChange={(e) => handleEditPlanField("financialProjections", e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-orange-300 dark:border-orange-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                            data-testid="textarea-plan-financials"
+                          />
                         </div>
                       </div>
 
-                      {/* Next 90 Days */}
-                      <div className="bg-gradient-to-br from-cyan-50 to-cyan-50/50 dark:from-cyan-950/30 dark:to-cyan-950/10 border border-cyan-200 dark:border-cyan-900/30 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-cyan-900 dark:text-cyan-200 mb-4">Next 90 Days</h3>
-                        <ol className="space-y-2">
-                          {businessPlanDraft.nextSteps.map((step: string, idx: number) => (
-                            <li key={idx} className="flex gap-3 text-slate-700 dark:text-slate-300">
-                              <span className="font-bold text-cyan-600 dark:text-cyan-400">{idx + 1}.</span>
-                              <span>{step}</span>
-                            </li>
-                          ))}
-                        </ol>
+                      {/* Go-to-Market & Execution */}
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="bg-gradient-to-br from-cyan-50 to-cyan-50/50 dark:from-cyan-950/30 dark:to-cyan-950/10 border border-cyan-200 dark:border-cyan-900/30 rounded-lg p-4">
+                          <h4 className="font-bold text-cyan-900 dark:text-cyan-200 mb-2">Go-to-Market Strategy</h4>
+                          <textarea
+                            value={editedBusinessPlan.goToMarket}
+                            onChange={(e) => handleEditPlanField("goToMarket", e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-cyan-300 dark:border-cyan-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                            data-testid="textarea-plan-gtm"
+                          />
+                        </div>
+                        <div className="bg-gradient-to-br from-indigo-50 to-indigo-50/50 dark:from-indigo-950/30 dark:to-indigo-950/10 border border-indigo-200 dark:border-indigo-900/30 rounded-lg p-4">
+                          <h4 className="font-bold text-indigo-900 dark:text-indigo-200 mb-2">Funding & Resources Needed</h4>
+                          <textarea
+                            value={editedBusinessPlan.fundingNeeded}
+                            onChange={(e) => handleEditPlanField("fundingNeeded", e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-indigo-300 dark:border-indigo-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                            data-testid="textarea-plan-funding"
+                          />
+                        </div>
                       </div>
 
                       {/* Key Metrics */}
                       <div className="bg-gradient-to-br from-pink-50 to-pink-50/50 dark:from-pink-950/30 dark:to-pink-950/10 border border-pink-200 dark:border-pink-900/30 rounded-lg p-6">
-                        <h3 className="text-lg font-bold text-pink-900 dark:text-pink-200 mb-4">Key Metrics to Track</h3>
-                        <ul className="space-y-2">
-                          {businessPlanDraft.metrics.map((metric: string, idx: number) => (
-                            <li key={idx} className="flex gap-2 text-slate-700 dark:text-slate-300">
-                              <span className="text-pink-600 dark:text-pink-400">•</span>
-                              <span>{metric}</span>
-                            </li>
-                          ))}
-                        </ul>
+                        <h3 className="text-lg font-bold text-pink-900 dark:text-pink-200 mb-4">Success Metrics & Risks</h3>
+                        <h4 className="font-bold text-pink-900 dark:text-pink-200 mb-2">Key Metrics to Track</h4>
+                        <textarea
+                          value={editedBusinessPlan.metrics.join("\n")}
+                          onChange={(e) => handleEditPlanField("metrics", e.target.value.split("\n"))}
+                          rows={4}
+                          className="w-full px-3 py-2 border border-pink-300 dark:border-pink-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 mb-4 text-sm"
+                          data-testid="textarea-plan-metrics"
+                        />
+                        <h4 className="font-bold text-pink-900 dark:text-pink-200 mb-2">Risks & Mitigation</h4>
+                        <textarea
+                          value={editedBusinessPlan.risks.join("\n")}
+                          onChange={(e) => handleEditPlanField("risks", e.target.value.split("\n"))}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-pink-300 dark:border-pink-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                          data-testid="textarea-plan-risks"
+                        />
+                      </div>
+
+                      {/* Next Steps */}
+                      <div className="bg-gradient-to-br from-teal-50 to-teal-50/50 dark:from-teal-950/30 dark:to-teal-950/10 border border-teal-200 dark:border-teal-900/30 rounded-lg p-6">
+                        <h3 className="text-lg font-bold text-teal-900 dark:text-teal-200 mb-4">90-Day Action Plan</h3>
+                        <textarea
+                          value={editedBusinessPlan.nextSteps.join("\n")}
+                          onChange={(e) => handleEditPlanField("nextSteps", e.target.value.split("\n"))}
+                          rows={4}
+                          className="w-full px-3 py-2 border border-teal-300 dark:border-teal-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-sm"
+                          data-testid="textarea-plan-steps"
+                        />
                       </div>
                     </div>
 
                     <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                       <p className="text-sm text-slate-600 dark:text-slate-400">
-                        <strong>Ready to move on?</strong> On the next screen, you'll be able to edit every section and add your specific details.
+                        <strong>Ready to submit?</strong> Review your edits above and click "Submit Application" to complete your business plan submission.
                       </p>
                       <div className="flex gap-3">
                         <Button
@@ -657,9 +745,9 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                           type="button"
                           onClick={handleEditBusinessPlan}
                           className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white font-semibold"
-                          data-testid="button-edit-plan"
+                          data-testid="button-proceed-submit"
                         >
-                          Edit This Plan <ChevronRight className="ml-2 h-4 w-4" />
+                          Continue to Submit <ChevronRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
                     </div>
