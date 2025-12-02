@@ -9,18 +9,23 @@ function getSupabaseClient() {
   try {
     if (supabase) return supabase;
     
-    const supabaseUrl = (process.env.SUPABASE_URL || "").trim() || "https://mfkxbjtrxwajlyxnxzdn.supabase.co";
+    const supabaseUrl = "https://mfkxbjtrxwajlyxnxzdn.supabase.co";
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error("Missing Supabase: URL=", !!supabaseUrl, "KEY=", !!supabaseServiceKey);
+    console.log("[Supabase] URL:", supabaseUrl ? "✓" : "✗");
+    console.log("[Supabase] Key present:", supabaseServiceKey ? "✓" : "✗");
+    console.log("[Supabase] Key starts with:", supabaseServiceKey?.substring(0, 10));
+    
+    if (!supabaseServiceKey) {
+      console.error("[Supabase] MISSING SERVICE ROLE KEY!");
       return null;
     }
     
     supabase = createClient(supabaseUrl, supabaseServiceKey);
+    console.log("[Supabase] ✓ Client initialized");
     return supabase;
   } catch (err: any) {
-    console.error("Supabase init error:", err.message);
+    console.error("[Supabase] Init failed:", err.message);
     return null;
   }
 }
