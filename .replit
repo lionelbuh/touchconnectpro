@@ -54,3 +54,9 @@ waitForPort = 5000
 [agent]
 mockupState = "FULLSTACK"
 integrations = ["github:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+VITE_SUPABASE_URL = "https://mfkxbjtrxwajlyxnxzdn.supabase.co"
+VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ma3hianRyeHdhamx5eG54emRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MjYxMjIsImV4cCI6MjA4MDIwMjEyMn0.BESZziUogihdpP-zlwFsIk8hGzUPUna1_n0nmcX3XOc"
