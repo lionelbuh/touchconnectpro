@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 import { devBanner } from '@replit/vite-plugin-dev-banner'
 import { cartographer } from '@replit/vite-plugin-cartographer'
-import { runtimeErrorModal } from '@replit/vite-plugin-runtime-error-modal'
-import { tailwindPlugin } from '@tailwindcss/vite'
+import runtimeErrorModal from '@replit/vite-plugin-runtime-error-modal'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [
@@ -12,7 +12,7 @@ export default defineConfig({
     devBanner(),
     cartographer(),
     runtimeErrorModal(),
-    tailwindPlugin(),
+    tailwindcss(),
   ],
   resolve: {
     alias: {
