@@ -36,23 +36,22 @@ export async function registerRoutes(
 ): Promise<Server> {
   // Save entrepreneur idea submission
   app.post("/api/ideas", async (req, res) => {
+    console.log("POST /api/ideas called");
     try {
-      console.log("POST /api/ideas called");
       const client = getSupabaseClient();
       if (!client) {
         console.error("Supabase client not available");
-        return res.status(500).json({ error: "Supabase not configured. Check server logs." });
+        return res.status(500).json({ error: "Supabase not configured" });
       }
 
       const { fullName, email, ideaName, businessPlan, ideaReview, linkedinWebsite, formData } = req.body;
 
       if (!email || !fullName) {
-        console.error("Missing required fields:", { fullName, email });
-        return res.status(400).json({ error: "Missing required fields: name and email" });
+        console.error("Missing required fields");
+        return res.status(400).json({ error: "Name and email required" });
       }
 
       console.log("Inserting idea for:", email);
-      // Insert into ideas table
       const { data, error } = await client
         .from("ideas")
         .insert({
@@ -67,15 +66,15 @@ export async function registerRoutes(
         .select();
 
       if (error) {
-        console.error("Supabase insert error:", error);
-        return res.status(400).json({ error: `Database error: ${error.message}` });
+        console.error("DB error:", error);
+        return res.status(400).json({ error: error.message });
       }
 
-      console.log("Idea inserted successfully");
-      res.json({ success: true, idea: data?.[0] });
+      console.log("Success - idea saved");
+      return res.status(200).json({ success: true, id: data?.[0]?.id });
     } catch (error: any) {
-      console.error("API error:", error);
-      res.status(500).json({ error: `Server error: ${error.message}` });
+      console.error("Exception:", error);
+      return res.status(500).json({ error: error.message || "Server error" });
     }
   });
 

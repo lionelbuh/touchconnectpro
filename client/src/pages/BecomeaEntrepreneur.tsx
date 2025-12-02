@@ -258,17 +258,12 @@ export default function BecomeaEntrepreneur() {
   };
 
   const handleSubmitApplication = async () => {
+    console.log("Submit clicked");
     try {
-      console.log("✓ Submit clicked");
-      
       if (!formData.fullName || !formData.email) {
-        const msg = "Name and email required";
-        console.error(msg);
-        alert(msg);
+        alert("Name and email required");
         return;
       }
-      
-      console.log("→ Sending to API:", formData.email);
       
       const response = await fetch("/api/ideas", {
         method: "POST",
@@ -286,25 +281,29 @@ export default function BecomeaEntrepreneur() {
         }),
       });
 
-      const result = await response.json();
-      console.log("← API returned:", result);
-      
-      if (!response.ok) {
-        const errorMsg = result.error || `Server error (${response.status})`;
-        console.error("API Error:", errorMsg);
-        alert("ERROR: " + errorMsg + "\n\nPlease check Render environment variables are set correctly.");
-        toast.error(errorMsg);
+      let result;
+      try {
+        const text = await response.text();
+        console.log("Response text:", text);
+        result = text ? JSON.parse(text) : {};
+      } catch (parseErr) {
+        console.error("JSON parse error:", parseErr);
+        alert("Server error - invalid response format");
         return;
       }
       
-      console.log("✓ Success!");
-      toast.success("Application submitted!");
+      if (!response.ok) {
+        const msg = result?.error || `Server error (${response.status})`;
+        alert("ERROR: " + msg);
+        toast.error(msg);
+        return;
+      }
+      
+      toast.success("Application submitted successfully!");
       setSubmitted(true);
     } catch (error: any) {
-      const msg = error.message || "Network error";
-      console.error("Exception:", msg);
-      alert("ERROR: " + msg);
-      toast.error(msg);
+      console.error("Error:", error);
+      alert("ERROR: " + (error.message || "Unknown error"));
     }
   };
 
