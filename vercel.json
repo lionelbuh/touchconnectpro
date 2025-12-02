@@ -1,5 +1,15 @@
 {
   "buildCommand": "npm ci && npm run build",
   "outputDirectory": "dist",
-  "installCommand": "npm ci"
+  "installCommand": "npm ci",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/:path*"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/public/index.html"
+    }
+  ]
 }
