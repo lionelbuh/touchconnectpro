@@ -120,15 +120,6 @@ export default function BecomeaEntrepreneur() {
     successMetrics: ""
   });
   const [showingBusinessPlan, setShowingBusinessPlan] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUserId(user?.id || null);
-    };
-    getUser();
-  }, []);
 
   const [formData, setFormData] = useState({
     // Step 0: Basic Info
@@ -396,18 +387,15 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       return;
     }
 
-    if (!userId) {
-      toast.error("User not authenticated. Please log in.");
-      return;
-    }
-
     try {
-      // Save to Supabase with pending status
+      // Save to Supabase with pending status (entrepreneurs don't need password yet)
       const { error } = await supabase
         .from("ideas")
         .insert({
-          user_id: userId,
+          user_id: null,
           status: "pending",
+          entrepreneur_email: formData.email,
+          entrepreneur_name: formData.fullName,
           idea_data: {
             ...formData,
             ideaReview: editedReview,
