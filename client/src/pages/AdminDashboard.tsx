@@ -131,6 +131,9 @@ export default function AdminDashboard() {
 
       // Load entrepreneur applications from Supabase
       try {
+        if (!supabase) {
+          throw new Error("Supabase not configured");
+        }
         const { data: ideas, error } = await supabase
           .from("ideas")
           .select("*")
