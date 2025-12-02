@@ -270,7 +270,7 @@ export default function BecomeaEntrepreneur() {
   };
 
   const handleEditBusinessPlan = () => {
-    const planText = `# Business Plan: ${formData.coreIdea}
+    const planText = `# Business Plan: ${formData.ideaName}
 
 ## Executive Summary
 ${businessPlanDraft.executiveSummary}

@@ -1204,7 +1204,7 @@ export default function AdminDashboard() {
                                 <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
                                 <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
                               </div>
-                              <Button onClick={() => {setSelectedMember({id: entrepreneur.id, name: entrepreneur.fullName, email: entrepreneur.email, type: "entrepreneur"}); setShowMessageModal(true);}} data-testid={`button-message-entrepreneur-${idx}`} size="sm">
+                              <Button onClick={() => {setSelectedMember({id: entrepreneur.id, name: entrepreneur.fullName, email: entrepreneur.email, type: "mentor", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-entrepreneur-${idx}`} size="sm">
                                 <MessageSquare className="mr-2 h-4 w-4" /> Message
                               </Button>
                             </div>
@@ -1226,7 +1226,7 @@ export default function AdminDashboard() {
                                 <p className="font-semibold text-slate-900 dark:text-white">{mentor.fullName}</p>
                                 <p className="text-sm text-muted-foreground">{mentor.email}</p>
                               </div>
-                              <Button onClick={() => {setSelectedMember({id: `mentor-${idx}`, name: mentor.fullName, email: mentor.email, type: "mentor"}); setShowMessageModal(true);}} data-testid={`button-message-mentor-${idx}`} size="sm">
+                              <Button onClick={() => {setSelectedMember({id: `mentor-${idx}`, name: mentor.fullName, email: mentor.email, type: "mentor", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-mentor-${idx}`} size="sm">
                                 <MessageSquare className="mr-2 h-4 w-4" /> Message
                               </Button>
                             </div>
@@ -1249,7 +1249,7 @@ export default function AdminDashboard() {
                                 <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
                                 <p className="text-sm text-muted-foreground">{coach.email}</p>
                               </div>
-                              <Button onClick={() => {setSelectedMember({id: `coach-${idx}`, name: coach.fullName, email: coach.email, type: "coach"}); setShowMessageModal(true);}} data-testid={`button-message-coach-${idx}`} size="sm">
+                              <Button onClick={() => {setSelectedMember({id: `coach-${idx}`, name: coach.fullName, email: coach.email, type: "coach", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-coach-${idx}`} size="sm">
                                 <MessageSquare className="mr-2 h-4 w-4" /> Message
                               </Button>
                             </div>
@@ -1272,7 +1272,7 @@ export default function AdminDashboard() {
                                 <p className="font-semibold text-slate-900 dark:text-white">{investor.fullName}</p>
                                 <p className="text-sm text-muted-foreground">{investor.email}</p>
                               </div>
-                              <Button onClick={() => {setSelectedMember({id: `investor-${idx}`, name: investor.fullName, email: investor.email, type: "investor"}); setShowMessageModal(true);}} data-testid={`button-message-investor-${idx}`} size="sm">
+                              <Button onClick={() => {setSelectedMember({id: `investor-${idx}`, name: investor.fullName, email: investor.email, type: "investor", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-investor-${idx}`} size="sm">
                                 <MessageSquare className="mr-2 h-4 w-4" /> Message
                               </Button>
                             </div>
@@ -1324,7 +1324,7 @@ export default function AdminDashboard() {
                                 <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
                               </div>
                               <div className="flex gap-2">
-                                <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("entrepreneur", idx)} data-testid={`button-toggle-entrepreneur-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
+                                <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("mentor", idx)} data-testid={`button-toggle-entrepreneur-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
                                 <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-entrepreneur-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
                               </div>
                             </div>
