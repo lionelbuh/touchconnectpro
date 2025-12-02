@@ -58,7 +58,7 @@ export async function registerRoutes(
           status: "pending",
           entrepreneur_email: email,
           entrepreneur_name: fullName,
-          idea_data: formData || {},
+          data: formData || {},
           business_plan: businessPlan || {},
           linkedin_profile: linkedinWebsite || "",
           user_id: null,

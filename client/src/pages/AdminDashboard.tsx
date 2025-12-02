@@ -137,17 +137,17 @@ export default function AdminDashboard() {
         if (Array.isArray(ideas) && ideas.length > 0) {
           const entrepreneurs = ideas.map((idea: any) => ({
             id: idea.id,
-            fullName: idea.entrepreneur_name || idea.idea_data?.fullName || "Unknown",
-            email: idea.entrepreneur_email || idea.idea_data?.email || "N/A",
-            ideaName: idea.idea_data?.ideaName || "Untitled",
-            problem: idea.idea_data?.problem || "",
-            solution: idea.idea_data?.ideaDescription || "",
+            fullName: idea.entrepreneur_name || idea.data?.fullName || "Unknown",
+            email: idea.entrepreneur_email || idea.data?.email || "N/A",
+            ideaName: idea.data?.ideaName || "Untitled",
+            problem: idea.data?.problem || "",
+            solution: idea.data?.ideaDescription || "",
             status: idea.status,
             submittedAt: idea.created_at,
-            ideaReview: idea.idea_data?.ideaReview || {},
+            ideaReview: idea.data?.ideaReview || {},
             businessPlan: idea.business_plan || {},
             linkedin: idea.linkedin_profile || "",
-            ...idea.idea_data
+            ...idea.data
           }));
           setEntrepreneurApplications(entrepreneurs);
           setApprovedEntrepreneurs(entrepreneurs.filter((app: any) => app.status === "approved"));
