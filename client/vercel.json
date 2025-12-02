@@ -1,4 +1,5 @@
 {
-  "buildCommand": "npm install && npm run build",
-  "outputDirectory": "dist"
+  "buildCommand": "cd .. && npm ci && npm run build:client 2>/dev/null || npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "cd .. && npm ci"
 }
