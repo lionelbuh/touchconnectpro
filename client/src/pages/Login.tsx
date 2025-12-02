@@ -60,7 +60,7 @@ export default function Login() {
             <CardContent className="space-y-6">
               {/* Email Input */}
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-200">email address test</Label>
+                <Label htmlFor="email" className="text-slate-200">Email Address</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
                   <Input
@@ -252,7 +252,7 @@ export default function Login() {
 
               {/* Email Input */}
               <div className="space-y-2">
-                <Label htmlFor="signup-email" className="text-slate-200">email address test</Label>
+                <Label htmlFor="signup-email" className="text-slate-200">Email Address</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
                   <Input
@@ -395,7 +395,7 @@ export default function Login() {
             <CardContent className="space-y-6">
               {/* Email Input */}
               <div className="space-y-2">
-                <Label htmlFor="recovery-email" className="text-slate-200">email address test</Label>
+                <Label htmlFor="recovery-email" className="text-slate-200">Email Address</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
                   <Input
