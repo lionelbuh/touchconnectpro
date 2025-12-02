@@ -388,23 +388,25 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
     }
 
     try {
-      // Save to Supabase with pending status (entrepreneurs don't need password yet)
-      const { error } = await supabase
-        .from("ideas")
-        .insert({
-          user_id: null,
-          status: "pending",
-          entrepreneur_email: formData.email,
-          entrepreneur_name: formData.fullName,
-          idea_data: {
+      // Save to backend API
+      const response = await fetch("/api/ideas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          ideaName: formData.ideaName,
+          linkedinWebsite: formData.linkedinWebsite,
+          formData: {
             ...formData,
             ideaReview: editedReview,
           },
-          business_plan: editedBusinessPlan,
-          linkedin_profile: formData.linkedinWebsite,
-        });
+          businessPlan: editedBusinessPlan,
+        }),
+      });
 
-      if (error) throw error;
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Failed to submit");
       
       toast.success("Application submitted successfully!");
       setSubmitted(true);
