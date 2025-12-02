@@ -1,4 +1,0 @@
-{
-  "buildCommand": "cd .. && npm run build && cp -r dist client/",
-  "outputDirectory": "client/dist"
-}
