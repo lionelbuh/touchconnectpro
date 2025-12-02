@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/lib/supabase";
 
 interface MentorApplication {
   fullName: string;
@@ -99,38 +100,82 @@ export default function AdminDashboard() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
-    const savedMentorApplications = localStorage.getItem("tcp_mentorApplications");
-    if (savedMentorApplications) {
-      const allMentors = JSON.parse(savedMentorApplications);
-      setMentorApplications(allMentors);
-      setApprovedMentors(allMentors.filter((app: any) => app.status === "approved"));
-    }
-    const savedCoachApplications = localStorage.getItem("tcp_coachApplications");
-    if (savedCoachApplications) {
-      const allCoaches = JSON.parse(savedCoachApplications);
-      setCoachApplications(allCoaches);
-      setApprovedCoaches(allCoaches.filter((app: any) => app.status === "approved"));
-    }
-    const savedInvestorApplications = localStorage.getItem("tcp_investorApplications");
-    if (savedInvestorApplications) {
-      const allInvestors = JSON.parse(savedInvestorApplications);
-      setInvestorApplications(allInvestors);
-      setApprovedInvestors(allInvestors.filter((app: any) => app.status === "approved"));
-    }
-    const savedMessages = localStorage.getItem("tcp_messageHistory");
-    if (savedMessages) {
-      setMessageHistory(JSON.parse(savedMessages));
-    }
-    const savedDisabled = localStorage.getItem("tcp_disabledProfessionals");
-    if (savedDisabled) {
-      setDisabledProfessionals(JSON.parse(savedDisabled));
-    }
-    const savedEntrepreneurApplications = localStorage.getItem("tcp_entrepreneurApplications");
-    if (savedEntrepreneurApplications) {
-      const allEntrepreneurs = JSON.parse(savedEntrepreneurApplications);
-      setEntrepreneurApplications(allEntrepreneurs);
-      setApprovedEntrepreneurs(allEntrepreneurs.filter((app: any) => app.status === "approved"));
-    }
+    const loadData = async () => {
+      // Load from localStorage (mentors, coaches, investors)
+      const savedMentorApplications = localStorage.getItem("tcp_mentorApplications");
+      if (savedMentorApplications) {
+        const allMentors = JSON.parse(savedMentorApplications);
+        setMentorApplications(allMentors);
+        setApprovedMentors(allMentors.filter((app: any) => app.status === "approved"));
+      }
+      const savedCoachApplications = localStorage.getItem("tcp_coachApplications");
+      if (savedCoachApplications) {
+        const allCoaches = JSON.parse(savedCoachApplications);
+        setCoachApplications(allCoaches);
+        setApprovedCoaches(allCoaches.filter((app: any) => app.status === "approved"));
+      }
+      const savedInvestorApplications = localStorage.getItem("tcp_investorApplications");
+      if (savedInvestorApplications) {
+        const allInvestors = JSON.parse(savedInvestorApplications);
+        setInvestorApplications(allInvestors);
+        setApprovedInvestors(allInvestors.filter((app: any) => app.status === "approved"));
+      }
+      const savedMessages = localStorage.getItem("tcp_messageHistory");
+      if (savedMessages) {
+        setMessageHistory(JSON.parse(savedMessages));
+      }
+      const savedDisabled = localStorage.getItem("tcp_disabledProfessionals");
+      if (savedDisabled) {
+        setDisabledProfessionals(JSON.parse(savedDisabled));
+      }
+
+      // Load entrepreneur applications from Supabase
+      try {
+        const { data: ideas, error } = await supabase
+          .from("ideas")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (ideas && ideas.length > 0) {
+          const entrepreneurs = ideas.map((idea: any) => ({
+            id: idea.id,
+            fullName: idea.entrepreneur_name || idea.idea_data?.fullName || "Unknown",
+            email: idea.entrepreneur_email || idea.idea_data?.email || "N/A",
+            ideaName: idea.idea_data?.ideaName || "Untitled",
+            problem: idea.idea_data?.problem || "",
+            solution: idea.idea_data?.ideaDescription || "",
+            status: idea.status,
+            submittedAt: idea.created_at,
+            ideaReview: idea.idea_data?.ideaReview || {},
+            businessPlan: idea.business_plan || {},
+            linkedin: idea.linkedin_profile || "",
+            ...idea.idea_data
+          }));
+          setEntrepreneurApplications(entrepreneurs);
+          setApprovedEntrepreneurs(entrepreneurs.filter((app: any) => app.status === "approved"));
+        } else {
+          // Fallback to localStorage if no Supabase data
+          const savedEntrepreneurApplications = localStorage.getItem("tcp_entrepreneurApplications");
+          if (savedEntrepreneurApplications) {
+            const allEntrepreneurs = JSON.parse(savedEntrepreneurApplications);
+            setEntrepreneurApplications(allEntrepreneurs);
+            setApprovedEntrepreneurs(allEntrepreneurs.filter((app: any) => app.status === "approved"));
+          }
+        }
+      } catch (err) {
+        // Fallback to localStorage on error
+        const savedEntrepreneurApplications = localStorage.getItem("tcp_entrepreneurApplications");
+        if (savedEntrepreneurApplications) {
+          const allEntrepreneurs = JSON.parse(savedEntrepreneurApplications);
+          setEntrepreneurApplications(allEntrepreneurs);
+          setApprovedEntrepreneurs(allEntrepreneurs.filter((app: any) => app.status === "approved"));
+        }
+      }
+    };
+
+    loadData();
   }, []);
 
   const handleApproveMentor = (index: number) => {
