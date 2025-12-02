@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: touchconnectpro
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: touchconnectpro
+          property: connectionString
+    autoDeploy: true
+    
+  - type: postgresql
+    name: touchconnectpro
+    plan: free
+    version: "15"
