@@ -3,12 +3,22 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+let supabase: ReturnType<typeof createClient> | null = null;
 
-const supabase = supabaseUrl && supabaseServiceKey
-  ? createClient(supabaseUrl, supabaseServiceKey)
-  : null;
+function getSupabaseClient() {
+  if (supabase) return supabase;
+  
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.warn("Supabase credentials not configured");
+    return null;
+  }
+  
+  supabase = createClient(supabaseUrl, supabaseServiceKey);
+  return supabase;
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -17,7 +27,8 @@ export async function registerRoutes(
   // Save entrepreneur idea submission
   app.post("/api/ideas", async (req, res) => {
     try {
-      if (!supabase) {
+      const client = getSupabaseClient();
+      if (!client) {
         return res.status(500).json({ error: "Supabase not configured" });
       }
 
@@ -28,7 +39,7 @@ export async function registerRoutes(
       }
 
       // Insert into ideas table
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from("ideas")
         .insert({
           status: "pending",
@@ -56,11 +67,12 @@ export async function registerRoutes(
   // Get all ideas (for admin)
   app.get("/api/ideas", async (req, res) => {
     try {
-      if (!supabase) {
+      const client = getSupabaseClient();
+      if (!client) {
         return res.status(500).json({ error: "Supabase not configured" });
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from("ideas")
         .select("*")
         .order("created_at", { ascending: false });
@@ -78,7 +90,8 @@ export async function registerRoutes(
   // Approve/reject idea
   app.patch("/api/ideas/:id", async (req, res) => {
     try {
-      if (!supabase) {
+      const client = getSupabaseClient();
+      if (!client) {
         return res.status(500).json({ error: "Supabase not configured" });
       }
 
@@ -89,7 +102,7 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Invalid status" });
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from("ideas")
         .update({ status })
         .eq("id", id)
