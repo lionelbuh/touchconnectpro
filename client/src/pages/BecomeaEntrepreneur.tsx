@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 const COUNTRIES = [
   "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", 
@@ -118,6 +120,15 @@ export default function BecomeaEntrepreneur() {
     successMetrics: ""
   });
   const [showingBusinessPlan, setShowingBusinessPlan] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
+    };
+    getUser();
+  }, []);
 
   const [formData, setFormData] = useState({
     // Step 0: Basic Info
@@ -370,7 +381,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const validation = validateStep();
     if (!validation.valid) {
@@ -385,20 +396,33 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       return;
     }
 
-    // Save to localStorage with pending status
-    const entrepreneurData = { 
-      ...formData, 
-      businessPlan: editedBusinessPlan,
-      ideaReview: editedReview,
-      status: "pending", 
-      submittedAt: new Date().toISOString(),
-      id: Math.random().toString(36).substr(2, 9)
-    };
-    const existingApplications = JSON.parse(localStorage.getItem("tcp_entrepreneurApplications") || "[]");
-    existingApplications.push(entrepreneurData);
-    localStorage.setItem("tcp_entrepreneurApplications", JSON.stringify(existingApplications));
-    
-    setSubmitted(true);
+    if (!userId) {
+      toast.error("User not authenticated. Please log in.");
+      return;
+    }
+
+    try {
+      // Save to Supabase with pending status
+      const { error } = await supabase
+        .from("ideas")
+        .insert({
+          user_id: userId,
+          status: "pending",
+          idea_data: {
+            ...formData,
+            ideaReview: editedReview,
+          },
+          business_plan: editedBusinessPlan,
+          linkedin_profile: formData.linkedinWebsite,
+        });
+
+      if (error) throw error;
+      
+      toast.success("Application submitted successfully!");
+      setSubmitted(true);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to submit application");
+    }
   };
 
   const handleCloseModal = () => {

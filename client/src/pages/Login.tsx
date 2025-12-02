@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Globe, Lightbulb, Star, Briefcase, TrendingUp } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 const COUNTRIES = [
   "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", 
@@ -33,9 +35,76 @@ export default function Login() {
   const [showRoles, setShowRoles] = useState(false);
   const [country, setCountry] = useState("");
   const [state, setState] = useState("");
+  const [loading, setLoading] = useState(false);
+  
+  // Form state
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [signupFullName, setSignupFullName] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [recoveryEmail, setRecoveryEmail] = useState("");
 
-  const handleSignup = () => {
-    navigate("/dashboard-entrepreneur");
+  const handleLogin = async () => {
+    if (!loginEmail || !loginPassword) {
+      toast.error("Please fill in email and password");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: loginPassword,
+      });
+      if (error) throw error;
+      toast.success("Logged in successfully!");
+      navigate("/dashboard-entrepreneur");
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignup = async () => {
+    if (!signupFullName || !signupEmail || !signupPassword || !country) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    if (country === "United States" && !state) {
+      toast.error("Please select your state");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: signupEmail,
+        password: signupPassword,
+      });
+      if (error) throw error;
+      
+      // Create user profile
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from("users")
+          .insert({
+            id: data.user.id,
+            email: signupEmail,
+            full_name: signupFullName,
+            country,
+            state: state || null,
+            role: "entrepreneur",
+          });
+        if (profileError) throw profileError;
+      }
+      
+      toast.success("Account created! Redirecting to application form...");
+      navigate("/become-entrepreneur");
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRoleSelection = (role: string) => {
@@ -67,6 +136,8 @@ export default function Login() {
                     id="email"
                     type="email"
                     placeholder="you@example.com"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
                     className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
                     data-testid="input-email"
                   />
@@ -82,6 +153,8 @@ export default function Login() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
                     className="pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
                     data-testid="input-password"
                   />
@@ -109,10 +182,12 @@ export default function Login() {
 
               {/* Login Button */}
               <Button
-                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50"
+                onClick={handleLogin}
+                disabled={loading}
+                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50"
                 data-testid="button-login"
               >
-                Sign In <ArrowRight className="ml-2 h-4 w-4" />
+                {loading ? "Signing in..." : <>Sign In <ArrowRight className="ml-2 h-4 w-4" /></>}
               </Button>
 
               {/* Sign Up Link */}
@@ -245,6 +320,8 @@ export default function Login() {
                   id="fullname"
                   type="text"
                   placeholder="John Doe"
+                  value={signupFullName}
+                  onChange={(e) => setSignupFullName(e.target.value)}
                   className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
                   data-testid="input-fullname"
                 />
@@ -259,6 +336,8 @@ export default function Login() {
                     id="signup-email"
                     type="email"
                     placeholder="you@example.com"
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
                     className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
                     data-testid="input-signup-email"
                   />
@@ -274,6 +353,8 @@ export default function Login() {
                     id="signup-password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
                     className="pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
                     data-testid="input-signup-password"
                   />
@@ -340,10 +421,11 @@ export default function Login() {
               {/* Sign Up Button */}
               <Button
                 onClick={handleSignup}
-                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50"
+                disabled={loading}
+                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50"
                 data-testid="button-signup"
               >
-                Create Account <ArrowRight className="ml-2 h-4 w-4" />
+                {loading ? "Creating account..." : <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>}
               </Button>
 
               {/* Divider */}
@@ -402,6 +484,8 @@ export default function Login() {
                     id="recovery-email"
                     type="email"
                     placeholder="you@example.com"
+                    value={recoveryEmail}
+                    onChange={(e) => setRecoveryEmail(e.target.value)}
                     className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
                     data-testid="input-recovery-email"
                   />
@@ -415,10 +499,27 @@ export default function Login() {
 
               {/* Send Link Button */}
               <Button
-                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50"
+                onClick={async () => {
+                  if (!recoveryEmail) {
+                    toast.error("Please enter your email");
+                    return;
+                  }
+                  setLoading(true);
+                  try {
+                    await supabase.auth.resetPasswordForEmail(recoveryEmail);
+                    toast.success("Recovery email sent! Check your inbox.");
+                    setRecoveryEmail("");
+                  } catch (error: any) {
+                    toast.error(error.message);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50"
                 data-testid="button-send-recovery"
               >
-                Send Recovery Link <ArrowRight className="ml-2 h-4 w-4" />
+                {loading ? "Sending..." : <>Send Recovery Link <ArrowRight className="ml-2 h-4 w-4" /></>}
               </Button>
 
               {/* Back to Login */}
