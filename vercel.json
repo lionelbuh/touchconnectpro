@@ -1,22 +1,4 @@
 {
-  "version": 2,
-  "buildCommand": "npm install && npm run build",
-  "outputDirectory": "dist",
-  "nodeVersion": "20.x",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/dist/index.cjs"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dist/public/$1"
-    }
-  ]
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
 }
