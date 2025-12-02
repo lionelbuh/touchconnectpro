@@ -259,21 +259,17 @@ export default function BecomeaEntrepreneur() {
 
   const handleSubmitApplication = async () => {
     try {
-      console.log("Submit button clicked - preparing submission...");
+      console.log("✓ Submit clicked");
       
-      // Validate required fields one more time
       if (!formData.fullName || !formData.email) {
-        toast.error("Name and email are required!");
+        const msg = "Name and email required";
+        console.error(msg);
+        alert(msg);
         return;
       }
       
-      console.log("Submitting with data:", { 
-        fullName: formData.fullName, 
-        email: formData.email, 
-        ideaName: formData.ideaName 
-      });
-
-      // Save to backend API
+      console.log("→ Sending to API:", formData.email);
+      
       const response = await fetch("/api/ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -291,17 +287,24 @@ export default function BecomeaEntrepreneur() {
       });
 
       const result = await response.json();
-      console.log("API Response:", result);
+      console.log("← API returned:", result);
       
       if (!response.ok) {
-        throw new Error(result.error || "Failed to submit");
+        const errorMsg = result.error || `Server error (${response.status})`;
+        console.error("API Error:", errorMsg);
+        alert("ERROR: " + errorMsg + "\n\nPlease check Render environment variables are set correctly.");
+        toast.error(errorMsg);
+        return;
       }
       
-      toast.success("Application submitted successfully!");
+      console.log("✓ Success!");
+      toast.success("Application submitted!");
       setSubmitted(true);
     } catch (error: any) {
-      console.error("Submission error:", error);
-      toast.error(error.message || "Failed to submit application");
+      const msg = error.message || "Network error";
+      console.error("Exception:", msg);
+      alert("ERROR: " + msg);
+      toast.error(msg);
     }
   };
 

@@ -9,22 +9,23 @@ function getSupabaseClient() {
   try {
     if (supabase) return supabase;
     
-    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.ViteSupabaseUrl;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
-    console.log("Supabase URL present:", !!supabaseUrl);
-    console.log("Supabase Key present:", !!supabaseServiceKey);
+    console.log("Supabase URL:", supabaseUrl);
+    console.log("All env vars:", Object.keys(process.env).filter(k => k.includes('SUPABASE')));
     
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error("Missing Supabase credentials - URL:", supabaseUrl ? "set" : "missing", "KEY:", supabaseServiceKey ? "set" : "missing");
+      console.error("Missing Supabase credentials");
+      console.error("Available SUPABASE env vars:", Object.entries(process.env).filter(([k]) => k.toUpperCase().includes('SUPABASE')));
       return null;
     }
     
     supabase = createClient(supabaseUrl, supabaseServiceKey);
-    console.log("Supabase client initialized successfully");
+    console.log("✓ Supabase client initialized");
     return supabase;
   } catch (err: any) {
-    console.error("Failed to initialize Supabase client:", err.message);
+    console.error("✗ Supabase init failed:", err.message);
     return null;
   }
 }
