@@ -257,9 +257,52 @@ export default function BecomeaEntrepreneur() {
     }, 250);
   };
 
-  const handleSubmitApplication = () => {
-    // Submit with the business plan data
-    handleSubmit(new Event('submit') as any);
+  const handleSubmitApplication = async () => {
+    try {
+      console.log("Submit button clicked - preparing submission...");
+      
+      // Validate required fields one more time
+      if (!formData.fullName || !formData.email) {
+        toast.error("Name and email are required!");
+        return;
+      }
+      
+      console.log("Submitting with data:", { 
+        fullName: formData.fullName, 
+        email: formData.email, 
+        ideaName: formData.ideaName 
+      });
+
+      // Save to backend API
+      const response = await fetch("/api/ideas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          ideaName: formData.ideaName,
+          linkedinWebsite: formData.linkedinWebsite,
+          formData: {
+            ...formData,
+            ideaReview: editedReview,
+          },
+          businessPlan: editedBusinessPlan,
+        }),
+      });
+
+      const result = await response.json();
+      console.log("API Response:", result);
+      
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to submit");
+      }
+      
+      toast.success("Application submitted successfully!");
+      setSubmitted(true);
+    } catch (error: any) {
+      console.error("Submission error:", error);
+      toast.error(error.message || "Failed to submit application");
+    }
   };
 
   const handleGenerateBusinessPlan = () => {
