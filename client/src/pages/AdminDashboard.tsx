@@ -129,19 +129,12 @@ export default function AdminDashboard() {
         setDisabledProfessionals(JSON.parse(savedDisabled));
       }
 
-      // Load entrepreneur applications from Supabase
+      // Load entrepreneur applications from backend API
       try {
-        if (!supabase) {
-          throw new Error("Supabase not configured");
-        }
-        const { data: ideas, error } = await supabase
-          .from("ideas")
-          .select("*")
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-
-        if (ideas && ideas.length > 0) {
+        const response = await fetch("/api/ideas");
+        const ideas = await response.json();
+        
+        if (Array.isArray(ideas) && ideas.length > 0) {
           const entrepreneurs = ideas.map((idea: any) => ({
             id: idea.id,
             fullName: idea.entrepreneur_name || idea.idea_data?.fullName || "Unknown",
@@ -158,23 +151,9 @@ export default function AdminDashboard() {
           }));
           setEntrepreneurApplications(entrepreneurs);
           setApprovedEntrepreneurs(entrepreneurs.filter((app: any) => app.status === "approved"));
-        } else {
-          // Fallback to localStorage if no Supabase data
-          const savedEntrepreneurApplications = localStorage.getItem("tcp_entrepreneurApplications");
-          if (savedEntrepreneurApplications) {
-            const allEntrepreneurs = JSON.parse(savedEntrepreneurApplications);
-            setEntrepreneurApplications(allEntrepreneurs);
-            setApprovedEntrepreneurs(allEntrepreneurs.filter((app: any) => app.status === "approved"));
-          }
         }
       } catch (err) {
-        // Fallback to localStorage on error
-        const savedEntrepreneurApplications = localStorage.getItem("tcp_entrepreneurApplications");
-        if (savedEntrepreneurApplications) {
-          const allEntrepreneurs = JSON.parse(savedEntrepreneurApplications);
-          setEntrepreneurApplications(allEntrepreneurs);
-          setApprovedEntrepreneurs(allEntrepreneurs.filter((app: any) => app.status === "approved"));
-        }
+        console.log("Could not load from API, using localStorage");
       }
     };
 

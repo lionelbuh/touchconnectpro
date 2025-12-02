@@ -9,23 +9,18 @@ function getSupabaseClient() {
   try {
     if (supabase) return supabase;
     
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.ViteSupabaseUrl;
+    const supabaseUrl = (process.env.SUPABASE_URL || "").trim() || "https://mfkxbjtrxwajlyxnxzdn.supabase.co";
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
-    console.log("Supabase URL:", supabaseUrl);
-    console.log("All env vars:", Object.keys(process.env).filter(k => k.includes('SUPABASE')));
-    
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error("Missing Supabase credentials");
-      console.error("Available SUPABASE env vars:", Object.entries(process.env).filter(([k]) => k.toUpperCase().includes('SUPABASE')));
+      console.error("Missing Supabase: URL=", !!supabaseUrl, "KEY=", !!supabaseServiceKey);
       return null;
     }
     
     supabase = createClient(supabaseUrl, supabaseServiceKey);
-    console.log("✓ Supabase client initialized");
     return supabase;
   } catch (err: any) {
-    console.error("✗ Supabase init failed:", err.message);
+    console.error("Supabase init error:", err.message);
     return null;
   }
 }
