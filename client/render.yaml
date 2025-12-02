@@ -1,6 +1,6 @@
 services:
   - type: static_site
     name: touchconnectpro
-    buildCommand: cd .. && npm ci && npm run build
-    staticPublishPath: ../dist/public
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist/public
     autoDeploy: true
