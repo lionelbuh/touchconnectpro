@@ -259,29 +259,40 @@ export default function BecomeaEntrepreneur() {
   };
 
   const handleSubmitApplication = async () => {
-    console.log("Submit clicked");
+    console.log("=== SUBMIT APPLICATION START ===");
+    console.log("API_BASE_URL:", API_BASE_URL);
+    console.log("formData.fullName:", formData.fullName);
+    console.log("formData.email:", formData.email);
+    
     try {
       if (!formData.fullName || !formData.email) {
         alert("Name and email required");
         return;
       }
       
+      const payload = {
+        fullName: formData.fullName,
+        email: formData.email,
+        ideaName: formData.ideaName,
+        linkedinWebsite: formData.linkedinWebsite,
+        formData: {
+          ...formData,
+          ideaReview: editedReview,
+        },
+        businessPlan: editedBusinessPlan,
+      };
+      
+      console.log("Sending to:", `${API_BASE_URL}/api/ideas`);
+      console.log("Payload keys:", Object.keys(payload));
+      
       const response = await fetch(`${API_BASE_URL}/api/ideas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName: formData.fullName,
-          email: formData.email,
-          ideaName: formData.ideaName,
-          linkedinWebsite: formData.linkedinWebsite,
-          formData: {
-            ...formData,
-            ideaReview: editedReview,
-          },
-          businessPlan: editedBusinessPlan,
-        }),
+        body: JSON.stringify(payload),
       });
 
+      console.log("Response status:", response.status);
+      
       let result;
       try {
         const text = await response.text();
@@ -300,10 +311,11 @@ export default function BecomeaEntrepreneur() {
         return;
       }
       
+      console.log("=== SUCCESS ===", result);
       toast.success("Application submitted successfully!");
       setSubmitted(true);
     } catch (error: any) {
-      console.error("Error:", error);
+      console.error("=== EXCEPTION ===", error);
       alert("ERROR: " + (error.message || "Unknown error"));
     }
   };
