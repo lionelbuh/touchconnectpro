@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { API_BASE_URL } from "@/config";
 
 const COUNTRIES = [
   "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", 
@@ -49,7 +50,7 @@ export default function BecomeaMentor() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.fullName || !formData.email || !formData.bio || !formData.expertise || !formData.experience || !formData.country) {
       alert("Please fill in all required fields");
@@ -60,13 +61,23 @@ export default function BecomeaMentor() {
       return;
     }
     
-    // Save to localStorage with pending status
-    const mentorData = { ...formData, status: "pending", submittedAt: new Date().toISOString() };
-    const existingMentors = JSON.parse(localStorage.getItem("tcp_mentorApplications") || "[]");
-    existingMentors.push(mentorData);
-    localStorage.setItem("tcp_mentorApplications", JSON.stringify(existingMentors));
-    
-    setSubmitted(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/mentors`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to submit application");
+      }
+
+      setSubmitted(true);
+    } catch (error: any) {
+      alert("Error submitting application: " + error.message);
+      console.error("Mentor submission error:", error);
+    }
   };
 
   const handleCloseModal = () => {
