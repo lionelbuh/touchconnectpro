@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
+import { API_BASE_URL } from "@/config";
 
 interface MentorApplication {
   fullName: string;
@@ -131,7 +132,7 @@ export default function AdminDashboard() {
 
       // Load entrepreneur applications from backend API
       try {
-        const response = await fetch("/api/ideas");
+        const response = await fetch(`${API_BASE_URL}/api/ideas`);
         const ideas = await response.json();
         
         if (Array.isArray(ideas) && ideas.length > 0) {

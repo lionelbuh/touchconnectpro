@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { API_BASE_URL } from "@/config";
 
 export function TestForm() {
   const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ export function TestForm() {
     setMessage("");
 
     try {
-      const response = await fetch("/api/ideas", {
+      const response = await fetch(`${API_BASE_URL}/api/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -63,7 +64,7 @@ export function TestForm() {
 
   const loadIdeas = async () => {
     try {
-      const response = await fetch("/api/ideas");
+      const response = await fetch(`${API_BASE_URL}/api/ideas`);
       const data = await response.json();
       setIdeas(Array.isArray(data) ? data : []);
     } catch (error) {

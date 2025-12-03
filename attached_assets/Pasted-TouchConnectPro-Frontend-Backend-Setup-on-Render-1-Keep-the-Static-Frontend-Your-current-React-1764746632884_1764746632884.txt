@@ -1,0 +1,172 @@
+TouchConnectPro: Frontend + Backend Setup on Render
+1️⃣ Keep the Static Frontend
+
+Your current React site is hosted as a Static Site on Render.
+
+All pages (/, /become-entrepreneur, etc.) remain exactly the same.
+
+No changes needed to the frontend deployment folder or Render Static Site settings.
+
+The static site handles all visual content, routing, and UI.
+
+2️⃣ Deploy a Separate Backend Web Service
+
+Purpose: Handle all API requests (/api/submit, /api/send, etc.) and connect safely to Supabase.
+
+Steps for Backend Deployment
+
+Create a new folder in your repo (or separate repo): /backend
+
+Inside /backend, create package.json:
+
+{
+  "name": "touchconnectpro-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}
+
+
+Install dependencies:
+
+cd backend
+npm install
+
+
+Create index.js with backend code:
+
+import express from "express";
+import cors from "cors";
+import { createClient } from "@supabase/supabase-js";
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+
+// Supabase client
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+// API route: submit form
+app.post("/api/submit", async (req, res) => {
+  try {
+    const { fullName, email, ideaName, businessPlan, formData } = req.body;
+    if (!fullName || !email) {
+      return res.status(400).json({ error: "Name and email required" });
+    }
+
+    const { data, error } = await supabase
+      .from("projects") // replace with actual table
+      .insert({
+        status: "submitted",
+        entrepreneur_name: fullName,
+        entrepreneur_email: email,
+        data: formData || {},
+        business_plan: businessPlan || {},
+        user_id: null
+      })
+      .select();
+
+    if (error) return res.status(400).json({ error: error.message });
+
+    return res.json({ success: true, id: data?.[0]?.id });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || "Server error" });
+  }
+});
+
+// Start server
+app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+
+3️⃣ Add Environment Variables on Render
+
+For the backend Web Service:
+
+Key	Value
+SUPABASE_URL	Your Supabase project URL
+SUPABASE_SERVICE_ROLE_KEY	Service Role Secret from Supabase
+
+⚠️ Do not expose the service role key in the frontend.
+
+4️⃣ Deploy Backend on Render
+
+Go to Render → New → Web Service
+
+Connect the backend folder or repo
+
+Set Root Directory to /backend
+
+Start Command: npm start
+
+Set Environment: Node 18+
+
+Add environment variables from step 3
+
+Deploy
+
+Render will give you a backend URL, e.g.:
+
+https://touchconnectpro-api.onrender.com
+
+5️⃣ Update Frontend Fetch Calls
+
+In your React frontend:
+
+const response = await fetch(
+  "https://touchconnectpro-api.onrender.com/api/submit",
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fullName: name,
+      email: email,
+      ideaName: "Form Submission",
+      formData: {},
+      businessPlan: {}
+    }),
+  }
+);
+
+
+All frontend logic remains unchanged
+
+Only the URL for API requests points to the backend Web Service
+
+6️⃣ Test the Setup
+
+Use the form on the frontend → should return JSON:
+
+{
+  "success": true,
+  "id": "generated-id"
+}
+
+
+Or test directly via curl/Postman:
+
+curl -X POST https://touchconnectpro-api.onrender.com/api/submit \
+-H "Content-Type: application/json" \
+-d '{"fullName":"Test User","email":"test@example.com"}'
+
+7️⃣ Benefits of This Setup
+
+Keeps your static frontend exactly as-is
+
+Backend handles all database operations and API logic
+
+Safe — service role key never exposed to users
+
+Scalable — frontend and backend can scale independently
+
+Eliminates ✗ Empty response (status: 200) errors

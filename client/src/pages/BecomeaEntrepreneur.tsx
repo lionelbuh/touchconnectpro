@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { API_BASE_URL } from "@/config";
 
 const COUNTRIES = [
   "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", 
@@ -265,7 +266,7 @@ export default function BecomeaEntrepreneur() {
         return;
       }
       
-      const response = await fetch("/api/ideas", {
+      const response = await fetch(`${API_BASE_URL}/api/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -434,7 +435,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
 
     try {
       // Save to backend API
-      const response = await fetch("/api/ideas", {
+      const response = await fetch(`${API_BASE_URL}/api/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
