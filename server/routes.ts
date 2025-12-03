@@ -37,7 +37,7 @@ export async function registerRoutes(
   // BYPASS TEST - minimal test endpoint
   app.get("/api/bypass-test", (_req, res) => {
     console.log("[BYPASS TEST] Endpoint hit, sending response...");
-    res.json({ test: "bypass", timestamp: Date.now() });
+    return res.json({ test: "bypass", timestamp: Date.now() });
   });
 
   // Save entrepreneur idea submission
@@ -80,14 +80,7 @@ export async function registerRoutes(
       }
 
       console.log("Success - idea saved, data:", JSON.stringify(data));
-      console.log("Data array length:", Array.isArray(data) ? data.length : "not array");
-      console.log("First item id:", data?.[0]?.id);
-      const response = { success: true, id: data?.[0]?.id };
-      console.log("Sending response:", JSON.stringify(response));
-      console.log("About to call res.json...");
-      res.json(response);
-      console.log("res.json called, function exiting");
-      return;
+      return res.json({ success: true, id: data?.[0]?.id, data });
     } catch (error: any) {
       console.error("Exception:", error);
       return res.status(500).json({ error: error.message || "Server error" });
@@ -111,9 +104,9 @@ export async function registerRoutes(
         return res.status(400).json({ error: error.message });
       }
 
-      res.json(data);
+      return res.json(data);
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   });
 
@@ -142,9 +135,9 @@ export async function registerRoutes(
         return res.status(400).json({ error: error.message });
       }
 
-      res.json({ success: true, idea: data?.[0] });
+      return res.json({ success: true, idea: data?.[0] });
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   });
 
