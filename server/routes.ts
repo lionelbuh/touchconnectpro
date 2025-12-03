@@ -34,6 +34,12 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // BYPASS TEST - minimal test endpoint
+  app.get("/api/bypass-test", (_req, res) => {
+    console.log("[BYPASS TEST] Endpoint hit, sending response...");
+    res.json({ test: "bypass", timestamp: Date.now() });
+  });
+
   // Save entrepreneur idea submission
   app.post("/api/ideas", async (req, res) => {
     console.log("POST /api/ideas called");
@@ -74,9 +80,14 @@ export async function registerRoutes(
       }
 
       console.log("Success - idea saved, data:", JSON.stringify(data));
+      console.log("Data array length:", Array.isArray(data) ? data.length : "not array");
+      console.log("First item id:", data?.[0]?.id);
       const response = { success: true, id: data?.[0]?.id };
       console.log("Sending response:", JSON.stringify(response));
-      return res.status(200).json(response);
+      console.log("About to call res.json...");
+      res.json(response);
+      console.log("res.json called, function exiting");
+      return;
     } catch (error: any) {
       console.error("Exception:", error);
       return res.status(500).json({ error: error.message || "Server error" });
