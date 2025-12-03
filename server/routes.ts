@@ -132,5 +132,51 @@ export async function registerRoutes(
     }
   });
 
+  // Test endpoint to verify Supabase connection
+  app.get("/api/test", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase client not initialized" });
+      }
+
+      // Test 1: Count ideas
+      const { data: ideas, error: ideasError } = await client
+        .from("ideas")
+        .select("id", { count: "exact" });
+
+      if (ideasError) {
+        return res.status(400).json({ 
+          error: "Failed to query ideas",
+          details: ideasError.message 
+        });
+      }
+
+      // Test 2: Count users
+      const { data: users, error: usersError } = await client
+        .from("users")
+        .select("id", { count: "exact" });
+
+      if (usersError) {
+        return res.status(400).json({ 
+          error: "Failed to query users",
+          details: usersError.message 
+        });
+      }
+
+      return res.status(200).json({
+        status: "✓ Connected to Supabase",
+        ideas_count: ideas?.length || 0,
+        users_count: users?.length || 0,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      return res.status(500).json({ 
+        error: "Server error",
+        details: error.message 
+      });
+    }
+  });
+
   return httpServer;
 }
