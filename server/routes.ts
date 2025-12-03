@@ -61,7 +61,7 @@ export async function registerRoutes(
       }
 
       console.log("[INSERT] Saving to ideas table for:", email);
-      const { data, error } = await client
+      const { data, error } = await (client
         .from("ideas")
         .insert({
           status: "submitted",
@@ -71,8 +71,8 @@ export async function registerRoutes(
           business_plan: businessPlan || {},
           linkedin_profile: linkedinWebsite || "",
           user_id: null,
-        })
-        .select();
+        } as any)
+        .select() as any);
 
       console.log("[INSERT RESPONSE]:", { data, error });
 
@@ -128,11 +128,11 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Invalid status" });
       }
 
-      const { data, error } = await client
+      const { data, error } = await (client
         .from("ideas")
-        .update({ status })
+        .update({ status } as any)
         .eq("id", id)
-        .select();
+        .select() as any);
 
       if (error) {
         return res.status(400).json({ error: error.message });
@@ -160,7 +160,7 @@ export async function registerRoutes(
       }
 
       console.log("[INSERT] Saving mentor application for:", email);
-      const { data, error } = await client
+      const { data, error } = await (client
         .from("mentor_applications")
         .insert({
           full_name: fullName,
@@ -172,8 +172,8 @@ export async function registerRoutes(
           country,
           state: state || null,
           status: "submitted"
-        })
-        .select();
+        } as any)
+        .select() as any);
 
       if (error) {
         console.error("[DB ERROR]:", error);
@@ -226,11 +226,11 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Invalid status" });
       }
 
-      const { data, error } = await client
+      const { data, error } = await (client
         .from("mentor_applications")
-        .update({ status, reviewed_at: new Date().toISOString() })
+        .update({ status, reviewed_at: new Date().toISOString() } as any)
         .eq("id", id)
-        .select();
+        .select() as any);
 
       if (error) {
         return res.status(400).json({ error: error.message });
