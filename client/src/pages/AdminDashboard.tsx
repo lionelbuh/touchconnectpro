@@ -313,7 +313,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const pendingEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "pending");
+  const pendingEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "pending" || app.status === "submitted");
   const pendingMentorApplications = mentorApplications.filter(app => app.status === "pending");
   const pendingCoachApplications = coachApplications.filter(app => app.status === "pending");
   const pendingInvestorApplications = investorApplications.filter(app => app.status === "pending");
