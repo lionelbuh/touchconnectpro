@@ -53,7 +53,7 @@ interface EntrepreneurApplication {
   ideaName: string;
   problem: string;
   solution: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "submitted";
   submittedAt: string;
   id: string;
   ideaReview?: any;
