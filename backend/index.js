@@ -13,7 +13,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-app.post("/api/submit", async (req, res) => {
+app.post("/api/ideas", async (req, res) => {
   console.log("[POST /api/submit] Called");
   console.log("[Payload]:", JSON.stringify(req.body));
   

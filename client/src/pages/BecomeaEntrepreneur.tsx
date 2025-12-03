@@ -266,7 +266,7 @@ export default function BecomeaEntrepreneur() {
         return;
       }
       
-      const response = await fetch(`${API_BASE_URL}/api/submit`, {
+      const response = await fetch(`${API_BASE_URL}/api/ideas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -435,7 +435,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
 
     try {
       // Save to backend API
-      const response = await fetch(`${API_BASE_URL}/api/submit`, {
+      const response = await fetch(`${API_BASE_URL}/api/ideas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
