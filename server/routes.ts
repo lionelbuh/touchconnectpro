@@ -42,47 +42,49 @@ export async function registerRoutes(
 
   // Save entrepreneur idea submission
   app.post("/api/ideas", async (req, res) => {
-    console.log("POST /api/ideas called");
-    console.log("Body:", JSON.stringify(req.body));
+    console.log("[POST /api/ideas] Called");
+    console.log("[Incoming payload]:", JSON.stringify(req.body));
     try {
       const client = getSupabaseClient();
       if (!client) {
-        console.error("Supabase client not available");
-        console.error("SUPABASE_SERVICE_ROLE_KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "SET" : "NOT SET");
+        console.error("[ERROR] Supabase client not available");
+        console.error("[ENV] SUPABASE_URL:", process.env.SUPABASE_URL ? "Loaded" : "MISSING");
+        console.error("[ENV] SUPABASE_SERVICE_ROLE_KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "SET" : "MISSING");
         return res.status(500).json({ error: "Supabase not configured" });
       }
 
       const { fullName, email, ideaName, businessPlan, ideaReview, linkedinWebsite, formData } = req.body;
 
       if (!email || !fullName) {
-        console.error("Missing required fields");
+        console.error("[VALIDATION] Missing required fields: email or fullName");
         return res.status(400).json({ error: "Name and email required" });
       }
 
-      console.log("Inserting idea for:", email);
+      console.log("[INSERT] Saving to projects table for:", email);
       const { data, error } = await client
-        .from("ideas")
+        .from("projects")
         .insert({
           status: "submitted",
-          entrepreneur_email: email,
-          entrepreneur_name: fullName,
+          email: email,
+          name: fullName,
           data: formData || {},
           business_plan: businessPlan || {},
-          linkedin_profile: linkedinWebsite || "",
           user_id: null,
         })
         .select();
 
+      console.log("[INSERT RESPONSE]:", { data, error });
+
       if (error) {
-        console.error("DB error:", error);
-        console.error("Full error details:", JSON.stringify(error));
+        console.error("[DB ERROR]:", error);
+        console.error("[DB ERROR DETAILS]:", JSON.stringify(error));
         return res.status(400).json({ error: error.message });
       }
 
-      console.log("Success - idea saved, data:", JSON.stringify(data));
-      return res.json({ success: true, id: data?.[0]?.id, data });
+      console.log("[SUCCESS] Project saved, returning:", JSON.stringify({ success: true, id: data?.[0]?.id }));
+      return res.json({ success: true, id: data?.[0]?.id });
     } catch (error: any) {
-      console.error("Exception:", error);
+      console.error("[EXCEPTION]:", error);
       return res.status(500).json({ error: error.message || "Server error" });
     }
   });
@@ -96,7 +98,7 @@ export async function registerRoutes(
       }
 
       const { data, error } = await client
-        .from("ideas")
+        .from("projects")
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -126,7 +128,7 @@ export async function registerRoutes(
       }
 
       const { data, error } = await client
-        .from("ideas")
+        .from("projects")
         .update({ status })
         .eq("id", id)
         .select();
@@ -149,34 +151,21 @@ export async function registerRoutes(
         return res.status(500).json({ error: "Supabase client not initialized" });
       }
 
-      // Test 1: Count ideas
-      const { data: ideas, error: ideasError } = await client
-        .from("ideas")
+      // Test 1: Count projects
+      const { data: projects, error: projectsError } = await client
+        .from("projects")
         .select("id", { count: "exact" });
 
-      if (ideasError) {
+      if (projectsError) {
         return res.status(400).json({ 
-          error: "Failed to query ideas",
-          details: ideasError.message 
-        });
-      }
-
-      // Test 2: Count users
-      const { data: users, error: usersError } = await client
-        .from("users")
-        .select("id", { count: "exact" });
-
-      if (usersError) {
-        return res.status(400).json({ 
-          error: "Failed to query users",
-          details: usersError.message 
+          error: "Failed to query projects",
+          details: projectsError.message 
         });
       }
 
       return res.status(200).json({
         status: "✓ Connected to Supabase",
-        ideas_count: ideas?.length || 0,
-        users_count: users?.length || 0,
+        projects_count: projects?.length || 0,
         timestamp: new Date().toISOString()
       });
     } catch (error: any) {
