@@ -37,10 +37,12 @@ export async function registerRoutes(
   // Save entrepreneur idea submission
   app.post("/api/ideas", async (req, res) => {
     console.log("POST /api/ideas called");
+    console.log("Body:", JSON.stringify(req.body));
     try {
       const client = getSupabaseClient();
       if (!client) {
         console.error("Supabase client not available");
+        console.error("SUPABASE_SERVICE_ROLE_KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "SET" : "NOT SET");
         return res.status(500).json({ error: "Supabase not configured" });
       }
 

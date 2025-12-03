@@ -50,6 +50,8 @@ app.use((req, res, next) => {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      } else if (res.statusCode >= 500 || res.statusCode === 404) {
+        logLine += ` [NO RESPONSE BODY]`;
       }
 
       log(logLine);
