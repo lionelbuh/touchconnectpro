@@ -28,7 +28,24 @@ export function TestForm() {
         }),
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      console.log("Raw response:", text);
+      console.log("Status:", response.status);
+      console.log("Headers:", Array.from(response.headers.entries()));
+
+      if (!text) {
+        setMessage(`✗ Empty response (status: ${response.status})`);
+        return;
+      }
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        setMessage(`✗ Invalid response: ${text.substring(0, 200)}`);
+        return;
+      }
+
       if (response.ok) {
         setMessage("✓ Saved to Supabase!");
         setEmail("");
@@ -38,7 +55,7 @@ export function TestForm() {
         setMessage(`✗ Error: ${data.error}`);
       }
     } catch (error: any) {
-      setMessage(`✗ Failed: ${error.message}`);
+      setMessage(`✗ Network error: ${error.message}`);
     } finally {
       setLoading(false);
     }
