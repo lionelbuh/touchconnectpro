@@ -56,7 +56,7 @@ export async function registerRoutes(
       const { data, error } = await client
         .from("ideas")
         .insert({
-          status: "pending",
+          status: "submitted",
           entrepreneur_email: email,
           entrepreneur_name: fullName,
           data: formData || {},
