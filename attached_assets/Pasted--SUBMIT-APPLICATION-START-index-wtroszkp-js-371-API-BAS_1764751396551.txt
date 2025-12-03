@@ -1,0 +1,95 @@
+=== SUBMIT APPLICATION START ===
+index-wtroszkp.js:371 API_BASE_URL: https://touchconnectprowebswervice.onrender.com
+index-wtroszkp.js:371 formData.fullName: Lionel Buhler
+index-wtroszkp.js:371 formData.email: buhler.lionel@gmail.com
+index-wtroszkp.js:371 Sending to: https://touchconnectprowebswervice.onrender.com/api/ideas
+index-wtroszkp.js:371 Payload keys: (6) ['fullName', 'email', 'ideaName', 'linkedinWebsite', 'formData', 'businessPlan']
+index-wtroszkp.js:371 Response status: 200
+index-wtroszkp.js:371 Response text: {"success":true,"id":"c13c3a8e-c15b-4141-bb7d-482f3d057719"}
+index-wtroszkp.js:371 === SUCCESS === {success: true, id: 'c13c3a8e-c15b-4141-bb7d-482f3d057719'}
+index-wtroszkp.js:371 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ index-wtroszkp.js:371
+tr @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Na @ index-wtroszkp.js:48
+wx @ index-wtroszkp.js:48
+Fx @ index-wtroszkp.js:48
+Pi @ index-wtroszkp.js:48
+qx @ index-wtroszkp.js:48
+Bx @ index-wtroszkp.js:48
+Ox @ index-wtroszkp.js:48
+Rx @ index-wtroszkp.js:48
+Kx @ index-wtroszkp.js:48
+or @ index-wtroszkp.js:48
+qx @ index-wtroszkp.js:48
+Bx @ index-wtroszkp.js:48
+Ox @ index-wtroszkp.js:48
+Rx @ index-wtroszkp.js:48
+Xx @ index-wtroszkp.js:48
+ke @ index-wtroszkp.js:17Understand this warning

@@ -132,8 +132,15 @@ export default function AdminDashboard() {
 
       // Load entrepreneur applications from backend API
       try {
+        console.log("=== ADMIN FETCH START ===");
+        console.log("Fetching from:", `${API_BASE_URL}/api/ideas`);
+        
         const response = await fetch(`${API_BASE_URL}/api/ideas`);
+        console.log("Response status:", response.status);
+        
         const ideas = await response.json();
+        console.log("Ideas received:", ideas);
+        console.log("Ideas count:", Array.isArray(ideas) ? ideas.length : "not array");
         
         if (Array.isArray(ideas) && ideas.length > 0) {
           const entrepreneurs = ideas.map((idea: any) => ({
@@ -150,11 +157,14 @@ export default function AdminDashboard() {
             linkedin: idea.linkedin_profile || "",
             ...idea.data
           }));
+          console.log("Mapped entrepreneurs:", entrepreneurs.length);
           setEntrepreneurApplications(entrepreneurs);
           setApprovedEntrepreneurs(entrepreneurs.filter((app: any) => app.status === "approved"));
+        } else {
+          console.log("No ideas found or not an array");
         }
       } catch (err) {
-        console.log("Could not load from API, using localStorage");
+        console.error("=== ADMIN FETCH ERROR ===", err);
       }
     };
 
