@@ -60,15 +60,16 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Name and email required" });
       }
 
-      console.log("[INSERT] Saving to projects table for:", email);
+      console.log("[INSERT] Saving to ideas table for:", email);
       const { data, error } = await client
-        .from("projects")
+        .from("ideas")
         .insert({
           status: "submitted",
-          email: email,
-          name: fullName,
+          entrepreneur_email: email,
+          entrepreneur_name: fullName,
           data: formData || {},
           business_plan: businessPlan || {},
+          linkedin_profile: linkedinWebsite || "",
           user_id: null,
         })
         .select();
@@ -98,7 +99,7 @@ export async function registerRoutes(
       }
 
       const { data, error } = await client
-        .from("projects")
+        .from("ideas")
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -128,7 +129,7 @@ export async function registerRoutes(
       }
 
       const { data, error } = await client
-        .from("projects")
+        .from("ideas")
         .update({ status })
         .eq("id", id)
         .select();
@@ -151,21 +152,21 @@ export async function registerRoutes(
         return res.status(500).json({ error: "Supabase client not initialized" });
       }
 
-      // Test 1: Count projects
-      const { data: projects, error: projectsError } = await client
-        .from("projects")
+      // Test 1: Count ideas
+      const { data: ideas, error: ideasError } = await client
+        .from("ideas")
         .select("id", { count: "exact" });
 
-      if (projectsError) {
+      if (ideasError) {
         return res.status(400).json({ 
-          error: "Failed to query projects",
-          details: projectsError.message 
+          error: "Failed to query ideas",
+          details: ideasError.message 
         });
       }
 
       return res.status(200).json({
         status: "✓ Connected to Supabase",
-        projects_count: projects?.length || 0,
+        ideas_count: ideas?.length || 0,
         timestamp: new Date().toISOString()
       });
     } catch (error: any) {
