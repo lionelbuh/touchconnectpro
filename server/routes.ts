@@ -69,11 +69,14 @@ export async function registerRoutes(
 
       if (error) {
         console.error("DB error:", error);
+        console.error("Full error details:", JSON.stringify(error));
         return res.status(400).json({ error: error.message });
       }
 
-      console.log("Success - idea saved");
-      return res.status(200).json({ success: true, id: data?.[0]?.id });
+      console.log("Success - idea saved, data:", JSON.stringify(data));
+      const response = { success: true, id: data?.[0]?.id };
+      console.log("Sending response:", JSON.stringify(response));
+      return res.status(200).json(response);
     } catch (error: any) {
       console.error("Exception:", error);
       return res.status(500).json({ error: error.message || "Server error" });
