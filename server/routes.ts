@@ -2,7 +2,6 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { createClient } from "@supabase/supabase-js";
-import { randomUUID } from "crypto";
 
 let supabase: ReturnType<typeof createClient> | null = null;
 
@@ -62,7 +61,7 @@ export async function registerRoutes(
           data: formData || {},
           business_plan: businessPlan || {},
           linkedin_profile: linkedinWebsite || "",
-          user_id: randomUUID(),
+          user_id: null,
         })
         .select();
 
