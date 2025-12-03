@@ -5,8 +5,12 @@ import { createClient } from "@supabase/supabase-js";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type"]
+}));
+app.use(express.json({ limit: "10mb" }));
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -14,14 +18,14 @@ const supabase = createClient(
 );
 
 app.post("/api/ideas", async (req, res) => {
-  console.log("[POST /api/submit] Called");
-  console.log("[Payload]:", JSON.stringify(req.body));
+  console.log("[POST /api/ideas] Called");
+  console.log("[Payload] fullName:", req.body?.fullName, "email:", req.body?.email);
   
   try {
     const { fullName, email, ideaName, businessPlan, formData, linkedinWebsite } = req.body;
     
     if (!fullName || !email) {
-      console.log("[VALIDATION] Missing required fields");
+      console.log("[VALIDATION] Missing: fullName =", fullName, ", email =", email);
       return res.status(400).json({ error: "Name and email required" });
     }
 
