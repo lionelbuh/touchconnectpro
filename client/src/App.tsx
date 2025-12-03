@@ -27,6 +27,7 @@ import DashboardInvestor from "@/pages/DashboardInvestor";
 import AdminMentorApproval from "@/pages/AdminMentorApproval";
 import AdminDashboard from "@/pages/AdminDashboard";
 import BusinessPlan from "@/pages/BusinessPlan";
+import { TestForm } from "@/pages/TestForm";
 import NotFound from "@/pages/not-found";
 
 // Placeholder pages for now
@@ -66,6 +67,7 @@ function Router() {
         <Route path="/admin-mentor-approval" component={AdminMentorApproval} />
         <Route path="/admin-dashboard" component={AdminDashboard} />
         <Route path="/business-plan" component={BusinessPlan} />
+        <Route path="/test-form" component={TestForm} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
