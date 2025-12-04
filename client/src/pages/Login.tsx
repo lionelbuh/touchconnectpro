@@ -90,9 +90,14 @@ export default function Login() {
         navigate(dashboardPath);
       }
     } catch (error: any) {
-      if (error.message?.toLowerCase().includes("invalid") || 
-          error.message?.toLowerCase().includes("credentials") ||
-          error.message?.toLowerCase().includes("password")) {
+      console.log("[LOGIN ERROR]", error.message, error);
+      const errorMsg = (error.message || "").toLowerCase();
+      if (errorMsg.includes("invalid") || 
+          errorMsg.includes("credentials") ||
+          errorMsg.includes("password") ||
+          errorMsg.includes("wrong") ||
+          errorMsg.includes("incorrect") ||
+          errorMsg.includes("login")) {
         toast.error("Wrong password. Please try again.");
       } else {
         toast.error(error.message || "Login failed. Please try again.");
