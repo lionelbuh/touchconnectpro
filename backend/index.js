@@ -100,6 +100,12 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId)
   
   if (status === "approved") {
     const token = await createPasswordToken(email, userType, applicationId);
+    
+    if (!token) {
+      console.error("[EMAIL] Failed to create password token for:", email);
+      return { success: false, reason: "Failed to create password token" };
+    }
+    
     const setPasswordUrl = `${FRONTEND_URL}/set-password?token=${token}`;
     
     subject = `Welcome to TouchConnectPro - Your ${userType.charAt(0).toUpperCase() + userType.slice(1)} Application is Approved!`;

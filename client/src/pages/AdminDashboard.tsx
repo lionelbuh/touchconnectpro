@@ -391,18 +391,46 @@ export default function AdminDashboard() {
     localStorage.setItem("tcp_disabledProfessionals", JSON.stringify(updated));
   };
 
-  const handleApproveEntrepreneur = (index: number) => {
-    const updated = [...entrepreneurApplications];
-    updated[index].status = "approved";
-    setEntrepreneurApplications(updated);
-    localStorage.setItem("tcp_entrepreneurApplications", JSON.stringify(updated));
+  const handleApproveEntrepreneur = async (index: number) => {
+    const entrepreneur = entrepreneurApplications[index];
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/ideas/${entrepreneur.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "approved" })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const updated = [...entrepreneurApplications];
+        updated[index].status = "approved";
+        setEntrepreneurApplications(updated);
+        setApprovedEntrepreneurs(updated.filter((app: any) => app.status === "approved"));
+        console.log("Entrepreneur approved, email sent:", data.emailSent);
+      }
+    } catch (err) {
+      console.error("Error approving entrepreneur:", err);
+    }
   };
 
-  const handleRejectEntrepreneur = (index: number) => {
-    const updated = [...entrepreneurApplications];
-    updated[index].status = "rejected";
-    setEntrepreneurApplications(updated);
-    localStorage.setItem("tcp_entrepreneurApplications", JSON.stringify(updated));
+  const handleRejectEntrepreneur = async (index: number) => {
+    const entrepreneur = entrepreneurApplications[index];
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/ideas/${entrepreneur.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "rejected" })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const updated = [...entrepreneurApplications];
+        updated[index].status = "rejected";
+        setEntrepreneurApplications(updated);
+        setApprovedEntrepreneurs(updated.filter((app: any) => app.status === "approved"));
+        console.log("Entrepreneur rejected, email sent:", data.emailSent);
+      }
+    } catch (err) {
+      console.error("Error rejecting entrepreneur:", err);
+    }
   };
 
   const handleAssignPortfolio = () => {
