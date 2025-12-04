@@ -120,10 +120,93 @@ app.get("/api/test", async (req, res) => {
   }
 });
 
+// Save mentor application
+app.post("/api/mentors", async (req, res) => {
+  console.log("[POST /api/mentors] Called");
+  try {
+    const { fullName, email, linkedin, bio, expertise, experience, country, state } = req.body;
+
+    if (!email || !fullName || !bio || !expertise || !experience || !country) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    console.log("[INSERT] Saving mentor application for:", email);
+    const { data, error } = await supabase
+      .from("mentor_applications")
+      .insert({
+        full_name: fullName,
+        email,
+        linkedin: linkedin || null,
+        bio,
+        expertise,
+        experience,
+        country,
+        state: state || null,
+        status: "submitted"
+      })
+      .select();
+
+    if (error) {
+      console.error("[DB ERROR]:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log("[SUCCESS] Mentor application saved");
+    return res.json({ success: true, id: data?.[0]?.id });
+  } catch (error) {
+    console.error("[EXCEPTION]:", error);
+    return res.status(500).json({ error: error.message || "Server error" });
+  }
+});
+
+// Get all mentor applications (for admin)
+app.get("/api/mentors", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("mentor_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Approve/reject mentor
+app.patch("/api/mentors/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const { data, error } = await supabase
+      .from("mentor_applications")
+      .update({ status })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, mentor: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/", (req, res) => {
   return res.json({ 
     message: "TouchConnectPro Backend API",
-    endpoints: ["/api/submit", "/api/ideas", "/api/test"]
+    endpoints: ["/api/submit", "/api/ideas", "/api/mentors", "/api/test"]
   });
 });
 
