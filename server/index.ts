@@ -23,6 +23,19 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
+// Critical: Config endpoint for frontend - must be registered early
+app.get("/api/config", (_req, res) => {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || "https://mfkxbjtrxwajlyxnxzdn.supabase.co";
+  const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || "";
+  
+  console.log("[CONFIG] Serving Supabase credentials");
+  
+  return res.json({
+    supabaseUrl,
+    supabaseAnonKey,
+  });
+});
+
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
