@@ -16,7 +16,7 @@ interface MentorApplication {
   expertise: string;
   experience: string;
   status: "pending" | "approved" | "rejected";
-  submittedAt?: string;
+  submittedAt: string;
   country?: string;
   state?: string;
 }
@@ -30,7 +30,7 @@ interface CoachApplication {
   focusAreas: string;
   hourlyRate: string;
   status: "pending" | "approved" | "rejected";
-  submittedAt?: string;
+  submittedAt: string;
   country?: string;
   state?: string;
 }
@@ -45,7 +45,7 @@ interface InvestorApplication {
   investmentPreference: string;
   investmentAmount: string;
   status: "pending" | "approved" | "rejected";
-  submittedAt?: string;
+  submittedAt: string;
   country?: string;
   state?: string;
 }
@@ -76,6 +76,7 @@ interface User {
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<"approvals" | "members">("approvals");
   const [activeMembersSubTab, setActiveMembersSubTab] = useState<"portfolio" | "messaging" | "management">("portfolio");
+  const [activeApprovalsSubTab, setActiveApprovalsSubTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
   const [mentorApplications, setMentorApplications] = useState<MentorApplication[]>([]);
   const [coachApplications, setCoachApplications] = useState<CoachApplication[]>([]);
   const [investorApplications, setInvestorApplications] = useState<InvestorApplication[]>([]);
@@ -123,7 +124,8 @@ export default function AdminDashboard() {
               experience: m.experience,
               country: m.country,
               state: m.state,
-              status: m.status === "submitted" ? "pending" : m.status
+              status: m.status === "submitted" ? "pending" : m.status,
+              submittedAt: m.created_at
             }));
             setMentorApplications(mappedMentors);
             setApprovedMentors(mappedMentors.filter((app: any) => app.status === "approved"));
@@ -151,7 +153,8 @@ export default function AdminDashboard() {
               hourlyRate: c.hourly_rate,
               country: c.country,
               state: c.state,
-              status: c.status === "submitted" ? "pending" : c.status
+              status: c.status === "submitted" ? "pending" : c.status,
+              submittedAt: c.created_at
             }));
             setCoachApplications(mappedCoaches);
             setApprovedCoaches(mappedCoaches.filter((app: any) => app.status === "approved"));
@@ -180,7 +183,8 @@ export default function AdminDashboard() {
               investmentAmount: i.investment_amount,
               country: i.country,
               state: i.state,
-              status: i.status === "submitted" ? "pending" : i.status
+              status: i.status === "submitted" ? "pending" : i.status,
+              submittedAt: i.created_at
             }));
             setInvestorApplications(mappedInvestors);
             setApprovedInvestors(mappedInvestors.filter((app: any) => app.status === "approved"));
@@ -468,7 +472,44 @@ export default function AdminDashboard() {
         {/* Approvals Tab */}
         {activeTab === "approvals" && (
           <div className="space-y-8">
+            {/* Approvals Sub-tabs */}
+            <div className="flex gap-2 mb-6 flex-wrap border-b border-slate-200 dark:border-slate-700 pb-2">
+              <Button 
+                variant={activeApprovalsSubTab === "entrepreneurs" ? "default" : "ghost"}
+                onClick={() => setActiveApprovalsSubTab("entrepreneurs")}
+                className={activeApprovalsSubTab === "entrepreneurs" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+                data-testid="button-entrepreneurs-subtab"
+              >
+                Entrepreneurs
+              </Button>
+              <Button 
+                variant={activeApprovalsSubTab === "mentors" ? "default" : "ghost"}
+                onClick={() => setActiveApprovalsSubTab("mentors")}
+                className={activeApprovalsSubTab === "mentors" ? "bg-blue-600 hover:bg-blue-700" : ""}
+                data-testid="button-mentors-subtab"
+              >
+                Mentors
+              </Button>
+              <Button 
+                variant={activeApprovalsSubTab === "coaches" ? "default" : "ghost"}
+                onClick={() => setActiveApprovalsSubTab("coaches")}
+                className={activeApprovalsSubTab === "coaches" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
+                data-testid="button-coaches-subtab"
+              >
+                Coaches
+              </Button>
+              <Button 
+                variant={activeApprovalsSubTab === "investors" ? "default" : "ghost"}
+                onClick={() => setActiveApprovalsSubTab("investors")}
+                className={activeApprovalsSubTab === "investors" ? "bg-amber-600 hover:bg-amber-700" : ""}
+                data-testid="button-investors-subtab"
+              >
+                Investors
+              </Button>
+            </div>
+
             {/* Entrepreneur Approvals */}
+            {activeApprovalsSubTab === "entrepreneurs" && (
             <div>
               <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Entrepreneur Approvals</h2>
               {pendingEntrepreneurApplications.length === 0 ? (
@@ -628,8 +669,10 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Mentor Approvals */}
+            {activeApprovalsSubTab === "mentors" && (
             <div>
               <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Mentor Approvals</h2>
               {pendingMentorApplications.length === 0 ? (
@@ -716,8 +759,10 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Coach Approvals */}
+            {activeApprovalsSubTab === "coaches" && (
             <div>
               <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Coach Approvals</h2>
               {pendingCoachApplications.length === 0 ? (
@@ -804,8 +849,10 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Investor Approvals */}
+            {activeApprovalsSubTab === "investors" && (
             <div>
               <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Investor Approvals</h2>
               {pendingInvestorApplications.length === 0 ? (
@@ -896,6 +943,7 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Rejected Applications */}
             {(rejectedMentorApplications.length > 0 || rejectedCoachApplications.length > 0 || rejectedInvestorApplications.length > 0) && (
