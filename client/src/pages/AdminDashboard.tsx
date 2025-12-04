@@ -557,6 +557,10 @@ export default function AdminDashboard() {
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
                               <p className="text-slate-900 dark:text-white">{app.state || "—"}</p>
                             </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
+                              <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
+                            </div>
                             <div className="col-span-2">
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Idea/Company Name</p>
                               <p className="text-slate-900 dark:text-white">{app.ideaName}</p>
