@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Globe, Lightbulb, Star, Briefcase, TrendingUp } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 const COUNTRIES = [
@@ -53,6 +53,7 @@ export default function Login() {
     }
     setLoading(true);
     try {
+      const supabase = await getSupabase();
       if (!supabase) {
         throw new Error("Supabase client not initialized. Check environment variables.");
       }
@@ -98,6 +99,11 @@ export default function Login() {
     }
     setLoading(true);
     try {
+      const supabase = await getSupabase();
+      if (!supabase) {
+        throw new Error("Supabase client not initialized");
+      }
+      
       const { data, error } = await supabase.auth.signUp({
         email: signupEmail,
         password: signupPassword,
@@ -532,6 +538,8 @@ export default function Login() {
                   }
                   setLoading(true);
                   try {
+                    const supabase = await getSupabase();
+                    if (!supabase) throw new Error("Unable to connect");
                     await supabase.auth.resetPasswordForEmail(recoveryEmail);
                     toast.success("Recovery email sent! Check your inbox.");
                     setRecoveryEmail("");

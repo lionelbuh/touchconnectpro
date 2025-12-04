@@ -1,8 +1,12 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-let supabase: any = null
+let supabase: SupabaseClient | null = null
+let initPromise: Promise<void> | null = null
 
-async function initSupabase() {
+async function initSupabase(): Promise<void> {
+  // Only initialize once
+  if (supabase) return
+  
   try {
     // Try to get config from backend endpoint first
     console.log('Fetching Supabase config from backend...')
@@ -42,7 +46,13 @@ async function initSupabase() {
   }
 }
 
-// Initialize immediately
-initSupabase()
+// Start initialization immediately
+initPromise = initSupabase()
 
-export { supabase }
+// Async getter to ensure supabase is initialized before use
+async function getSupabase(): Promise<SupabaseClient | null> {
+  await initPromise
+  return supabase
+}
+
+export { supabase, getSupabase }

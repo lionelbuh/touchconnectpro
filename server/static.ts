@@ -15,7 +15,8 @@ export function serveStatic(app: Express) {
   // fall through to index.html if the file doesn't exist
   // but skip /api routes - let them be handled by the API
   app.use("*", (req, res) => {
-    if (req.path.startsWith("/api")) {
+    // Use originalUrl for the full path (req.path can be relative to mount point)
+    if (req.originalUrl.startsWith("/api")) {
       return res.status(404).json({ error: "API route not found" });
     }
     res.sendFile(path.resolve(distPath, "index.html"));

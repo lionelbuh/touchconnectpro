@@ -36,10 +36,12 @@ export async function registerRoutes(
 ): Promise<Server> {
   // Config endpoint - serves Supabase credentials to frontend
   app.get("/api/config", (_req, res) => {
-    const supabaseUrl = "https://mfkxbjtrxwajlyxnxzdn.supabase.co";
-    const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "";
+    // Prefer VITE_ prefixed vars (shared env), fallback to secrets, then hardcoded
+    const supabaseUrl = process.env.VITE_SUPABASE_URL || "https://mfkxbjtrxwajlyxnxzdn.supabase.co";
+    const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || "";
     
-    console.log("[CONFIG] Serving Supabase URL and anon key to frontend");
+    console.log("[CONFIG] Serving Supabase URL:", supabaseUrl ? "yes" : "no");
+    console.log("[CONFIG] Serving Supabase anon key:", supabaseAnonKey ? "yes" : "no");
     
     return res.json({
       supabaseUrl,
