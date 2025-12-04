@@ -14,6 +14,15 @@ app.use(cors({
 }));
 app.use(express.json({ limit: "10mb" }));
 
+// Config endpoint for frontend to get Supabase credentials
+app.get("/api/config", (req, res) => {
+  console.log("[GET /api/config] Serving Supabase config");
+  res.json({
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY
+  });
+});
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
