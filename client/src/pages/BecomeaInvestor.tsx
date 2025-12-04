@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { API_BASE_URL } from "@/config";
 
 const COUNTRIES = [
   "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", 
@@ -50,7 +51,7 @@ export default function BecomeaInvestor() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.fullName || !formData.email || !formData.fundName || !formData.investmentFocus || !formData.investmentPreference || !formData.investmentAmount || !formData.country) {
       alert("Please fill in all required fields");
@@ -61,12 +62,23 @@ export default function BecomeaInvestor() {
       return;
     }
     
-    const investorData = { ...formData, status: "pending", submittedAt: new Date().toISOString() };
-    const existingInvestors = JSON.parse(localStorage.getItem("tcp_investorApplications") || "[]");
-    existingInvestors.push(investorData);
-    localStorage.setItem("tcp_investorApplications", JSON.stringify(existingInvestors));
-    
-    setSubmitted(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/investors`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to submit application");
+      }
+
+      setSubmitted(true);
+    } catch (error: any) {
+      alert("Error submitting application: " + error.message);
+      console.error("Investor submission error:", error);
+    }
   };
 
   const handleCloseModal = () => {
