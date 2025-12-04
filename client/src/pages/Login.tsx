@@ -63,16 +63,16 @@ export default function Login() {
         const { data: profile, error: profileError } = await supabase
           .from("users")
           .select("role")
-          .eq("id", data.user.id)
-          .single();
+          .eq("id", data.user.id);
         
-        const userRole = profile?.role || "entrepreneur";
+        const userRole = profile?.[0]?.role || "entrepreneur";
         let dashboardPath = "/dashboard-entrepreneur";
         
         if (userRole === "mentor") dashboardPath = "/dashboard-mentor";
         else if (userRole === "coach") dashboardPath = "/dashboard-coach";
         else if (userRole === "investor") dashboardPath = "/dashboard-investor";
         
+        console.log("Login successful for user:", data.user.id, "role:", userRole, "dashboard:", dashboardPath);
         toast.success("Logged in successfully!");
         navigate(dashboardPath);
       }
