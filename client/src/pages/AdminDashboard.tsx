@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { API_BASE_URL } from "@/config";
 
 interface MentorApplication {
+  id: string;
   fullName: string;
   email: string;
   linkedin: string;
@@ -15,7 +16,7 @@ interface MentorApplication {
   expertise: string;
   experience: string;
   status: "pending" | "approved" | "rejected";
-  submittedAt: string;
+  submittedAt?: string;
   country?: string;
   state?: string;
 }
@@ -102,13 +103,35 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const loadData = async () => {
-      // Load from localStorage (mentors, coaches, investors)
-      const savedMentorApplications = localStorage.getItem("tcp_mentorApplications");
-      if (savedMentorApplications) {
-        const allMentors = JSON.parse(savedMentorApplications);
-        setMentorApplications(allMentors);
-        setApprovedMentors(allMentors.filter((app: any) => app.status === "approved"));
+      // Load mentor applications from API
+      try {
+        console.log("=== FETCHING MENTORS ===");
+        const mentorResponse = await fetch(`${API_BASE_URL}/api/mentors`);
+        if (mentorResponse.ok) {
+          const mentors = await mentorResponse.json();
+          console.log("Mentors received:", mentors);
+          if (Array.isArray(mentors)) {
+            const mappedMentors = mentors.map((m: any) => ({
+              id: m.id,
+              fullName: m.full_name,
+              email: m.email,
+              linkedin: m.linkedin,
+              bio: m.bio,
+              expertise: m.expertise,
+              experience: m.experience,
+              country: m.country,
+              state: m.state,
+              status: m.status === "submitted" ? "pending" : m.status
+            }));
+            setMentorApplications(mappedMentors);
+            setApprovedMentors(mappedMentors.filter((app: any) => app.status === "approved"));
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching mentors:", err);
       }
+
+      // Load from localStorage (coaches, investors)
       const savedCoachApplications = localStorage.getItem("tcp_coachApplications");
       if (savedCoachApplications) {
         const allCoaches = JSON.parse(savedCoachApplications);
@@ -171,32 +194,42 @@ export default function AdminDashboard() {
     loadData();
   }, []);
 
-  const handleApproveMentor = (index: number) => {
-    const updated = [...mentorApplications];
-    updated[index].status = "approved";
-    setMentorApplications(updated);
-    setApprovedMentors(updated.filter((app: any) => app.status === "approved"));
-    localStorage.setItem("tcp_mentorApplications", JSON.stringify(updated));
-
-    const mentorProfile = {
-      fullName: updated[index].fullName,
-      email: updated[index].email,
-      linkedin: updated[index].linkedin,
-      bio: updated[index].bio,
-      expertise: updated[index].expertise,
-      yearsExperience: updated[index].experience,
-      profileImage: null,
-      approved: true
-    };
-    localStorage.setItem("tcp_mentorProfile", JSON.stringify(mentorProfile));
+  const handleApproveMentor = async (index: number) => {
+    const mentor = mentorApplications[index];
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/mentors/${mentor.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "approved" })
+      });
+      if (response.ok) {
+        const updated = [...mentorApplications];
+        updated[index].status = "approved";
+        setMentorApplications(updated);
+        setApprovedMentors(updated.filter((app: any) => app.status === "approved"));
+      }
+    } catch (err) {
+      console.error("Error approving mentor:", err);
+    }
   };
 
-  const handleRejectMentor = (index: number) => {
-    const updated = [...mentorApplications];
-    updated[index].status = "rejected";
-    setMentorApplications(updated);
-    setApprovedMentors(updated.filter((app: any) => app.status === "approved"));
-    localStorage.setItem("tcp_mentorApplications", JSON.stringify(updated));
+  const handleRejectMentor = async (index: number) => {
+    const mentor = mentorApplications[index];
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/mentors/${mentor.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "rejected" })
+      });
+      if (response.ok) {
+        const updated = [...mentorApplications];
+        updated[index].status = "rejected";
+        setMentorApplications(updated);
+        setApprovedMentors(updated.filter((app: any) => app.status === "approved"));
+      }
+    } catch (err) {
+      console.error("Error rejecting mentor:", err);
+    }
   };
 
   const handleApproveCoach = (index: number) => {
@@ -588,7 +621,7 @@ export default function AdminDashboard() {
                             </div>
                             <div>
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
-                              <p className="text-slate-900 dark:text-white text-xs">{new Date(app.submittedAt).toLocaleDateString()}</p>
+                              <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
                             </div>
                           </div>
                           <div>
@@ -676,7 +709,7 @@ export default function AdminDashboard() {
                             </div>
                             <div>
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
-                              <p className="text-slate-900 dark:text-white text-xs">{new Date(app.submittedAt).toLocaleDateString()}</p>
+                              <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
                             </div>
                           </div>
                           <div>
@@ -768,7 +801,7 @@ export default function AdminDashboard() {
                             </div>
                             <div>
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
-                              <p className="text-slate-900 dark:text-white text-xs">{new Date(app.submittedAt).toLocaleDateString()}</p>
+                              <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
                             </div>
                           </div>
                           <div>
