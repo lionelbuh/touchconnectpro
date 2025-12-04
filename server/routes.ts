@@ -34,6 +34,19 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Config endpoint - serves Supabase credentials to frontend
+  app.get("/api/config", (_req, res) => {
+    const supabaseUrl = "https://mfkxbjtrxwajlyxnxzdn.supabase.co";
+    const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "";
+    
+    console.log("[CONFIG] Serving Supabase URL and anon key to frontend");
+    
+    return res.json({
+      supabaseUrl,
+      supabaseAnonKey,
+    });
+  });
+
   // BYPASS TEST - minimal test endpoint
   app.get("/api/bypass-test", (_req, res) => {
     console.log("[BYPASS TEST] Endpoint hit, sending response...");
