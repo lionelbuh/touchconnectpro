@@ -36,6 +36,7 @@ export default function Login() {
   const [country, setCountry] = useState("");
   const [state, setState] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>("entrepreneur");
   
   // Form state
   const [loginEmail, setLoginEmail] = useState("");
@@ -113,13 +114,16 @@ export default function Login() {
             full_name: signupFullName,
             country,
             state: state || null,
-            role: "entrepreneur",
+            role: selectedRole,
           });
         if (profileError) throw profileError;
       }
       
       toast.success("Account created! Redirecting to application form...");
-      navigate("/become-entrepreneur");
+      if (selectedRole === "entrepreneur") navigate("/become-entrepreneur");
+      else if (selectedRole === "mentor") navigate("/become-mentor");
+      else if (selectedRole === "coach") navigate("/become-coach");
+      else if (selectedRole === "investor") navigate("/investors");
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -128,6 +132,7 @@ export default function Login() {
   };
 
   const handleRoleSelection = (role: string) => {
+    setSelectedRole(role);
     if (role === "entrepreneur") navigate("/become-entrepreneur");
     else if (role === "mentor") navigate("/become-mentor");
     else if (role === "coach") navigate("/become-coach");
