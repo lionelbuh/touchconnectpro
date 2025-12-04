@@ -22,6 +22,7 @@ interface MentorApplication {
 }
 
 interface CoachApplication {
+  id: string;
   fullName: string;
   email: string;
   linkedin: string;
@@ -29,12 +30,13 @@ interface CoachApplication {
   focusAreas: string;
   hourlyRate: string;
   status: "pending" | "approved" | "rejected";
-  submittedAt: string;
+  submittedAt?: string;
   country?: string;
   state?: string;
 }
 
 interface InvestorApplication {
+  id: string;
   fullName: string;
   email: string;
   linkedin: string;
@@ -43,7 +45,7 @@ interface InvestorApplication {
   investmentPreference: string;
   investmentAmount: string;
   status: "pending" | "approved" | "rejected";
-  submittedAt: string;
+  submittedAt?: string;
   country?: string;
   state?: string;
 }
@@ -131,18 +133,61 @@ export default function AdminDashboard() {
         console.error("Error fetching mentors:", err);
       }
 
-      // Load from localStorage (coaches, investors)
-      const savedCoachApplications = localStorage.getItem("tcp_coachApplications");
-      if (savedCoachApplications) {
-        const allCoaches = JSON.parse(savedCoachApplications);
-        setCoachApplications(allCoaches);
-        setApprovedCoaches(allCoaches.filter((app: any) => app.status === "approved"));
+      // Load coach applications from API
+      try {
+        console.log("=== FETCHING COACHES ===");
+        const coachResponse = await fetch(`${API_BASE_URL}/api/coaches`);
+        if (coachResponse.ok) {
+          const coaches = await coachResponse.json();
+          console.log("Coaches received:", coaches);
+          if (Array.isArray(coaches)) {
+            const mappedCoaches = coaches.map((c: any) => ({
+              id: c.id,
+              fullName: c.full_name,
+              email: c.email,
+              linkedin: c.linkedin,
+              expertise: c.expertise,
+              focusAreas: c.focus_areas,
+              hourlyRate: c.hourly_rate,
+              country: c.country,
+              state: c.state,
+              status: c.status === "submitted" ? "pending" : c.status
+            }));
+            setCoachApplications(mappedCoaches);
+            setApprovedCoaches(mappedCoaches.filter((app: any) => app.status === "approved"));
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching coaches:", err);
       }
-      const savedInvestorApplications = localStorage.getItem("tcp_investorApplications");
-      if (savedInvestorApplications) {
-        const allInvestors = JSON.parse(savedInvestorApplications);
-        setInvestorApplications(allInvestors);
-        setApprovedInvestors(allInvestors.filter((app: any) => app.status === "approved"));
+
+      // Load investor applications from API
+      try {
+        console.log("=== FETCHING INVESTORS ===");
+        const investorResponse = await fetch(`${API_BASE_URL}/api/investors`);
+        if (investorResponse.ok) {
+          const investors = await investorResponse.json();
+          console.log("Investors received:", investors);
+          if (Array.isArray(investors)) {
+            const mappedInvestors = investors.map((i: any) => ({
+              id: i.id,
+              fullName: i.full_name,
+              email: i.email,
+              linkedin: i.linkedin,
+              fundName: i.fund_name,
+              investmentFocus: i.investment_focus,
+              investmentPreference: i.investment_preference,
+              investmentAmount: i.investment_amount,
+              country: i.country,
+              state: i.state,
+              status: i.status === "submitted" ? "pending" : i.status
+            }));
+            setInvestorApplications(mappedInvestors);
+            setApprovedInvestors(mappedInvestors.filter((app: any) => app.status === "approved"));
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching investors:", err);
       }
       const savedMessages = localStorage.getItem("tcp_messageHistory");
       if (savedMessages) {
@@ -232,61 +277,80 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleApproveCoach = (index: number) => {
-    const updated = [...coachApplications];
-    updated[index].status = "approved";
-    setCoachApplications(updated);
-    setApprovedCoaches(updated.filter((app: any) => app.status === "approved"));
-    localStorage.setItem("tcp_coachApplications", JSON.stringify(updated));
-
-    const coachProfile = {
-      fullName: updated[index].fullName,
-      email: updated[index].email,
-      linkedin: updated[index].linkedin,
-      expertise: updated[index].expertise,
-      focusAreas: updated[index].focusAreas,
-      hourlyRate: updated[index].hourlyRate,
-      profileImage: null,
-      approved: true
-    };
-    localStorage.setItem("tcp_coachProfile", JSON.stringify(coachProfile));
+  const handleApproveCoach = async (index: number) => {
+    const coach = coachApplications[index];
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/coaches/${coach.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "approved" })
+      });
+      if (response.ok) {
+        const updated = [...coachApplications];
+        updated[index].status = "approved";
+        setCoachApplications(updated);
+        setApprovedCoaches(updated.filter((app: any) => app.status === "approved"));
+      }
+    } catch (err) {
+      console.error("Error approving coach:", err);
+    }
   };
 
-  const handleRejectCoach = (index: number) => {
-    const updated = [...coachApplications];
-    updated[index].status = "rejected";
-    setCoachApplications(updated);
-    setApprovedCoaches(updated.filter((app: any) => app.status === "approved"));
-    localStorage.setItem("tcp_coachApplications", JSON.stringify(updated));
+  const handleRejectCoach = async (index: number) => {
+    const coach = coachApplications[index];
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/coaches/${coach.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "rejected" })
+      });
+      if (response.ok) {
+        const updated = [...coachApplications];
+        updated[index].status = "rejected";
+        setCoachApplications(updated);
+        setApprovedCoaches(updated.filter((app: any) => app.status === "approved"));
+      }
+    } catch (err) {
+      console.error("Error rejecting coach:", err);
+    }
   };
 
-  const handleApproveInvestor = (index: number) => {
-    const updated = [...investorApplications];
-    updated[index].status = "approved";
-    setInvestorApplications(updated);
-    setApprovedInvestors(updated.filter((app: any) => app.status === "approved"));
-    localStorage.setItem("tcp_investorApplications", JSON.stringify(updated));
-
-    const investorProfile = {
-      fullName: updated[index].fullName,
-      email: updated[index].email,
-      linkedin: updated[index].linkedin,
-      fundName: updated[index].fundName,
-      investmentFocus: updated[index].investmentFocus,
-      investmentPreference: updated[index].investmentPreference,
-      investmentAmount: updated[index].investmentAmount,
-      profileImage: null,
-      approved: true
-    };
-    localStorage.setItem("tcp_investorProfile", JSON.stringify(investorProfile));
+  const handleApproveInvestor = async (index: number) => {
+    const investor = investorApplications[index];
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/investors/${investor.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "approved" })
+      });
+      if (response.ok) {
+        const updated = [...investorApplications];
+        updated[index].status = "approved";
+        setInvestorApplications(updated);
+        setApprovedInvestors(updated.filter((app: any) => app.status === "approved"));
+      }
+    } catch (err) {
+      console.error("Error approving investor:", err);
+    }
   };
 
-  const handleRejectInvestor = (index: number) => {
-    const updated = [...investorApplications];
-    updated[index].status = "rejected";
-    setInvestorApplications(updated);
-    setApprovedInvestors(updated.filter((app: any) => app.status === "approved"));
-    localStorage.setItem("tcp_investorApplications", JSON.stringify(updated));
+  const handleRejectInvestor = async (index: number) => {
+    const investor = investorApplications[index];
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/investors/${investor.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "rejected" })
+      });
+      if (response.ok) {
+        const updated = [...investorApplications];
+        updated[index].status = "rejected";
+        setInvestorApplications(updated);
+        setApprovedInvestors(updated.filter((app: any) => app.status === "approved"));
+      }
+    } catch (err) {
+      console.error("Error rejecting investor:", err);
+    }
   };
 
   const handleToggleMemberStatus = (id: string) => {
