@@ -52,18 +52,38 @@ export default function Login() {
     }
     setLoading(true);
     try {
+      console.log("Starting login with email:", loginEmail);
+      
+      if (!supabase) {
+        throw new Error("Supabase client not initialized. Check environment variables.");
+      }
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: loginPassword,
       });
-      if (error) throw error;
+      
+      console.log("Auth response:", { data, error });
+      
+      if (error) {
+        console.error("Auth error:", error);
+        throw error;
+      }
       
       // Get user profile to determine role
       if (data.user) {
+        console.log("User authenticated, fetching profile for:", data.user.id);
+        
         const { data: profile, error: profileError } = await supabase
           .from("users")
           .select("role")
           .eq("id", data.user.id);
+        
+        console.log("Profile response:", { profile, profileError });
+        
+        if (profileError) {
+          console.error("Profile error:", profileError);
+        }
         
         const userRole = profile?.[0]?.role || "entrepreneur";
         let dashboardPath = "/dashboard-entrepreneur";
@@ -72,12 +92,13 @@ export default function Login() {
         else if (userRole === "coach") dashboardPath = "/dashboard-coach";
         else if (userRole === "investor") dashboardPath = "/dashboard-investor";
         
-        console.log("Login successful for user:", data.user.id, "role:", userRole, "dashboard:", dashboardPath);
+        console.log("Login successful for user:", data.user.id, "role:", userRole, "navigating to:", dashboardPath);
         toast.success("Logged in successfully!");
         navigate(dashboardPath);
       }
     } catch (error: any) {
-      toast.error(error.message);
+      console.error("Login error:", error);
+      toast.error(error.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
