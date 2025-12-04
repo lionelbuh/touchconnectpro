@@ -7,7 +7,7 @@ import runtimeErrorModal from '@replit/vite-plugin-runtime-error-modal'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig(({ command, mode }) => {
-  const env = loadEnv(mode, path.resolve(__dirname, '..'), 'VITE_')
+  const env = loadEnv(mode, path.resolve(__dirname, '..'), '')
   
   return {
     plugins: [
@@ -22,10 +22,6 @@ export default defineConfig(({ command, mode }) => {
         '@': path.resolve(__dirname, './src'),
         '@shared': path.resolve(__dirname, '../shared'),
       },
-    },
-    define: {
-      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
-      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
     },
     server: {
       proxy: {
