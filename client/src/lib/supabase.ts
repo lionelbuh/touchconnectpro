@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { API_BASE_URL } from '@/config'
 
 let supabase: SupabaseClient | null = null
 let initPromise: Promise<void> | null = null
@@ -9,8 +10,8 @@ async function initSupabase(): Promise<void> {
   
   try {
     // Try to get config from backend endpoint first
-    console.log('Fetching Supabase config from backend...')
-    const response = await fetch('/api/config')
+    console.log('Fetching Supabase config from backend...', `${API_BASE_URL}/api/config`)
+    const response = await fetch(`${API_BASE_URL}/api/config`)
     
     if (response.ok) {
       const { supabaseUrl, supabaseAnonKey } = await response.json()
