@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import { createClient } from "@supabase/supabase-js";
+import { Resend } from "resend";
+import crypto from "crypto";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +18,189 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://touchconnectpro.replit.app";
+
+async function getResendClient() {
+  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
+  const xReplitToken = process.env.REPL_IDENTITY 
+    ? 'repl ' + process.env.REPL_IDENTITY 
+    : process.env.WEB_REPL_RENEWAL 
+    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
+    : null;
+
+  if (!xReplitToken || !hostname) {
+    console.log("[RESEND] Missing connector credentials, using fallback");
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=resend',
+      {
+        headers: {
+          'Accept': 'application/json',
+          'X_REPLIT_TOKEN': xReplitToken
+        }
+      }
+    );
+    const data = await response.json();
+    const connectionSettings = data.items?.[0];
+
+    if (!connectionSettings || !connectionSettings.settings?.api_key) {
+      console.log("[RESEND] Connection not configured");
+      return null;
+    }
+
+    return {
+      client: new Resend(connectionSettings.settings.api_key),
+      fromEmail: connectionSettings.settings.from_email || "noreply@touchconnectpro.com"
+    };
+  } catch (error) {
+    console.error("[RESEND] Error getting client:", error);
+    return null;
+  }
+}
+
+async function createPasswordToken(email, userType, applicationId) {
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+  const { data, error } = await supabase
+    .from("password_tokens")
+    .insert({
+      email,
+      token,
+      user_type: userType,
+      application_id: applicationId,
+      status: "pending",
+      expires_at: expiresAt.toISOString()
+    })
+    .select();
+
+  if (error) {
+    console.error("[TOKEN ERROR]:", error);
+    return null;
+  }
+
+  return token;
+}
+
+async function sendStatusEmail(email, fullName, userType, status, applicationId) {
+  const resendData = await getResendClient();
+  
+  if (!resendData) {
+    console.log("[EMAIL] Resend not configured, skipping email for:", email);
+    return { success: false, reason: "Email not configured" };
+  }
+
+  const { client, fromEmail } = resendData;
+  
+  let subject, htmlContent;
+  
+  if (status === "approved") {
+    const token = await createPasswordToken(email, userType, applicationId);
+    const setPasswordUrl = `${FRONTEND_URL}/set-password?token=${token}`;
+    
+    subject = `Welcome to TouchConnectPro - Your ${userType.charAt(0).toUpperCase() + userType.slice(1)} Application is Approved!`;
+    htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Congratulations, ${fullName}!</h1>
+          </div>
+          <div class="content">
+            <p>Great news! Your application to join TouchConnectPro as a <strong>${userType}</strong> has been <strong style="color: #10b981;">approved</strong>!</p>
+            
+            <p>You're now part of our exclusive community connecting entrepreneurs with mentors, coaches, and investors.</p>
+            
+            <p>To access your dashboard, please set up your password by clicking the button below:</p>
+            
+            <p style="text-align: center;">
+              <a href="${setPasswordUrl}" class="button">Set Up Your Password</a>
+            </p>
+            
+            <p style="font-size: 14px; color: #64748b;">This link will expire in 7 days. If you didn't apply to TouchConnectPro, please ignore this email.</p>
+            
+            <p>We're excited to have you on board!</p>
+            
+            <p>Best regards,<br>The TouchConnectPro Team</p>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  } else {
+    subject = `TouchConnectPro - Application Update`;
+    htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #64748b; color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+          .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Application Update</h1>
+          </div>
+          <div class="content">
+            <p>Dear ${fullName},</p>
+            
+            <p>Thank you for your interest in joining TouchConnectPro as a <strong>${userType}</strong>.</p>
+            
+            <p>After careful review, we regret to inform you that we are unable to approve your application at this time.</p>
+            
+            <p>This decision doesn't reflect on your qualifications or potential. We encourage you to continue building your expertise and consider reapplying in the future.</p>
+            
+            <p>If you have any questions, please feel free to reach out to our team.</p>
+            
+            <p>Best regards,<br>The TouchConnectPro Team</p>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  try {
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: email,
+      subject,
+      html: htmlContent
+    });
+    
+    console.log("[EMAIL SENT] To:", email, "Status:", status, "Result:", result);
+    return { success: true, id: result.id };
+  } catch (error) {
+    console.error("[EMAIL ERROR]:", error);
+    return { success: false, error: error.message };
+  }
+}
 
 app.post("/api/ideas", async (req, res) => {
   console.log("[POST /api/ideas] Called");
@@ -84,6 +269,16 @@ app.patch("/api/ideas/:id", async (req, res) => {
       return res.status(400).json({ error: "Invalid status" });
     }
 
+    const { data: existingData, error: fetchError } = await supabase
+      .from("ideas")
+      .select("entrepreneur_email, entrepreneur_name")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) {
+      return res.status(400).json({ error: fetchError.message });
+    }
+
     const { data, error } = await supabase
       .from("ideas")
       .update({ status })
@@ -94,7 +289,15 @@ app.patch("/api/ideas/:id", async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
-    return res.json({ success: true, idea: data?.[0] });
+    const emailResult = await sendStatusEmail(
+      existingData.entrepreneur_email,
+      existingData.entrepreneur_name,
+      "entrepreneur",
+      status,
+      id
+    );
+
+    return res.json({ success: true, idea: data?.[0], emailSent: emailResult.success });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -120,7 +323,6 @@ app.get("/api/test", async (req, res) => {
   }
 });
 
-// Save mentor application
 app.post("/api/mentors", async (req, res) => {
   console.log("[POST /api/mentors] Called");
   try {
@@ -159,7 +361,6 @@ app.post("/api/mentors", async (req, res) => {
   }
 });
 
-// Get all mentor applications (for admin)
 app.get("/api/mentors", async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -177,7 +378,6 @@ app.get("/api/mentors", async (req, res) => {
   }
 });
 
-// Approve/reject mentor
 app.patch("/api/mentors/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -185,6 +385,16 @@ app.patch("/api/mentors/:id", async (req, res) => {
 
     if (!["approved", "rejected"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const { data: existingData, error: fetchError } = await supabase
+      .from("mentor_applications")
+      .select("email, full_name")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) {
+      return res.status(400).json({ error: fetchError.message });
     }
 
     const { data, error } = await supabase
@@ -197,15 +407,20 @@ app.patch("/api/mentors/:id", async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
-    return res.json({ success: true, mentor: data?.[0] });
+    const emailResult = await sendStatusEmail(
+      existingData.email,
+      existingData.full_name,
+      "mentor",
+      status,
+      id
+    );
+
+    return res.json({ success: true, mentor: data?.[0], emailSent: emailResult.success });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 });
 
-// ============ COACH ENDPOINTS ============
-
-// Save coach application
 app.post("/api/coaches", async (req, res) => {
   console.log("[POST /api/coaches] Called");
   try {
@@ -244,7 +459,6 @@ app.post("/api/coaches", async (req, res) => {
   }
 });
 
-// Get all coach applications (for admin)
 app.get("/api/coaches", async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -262,7 +476,6 @@ app.get("/api/coaches", async (req, res) => {
   }
 });
 
-// Approve/reject coach
 app.patch("/api/coaches/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -270,6 +483,16 @@ app.patch("/api/coaches/:id", async (req, res) => {
 
     if (!["approved", "rejected"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const { data: existingData, error: fetchError } = await supabase
+      .from("coach_applications")
+      .select("email, full_name")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) {
+      return res.status(400).json({ error: fetchError.message });
     }
 
     const { data, error } = await supabase
@@ -282,15 +505,20 @@ app.patch("/api/coaches/:id", async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
-    return res.json({ success: true, coach: data?.[0] });
+    const emailResult = await sendStatusEmail(
+      existingData.email,
+      existingData.full_name,
+      "coach",
+      status,
+      id
+    );
+
+    return res.json({ success: true, coach: data?.[0], emailSent: emailResult.success });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 });
 
-// ============ INVESTOR ENDPOINTS ============
-
-// Save investor application
 app.post("/api/investors", async (req, res) => {
   console.log("[POST /api/investors] Called");
   try {
@@ -330,7 +558,6 @@ app.post("/api/investors", async (req, res) => {
   }
 });
 
-// Get all investor applications (for admin)
 app.get("/api/investors", async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -348,7 +575,6 @@ app.get("/api/investors", async (req, res) => {
   }
 });
 
-// Approve/reject investor
 app.patch("/api/investors/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -356,6 +582,16 @@ app.patch("/api/investors/:id", async (req, res) => {
 
     if (!["approved", "rejected"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const { data: existingData, error: fetchError } = await supabase
+      .from("investor_applications")
+      .select("email, full_name")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) {
+      return res.status(400).json({ error: fetchError.message });
     }
 
     const { data, error } = await supabase
@@ -368,8 +604,110 @@ app.patch("/api/investors/:id", async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
-    return res.json({ success: true, investor: data?.[0] });
+    const emailResult = await sendStatusEmail(
+      existingData.email,
+      existingData.full_name,
+      "investor",
+      status,
+      id
+    );
+
+    return res.json({ success: true, investor: data?.[0], emailSent: emailResult.success });
   } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/password-token/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const { data, error } = await supabase
+      .from("password_tokens")
+      .select("*")
+      .eq("token", token)
+      .eq("status", "pending")
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: "Invalid or expired token" });
+    }
+
+    if (new Date(data.expires_at) < new Date()) {
+      return res.status(400).json({ error: "Token has expired" });
+    }
+
+    return res.json({
+      valid: true,
+      email: data.email,
+      userType: data.user_type
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/set-password", async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ error: "Token and password required" });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ error: "Password must be at least 8 characters" });
+    }
+
+    const { data: tokenData, error: tokenError } = await supabase
+      .from("password_tokens")
+      .select("*")
+      .eq("token", token)
+      .eq("status", "pending")
+      .single();
+
+    if (tokenError || !tokenData) {
+      return res.status(404).json({ error: "Invalid or expired token" });
+    }
+
+    if (new Date(tokenData.expires_at) < new Date()) {
+      return res.status(400).json({ error: "Token has expired" });
+    }
+
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: tokenData.email,
+      password: password,
+      email_confirm: true,
+      user_metadata: {
+        user_type: tokenData.user_type,
+        application_id: tokenData.application_id
+      }
+    });
+
+    if (authError) {
+      if (authError.message.includes("already been registered")) {
+        const { error: updateError } = await supabase.auth.admin.updateUserById(
+          authData?.user?.id || "",
+          { password: password }
+        );
+        
+        if (updateError) {
+          console.error("[AUTH UPDATE ERROR]:", updateError);
+        }
+      } else {
+        console.error("[AUTH ERROR]:", authError);
+        return res.status(400).json({ error: authError.message });
+      }
+    }
+
+    await supabase
+      .from("password_tokens")
+      .update({ status: "used", used_at: new Date().toISOString() })
+      .eq("token", token);
+
+    return res.json({ success: true, message: "Password set successfully" });
+  } catch (error) {
+    console.error("[SET PASSWORD ERROR]:", error);
     return res.status(500).json({ error: error.message });
   }
 });
@@ -377,7 +715,7 @@ app.patch("/api/investors/:id", async (req, res) => {
 app.get("/", (req, res) => {
   return res.json({ 
     message: "TouchConnectPro Backend API",
-    endpoints: ["/api/submit", "/api/ideas", "/api/mentors", "/api/coaches", "/api/investors", "/api/test"]
+    endpoints: ["/api/submit", "/api/ideas", "/api/mentors", "/api/coaches", "/api/investors", "/api/test", "/api/password-token/:token", "/api/set-password"]
   });
 });
 
