@@ -3,26 +3,44 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Users, MessageSquare, Calendar, Settings, ChevronRight, Plus, LogOut, Briefcase, AlertCircle } from "lucide-react";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2 } from "lucide-react";
+import { getSupabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { API_BASE_URL } from "@/config";
+
+interface MentorProfileData {
+  id: string;
+  full_name: string;
+  email: string;
+  linkedin: string | null;
+  bio: string;
+  expertise: string;
+  experience: string;
+  country: string;
+  state: string | null;
+}
 
 export default function DashboardMentor() {
-  const [mentorStatus, setMentorStatus] = useState<"notApplied" | "pending" | "approved">("notApplied");
+  const [mentorStatus, setMentorStatus] = useState<"notApplied" | "pending" | "approved">("approved");
   const [activeTab, setActiveTab] = useState<"overview" | "investors" | "portfolio" | "messages" | "meetings" | "profile">("overview");
   const [approvedInvestors, setApprovedInvestors] = useState<any[]>([]);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [selectedPortfolio, setSelectedPortfolio] = useState<number | null>(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [showMeetingModal, setShowMeetingModal] = useState(false);
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [mentorProfile, setMentorProfile] = useState({
-    fullName: "Sarah Chen",
-    email: "sarah@mentorpro.com",
-    linkedin: "linkedin.com/in/sarahchen",
-    bio: "Serial entrepreneur with 10+ years of experience in SaaS and product strategy. Passionate about helping early-stage founders build successful companies.",
-    expertise: "SaaS, Product Strategy, Go-to-Market",
-    yearsExperience: "10+",
+    fullName: "",
+    email: "",
+    linkedin: "",
+    bio: "",
+    expertise: "",
+    yearsExperience: "",
     profileImage: null as string | null,
-    approved: false
+    approved: true
   });
 
   const [portfolios, setPortfolios] = useState([
@@ -59,50 +77,83 @@ export default function DashboardMentor() {
   const [newMeeting, setNewMeeting] = useState({ date: "", time: "", topic: "" });
 
   useEffect(() => {
-    const savedProfile = localStorage.getItem("tcp_mentorProfile");
-    const savedApplications = localStorage.getItem("tcp_mentorApplications");
+    async function loadProfile() {
+      try {
+        const supabase = await getSupabase();
+        if (!supabase) {
+          setLoading(false);
+          return;
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.email) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/mentors/profile/${encodeURIComponent(user.email)}`);
+        if (response.ok) {
+          const data: MentorProfileData = await response.json();
+          setProfileId(data.id);
+          setMentorProfile({
+            fullName: data.full_name || "",
+            email: data.email || "",
+            linkedin: data.linkedin || "",
+            bio: data.bio || "",
+            expertise: data.expertise || "",
+            yearsExperience: data.experience || "",
+            profileImage: null,
+            approved: true
+          });
+          setMentorStatus("approved");
+        } else {
+          setMentorStatus("notApplied");
+        }
+      } catch (error) {
+        console.error("Error loading profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProfile();
+
     const savedPortfolios = localStorage.getItem("tcp_mentorPortfolios");
-    const savedInvestorApplications = localStorage.getItem("tcp_investorApplications");
-    
-    if (savedProfile) {
-      const profile = JSON.parse(savedProfile);
-      setMentorProfile(profile);
-      // Check if profile is approved
-      if (profile.approved === true) {
-        setMentorStatus("approved");
-      } else {
-        setMentorStatus("pending");
-      }
-    } else if (savedApplications) {
-      // Check if there's a pending application
-      const applications = JSON.parse(savedApplications);
-      const hasPendingApp = applications.some((app: any) => app.status === "pending");
-      if (hasPendingApp) {
-        setMentorStatus("pending"); // Has pending application
-      } else {
-        setMentorStatus("notApplied"); // Has applications but all rejected
-      }
-    } else {
-      setMentorStatus("notApplied"); // No profile or applications
-    }
-    
-    // Load approved investors
-    if (savedInvestorApplications) {
-      const investorApps = JSON.parse(savedInvestorApplications);
-      const approved = investorApps.filter((app: any) => app.status === "approved");
-      setApprovedInvestors(approved);
-    }
-    
     if (savedPortfolios) setPortfolios(JSON.parse(savedPortfolios));
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("tcp_mentorProfile", JSON.stringify(mentorProfile));
-  }, [mentorProfile]);
-
-  useEffect(() => {
     localStorage.setItem("tcp_mentorPortfolios", JSON.stringify(portfolios));
   }, [portfolios]);
+
+  const handleSaveProfile = async () => {
+    if (!profileId) return;
+
+    setSaving(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/mentors/profile/${profileId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bio: mentorProfile.bio,
+          expertise: mentorProfile.expertise,
+          experience: mentorProfile.yearsExperience,
+          linkedin: mentorProfile.linkedin
+        })
+      });
+
+      if (response.ok) {
+        toast.success("Profile updated successfully!");
+        setIsEditingProfile(false);
+      } else {
+        toast.error("Failed to update profile");
+      }
+    } catch (error) {
+      toast.error("Error saving profile");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("tcp_mentorProfile");
@@ -545,7 +596,13 @@ export default function DashboardMentor() {
                       />
                     </div>
 
-                    <Button className="w-full bg-cyan-600 hover:bg-cyan-700" onClick={() => setIsEditingProfile(false)}>
+                    <Button 
+                      className="w-full bg-cyan-600 hover:bg-cyan-700" 
+                      onClick={handleSaveProfile}
+                      disabled={saving}
+                      data-testid="button-save-mentor-profile"
+                    >
+                      {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                       Save Profile
                     </Button>
                   </CardContent>

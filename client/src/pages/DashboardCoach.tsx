@@ -1,20 +1,118 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, BookOpen, DollarSign, Users, Settings, Star, TrendingUp } from "lucide-react";
+import { LayoutDashboard, BookOpen, DollarSign, Users, Settings, Star, Save, Loader2, Link as LinkIcon, Target } from "lucide-react";
+import { getSupabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { API_BASE_URL } from "@/config";
+
+interface CoachProfile {
+  id: string;
+  full_name: string;
+  email: string;
+  linkedin: string | null;
+  expertise: string;
+  focus_areas: string;
+  hourly_rate: string;
+  country: string;
+  state: string | null;
+}
 
 export default function DashboardCoach() {
+  const [profile, setProfile] = useState<CoachProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const [expertise, setExpertise] = useState("");
+  const [focusAreas, setFocusAreas] = useState("");
+  const [hourlyRate, setHourlyRate] = useState("");
+  const [linkedin, setLinkedin] = useState("");
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const supabase = await getSupabase();
+        if (!supabase) return;
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.email) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/coaches/profile/${encodeURIComponent(user.email)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setProfile(data);
+          setExpertise(data.expertise || "");
+          setFocusAreas(data.focus_areas || "");
+          setHourlyRate(data.hourly_rate || "");
+          setLinkedin(data.linkedin || "");
+        }
+      } catch (error) {
+        console.error("Error loading profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProfile();
+  }, []);
+
+  const handleSave = async () => {
+    if (!profile?.id) return;
+
+    setSaving(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/coaches/profile/${profile.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          expertise,
+          focusAreas,
+          hourlyRate,
+          linkedin
+        })
+      });
+
+      if (response.ok) {
+        toast.success("Profile updated successfully!");
+      } else {
+        toast.error("Failed to update profile");
+      }
+    } catch (error) {
+      toast.error("Error saving profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
       <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
         <div className="p-6">
           <div className="flex items-center gap-3 mb-6">
             <Avatar className="h-10 w-10 border border-slate-200 bg-cyan-500">
-              <AvatarFallback className="text-white">CO</AvatarFallback>
+              <AvatarFallback className="text-white">
+                {profile?.full_name ? getInitials(profile.full_name) : "CO"}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-bold text-sm">Coach</div>
-              <div className="text-xs text-muted-foreground">New Account</div>
+              <div className="font-bold text-sm">{profile?.full_name || "Coach"}</div>
+              <div className="text-xs text-muted-foreground">${hourlyRate || "0"}/hour</div>
             </div>
           </div>
           <nav className="space-y-1">
@@ -39,13 +137,27 @@ export default function DashboardCoach() {
 
       <main className="flex-1 p-8 overflow-y-auto">
         <div className="max-w-6xl mx-auto">
-          <header className="mb-8">
-            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">Welcome, Coach!</h1>
-            <p className="text-muted-foreground mt-2">Set up your coaching profile and start helping entrepreneurs. Let's get started!</p>
+          <header className="mb-8 flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
+                Welcome, {profile?.full_name?.split(" ")[0] || "Coach"}!
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Manage your coaching profile and start helping entrepreneurs.
+              </p>
+            </div>
+            <Button 
+              onClick={handleSave} 
+              disabled={saving}
+              className="bg-cyan-600 hover:bg-cyan-700"
+              data-testid="button-save-profile"
+            >
+              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              Save Changes
+            </Button>
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Expertise Card */}
             <Card className="border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -55,20 +167,23 @@ export default function DashboardCoach() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">What do you specialize in?</p>
-                <select className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20" data-testid="select-coach-expertise">
-                  <option>Select your expertise...</option>
-                  <option>Product Development</option>
-                  <option>Marketing & Growth</option>
-                  <option>Finance & Fundraising</option>
-                  <option>Operations & Management</option>
-                  <option>Sales Strategy</option>
-                  <option>Other</option>
+                <select 
+                  value={expertise}
+                  onChange={(e) => setExpertise(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20" 
+                  data-testid="select-coach-expertise"
+                >
+                  <option value="">Select your expertise...</option>
+                  <option value="Product Development">Product Development</option>
+                  <option value="Marketing & Growth">Marketing & Growth</option>
+                  <option value="Finance & Fundraising">Finance & Fundraising</option>
+                  <option value="Operations & Management">Operations & Management</option>
+                  <option value="Sales Strategy">Sales Strategy</option>
+                  <option value="Other">Other</option>
                 </select>
-                <Button className="w-full bg-cyan-600 hover:bg-cyan-700">Next</Button>
               </CardContent>
             </Card>
 
-            {/* Pricing Card */}
             <Card className="border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -82,30 +197,54 @@ export default function DashboardCoach() {
                   <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
                   <input 
                     type="number" 
+                    value={hourlyRate}
+                    onChange={(e) => setHourlyRate(e.target.value)}
                     placeholder="100"
                     className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
                     data-testid="input-coach-price"
                   />
                   <span className="text-slate-600 dark:text-slate-400 flex items-center">/hour</span>
                 </div>
-                <Button className="w-full bg-cyan-600 hover:bg-cyan-700">Continue</Button>
               </CardContent>
             </Card>
 
-            {/* Bio Card */}
-            <Card className="border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20 md:col-span-2">
+            <Card className="border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
               <CardHeader>
-                <CardTitle className="text-lg">Your Bio</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <LinkIcon className="h-5 w-5 text-cyan-600" />
+                  LinkedIn Profile
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">Tell entrepreneurs why they should learn from you</p>
-                <textarea 
-                  placeholder="Share your background, achievements, and teaching style..."
-                  rows={4}
+                <p className="text-sm text-slate-600 dark:text-slate-400">Your LinkedIn profile URL</p>
+                <input
+                  type="url"
+                  value={linkedin}
+                  onChange={(e) => setLinkedin(e.target.value)}
+                  placeholder="https://linkedin.com/in/..."
                   className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
-                  data-testid="input-coach-bio"
+                  data-testid="input-linkedin"
                 />
-                <Button className="w-full bg-cyan-600 hover:bg-cyan-700">Complete Setup</Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Target className="h-5 w-5 text-cyan-600" />
+                  Focus Areas
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Topics you help entrepreneurs with</p>
+                <textarea 
+                  value={focusAreas}
+                  onChange={(e) => setFocusAreas(e.target.value)}
+                  placeholder="e.g., Business planning, pitch preparation, market research..."
+                  rows={3}
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                  data-testid="input-focus-areas"
+                />
               </CardContent>
             </Card>
           </div>

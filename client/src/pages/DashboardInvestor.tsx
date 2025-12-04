@@ -1,20 +1,125 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, Zap, Briefcase, TrendingUp, Settings, DollarSign, Target } from "lucide-react";
+import { LayoutDashboard, Zap, Briefcase, TrendingUp, Settings, DollarSign, Target, Save, Loader2, Building2, Link as LinkIcon } from "lucide-react";
+import { getSupabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { API_BASE_URL } from "@/config";
+
+interface InvestorProfile {
+  id: string;
+  full_name: string;
+  email: string;
+  linkedin: string | null;
+  fund_name: string;
+  investment_focus: string;
+  investment_preference: string;
+  investment_amount: string;
+  country: string;
+  state: string | null;
+}
 
 export default function DashboardInvestor() {
+  const [profile, setProfile] = useState<InvestorProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  const [fundName, setFundName] = useState("");
+  const [investmentFocus, setInvestmentFocus] = useState("");
+  const [investmentPreference, setInvestmentPreference] = useState("");
+  const [investmentAmount, setInvestmentAmount] = useState("");
+  const [linkedin, setLinkedin] = useState("");
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const supabase = await getSupabase();
+        if (!supabase) return;
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.email) {
+          setLoading(false);
+          return;
+        }
+
+        setUserEmail(user.email);
+
+        const response = await fetch(`${API_BASE_URL}/api/investors/profile/${encodeURIComponent(user.email)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setProfile(data);
+          setFundName(data.fund_name || "");
+          setInvestmentFocus(data.investment_focus || "");
+          setInvestmentPreference(data.investment_preference || "");
+          setInvestmentAmount(data.investment_amount || "");
+          setLinkedin(data.linkedin || "");
+        }
+      } catch (error) {
+        console.error("Error loading profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProfile();
+  }, []);
+
+  const handleSave = async () => {
+    if (!profile?.id) return;
+
+    setSaving(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/investors/profile/${profile.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fundName,
+          investmentFocus,
+          investmentPreference,
+          investmentAmount,
+          linkedin
+        })
+      });
+
+      if (response.ok) {
+        toast.success("Profile updated successfully!");
+      } else {
+        toast.error("Failed to update profile");
+      }
+    } catch (error) {
+      toast.error("Error saving profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
       <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
         <div className="p-6">
           <div className="flex items-center gap-3 mb-6">
             <Avatar className="h-10 w-10 border border-slate-200 bg-amber-500">
-              <AvatarFallback className="text-white">IN</AvatarFallback>
+              <AvatarFallback className="text-white">
+                {profile?.full_name ? getInitials(profile.full_name) : "IN"}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-bold text-sm">Angel Investor</div>
-              <div className="text-xs text-muted-foreground">New Account</div>
+              <div className="font-bold text-sm">{profile?.full_name || "Investor"}</div>
+              <div className="text-xs text-muted-foreground">{fundName || "Investment Fund"}</div>
             </div>
           </div>
           <nav className="space-y-1">
@@ -39,67 +144,128 @@ export default function DashboardInvestor() {
 
       <main className="flex-1 p-8 overflow-y-auto">
         <div className="max-w-6xl mx-auto">
-          <header className="mb-8">
-            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">Welcome, Angel Investor!</h1>
-            <p className="text-muted-foreground mt-2">Access pre-vetted startups and investment opportunities. Let's get you started!</p>
+          <header className="mb-8 flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
+                Welcome, {profile?.full_name?.split(" ")[0] || "Investor"}!
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Manage your investment profile and access pre-vetted startups.
+              </p>
+            </div>
+            <Button 
+              onClick={handleSave} 
+              disabled={saving}
+              className="bg-amber-600 hover:bg-amber-700"
+              data-testid="button-save-profile"
+            >
+              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              Save Changes
+            </Button>
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Investment Type Card */}
+            <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-amber-600" />
+                  Fund / Organization
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Your investment fund or organization name</p>
+                <input
+                  type="text"
+                  value={fundName}
+                  onChange={(e) => setFundName(e.target.value)}
+                  placeholder="Enter fund name..."
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20"
+                  data-testid="input-fund-name"
+                />
+              </CardContent>
+            </Card>
+
             <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <DollarSign className="h-5 w-5 text-amber-600" />
-                  Investment Strategy
+                  Investment Preference
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">Which investment type interests you?</p>
-                <select className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20" data-testid="select-investment-type">
-                  <option>Select investment type...</option>
-                  <option>Platform Investment (TouchConnectPro)</option>
-                  <option>Direct Startup Investment</option>
-                  <option>Both</option>
+                <p className="text-sm text-slate-600 dark:text-slate-400">What type of investments interest you?</p>
+                <select 
+                  value={investmentPreference}
+                  onChange={(e) => setInvestmentPreference(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20" 
+                  data-testid="select-investment-preference"
+                >
+                  <option value="">Select investment type...</option>
+                  <option value="platform">Platform Investment (TouchConnectPro)</option>
+                  <option value="direct">Direct Startup Investment</option>
+                  <option value="both">Both</option>
                 </select>
-                <Button className="w-full bg-amber-600 hover:bg-amber-700">Next</Button>
               </CardContent>
             </Card>
 
-            {/* Investment Amount Card */}
             <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Target className="h-5 w-5 text-amber-600" />
-                  Investment Range
+                  Investment Amount
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">What's your typical check size?</p>
-                <select className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20" data-testid="select-check-size">
-                  <option>Select check size...</option>
-                  <option>$10K - $50K</option>
-                  <option>$50K - $250K</option>
-                  <option>$250K - $1M</option>
-                  <option>$1M+</option>
+                <select 
+                  value={investmentAmount}
+                  onChange={(e) => setInvestmentAmount(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20" 
+                  data-testid="select-investment-amount"
+                >
+                  <option value="">Select check size...</option>
+                  <option value="10k-50k">$10K - $50K</option>
+                  <option value="50k-250k">$50K - $250K</option>
+                  <option value="250k-1m">$250K - $1M</option>
+                  <option value="1m+">$1M+</option>
                 </select>
-                <Button className="w-full bg-amber-600 hover:bg-amber-700">Continue</Button>
               </CardContent>
             </Card>
 
-            {/* Focus Areas Card */}
+            <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <LinkIcon className="h-5 w-5 text-amber-600" />
+                  LinkedIn Profile
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Your LinkedIn profile URL</p>
+                <input
+                  type="url"
+                  value={linkedin}
+                  onChange={(e) => setLinkedin(e.target.value)}
+                  placeholder="https://linkedin.com/in/..."
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20"
+                  data-testid="input-linkedin"
+                />
+              </CardContent>
+            </Card>
+
             <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20 md:col-span-2">
               <CardHeader>
-                <CardTitle className="text-lg">Industries & Focus</CardTitle>
+                <CardTitle className="text-lg">Investment Focus & Industries</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">What industries or sectors do you focus on?</p>
                 <textarea 
+                  value={investmentFocus}
+                  onChange={(e) => setInvestmentFocus(e.target.value)}
                   placeholder="e.g., SaaS, AI/ML, healthtech, fintech, climate tech..."
                   rows={4}
                   className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20"
-                  data-testid="input-investor-focus"
+                  data-testid="input-investment-focus"
                 />
-                <Button className="w-full bg-amber-600 hover:bg-amber-700">Complete Setup</Button>
               </CardContent>
             </Card>
           </div>

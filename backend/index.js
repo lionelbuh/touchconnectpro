@@ -416,6 +416,54 @@ app.get("/api/mentors", async (req, res) => {
   }
 });
 
+// Get mentor profile by email
+app.get("/api/mentors/profile/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { data, error } = await supabase
+      .from("mentor_applications")
+      .select("*")
+      .eq("email", decodeURIComponent(email))
+      .eq("status", "approved")
+      .single();
+
+    if (error) {
+      return res.status(404).json({ error: "Profile not found" });
+    }
+
+    return res.json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Update mentor profile
+app.put("/api/mentors/profile/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { bio, expertise, experience, linkedin } = req.body;
+
+    const { data, error } = await supabase
+      .from("mentor_applications")
+      .update({
+        bio,
+        expertise,
+        experience,
+        linkedin: linkedin || null
+      })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, mentor: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.patch("/api/mentors/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -509,6 +557,54 @@ app.get("/api/coaches", async (req, res) => {
     }
 
     return res.json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get coach profile by email
+app.get("/api/coaches/profile/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .select("*")
+      .eq("email", decodeURIComponent(email))
+      .eq("status", "approved")
+      .single();
+
+    if (error) {
+      return res.status(404).json({ error: "Profile not found" });
+    }
+
+    return res.json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Update coach profile
+app.put("/api/coaches/profile/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { expertise, focusAreas, hourlyRate, linkedin } = req.body;
+
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .update({
+        expertise,
+        focus_areas: focusAreas,
+        hourly_rate: hourlyRate,
+        linkedin: linkedin || null
+      })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, coach: data?.[0] });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -608,6 +704,55 @@ app.get("/api/investors", async (req, res) => {
     }
 
     return res.json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get investor profile by email
+app.get("/api/investors/profile/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { data, error } = await supabase
+      .from("investor_applications")
+      .select("*")
+      .eq("email", decodeURIComponent(email))
+      .eq("status", "approved")
+      .single();
+
+    if (error) {
+      return res.status(404).json({ error: "Profile not found" });
+    }
+
+    return res.json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Update investor profile
+app.put("/api/investors/profile/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { fundName, investmentFocus, investmentPreference, investmentAmount, linkedin } = req.body;
+
+    const { data, error } = await supabase
+      .from("investor_applications")
+      .update({
+        fund_name: fundName,
+        investment_focus: investmentFocus,
+        investment_preference: investmentPreference,
+        investment_amount: investmentAmount,
+        linkedin: linkedin || null
+      })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, investor: data?.[0] });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
