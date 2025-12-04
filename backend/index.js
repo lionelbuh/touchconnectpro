@@ -19,9 +19,19 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "https://touchconnectpro.replit.app";
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://touchconnectpro.com";
 
 async function getResendClient() {
+  // First try direct RESEND_API_KEY (for Render and other deployments)
+  if (process.env.RESEND_API_KEY) {
+    console.log("[RESEND] Using RESEND_API_KEY environment variable");
+    return {
+      client: new Resend(process.env.RESEND_API_KEY),
+      fromEmail: process.env.RESEND_FROM_EMAIL || "noreply@touchconnectpro.com"
+    };
+  }
+
+  // Fallback to Replit connector (for Replit environment)
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY 
     ? 'repl ' + process.env.REPL_IDENTITY 
@@ -30,7 +40,7 @@ async function getResendClient() {
     : null;
 
   if (!xReplitToken || !hostname) {
-    console.log("[RESEND] Missing connector credentials, using fallback");
+    console.log("[RESEND] No RESEND_API_KEY and no Replit connector available");
     return null;
   }
 
@@ -48,7 +58,7 @@ async function getResendClient() {
     const connectionSettings = data.items?.[0];
 
     if (!connectionSettings || !connectionSettings.settings?.api_key) {
-      console.log("[RESEND] Connection not configured");
+      console.log("[RESEND] Replit connection not configured");
       return null;
     }
 
