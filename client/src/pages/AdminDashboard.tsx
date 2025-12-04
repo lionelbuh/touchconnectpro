@@ -77,6 +77,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<"approvals" | "members">("approvals");
   const [activeMembersSubTab, setActiveMembersSubTab] = useState<"portfolio" | "messaging" | "management">("portfolio");
   const [activeApprovalsSubTab, setActiveApprovalsSubTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
+  const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
   const [mentorApplications, setMentorApplications] = useState<MentorApplication[]>([]);
   const [coachApplications, setCoachApplications] = useState<CoachApplication[]>([]);
   const [investorApplications, setInvestorApplications] = useState<InvestorApplication[]>([]);
