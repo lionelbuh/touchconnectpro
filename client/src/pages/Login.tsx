@@ -199,9 +199,10 @@ export default function Login() {
 
               {/* Login Button */}
               <Button
+                type="button"
                 onClick={handleLogin}
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50"
+                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50 cursor-pointer relative z-10"
                 data-testid="button-login"
               >
                 {loading ? "Signing in..." : <>Sign In <ArrowRight className="ml-2 h-4 w-4" /></>}
