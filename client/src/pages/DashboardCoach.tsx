@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, BookOpen, DollarSign, Users, Settings, Star, Save, Loader2, Link as LinkIcon, Target } from "lucide-react";
+import { LayoutDashboard, BookOpen, DollarSign, Users, Settings, Star, Save, Loader2, Link as LinkIcon, Target, LogOut } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
+import { useLocation } from "wouter";
 
 interface CoachProfile {
   id: string;
@@ -20,6 +21,7 @@ interface CoachProfile {
 }
 
 export default function DashboardCoach() {
+  const [, navigate] = useLocation();
   const [profile, setProfile] = useState<CoachProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -28,6 +30,20 @@ export default function DashboardCoach() {
   const [focusAreas, setFocusAreas] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
   const [linkedin, setLinkedin] = useState("");
+
+  const handleLogout = async () => {
+    try {
+      const supabase = await getSupabase();
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
+      toast.success("Logged out successfully");
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      navigate("/login");
+    }
+  };
 
   useEffect(() => {
     async function loadProfile() {
@@ -103,7 +119,7 @@ export default function DashboardCoach() {
   return (
     <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
       <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
-        <div className="p-6">
+        <div className="p-6 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-6">
             <Avatar className="h-10 w-10 border border-slate-200 bg-cyan-500">
               <AvatarFallback className="text-white">
@@ -115,7 +131,7 @@ export default function DashboardCoach() {
               <div className="text-xs text-muted-foreground">${hourlyRate || "0"}/hour</div>
             </div>
           </div>
-          <nav className="space-y-1">
+          <nav className="space-y-1 flex-1">
             <Button variant="secondary" className="w-full justify-start font-medium">
               <LayoutDashboard className="mr-2 h-4 w-4" /> Overview
             </Button>
@@ -132,6 +148,16 @@ export default function DashboardCoach() {
               <Settings className="mr-2 h-4 w-4" /> Settings
             </Button>
           </nav>
+          <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
+            <Button 
+              variant="ghost"
+              className="w-full justify-start font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+              onClick={handleLogout}
+              data-testid="button-logout"
+            >
+              <LogOut className="mr-2 h-4 w-4" /> Logout
+            </Button>
+          </div>
         </div>
       </aside>
 

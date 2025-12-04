@@ -90,7 +90,13 @@ export default function Login() {
         navigate(dashboardPath);
       }
     } catch (error: any) {
-      toast.error(error.message || "Login failed. Please try again.");
+      if (error.message?.toLowerCase().includes("invalid") || 
+          error.message?.toLowerCase().includes("credentials") ||
+          error.message?.toLowerCase().includes("password")) {
+        toast.error("Wrong password. Please try again.");
+      } else {
+        toast.error(error.message || "Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
