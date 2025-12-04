@@ -703,6 +703,7 @@ app.post("/api/set-password", async (req, res) => {
       return res.status(400).json({ error: "Token has expired" });
     }
 
+    let userId = null;
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: tokenData.email,
       password: password,
@@ -715,26 +716,37 @@ app.post("/api/set-password", async (req, res) => {
 
     if (authError) {
       if (authError.message.includes("already been registered")) {
-        const { error: updateError } = await supabase.auth.admin.updateUserById(
-          authData?.user?.id || "",
-          { password: password }
-        );
-        
-        if (updateError) {
-          console.error("[AUTH UPDATE ERROR]:", updateError);
+        console.log("[AUTH] User already exists, fetching existing user ID");
+        // User already exists, get their ID
+        const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
+        const existingUser = users?.find(u => u.email === tokenData.email);
+        if (existingUser) {
+          userId = existingUser.id;
+          console.log("[AUTH] Found existing user:", userId);
+          // Update password
+          const { error: updateError } = await supabase.auth.admin.updateUserById(
+            userId,
+            { password: password }
+          );
+          if (updateError) {
+            console.error("[AUTH UPDATE ERROR]:", updateError);
+          }
         }
       } else {
         console.error("[AUTH ERROR]:", authError);
         return res.status(400).json({ error: authError.message });
       }
+    } else if (authData?.user?.id) {
+      userId = authData.user.id;
     }
 
     // Create user profile in users table
-    if (authData?.user?.id) {
+    if (userId) {
+      console.log("[PROFILE] Creating profile for user:", userId);
       const { error: profileError } = await supabase
         .from("users")
         .insert({
-          id: authData.user.id,
+          id: userId,
           email: tokenData.email,
           role: tokenData.user_type,
           full_name: tokenData.email // Will be updated by user later
@@ -743,6 +755,8 @@ app.post("/api/set-password", async (req, res) => {
       if (profileError && !profileError.message.includes("duplicate")) {
         console.error("[PROFILE ERROR]:", profileError);
       }
+    } else {
+      console.error("[PROFILE] No user ID available to create profile");
     }
 
     await supabase
