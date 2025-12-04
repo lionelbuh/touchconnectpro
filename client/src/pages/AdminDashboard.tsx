@@ -1072,12 +1072,48 @@ export default function AdminDashboard() {
                 <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white">Members & Portfolio Management</h2>
               </div>
               
-              {/* Sub-tabs */}
+              {/* Category Sub-tabs - matching Approvals tab style */}
+              <div className="flex gap-2 mb-6 flex-wrap border-b border-slate-200 dark:border-slate-700 pb-2">
+                <Button 
+                  variant={activeMembersCategoryTab === "entrepreneurs" ? "default" : "ghost"}
+                  onClick={() => setActiveMembersCategoryTab("entrepreneurs")}
+                  className={activeMembersCategoryTab === "entrepreneurs" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+                  data-testid="button-members-entrepreneurs-subtab"
+                >
+                  Entrepreneurs
+                </Button>
+                <Button 
+                  variant={activeMembersCategoryTab === "mentors" ? "default" : "ghost"}
+                  onClick={() => setActiveMembersCategoryTab("mentors")}
+                  className={activeMembersCategoryTab === "mentors" ? "bg-blue-600 hover:bg-blue-700" : ""}
+                  data-testid="button-members-mentors-subtab"
+                >
+                  Mentors
+                </Button>
+                <Button 
+                  variant={activeMembersCategoryTab === "coaches" ? "default" : "ghost"}
+                  onClick={() => setActiveMembersCategoryTab("coaches")}
+                  className={activeMembersCategoryTab === "coaches" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
+                  data-testid="button-members-coaches-subtab"
+                >
+                  Coaches
+                </Button>
+                <Button 
+                  variant={activeMembersCategoryTab === "investors" ? "default" : "ghost"}
+                  onClick={() => setActiveMembersCategoryTab("investors")}
+                  className={activeMembersCategoryTab === "investors" ? "bg-amber-600 hover:bg-amber-700" : ""}
+                  data-testid="button-members-investors-subtab"
+                >
+                  Investors
+                </Button>
+              </div>
+              
+              {/* Action Sub-tabs */}
               <div className="flex gap-2 mb-6 flex-wrap">
                 <Button 
                   variant={activeMembersSubTab === "portfolio" ? "default" : "outline"}
                   onClick={() => setActiveMembersSubTab("portfolio")}
-                  className={activeMembersSubTab === "portfolio" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
+                  className={activeMembersSubTab === "portfolio" ? "bg-slate-700 hover:bg-slate-800" : ""}
                   size="sm"
                   data-testid="button-members-subtab-portfolio"
                 >
@@ -1086,7 +1122,7 @@ export default function AdminDashboard() {
                 <Button 
                   variant={activeMembersSubTab === "messaging" ? "default" : "outline"}
                   onClick={() => setActiveMembersSubTab("messaging")}
-                  className={activeMembersSubTab === "messaging" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
+                  className={activeMembersSubTab === "messaging" ? "bg-slate-700 hover:bg-slate-800" : ""}
                   size="sm"
                   data-testid="button-members-subtab-messaging"
                 >
@@ -1095,7 +1131,7 @@ export default function AdminDashboard() {
                 <Button 
                   variant={activeMembersSubTab === "management" ? "default" : "outline"}
                   onClick={() => setActiveMembersSubTab("management")}
-                  className={activeMembersSubTab === "management" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
+                  className={activeMembersSubTab === "management" ? "bg-slate-700 hover:bg-slate-800" : ""}
                   size="sm"
                   data-testid="button-members-subtab-management"
                 >
