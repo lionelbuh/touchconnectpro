@@ -97,14 +97,19 @@ async function createPasswordToken(email, userType, applicationId) {
 }
 
 async function sendStatusEmail(email, fullName, userType, status, applicationId) {
+  console.log("[EMAIL] Starting email send process for:", email, "userType:", userType, "status:", status);
+  
   const resendData = await getResendClient();
   
   if (!resendData) {
     console.log("[EMAIL] Resend not configured, skipping email for:", email);
+    console.log("[EMAIL] RESEND_API_KEY present?", !!process.env.RESEND_API_KEY);
+    console.log("[EMAIL] REPLIT_CONNECTORS_HOSTNAME present?", !!process.env.REPLIT_CONNECTORS_HOSTNAME);
     return { success: false, reason: "Email not configured" };
   }
 
   const { client, fromEmail } = resendData;
+  console.log("[EMAIL] Using fromEmail:", fromEmail);
   
   let subject, htmlContent;
   
@@ -203,6 +208,7 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId)
   }
 
   try {
+    console.log("[EMAIL SEND] Attempting to send from:", fromEmail, "to:", email);
     const result = await client.emails.send({
       from: fromEmail,
       to: email,
@@ -210,10 +216,17 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId)
       html: htmlContent
     });
     
-    console.log("[EMAIL SENT] To:", email, "Status:", status, "Result:", result);
+    console.log("[EMAIL SENT] Success! To:", email, "Status:", status, "MessageID:", result.id);
     return { success: true, id: result.id };
   } catch (error) {
-    console.error("[EMAIL ERROR]:", error);
+    console.error("[EMAIL ERROR] Failed to send:", {
+      to: email,
+      from: fromEmail,
+      status: status,
+      errorMessage: error.message,
+      errorCode: error.code,
+      fullError: error
+    });
     return { success: false, error: error.message };
   }
 }
