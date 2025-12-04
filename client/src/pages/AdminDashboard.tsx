@@ -385,7 +385,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleToggleProfessionalStatus = (type: "mentor" | "coach" | "investor", idx: number) => {
+  const handleToggleProfessionalStatus = (type: "entrepreneur" | "mentor" | "coach" | "investor", idx: number) => {
     const key = `${type}-${idx}`;
     const updated = { ...disabledProfessionals, [key]: !disabledProfessionals[key] };
     setDisabledProfessionals(updated);
@@ -1179,321 +1179,533 @@ export default function AdminDashboard() {
               {/* Portfolio Assignment Sub-tab */}
               {activeMembersSubTab === "portfolio" && (
               <div>
-              {/* Entrepreneurs */}
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                  <span className="text-emerald-600">👨‍💼</span> Entrepreneurs (Approved)
-                  <Badge className="bg-emerald-100 text-emerald-800">{members.length + approvedEntrepreneurs.length}</Badge>
-                </h3>
-                {members.length === 0 && approvedEntrepreneurs.length === 0 ? (
-                  <Card>
-                    <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
-                      No entrepreneurs yet
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="space-y-3">
-                    {(() => {
-                      const combinedEntrepreneurs = [
-                        ...members.map(m => ({ ...m, displayName: m.name, isApproved: false })),
-                        ...approvedEntrepreneurs.map(a => ({ ...a, displayName: a.fullName, isApproved: true }))
-                      ];
-                      const searchLower = searchTerm.toLowerCase();
-                      const filtered = combinedEntrepreneurs.filter(item => item.displayName?.toLowerCase().includes(searchLower));
-                      const sorted = [...filtered].sort((a, b) => {
-                        const nameA = (a.displayName || "").toString().toLowerCase();
-                        const nameB = (b.displayName || "").toString().toLowerCase();
-                        return sortOrder === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
-                      });
-                      return sorted.map((item, idx) => {
-                        if (item.isApproved) {
-                          const entrepreneur = item as any;
-                          return (
-                            <Card key={`approved-${entrepreneur.id}`} className="border-l-4 border-l-emerald-500">
-                              <CardContent className="pt-6">
-                                <div className="flex justify-between items-start">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                      <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
-                                      <Badge className="bg-emerald-600">Active</Badge>
-                                      <Badge className="bg-cyan-100 text-cyan-800">{entrepreneur.ideaName}</Badge>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
-                                    <p className="text-xs text-slate-500 mt-2">{entrepreneur.linkedin || "—"} • {entrepreneur.country || "—"}{entrepreneur.state ? `, ${entrepreneur.state}` : ""}</p>
-                                    <p className="text-xs text-slate-500 mt-1">{entrepreneur.portfolio || "Unassigned"}</p>
-                                  </div>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedMember({
-                                        id: entrepreneur.id,
-                                        name: entrepreneur.fullName,
-                                        email: entrepreneur.email,
-                                        type: "entrepreneur" as const,
-                                        status: "active" as const
-                                      });
-                                      setShowPortfolioModal(true);
-                                    }}
-                                    data-testid={`button-assign-portfolio-entrepreneur-${idx}`}
-                                  >
-                                    Assign to Portfolio
-                                  </Button>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          );
-                        } else {
-                          const member = item as any;
-                          return (
-                            <Card key={member.id} className="border-l-4 border-l-emerald-500">
-                              <CardContent className="pt-6">
-                                <div className="flex justify-between items-start">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                      <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
-                                      <Badge className={member.status === "active" ? "bg-emerald-600" : "bg-slate-500"}>
-                                        {member.status === "active" ? "Active" : "Disabled"}
-                                      </Badge>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground">{member.email}</p>
-                                  </div>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedMember(member);
-                                      setShowPortfolioModal(true);
-                                    }}
-                                    data-testid={`button-assign-portfolio-${member.id}`}
-                                  >
-                                    Assign to Portfolio
-                                  </Button>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          );
-                        }
-                      });
-                    })()}
-                  </div>
-                )}
-              </div>
-
-              {/* Mentors */}
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                  <span className="text-amber-600">🎓</span> Mentors (Approved)
-                  <Badge className="bg-amber-100 text-amber-800">{approvedMentors.length}</Badge>
-                </h3>
-                {approvedMentors.length === 0 ? (
-                  <Card>
-                    <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
-                      No approved mentors yet
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="space-y-3">
-                    {filterAndSort(approvedMentors, "fullName").map((mentor, idx) => (
-                      <Card key={idx} className="border-l-4 border-l-amber-500">
-                        <CardContent className="pt-6">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <p className="font-semibold text-slate-900 dark:text-white">{mentor.fullName}</p>
-                                <Badge className="bg-amber-100 text-amber-800">Mentor</Badge>
-                                <Badge className="bg-emerald-600">Approved</Badge>
+              {/* Entrepreneurs - Full Details */}
+              {activeMembersCategoryTab === "entrepreneurs" && (
+                <div>
+                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Entrepreneurs (Approved & Rejected)</h2>
+                  {entrepreneurApplications.filter(app => app.status === "approved" || app.status === "rejected").length === 0 ? (
+                    <Card>
+                      <CardContent className="pt-12 pb-12 text-center">
+                        <p className="text-muted-foreground">No processed entrepreneur applications</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-6">
+                      {filterAndSort(entrepreneurApplications.filter(app => app.status === "approved" || app.status === "rejected"), "fullName").map((app, idx) => (
+                        <Card key={idx} className={`border-l-4 ${app.status === "approved" ? "border-l-emerald-500" : "border-l-red-500"}`}>
+                          <CardHeader>
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <CardTitle>{app.fullName}</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
-                              <p className="text-sm text-muted-foreground mb-2">{mentor.email}</p>
-                              <p className="text-xs text-slate-500">Expertise: {mentor.expertise}</p>
+                              <Badge className={app.status === "approved" ? "bg-emerald-600" : "bg-red-600"}>
+                                {app.status === "approved" ? "Approved" : "Rejected"}
+                              </Badge>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Coaches */}
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                  <span className="text-cyan-600">💪</span> Coaches (Approved)
-                  <Badge className="bg-cyan-100 text-cyan-800">{approvedCoaches.length}</Badge>
-                </h3>
-                {approvedCoaches.length === 0 ? (
-                  <Card>
-                    <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
-                      No approved coaches yet
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="space-y-3">
-                    {filterAndSort(approvedCoaches, "fullName").map((coach, idx) => (
-                      <Card key={idx} className="border-l-4 border-l-cyan-500">
-                        <CardContent className="pt-6">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
-                                <Badge className="bg-cyan-100 text-cyan-800">Coach</Badge>
-                                <Badge className="bg-emerald-600">Approved</Badge>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                                <p className="text-slate-900 dark:text-white">{app.fullName}</p>
                               </div>
-                              <p className="text-sm text-muted-foreground mb-2">{coach.email}</p>
-                              <p className="text-xs text-slate-500">Hourly Rate: ${coach.hourlyRate} • Expertise: {coach.expertise}</p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Investors */}
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                  <span className="text-blue-600">💰</span> Investors (Approved)
-                  <Badge className="bg-blue-100 text-blue-800">{approvedInvestors.length}</Badge>
-                </h3>
-                {approvedInvestors.length === 0 ? (
-                  <Card>
-                    <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
-                      No approved investors yet
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="space-y-3">
-                    {filterAndSort(approvedInvestors, "fullName").map((investor, idx) => (
-                      <Card key={idx} className="border-l-4 border-l-blue-500">
-                        <CardContent className="pt-6">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <p className="font-semibold text-slate-900 dark:text-white">{investor.fullName}</p>
-                                <Badge className="bg-blue-100 text-blue-800">Investor</Badge>
-                                <Badge className="bg-emerald-600">Approved</Badge>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                                <p className="text-slate-900 dark:text-white">{app.email}</p>
                               </div>
-                              <p className="text-sm text-muted-foreground mb-2">{investor.email}</p>
-                              <p className="text-xs text-slate-500">Fund: {investor.fundName} • Investment: {investor.investmentAmount}</p>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Idea Name</p>
+                                <p className="text-slate-900 dark:text-white">{app.ideaName || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                                <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
+                                <p className="text-slate-900 dark:text-white">{app.state || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Portfolio</p>
+                                <p className="text-slate-900 dark:text-white">{app.portfolio || "Unassigned"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
+                                <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
+                              </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </div>
+                            {app.problem && (
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Problem Statement</p>
+                                <p className="text-sm text-slate-700 dark:text-slate-300">{app.problem}</p>
+                              </div>
+                            )}
+                            {app.solution && (
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Solution</p>
+                                <p className="text-sm text-slate-700 dark:text-slate-300">{app.solution}</p>
+                              </div>
+                            )}
+                            {app.status === "approved" && (
+                              <div className="flex gap-2 pt-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedMember({
+                                      id: app.id,
+                                      name: app.fullName,
+                                      email: app.email,
+                                      type: "entrepreneur" as const,
+                                      status: "active" as const
+                                    });
+                                    setShowPortfolioModal(true);
+                                  }}
+                                  data-testid={`button-assign-portfolio-entrepreneur-${idx}`}
+                                >
+                                  Assign to Portfolio
+                                </Button>
+                                <Button 
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedMember({
+                                      id: app.id,
+                                      name: app.fullName,
+                                      email: app.email,
+                                      type: "entrepreneur" as const,
+                                      status: "active" as const
+                                    });
+                                    setShowMessageModal(true);
+                                  }}
+                                  data-testid={`button-message-entrepreneur-${idx}`}
+                                >
+                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
+                                </Button>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Mentors - Full Details */}
+              {activeMembersCategoryTab === "mentors" && (
+                <div>
+                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Mentors (Approved & Rejected)</h2>
+                  {mentorApplications.filter(app => app.status === "approved" || app.status === "rejected").length === 0 ? (
+                    <Card>
+                      <CardContent className="pt-12 pb-12 text-center">
+                        <p className="text-muted-foreground">No processed mentor applications</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-6">
+                      {filterAndSort(mentorApplications.filter(app => app.status === "approved" || app.status === "rejected"), "fullName").map((app, idx) => (
+                        <Card key={idx} className={`border-l-4 ${app.status === "approved" ? "border-l-blue-500" : "border-l-red-500"}`}>
+                          <CardHeader>
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <CardTitle>{app.fullName}</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                              </div>
+                              <Badge className={app.status === "approved" ? "bg-blue-600" : "bg-red-600"}>
+                                {app.status === "approved" ? "Approved" : "Rejected"}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                                <p className="text-slate-900 dark:text-white">{app.fullName}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                                <p className="text-slate-900 dark:text-white">{app.email}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
+                                <p className="text-slate-900 dark:text-white">{app.expertise}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Experience</p>
+                                <p className="text-slate-900 dark:text-white">{app.experience}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                                <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
+                                <p className="text-slate-900 dark:text-white">{app.state || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
+                                <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
+                              </div>
+                            </div>
+                            {app.bio && (
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
+                                <p className="text-sm text-slate-700 dark:text-slate-300">{app.bio}</p>
+                              </div>
+                            )}
+                            {app.status === "approved" && (
+                              <div className="flex gap-2 pt-2">
+                                <Button 
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedMember({
+                                      id: app.id,
+                                      name: app.fullName,
+                                      email: app.email,
+                                      type: "mentor" as const,
+                                      status: "active" as const
+                                    });
+                                    setShowMessageModal(true);
+                                  }}
+                                  data-testid={`button-message-mentor-${idx}`}
+                                >
+                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
+                                </Button>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Coaches - Full Details */}
+              {activeMembersCategoryTab === "coaches" && (
+                <div>
+                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Coaches (Approved & Rejected)</h2>
+                  {coachApplications.filter(app => app.status === "approved" || app.status === "rejected").length === 0 ? (
+                    <Card>
+                      <CardContent className="pt-12 pb-12 text-center">
+                        <p className="text-muted-foreground">No processed coach applications</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-6">
+                      {filterAndSort(coachApplications.filter(app => app.status === "approved" || app.status === "rejected"), "fullName").map((app, idx) => (
+                        <Card key={idx} className={`border-l-4 ${app.status === "approved" ? "border-l-cyan-500" : "border-l-red-500"}`}>
+                          <CardHeader>
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <CardTitle>{app.fullName}</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                              </div>
+                              <Badge className={app.status === "approved" ? "bg-cyan-600" : "bg-red-600"}>
+                                {app.status === "approved" ? "Approved" : "Rejected"}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                                <p className="text-slate-900 dark:text-white">{app.fullName}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                                <p className="text-slate-900 dark:text-white">{app.email}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
+                                <p className="text-slate-900 dark:text-white">{app.expertise}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
+                                <p className="text-slate-900 dark:text-white">{app.focusAreas}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Hourly Rate</p>
+                                <p className="text-slate-900 dark:text-white">${app.hourlyRate}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                                <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
+                                <p className="text-slate-900 dark:text-white">{app.state || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
+                                <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
+                              </div>
+                            </div>
+                            {app.status === "approved" && (
+                              <div className="flex gap-2 pt-2">
+                                <Button 
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedMember({
+                                      id: app.id,
+                                      name: app.fullName,
+                                      email: app.email,
+                                      type: "coach" as const,
+                                      status: "active" as const
+                                    });
+                                    setShowMessageModal(true);
+                                  }}
+                                  data-testid={`button-message-coach-${idx}`}
+                                >
+                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
+                                </Button>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Investors - Full Details */}
+              {activeMembersCategoryTab === "investors" && (
+                <div>
+                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Investors (Approved & Rejected)</h2>
+                  {investorApplications.filter(app => app.status === "approved" || app.status === "rejected").length === 0 ? (
+                    <Card>
+                      <CardContent className="pt-12 pb-12 text-center">
+                        <p className="text-muted-foreground">No processed investor applications</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-6">
+                      {filterAndSort(investorApplications.filter(app => app.status === "approved" || app.status === "rejected"), "fullName").map((app, idx) => (
+                        <Card key={idx} className={`border-l-4 ${app.status === "approved" ? "border-l-amber-500" : "border-l-red-500"}`}>
+                          <CardHeader>
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <CardTitle>{app.fullName}</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                              </div>
+                              <Badge className={app.status === "approved" ? "bg-amber-600" : "bg-red-600"}>
+                                {app.status === "approved" ? "Approved" : "Rejected"}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                                <p className="text-slate-900 dark:text-white">{app.fullName}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                                <p className="text-slate-900 dark:text-white">{app.email}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Fund Name</p>
+                                <p className="text-slate-900 dark:text-white">{app.fundName}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Amount</p>
+                                <p className="text-slate-900 dark:text-white">{app.investmentAmount}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Preference</p>
+                                <p className="text-slate-900 dark:text-white">{app.investmentPreference}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Focus</p>
+                                <p className="text-slate-900 dark:text-white">{app.investmentFocus}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                                <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
+                                <p className="text-slate-900 dark:text-white">{app.state || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
+                                <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
+                              </div>
+                            </div>
+                            {app.status === "approved" && (
+                              <div className="flex gap-2 pt-2">
+                                <Button 
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedMember({
+                                      id: app.id,
+                                      name: app.fullName,
+                                      email: app.email,
+                                      type: "investor" as const,
+                                      status: "active" as const
+                                    });
+                                    setShowMessageModal(true);
+                                  }}
+                                  data-testid={`button-message-investor-${idx}`}
+                                >
+                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
+                                </Button>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
               )}
 
               {/* Messaging Sub-tab */}
               {activeMembersSubTab === "messaging" && (
               <div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Send Messages to Members</h3>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Send Messages to {activeMembersCategoryTab.charAt(0).toUpperCase() + activeMembersCategoryTab.slice(1)}</h3>
                 <div className="space-y-6">
-                  {/* Entrepreneurs */}
+                  {/* Entrepreneurs - show only when selected */}
+                  {activeMembersCategoryTab === "entrepreneurs" && (
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Entrepreneurs ({members.length + approvedEntrepreneurs.length})</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Approved Entrepreneurs</h4>
                     <div className="space-y-3">
-                      {filterAndSort(members, "name").map((member) => (
-                        <Card key={member.id}>
-                          <CardContent className="pt-6">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
-                                <p className="text-sm text-muted-foreground">{member.email}</p>
-                              </div>
-                              <Button onClick={() => {setSelectedMember(member); setShowMessageModal(true);}} data-testid={`button-message-member-${member.id}`} size="sm">
-                                <MessageSquare className="mr-2 h-4 w-4" /> Message
-                              </Button>
-                            </div>
+                      {filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").length === 0 ? (
+                        <Card>
+                          <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                            No approved entrepreneurs to message
                           </CardContent>
                         </Card>
-                      ))}
-                      {filterAndSort(approvedEntrepreneurs, "fullName").map((entrepreneur, idx) => (
-                        <Card key={`approved-msg-${entrepreneur.id}`}>
-                          <CardContent className="pt-6">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
-                                <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
+                      ) : (
+                        filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").map((entrepreneur, idx) => (
+                          <Card key={`msg-${entrepreneur.id}`}>
+                            <CardContent className="pt-6">
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
+                                  <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
+                                </div>
+                                <Button onClick={() => {setSelectedMember({id: entrepreneur.id, name: entrepreneur.fullName, email: entrepreneur.email, type: "entrepreneur", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-entrepreneur-${idx}`} size="sm">
+                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
+                                </Button>
                               </div>
-                              <Button onClick={() => {setSelectedMember({id: entrepreneur.id, name: entrepreneur.fullName, email: entrepreneur.email, type: "mentor", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-entrepreneur-${idx}`} size="sm">
-                                <MessageSquare className="mr-2 h-4 w-4" /> Message
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Mentors */}
-                  {approvedMentors.length > 0 && (
-                  <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">🎓 Mentors ({approvedMentors.length})</h4>
-                    <div className="space-y-3">
-                      {filterAndSort(approvedMentors, "fullName").map((mentor, idx) => (
-                        <Card key={idx}>
-                          <CardContent className="pt-6">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="font-semibold text-slate-900 dark:text-white">{mentor.fullName}</p>
-                                <p className="text-sm text-muted-foreground">{mentor.email}</p>
-                              </div>
-                              <Button onClick={() => {setSelectedMember({id: `mentor-${idx}`, name: mentor.fullName, email: mentor.email, type: "mentor", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-mentor-${idx}`} size="sm">
-                                <MessageSquare className="mr-2 h-4 w-4" /> Message
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                            </CardContent>
+                          </Card>
+                        ))
+                      )}
                     </div>
                   </div>
                   )}
-                  {/* Coaches */}
-                  {approvedCoaches.length > 0 && (
+                  {/* Mentors - show only when selected */}
+                  {activeMembersCategoryTab === "mentors" && (
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💪 Coaches ({approvedCoaches.length})</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">🎓 Approved Mentors</h4>
                     <div className="space-y-3">
-                      {filterAndSort(approvedCoaches, "fullName").map((coach, idx) => (
-                        <Card key={idx}>
-                          <CardContent className="pt-6">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
-                                <p className="text-sm text-muted-foreground">{coach.email}</p>
-                              </div>
-                              <Button onClick={() => {setSelectedMember({id: `coach-${idx}`, name: coach.fullName, email: coach.email, type: "coach", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-coach-${idx}`} size="sm">
-                                <MessageSquare className="mr-2 h-4 w-4" /> Message
-                              </Button>
-                            </div>
+                      {filterAndSort(mentorApplications.filter(app => app.status === "approved"), "fullName").length === 0 ? (
+                        <Card>
+                          <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                            No approved mentors to message
                           </CardContent>
                         </Card>
-                      ))}
+                      ) : (
+                        filterAndSort(mentorApplications.filter(app => app.status === "approved"), "fullName").map((mentor, idx) => (
+                          <Card key={idx}>
+                            <CardContent className="pt-6">
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <p className="font-semibold text-slate-900 dark:text-white">{mentor.fullName}</p>
+                                  <p className="text-sm text-muted-foreground">{mentor.email}</p>
+                                </div>
+                                <Button onClick={() => {setSelectedMember({id: mentor.id, name: mentor.fullName, email: mentor.email, type: "mentor", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-mentor-${idx}`} size="sm">
+                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                      )}
                     </div>
                   </div>
                   )}
-                  {/* Investors */}
-                  {approvedInvestors.length > 0 && (
+                  {/* Coaches - show only when selected */}
+                  {activeMembersCategoryTab === "coaches" && (
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💰 Investors ({approvedInvestors.length})</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💪 Approved Coaches</h4>
                     <div className="space-y-3">
-                      {filterAndSort(approvedInvestors, "fullName").map((investor, idx) => (
-                        <Card key={idx}>
-                          <CardContent className="pt-6">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="font-semibold text-slate-900 dark:text-white">{investor.fullName}</p>
-                                <p className="text-sm text-muted-foreground">{investor.email}</p>
-                              </div>
-                              <Button onClick={() => {setSelectedMember({id: `investor-${idx}`, name: investor.fullName, email: investor.email, type: "investor", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-investor-${idx}`} size="sm">
-                                <MessageSquare className="mr-2 h-4 w-4" /> Message
-                              </Button>
-                            </div>
+                      {filterAndSort(coachApplications.filter(app => app.status === "approved"), "fullName").length === 0 ? (
+                        <Card>
+                          <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                            No approved coaches to message
                           </CardContent>
                         </Card>
-                      ))}
+                      ) : (
+                        filterAndSort(coachApplications.filter(app => app.status === "approved"), "fullName").map((coach, idx) => (
+                          <Card key={idx}>
+                            <CardContent className="pt-6">
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
+                                  <p className="text-sm text-muted-foreground">{coach.email}</p>
+                                </div>
+                                <Button onClick={() => {setSelectedMember({id: coach.id, name: coach.fullName, email: coach.email, type: "coach", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-coach-${idx}`} size="sm">
+                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                  )}
+                  {/* Investors - show only when selected */}
+                  {activeMembersCategoryTab === "investors" && (
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💰 Approved Investors</h4>
+                    <div className="space-y-3">
+                      {filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").length === 0 ? (
+                        <Card>
+                          <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                            No approved investors to message
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").map((investor, idx) => (
+                          <Card key={idx}>
+                            <CardContent className="pt-6">
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <p className="font-semibold text-slate-900 dark:text-white">{investor.fullName}</p>
+                                  <p className="text-sm text-muted-foreground">{investor.email}</p>
+                                </div>
+                                <Button onClick={() => {setSelectedMember({id: investor.id, name: investor.fullName, email: investor.email, type: "investor", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-investor-${idx}`} size="sm">
+                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                      )}
                     </div>
                   </div>
                   )}
@@ -1504,129 +1716,145 @@ export default function AdminDashboard() {
               {/* User Management Sub-tab */}
               {activeMembersSubTab === "management" && (
               <div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Manage User Status</h3>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Manage {activeMembersCategoryTab.charAt(0).toUpperCase() + activeMembersCategoryTab.slice(1)} Status</h3>
                 <div className="space-y-6">
-                  {/* Entrepreneurs */}
+                  {/* Entrepreneurs - show only when selected */}
+                  {activeMembersCategoryTab === "entrepreneurs" && (
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Entrepreneurs ({members.length + approvedEntrepreneurs.length})</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Approved Entrepreneurs</h4>
                     <div className="space-y-3">
-                      {filterAndSort(members, "name").map((member) => (
-                        <Card key={member.id} className={member.status === "disabled" ? "opacity-60" : ""}>
-                          <CardContent className="pt-6">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="font-semibold text-slate-900 dark:text-white">{member.name}</p>
-                                <p className="text-sm text-muted-foreground">{member.email}</p>
-                              </div>
-                              <div className="flex gap-2">
-                                <Button variant={member.status === "active" ? "destructive" : "default"} onClick={() => handleToggleMemberStatus(member.id)} data-testid={`button-toggle-user-${member.id}`} size="sm">
-                                  {member.status === "active" ? "Disable" : "Enable"}
-                                </Button>
-                                <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-user-${member.id}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
-                              </div>
-                            </div>
+                      {filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").length === 0 ? (
+                        <Card>
+                          <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                            No approved entrepreneurs to manage
                           </CardContent>
                         </Card>
-                      ))}
-                      {filterAndSort(approvedEntrepreneurs, "fullName").map((entrepreneur, idx) => {
-                        const isDisabled = disabledProfessionals[`entrepreneur-${idx}`];
-                        return (
-                        <Card key={`approved-mgmt-${entrepreneur.id}`} className={isDisabled ? "opacity-60" : ""}>
-                          <CardContent className="pt-6">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
-                                <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
+                      ) : (
+                        filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").map((entrepreneur, idx) => {
+                          const isDisabled = disabledProfessionals[`entrepreneur-${idx}`];
+                          return (
+                          <Card key={`mgmt-${entrepreneur.id}`} className={isDisabled ? "opacity-60" : ""}>
+                            <CardContent className="pt-6">
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
+                                  <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("entrepreneur", idx)} data-testid={`button-toggle-entrepreneur-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
+                                  <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-entrepreneur-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                </div>
                               </div>
-                              <div className="flex gap-2">
-                                <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("mentor", idx)} data-testid={`button-toggle-entrepreneur-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
-                                <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-entrepreneur-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  {/* Mentors */}
-                  {approvedMentors.length > 0 && (
-                  <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">🎓 Mentors ({approvedMentors.length})</h4>
-                    <div className="space-y-3">
-                      {filterAndSort(approvedMentors, "fullName").map((mentor, idx) => {
-                        const isDisabled = disabledProfessionals[`mentor-${idx}`];
-                        return (
-                        <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
-                          <CardContent className="pt-6">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="font-semibold text-slate-900 dark:text-white">{mentor.fullName}</p>
-                                <p className="text-sm text-muted-foreground">{mentor.email}</p>
-                              </div>
-                              <div className="flex gap-2">
-                                <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("mentor", idx)} data-testid={`button-toggle-mentor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
-                                <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-mentor-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                        );
-                      })}
+                            </CardContent>
+                          </Card>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                   )}
-                  {/* Coaches */}
-                  {approvedCoaches.length > 0 && (
+                  {/* Mentors - show only when selected */}
+                  {activeMembersCategoryTab === "mentors" && (
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💪 Coaches ({approvedCoaches.length})</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">🎓 Approved Mentors</h4>
                     <div className="space-y-3">
-                      {filterAndSort(approvedCoaches, "fullName").map((coach, idx) => {
-                        const isDisabled = disabledProfessionals[`coach-${idx}`];
-                        return (
-                        <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
-                          <CardContent className="pt-6">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
-                                <p className="text-sm text-muted-foreground">{coach.email}</p>
-                              </div>
-                              <div className="flex gap-2">
-                                <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("coach", idx)} data-testid={`button-toggle-coach-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
-                                <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-coach-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
-                              </div>
-                            </div>
+                      {filterAndSort(mentorApplications.filter(app => app.status === "approved"), "fullName").length === 0 ? (
+                        <Card>
+                          <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                            No approved mentors to manage
                           </CardContent>
                         </Card>
-                        );
-                      })}
+                      ) : (
+                        filterAndSort(mentorApplications.filter(app => app.status === "approved"), "fullName").map((mentor, idx) => {
+                          const isDisabled = disabledProfessionals[`mentor-${idx}`];
+                          return (
+                          <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
+                            <CardContent className="pt-6">
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <p className="font-semibold text-slate-900 dark:text-white">{mentor.fullName}</p>
+                                  <p className="text-sm text-muted-foreground">{mentor.email}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("mentor", idx)} data-testid={`button-toggle-mentor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
+                                  <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-mentor-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                   )}
-                  {/* Investors */}
-                  {approvedInvestors.length > 0 && (
+                  {/* Coaches - show only when selected */}
+                  {activeMembersCategoryTab === "coaches" && (
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💰 Investors ({approvedInvestors.length})</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💪 Approved Coaches</h4>
                     <div className="space-y-3">
-                      {filterAndSort(approvedInvestors, "fullName").map((investor, idx) => {
-                        const isDisabled = disabledProfessionals[`investor-${idx}`];
-                        return (
-                        <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
-                          <CardContent className="pt-6">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="font-semibold text-slate-900 dark:text-white">{investor.fullName}</p>
-                                <p className="text-sm text-muted-foreground">{investor.email}</p>
-                              </div>
-                              <div className="flex gap-2">
-                                <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("investor", idx)} data-testid={`button-toggle-investor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
-                                <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-investor-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
-                              </div>
-                            </div>
+                      {filterAndSort(coachApplications.filter(app => app.status === "approved"), "fullName").length === 0 ? (
+                        <Card>
+                          <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                            No approved coaches to manage
                           </CardContent>
                         </Card>
-                        );
-                      })}
+                      ) : (
+                        filterAndSort(coachApplications.filter(app => app.status === "approved"), "fullName").map((coach, idx) => {
+                          const isDisabled = disabledProfessionals[`coach-${idx}`];
+                          return (
+                          <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
+                            <CardContent className="pt-6">
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
+                                  <p className="text-sm text-muted-foreground">{coach.email}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("coach", idx)} data-testid={`button-toggle-coach-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
+                                  <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-coach-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                  )}
+                  {/* Investors - show only when selected */}
+                  {activeMembersCategoryTab === "investors" && (
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💰 Approved Investors</h4>
+                    <div className="space-y-3">
+                      {filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").length === 0 ? (
+                        <Card>
+                          <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                            No approved investors to manage
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").map((investor, idx) => {
+                          const isDisabled = disabledProfessionals[`investor-${idx}`];
+                          return (
+                          <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
+                            <CardContent className="pt-6">
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <p className="font-semibold text-slate-900 dark:text-white">{investor.fullName}</p>
+                                  <p className="text-sm text-muted-foreground">{investor.email}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("investor", idx)} data-testid={`button-toggle-investor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
+                                  <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-investor-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                   )}
