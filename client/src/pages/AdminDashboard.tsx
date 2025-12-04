@@ -677,17 +677,19 @@ export default function AdminDashboard() {
                             )}
                           </div>
 
-                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700 relative z-10">
                             <Button 
-                              className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                              type="button"
+                              className="flex-1 bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
                               onClick={() => handleApproveEntrepreneur(actualIdx)}
                               data-testid={`button-admin-approve-entrepreneur-${actualIdx}`}
                             >
                               <Check className="mr-2 h-4 w-4" /> Approve
                             </Button>
                             <Button 
+                              type="button"
                               variant="outline"
-                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
                               onClick={() => handleRejectEntrepreneur(actualIdx)}
                               data-testid={`button-admin-reject-entrepreneur-${actualIdx}`}
                             >
@@ -767,17 +769,19 @@ export default function AdminDashboard() {
                             <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
                             <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.bio}</p>
                           </div>
-                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700 relative z-10">
                             <Button 
-                              className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                              type="button"
+                              className="flex-1 bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
                               onClick={() => handleApproveMentor(actualIdx)}
                               data-testid={`button-admin-approve-mentor-${actualIdx}`}
                             >
                               <Check className="mr-2 h-4 w-4" /> Approve
                             </Button>
                             <Button 
+                              type="button"
                               variant="outline"
-                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
                               onClick={() => handleRejectMentor(actualIdx)}
                               data-testid={`button-admin-reject-mentor-${actualIdx}`}
                             >
@@ -857,17 +861,19 @@ export default function AdminDashboard() {
                             <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
                             <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.focusAreas}</p>
                           </div>
-                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700 relative z-10">
                             <Button 
-                              className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                              type="button"
+                              className="flex-1 bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
                               onClick={() => handleApproveCoach(actualIdx)}
                               data-testid={`button-admin-approve-coach-${actualIdx}`}
                             >
                               <Check className="mr-2 h-4 w-4" /> Approve
                             </Button>
                             <Button 
+                              type="button"
                               variant="outline"
-                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
                               onClick={() => handleRejectCoach(actualIdx)}
                               data-testid={`button-admin-reject-coach-${actualIdx}`}
                             >
@@ -951,17 +957,19 @@ export default function AdminDashboard() {
                             <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Focus</p>
                             <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.investmentFocus}</p>
                           </div>
-                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700 relative z-10">
                             <Button 
-                              className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                              type="button"
+                              className="flex-1 bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
                               onClick={() => handleApproveInvestor(actualIdx)}
                               data-testid={`button-admin-approve-investor-${actualIdx}`}
                             >
                               <Check className="mr-2 h-4 w-4" /> Approve
                             </Button>
                             <Button 
+                              type="button"
                               variant="outline"
-                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
                               onClick={() => handleRejectInvestor(actualIdx)}
                               data-testid={`button-admin-reject-investor-${actualIdx}`}
                             >
