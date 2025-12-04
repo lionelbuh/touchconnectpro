@@ -201,8 +201,8 @@ export default function DashboardInvestor() {
                   data-testid="select-investment-preference"
                 >
                   <option value="">Select investment type...</option>
-                  <option value="platform">Platform Investment (TouchConnectPro)</option>
-                  <option value="direct">Direct Startup Investment</option>
+                  <option value="platform">TouchConnectPro as a whole</option>
+                  <option value="projects">Individual Projects</option>
                   <option value="both">Both</option>
                 </select>
               </CardContent>
@@ -223,11 +223,13 @@ export default function DashboardInvestor() {
                   className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20" 
                   data-testid="select-investment-amount"
                 >
-                  <option value="">Select check size...</option>
-                  <option value="10k-50k">$10K - $50K</option>
-                  <option value="50k-250k">$50K - $250K</option>
-                  <option value="250k-1m">$250K - $1M</option>
-                  <option value="1m+">$1M+</option>
+                  <option value="">Select investment amount...</option>
+                  <option value="5000-10000">$5,000 - $10,000</option>
+                  <option value="20000-50000">$20,000 - $50,000</option>
+                  <option value="50000-100000">$50,000 - $100,000</option>
+                  <option value="100000-500000">$100,000 - $500,000</option>
+                  <option value="500000-1000000">$500,000 - $1,000,000</option>
+                  <option value="1000000plus">$1,000,000+</option>
                 </select>
               </CardContent>
             </Card>
