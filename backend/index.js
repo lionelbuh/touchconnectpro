@@ -203,10 +203,181 @@ app.patch("/api/mentors/:id", async (req, res) => {
   }
 });
 
+// ============ COACH ENDPOINTS ============
+
+// Save coach application
+app.post("/api/coaches", async (req, res) => {
+  console.log("[POST /api/coaches] Called");
+  try {
+    const { fullName, email, linkedin, expertise, focusAreas, hourlyRate, country, state } = req.body;
+
+    if (!email || !fullName || !expertise || !focusAreas || !hourlyRate || !country) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    console.log("[INSERT] Saving coach application for:", email);
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .insert({
+        full_name: fullName,
+        email,
+        linkedin: linkedin || null,
+        expertise,
+        focus_areas: focusAreas,
+        hourly_rate: hourlyRate,
+        country,
+        state: state || null,
+        status: "submitted"
+      })
+      .select();
+
+    if (error) {
+      console.error("[DB ERROR]:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log("[SUCCESS] Coach application saved");
+    return res.json({ success: true, id: data?.[0]?.id });
+  } catch (error) {
+    console.error("[EXCEPTION]:", error);
+    return res.status(500).json({ error: error.message || "Server error" });
+  }
+});
+
+// Get all coach applications (for admin)
+app.get("/api/coaches", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Approve/reject coach
+app.patch("/api/coaches/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .update({ status })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, coach: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// ============ INVESTOR ENDPOINTS ============
+
+// Save investor application
+app.post("/api/investors", async (req, res) => {
+  console.log("[POST /api/investors] Called");
+  try {
+    const { fullName, email, linkedin, fundName, investmentFocus, investmentPreference, investmentAmount, country, state } = req.body;
+
+    if (!email || !fullName || !fundName || !investmentFocus || !investmentPreference || !investmentAmount || !country) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    console.log("[INSERT] Saving investor application for:", email);
+    const { data, error } = await supabase
+      .from("investor_applications")
+      .insert({
+        full_name: fullName,
+        email,
+        linkedin: linkedin || null,
+        fund_name: fundName,
+        investment_focus: investmentFocus,
+        investment_preference: investmentPreference,
+        investment_amount: investmentAmount,
+        country,
+        state: state || null,
+        status: "submitted"
+      })
+      .select();
+
+    if (error) {
+      console.error("[DB ERROR]:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log("[SUCCESS] Investor application saved");
+    return res.json({ success: true, id: data?.[0]?.id });
+  } catch (error) {
+    console.error("[EXCEPTION]:", error);
+    return res.status(500).json({ error: error.message || "Server error" });
+  }
+});
+
+// Get all investor applications (for admin)
+app.get("/api/investors", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("investor_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Approve/reject investor
+app.patch("/api/investors/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const { data, error } = await supabase
+      .from("investor_applications")
+      .update({ status })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, investor: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/", (req, res) => {
   return res.json({ 
     message: "TouchConnectPro Backend API",
-    endpoints: ["/api/submit", "/api/ideas", "/api/mentors", "/api/test"]
+    endpoints: ["/api/submit", "/api/ideas", "/api/mentors", "/api/coaches", "/api/investors", "/api/test"]
   });
 });
 
