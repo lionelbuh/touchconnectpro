@@ -10,6 +10,26 @@ The application follows a freemium model where entrepreneurs can start for free 
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes (Latest Session)
+
+**Email & Authentication System:**
+- ✅ Integrated Resend for transactional emails (approval/rejection notifications)
+- ✅ Created `password_tokens` table in Supabase for secure password setup links (7-day expiry)
+- ✅ Users receive approval emails with password setup link
+- ✅ After password setup, users are routed to their personal dashboard based on role
+- ✅ Login now properly redirects to role-specific dashboards (entrepreneur, mentor, coach, investor)
+- ✅ Fixed admin dashboard approve/reject buttons with proper styling
+
+**Backend Improvements:**
+- Updated `/api/set-password` to create user profile in `users` table with role
+- Added support for `RESEND_API_KEY` environment variable (for Render deployment)
+- Added detailed logging for email sending and error tracking
+- Email sends with branded HTML templates for approved/rejected users
+
+**Deployment:**
+- Backend now requires: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `FRONTEND_URL` environment variables on Render
+- Domain must be verified in Resend for email deliverability
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -123,9 +143,11 @@ The application uses a hybrid storage approach. Supabase handles user data, appl
    - REST API client for GitHub
    - Potential use for portfolio/project management
 
-5. **Email Service** (Implementation Pending)
-   - Mailchimp mentioned in privacy policy
-   - Used for transactional emails and newsletters
+5. **Resend** (Email Service)
+   - Transactional emails for approval/rejection notifications
+   - Password setup links for new users
+   - Domain verification required for email deliverability
+   - API key configured via environment variables on Render
 
 **UI Component Libraries:**
 - Radix UI primitives (dialogs, dropdowns, tooltips, etc.)

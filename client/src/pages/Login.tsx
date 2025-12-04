@@ -57,8 +57,25 @@ export default function Login() {
         password: loginPassword,
       });
       if (error) throw error;
-      toast.success("Logged in successfully!");
-      navigate("/dashboard-entrepreneur");
+      
+      // Get user profile to determine role
+      if (data.user) {
+        const { data: profile, error: profileError } = await supabase
+          .from("users")
+          .select("role")
+          .eq("id", data.user.id)
+          .single();
+        
+        const userRole = profile?.role || "entrepreneur";
+        let dashboardPath = "/dashboard-entrepreneur";
+        
+        if (userRole === "mentor") dashboardPath = "/dashboard-mentor";
+        else if (userRole === "coach") dashboardPath = "/dashboard-coach";
+        else if (userRole === "investor") dashboardPath = "/dashboard-investor";
+        
+        toast.success("Logged in successfully!");
+        navigate(dashboardPath);
+      }
     } catch (error: any) {
       toast.error(error.message);
     } finally {

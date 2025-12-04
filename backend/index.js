@@ -729,6 +729,22 @@ app.post("/api/set-password", async (req, res) => {
       }
     }
 
+    // Create user profile in users table
+    if (authData?.user?.id) {
+      const { error: profileError } = await supabase
+        .from("users")
+        .insert({
+          id: authData.user.id,
+          email: tokenData.email,
+          role: tokenData.user_type,
+          full_name: tokenData.email // Will be updated by user later
+        });
+      
+      if (profileError && !profileError.message.includes("duplicate")) {
+        console.error("[PROFILE ERROR]:", profileError);
+      }
+    }
+
     await supabase
       .from("password_tokens")
       .update({ status: "used", used_at: new Date().toISOString() })
