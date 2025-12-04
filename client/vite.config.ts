@@ -9,7 +9,15 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, path.resolve(__dirname, '..'), '')
   
+  // In production, merge process.env so Render's environment variables are available
+  const processEnv = process.env;
+  const mergedEnv = { ...env, ...processEnv };
+  
   return {
+    define: {
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(mergedEnv.VITE_SUPABASE_URL || ''),
+      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(mergedEnv.VITE_SUPABASE_ANON_KEY || ''),
+    },
     plugins: [
       react(),
       devBanner(),
