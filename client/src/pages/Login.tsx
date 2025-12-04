@@ -66,12 +66,20 @@ export default function Login() {
       if (error) throw error;
       
       if (data.user) {
+        // First try to get role from users table
         const { data: profile } = await supabase
           .from("users")
           .select("role")
           .eq("id", data.user.id);
         
-        const userRole = profile?.[0]?.role || "entrepreneur";
+        // Fallback to user_metadata if not in users table
+        let userRole = profile?.[0]?.role || data.user.user_metadata?.user_type || "entrepreneur";
+        
+        console.log("[LOGIN] User ID:", data.user.id);
+        console.log("[LOGIN] Profile from DB:", profile);
+        console.log("[LOGIN] user_metadata:", data.user.user_metadata);
+        console.log("[LOGIN] Final role:", userRole);
+        
         let dashboardPath = "/dashboard-entrepreneur";
         
         if (userRole === "mentor") dashboardPath = "/dashboard-mentor";
