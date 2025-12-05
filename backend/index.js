@@ -894,20 +894,45 @@ app.post("/api/set-password", async (req, res) => {
       userId = authData.user.id;
     }
 
-    // Create user profile in users table
+    // Create or update user profile in users table with correct role
     if (userId) {
-      console.log("[PROFILE] Creating profile for user:", userId);
-      const { error: profileError } = await supabase
-        .from("users")
-        .insert({
-          id: userId,
-          email: tokenData.email,
-          role: tokenData.user_type,
-          full_name: tokenData.email // Will be updated by user later
-        });
+      console.log("[PROFILE] Creating/updating profile for user:", userId, "with role:", tokenData.user_type);
       
-      if (profileError && !profileError.message.includes("duplicate")) {
-        console.error("[PROFILE ERROR]:", profileError);
+      // First try to update existing profile
+      const { data: existingProfile } = await supabase
+        .from("users")
+        .select("id")
+        .eq("id", userId)
+        .single();
+      
+      if (existingProfile) {
+        // Update existing profile with correct role
+        const { error: updateError } = await supabase
+          .from("users")
+          .update({ role: tokenData.user_type })
+          .eq("id", userId);
+        
+        if (updateError) {
+          console.error("[PROFILE UPDATE ERROR]:", updateError);
+        } else {
+          console.log("[PROFILE] Updated existing profile with role:", tokenData.user_type);
+        }
+      } else {
+        // Insert new profile
+        const { error: insertError } = await supabase
+          .from("users")
+          .insert({
+            id: userId,
+            email: tokenData.email,
+            role: tokenData.user_type,
+            full_name: tokenData.email
+          });
+        
+        if (insertError) {
+          console.error("[PROFILE INSERT ERROR]:", insertError);
+        } else {
+          console.log("[PROFILE] Created new profile with role:", tokenData.user_type);
+        }
       }
     } else {
       console.error("[PROFILE] No user ID available to create profile");
