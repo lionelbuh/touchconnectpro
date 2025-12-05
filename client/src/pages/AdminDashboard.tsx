@@ -104,6 +104,7 @@ export default function AdminDashboard() {
   const [portfolioForApp, setPortfolioForApp] = useState<{[key: string]: string}>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [showRejected, setShowRejected] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     const loadData = async () => {
@@ -1182,26 +1183,24 @@ export default function AdminDashboard() {
               {/* Entrepreneurs - Full Details */}
               {activeMembersCategoryTab === "entrepreneurs" && (
                 <div>
-                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Entrepreneurs (Approved & Rejected)</h2>
-                  {entrepreneurApplications.filter(app => app.status === "approved" || app.status === "rejected").length === 0 ? (
+                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Approved Entrepreneurs</h2>
+                  {entrepreneurApplications.filter(app => app.status === "approved").length === 0 ? (
                     <Card>
                       <CardContent className="pt-12 pb-12 text-center">
-                        <p className="text-muted-foreground">No processed entrepreneur applications</p>
+                        <p className="text-muted-foreground">No approved entrepreneur applications</p>
                       </CardContent>
                     </Card>
                   ) : (
                     <div className="space-y-6">
-                      {filterAndSort(entrepreneurApplications.filter(app => app.status === "approved" || app.status === "rejected"), "fullName").map((app, idx) => (
-                        <Card key={idx} className={`border-l-4 ${app.status === "approved" ? "border-l-emerald-500" : "border-l-red-500"}`}>
+                      {filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").map((app, idx) => (
+                        <Card key={idx} className="border-l-4 border-l-emerald-500">
                           <CardHeader>
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
                                 <CardTitle>{app.fullName}</CardTitle>
                                 <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
-                              <Badge className={app.status === "approved" ? "bg-emerald-600" : "bg-red-600"}>
-                                {app.status === "approved" ? "Approved" : "Rejected"}
-                              </Badge>
+                              <Badge className="bg-emerald-600">Approved</Badge>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
@@ -1251,46 +1250,166 @@ export default function AdminDashboard() {
                                 <p className="text-sm text-slate-700 dark:text-slate-300">{app.solution}</p>
                               </div>
                             )}
-                            {app.status === "approved" && (
-                              <div className="flex gap-2 pt-2">
-                                <Button 
-                                  variant="outline" 
+                            
+                            {/* Idea Proposal Section */}
+                            {app.ideaReview && Array.isArray(app.ideaReview) && app.ideaReview.length > 0 && (
+                              <div className="border-t pt-4">
+                                <Button
+                                  variant="ghost"
                                   size="sm"
-                                  onClick={() => {
-                                    setSelectedMember({
-                                      id: app.id,
-                                      name: app.fullName,
-                                      email: app.email,
-                                      type: "entrepreneur" as const,
-                                      status: "active" as const
-                                    });
-                                    setShowPortfolioModal(true);
-                                  }}
-                                  data-testid={`button-assign-portfolio-entrepreneur-${idx}`}
+                                  onClick={() => setExpandedProposal(prev => ({ ...prev, [`member-${app.id}`]: !prev[`member-${app.id}`] }))}
+                                  className="mb-2 text-cyan-600 hover:text-cyan-700"
+                                  data-testid={`button-toggle-proposal-member-${idx}`}
                                 >
-                                  Assign to Portfolio
+                                  {expandedProposal[`member-${app.id}`] ? "▼ Hide Idea Proposal" : "▶ View Idea Proposal"}
                                 </Button>
-                                <Button 
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedMember({
-                                      id: app.id,
-                                      name: app.fullName,
-                                      email: app.email,
-                                      type: "entrepreneur" as const,
-                                      status: "active" as const
-                                    });
-                                    setShowMessageModal(true);
-                                  }}
-                                  data-testid={`button-message-entrepreneur-${idx}`}
-                                >
-                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
-                                </Button>
+                                {expandedProposal[`member-${app.id}`] && (
+                                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 space-y-3 max-h-96 overflow-y-auto">
+                                    {app.ideaReview.map((item: any, qIdx: number) => (
+                                      <div key={qIdx} className="border-b border-slate-200 dark:border-slate-700 pb-2 last:border-0">
+                                        <p className="text-xs font-semibold text-slate-500 uppercase">{item.question}</p>
+                                        <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">{item.answer || "—"}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             )}
+                            
+                            {/* Business Plan Section */}
+                            {app.businessPlan && (
+                              <div className="border-t pt-4">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setExpandedBusinessPlan(prev => ({ ...prev, [`member-${app.id}`]: !prev[`member-${app.id}`] }))}
+                                  className="mb-2 text-emerald-600 hover:text-emerald-700"
+                                  data-testid={`button-toggle-businessplan-member-${idx}`}
+                                >
+                                  {expandedBusinessPlan[`member-${app.id}`] ? "▼ Hide Business Plan" : "▶ View Business Plan"}
+                                </Button>
+                                {expandedBusinessPlan[`member-${app.id}`] && (
+                                  <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-4 max-h-96 overflow-y-auto">
+                                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                                      <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans">
+                                        {typeof app.businessPlan === 'string' ? app.businessPlan : JSON.stringify(app.businessPlan, null, 2)}
+                                      </pre>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            <div className="flex gap-2 pt-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedMember({
+                                    id: app.id,
+                                    name: app.fullName,
+                                    email: app.email,
+                                    type: "entrepreneur" as const,
+                                    status: "active" as const
+                                  });
+                                  setShowPortfolioModal(true);
+                                }}
+                                data-testid={`button-assign-portfolio-entrepreneur-${idx}`}
+                              >
+                                Assign to Portfolio
+                              </Button>
+                              <Button 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedMember({
+                                    id: app.id,
+                                    name: app.fullName,
+                                    email: app.email,
+                                    type: "entrepreneur" as const,
+                                    status: "active" as const
+                                  });
+                                  setShowMessageModal(true);
+                                }}
+                                data-testid={`button-message-entrepreneur-${idx}`}
+                              >
+                                <MessageSquare className="mr-2 h-4 w-4" /> Message
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
                       ))}
+                    </div>
+                  )}
+                  
+                  {/* Rejected Entrepreneurs - Collapsible Section */}
+                  {entrepreneurApplications.filter(app => app.status === "rejected").length > 0 && (
+                    <div className="mt-8">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowRejected(prev => ({ ...prev, entrepreneurs: !prev.entrepreneurs }))}
+                        className="w-full justify-between text-slate-600 dark:text-slate-400 border-dashed"
+                        data-testid="button-toggle-rejected-entrepreneurs"
+                      >
+                        <span>Rejected Entrepreneurs ({entrepreneurApplications.filter(app => app.status === "rejected").length})</span>
+                        <span>{showRejected.entrepreneurs ? "▼" : "▶"}</span>
+                      </Button>
+                      {showRejected.entrepreneurs && (
+                        <div className="space-y-6 mt-4">
+                          {filterAndSort(entrepreneurApplications.filter(app => app.status === "rejected"), "fullName").map((app, idx) => (
+                            <Card key={idx} className="border-l-4 border-l-red-500 opacity-75">
+                              <CardHeader>
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <CardTitle>{app.fullName}</CardTitle>
+                                    <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                                  </div>
+                                  <Badge className="bg-red-600">Rejected</Badge>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                                    <p className="text-slate-900 dark:text-white">{app.fullName}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                                    <p className="text-slate-900 dark:text-white">{app.email}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                    <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Idea Name</p>
+                                    <p className="text-slate-900 dark:text-white">{app.ideaName || "—"}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                                    <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
+                                    <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
+                                  </div>
+                                </div>
+                                {app.problem && (
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Problem Statement</p>
+                                    <p className="text-sm text-slate-700 dark:text-slate-300">{app.problem}</p>
+                                  </div>
+                                )}
+                                {app.solution && (
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Solution</p>
+                                    <p className="text-sm text-slate-700 dark:text-slate-300">{app.solution}</p>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1299,26 +1418,24 @@ export default function AdminDashboard() {
               {/* Mentors - Full Details */}
               {activeMembersCategoryTab === "mentors" && (
                 <div>
-                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Mentors (Approved & Rejected)</h2>
-                  {mentorApplications.filter(app => app.status === "approved" || app.status === "rejected").length === 0 ? (
+                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Approved Mentors</h2>
+                  {mentorApplications.filter(app => app.status === "approved").length === 0 ? (
                     <Card>
                       <CardContent className="pt-12 pb-12 text-center">
-                        <p className="text-muted-foreground">No processed mentor applications</p>
+                        <p className="text-muted-foreground">No approved mentor applications</p>
                       </CardContent>
                     </Card>
                   ) : (
                     <div className="space-y-6">
-                      {filterAndSort(mentorApplications.filter(app => app.status === "approved" || app.status === "rejected"), "fullName").map((app, idx) => (
-                        <Card key={idx} className={`border-l-4 ${app.status === "approved" ? "border-l-blue-500" : "border-l-red-500"}`}>
+                      {filterAndSort(mentorApplications.filter(app => app.status === "approved"), "fullName").map((app, idx) => (
+                        <Card key={idx} className="border-l-4 border-l-blue-500">
                           <CardHeader>
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
                                 <CardTitle>{app.fullName}</CardTitle>
                                 <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
-                              <Badge className={app.status === "approved" ? "bg-blue-600" : "bg-red-600"}>
-                                {app.status === "approved" ? "Approved" : "Rejected"}
-                              </Badge>
+                              <Badge className="bg-blue-600">Approved</Badge>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
@@ -1362,29 +1479,93 @@ export default function AdminDashboard() {
                                 <p className="text-sm text-slate-700 dark:text-slate-300">{app.bio}</p>
                               </div>
                             )}
-                            {app.status === "approved" && (
-                              <div className="flex gap-2 pt-2">
-                                <Button 
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedMember({
-                                      id: app.id,
-                                      name: app.fullName,
-                                      email: app.email,
-                                      type: "mentor" as const,
-                                      status: "active" as const
-                                    });
-                                    setShowMessageModal(true);
-                                  }}
-                                  data-testid={`button-message-mentor-${idx}`}
-                                >
-                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
-                                </Button>
-                              </div>
-                            )}
+                            <div className="flex gap-2 pt-2">
+                              <Button 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedMember({
+                                    id: app.id,
+                                    name: app.fullName,
+                                    email: app.email,
+                                    type: "mentor" as const,
+                                    status: "active" as const
+                                  });
+                                  setShowMessageModal(true);
+                                }}
+                                data-testid={`button-message-mentor-${idx}`}
+                              >
+                                <MessageSquare className="mr-2 h-4 w-4" /> Message
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
                       ))}
+                    </div>
+                  )}
+                  
+                  {/* Rejected Mentors - Collapsible Section */}
+                  {mentorApplications.filter(app => app.status === "rejected").length > 0 && (
+                    <div className="mt-8">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowRejected(prev => ({ ...prev, mentors: !prev.mentors }))}
+                        className="w-full justify-between text-slate-600 dark:text-slate-400 border-dashed"
+                        data-testid="button-toggle-rejected-mentors"
+                      >
+                        <span>Rejected Mentors ({mentorApplications.filter(app => app.status === "rejected").length})</span>
+                        <span>{showRejected.mentors ? "▼" : "▶"}</span>
+                      </Button>
+                      {showRejected.mentors && (
+                        <div className="space-y-6 mt-4">
+                          {filterAndSort(mentorApplications.filter(app => app.status === "rejected"), "fullName").map((app, idx) => (
+                            <Card key={idx} className="border-l-4 border-l-red-500 opacity-75">
+                              <CardHeader>
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <CardTitle>{app.fullName}</CardTitle>
+                                    <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                                  </div>
+                                  <Badge className="bg-red-600">Rejected</Badge>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                                    <p className="text-slate-900 dark:text-white">{app.fullName}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                                    <p className="text-slate-900 dark:text-white">{app.email}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                    <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
+                                    <p className="text-slate-900 dark:text-white">{app.expertise}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Experience</p>
+                                    <p className="text-slate-900 dark:text-white">{app.experience}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                                    <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                                  </div>
+                                </div>
+                                {app.bio && (
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
+                                    <p className="text-sm text-slate-700 dark:text-slate-300">{app.bio}</p>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1393,26 +1574,24 @@ export default function AdminDashboard() {
               {/* Coaches - Full Details */}
               {activeMembersCategoryTab === "coaches" && (
                 <div>
-                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Coaches (Approved & Rejected)</h2>
-                  {coachApplications.filter(app => app.status === "approved" || app.status === "rejected").length === 0 ? (
+                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Approved Coaches</h2>
+                  {coachApplications.filter(app => app.status === "approved").length === 0 ? (
                     <Card>
                       <CardContent className="pt-12 pb-12 text-center">
-                        <p className="text-muted-foreground">No processed coach applications</p>
+                        <p className="text-muted-foreground">No approved coach applications</p>
                       </CardContent>
                     </Card>
                   ) : (
                     <div className="space-y-6">
-                      {filterAndSort(coachApplications.filter(app => app.status === "approved" || app.status === "rejected"), "fullName").map((app, idx) => (
-                        <Card key={idx} className={`border-l-4 ${app.status === "approved" ? "border-l-cyan-500" : "border-l-red-500"}`}>
+                      {filterAndSort(coachApplications.filter(app => app.status === "approved"), "fullName").map((app, idx) => (
+                        <Card key={idx} className="border-l-4 border-l-cyan-500">
                           <CardHeader>
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
                                 <CardTitle>{app.fullName}</CardTitle>
                                 <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
-                              <Badge className={app.status === "approved" ? "bg-cyan-600" : "bg-red-600"}>
-                                {app.status === "approved" ? "Approved" : "Rejected"}
-                              </Badge>
+                              <Badge className="bg-cyan-600">Approved</Badge>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
@@ -1454,29 +1633,87 @@ export default function AdminDashboard() {
                                 <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
                               </div>
                             </div>
-                            {app.status === "approved" && (
-                              <div className="flex gap-2 pt-2">
-                                <Button 
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedMember({
-                                      id: app.id,
-                                      name: app.fullName,
-                                      email: app.email,
-                                      type: "coach" as const,
-                                      status: "active" as const
-                                    });
-                                    setShowMessageModal(true);
-                                  }}
-                                  data-testid={`button-message-coach-${idx}`}
-                                >
-                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
-                                </Button>
-                              </div>
-                            )}
+                            <div className="flex gap-2 pt-2">
+                              <Button 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedMember({
+                                    id: app.id,
+                                    name: app.fullName,
+                                    email: app.email,
+                                    type: "coach" as const,
+                                    status: "active" as const
+                                  });
+                                  setShowMessageModal(true);
+                                }}
+                                data-testid={`button-message-coach-${idx}`}
+                              >
+                                <MessageSquare className="mr-2 h-4 w-4" /> Message
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
                       ))}
+                    </div>
+                  )}
+                  
+                  {/* Rejected Coaches - Collapsible Section */}
+                  {coachApplications.filter(app => app.status === "rejected").length > 0 && (
+                    <div className="mt-8">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowRejected(prev => ({ ...prev, coaches: !prev.coaches }))}
+                        className="w-full justify-between text-slate-600 dark:text-slate-400 border-dashed"
+                        data-testid="button-toggle-rejected-coaches"
+                      >
+                        <span>Rejected Coaches ({coachApplications.filter(app => app.status === "rejected").length})</span>
+                        <span>{showRejected.coaches ? "▼" : "▶"}</span>
+                      </Button>
+                      {showRejected.coaches && (
+                        <div className="space-y-6 mt-4">
+                          {filterAndSort(coachApplications.filter(app => app.status === "rejected"), "fullName").map((app, idx) => (
+                            <Card key={idx} className="border-l-4 border-l-red-500 opacity-75">
+                              <CardHeader>
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <CardTitle>{app.fullName}</CardTitle>
+                                    <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                                  </div>
+                                  <Badge className="bg-red-600">Rejected</Badge>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                                    <p className="text-slate-900 dark:text-white">{app.fullName}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                                    <p className="text-slate-900 dark:text-white">{app.email}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                    <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
+                                    <p className="text-slate-900 dark:text-white">{app.expertise}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
+                                    <p className="text-slate-900 dark:text-white">{app.focusAreas}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Hourly Rate</p>
+                                    <p className="text-slate-900 dark:text-white">${app.hourlyRate}</p>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1485,26 +1722,24 @@ export default function AdminDashboard() {
               {/* Investors - Full Details */}
               {activeMembersCategoryTab === "investors" && (
                 <div>
-                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Investors (Approved & Rejected)</h2>
-                  {investorApplications.filter(app => app.status === "approved" || app.status === "rejected").length === 0 ? (
+                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Approved Investors</h2>
+                  {investorApplications.filter(app => app.status === "approved").length === 0 ? (
                     <Card>
                       <CardContent className="pt-12 pb-12 text-center">
-                        <p className="text-muted-foreground">No processed investor applications</p>
+                        <p className="text-muted-foreground">No approved investor applications</p>
                       </CardContent>
                     </Card>
                   ) : (
                     <div className="space-y-6">
-                      {filterAndSort(investorApplications.filter(app => app.status === "approved" || app.status === "rejected"), "fullName").map((app, idx) => (
-                        <Card key={idx} className={`border-l-4 ${app.status === "approved" ? "border-l-amber-500" : "border-l-red-500"}`}>
+                      {filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").map((app, idx) => (
+                        <Card key={idx} className="border-l-4 border-l-amber-500">
                           <CardHeader>
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
                                 <CardTitle>{app.fullName}</CardTitle>
                                 <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
-                              <Badge className={app.status === "approved" ? "bg-amber-600" : "bg-red-600"}>
-                                {app.status === "approved" ? "Approved" : "Rejected"}
-                              </Badge>
+                              <Badge className="bg-amber-600">Approved</Badge>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
@@ -1550,29 +1785,87 @@ export default function AdminDashboard() {
                                 <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
                               </div>
                             </div>
-                            {app.status === "approved" && (
-                              <div className="flex gap-2 pt-2">
-                                <Button 
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedMember({
-                                      id: app.id,
-                                      name: app.fullName,
-                                      email: app.email,
-                                      type: "investor" as const,
-                                      status: "active" as const
-                                    });
-                                    setShowMessageModal(true);
-                                  }}
-                                  data-testid={`button-message-investor-${idx}`}
-                                >
-                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
-                                </Button>
-                              </div>
-                            )}
+                            <div className="flex gap-2 pt-2">
+                              <Button 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedMember({
+                                    id: app.id,
+                                    name: app.fullName,
+                                    email: app.email,
+                                    type: "investor" as const,
+                                    status: "active" as const
+                                  });
+                                  setShowMessageModal(true);
+                                }}
+                                data-testid={`button-message-investor-${idx}`}
+                              >
+                                <MessageSquare className="mr-2 h-4 w-4" /> Message
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
                       ))}
+                    </div>
+                  )}
+                  
+                  {/* Rejected Investors - Collapsible Section */}
+                  {investorApplications.filter(app => app.status === "rejected").length > 0 && (
+                    <div className="mt-8">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowRejected(prev => ({ ...prev, investors: !prev.investors }))}
+                        className="w-full justify-between text-slate-600 dark:text-slate-400 border-dashed"
+                        data-testid="button-toggle-rejected-investors"
+                      >
+                        <span>Rejected Investors ({investorApplications.filter(app => app.status === "rejected").length})</span>
+                        <span>{showRejected.investors ? "▼" : "▶"}</span>
+                      </Button>
+                      {showRejected.investors && (
+                        <div className="space-y-6 mt-4">
+                          {filterAndSort(investorApplications.filter(app => app.status === "rejected"), "fullName").map((app, idx) => (
+                            <Card key={idx} className="border-l-4 border-l-red-500 opacity-75">
+                              <CardHeader>
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <CardTitle>{app.fullName}</CardTitle>
+                                    <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                                  </div>
+                                  <Badge className="bg-red-600">Rejected</Badge>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                                    <p className="text-slate-900 dark:text-white">{app.fullName}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                                    <p className="text-slate-900 dark:text-white">{app.email}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                    <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Fund Name</p>
+                                    <p className="text-slate-900 dark:text-white">{app.fundName}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Amount</p>
+                                    <p className="text-slate-900 dark:text-white">{app.investmentAmount}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Preference</p>
+                                    <p className="text-slate-900 dark:text-white">{app.investmentPreference}</p>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
