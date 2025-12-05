@@ -1251,54 +1251,87 @@ export default function AdminDashboard() {
                               </div>
                             )}
                             
-                            {/* Idea Proposal Section */}
-                            {app.ideaReview && Array.isArray(app.ideaReview) && app.ideaReview.length > 0 && (
-                              <div className="border-t pt-4">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setExpandedProposal(prev => ({ ...prev, [`member-${app.id}`]: !prev[`member-${app.id}`] }))}
-                                  className="mb-2 text-cyan-600 hover:text-cyan-700"
-                                  data-testid={`button-toggle-proposal-member-${idx}`}
-                                >
-                                  {expandedProposal[`member-${app.id}`] ? "▼ Hide Idea Proposal" : "▶ View Idea Proposal"}
-                                </Button>
-                                {expandedProposal[`member-${app.id}`] && (
-                                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 space-y-3 max-h-96 overflow-y-auto">
-                                    {app.ideaReview.map((item: any, qIdx: number) => (
-                                      <div key={qIdx} className="border-b border-slate-200 dark:border-slate-700 pb-2 last:border-0">
-                                        <p className="text-xs font-semibold text-slate-500 uppercase">{item.question}</p>
-                                        <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">{item.answer || "—"}</p>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                            
-                            {/* Business Plan Section */}
-                            {app.businessPlan && (
-                              <div className="border-t pt-4">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setExpandedBusinessPlan(prev => ({ ...prev, [`member-${app.id}`]: !prev[`member-${app.id}`] }))}
-                                  className="mb-2 text-emerald-600 hover:text-emerald-700"
-                                  data-testid={`button-toggle-businessplan-member-${idx}`}
-                                >
-                                  {expandedBusinessPlan[`member-${app.id}`] ? "▼ Hide Business Plan" : "▶ View Business Plan"}
-                                </Button>
-                                {expandedBusinessPlan[`member-${app.id}`] && (
-                                  <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-4 max-h-96 overflow-y-auto">
-                                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                                      <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans">
-                                        {typeof app.businessPlan === 'string' ? app.businessPlan : JSON.stringify(app.businessPlan, null, 2)}
-                                      </pre>
+                            {/* Idea Proposal Section - Same format as Approvals tab */}
+                            <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                              <Button 
+                                variant="ghost" 
+                                className="w-full justify-start text-cyan-600 hover:text-cyan-700 font-semibold"
+                                onClick={() => setExpandedProposal(prev => ({ ...prev, [`member-${app.id}`]: !prev[`member-${app.id}`] }))}
+                                data-testid={`button-toggle-proposal-member-${idx}`}
+                              >
+                                {expandedProposal[`member-${app.id}`] ? "▼" : "▶"} Idea Proposal (43 Questions)
+                              </Button>
+                              {expandedProposal[`member-${app.id}`] && app.ideaReview && (
+                                <div className="mt-4 space-y-3 max-h-96 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-4 rounded">
+                                  {Object.entries(app.ideaReview).map(([key, value]: [string, any], i) => (
+                                    <div key={i} className="text-sm">
+                                      <p className="font-semibold text-slate-700 dark:text-slate-300 capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
+                                      <p className="text-slate-600 dark:text-slate-400 mt-1">{String(value || 'N/A')}</p>
                                     </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Business Plan Section - Same format as Approvals tab */}
+                            <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                              <Button 
+                                variant="ghost" 
+                                className="w-full justify-start text-cyan-600 hover:text-cyan-700 font-semibold"
+                                onClick={() => setExpandedBusinessPlan(prev => ({ ...prev, [`member-${app.id}`]: !prev[`member-${app.id}`] }))}
+                                data-testid={`button-toggle-businessplan-member-${idx}`}
+                              >
+                                {expandedBusinessPlan[`member-${app.id}`] ? "▼" : "▶"} Business Plan AI Draft (11 Sections)
+                              </Button>
+                              {expandedBusinessPlan[`member-${app.id}`] && app.businessPlan && (
+                                <div className="mt-4 space-y-4 max-h-96 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-4 rounded">
+                                  <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                    <p className="font-semibold text-slate-700 dark:text-slate-300">1. Executive Summary</p>
+                                    <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.executiveSummary || 'N/A'}</p>
                                   </div>
-                                )}
-                              </div>
-                            )}
+                                  <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                    <p className="font-semibold text-slate-700 dark:text-slate-300">2. Problem Statement</p>
+                                    <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.problemStatement || 'N/A'}</p>
+                                  </div>
+                                  <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                    <p className="font-semibold text-slate-700 dark:text-slate-300">3. Solution</p>
+                                    <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.solution || 'N/A'}</p>
+                                  </div>
+                                  <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                    <p className="font-semibold text-slate-700 dark:text-slate-300">4. Target Market</p>
+                                    <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.targetMarket || 'N/A'}</p>
+                                  </div>
+                                  <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                    <p className="font-semibold text-slate-700 dark:text-slate-300">5. Competitive Analysis</p>
+                                    <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.competitiveAnalysis || 'N/A'}</p>
+                                  </div>
+                                  <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                    <p className="font-semibold text-slate-700 dark:text-slate-300">6. Business Model</p>
+                                    <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.businessModel || 'N/A'}</p>
+                                  </div>
+                                  <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                    <p className="font-semibold text-slate-700 dark:text-slate-300">7. Marketing Strategy</p>
+                                    <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.marketingStrategy || 'N/A'}</p>
+                                  </div>
+                                  <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                    <p className="font-semibold text-slate-700 dark:text-slate-300">8. Financial Projections</p>
+                                    <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.financialProjections || 'N/A'}</p>
+                                  </div>
+                                  <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                    <p className="font-semibold text-slate-700 dark:text-slate-300">9. Team</p>
+                                    <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.team || 'N/A'}</p>
+                                  </div>
+                                  <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                    <p className="font-semibold text-slate-700 dark:text-slate-300">10. Milestones</p>
+                                    <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.milestones || 'N/A'}</p>
+                                  </div>
+                                  <div className="text-sm">
+                                    <p className="font-semibold text-slate-700 dark:text-slate-300">11. Funding Requirements</p>
+                                    <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.fundingRequirements || 'N/A'}</p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
 
                             <div className="flex gap-2 pt-2">
                               <Button 
@@ -1405,6 +1438,88 @@ export default function AdminDashboard() {
                                     <p className="text-sm text-slate-700 dark:text-slate-300">{app.solution}</p>
                                   </div>
                                 )}
+                                
+                                {/* Idea Proposal Section for Rejected */}
+                                <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                                  <Button 
+                                    variant="ghost" 
+                                    className="w-full justify-start text-cyan-600 hover:text-cyan-700 font-semibold"
+                                    onClick={() => setExpandedProposal(prev => ({ ...prev, [`rejected-${app.id}`]: !prev[`rejected-${app.id}`] }))}
+                                    data-testid={`button-toggle-proposal-rejected-${idx}`}
+                                  >
+                                    {expandedProposal[`rejected-${app.id}`] ? "▼" : "▶"} Idea Proposal (43 Questions)
+                                  </Button>
+                                  {expandedProposal[`rejected-${app.id}`] && app.ideaReview && (
+                                    <div className="mt-4 space-y-3 max-h-96 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-4 rounded">
+                                      {Object.entries(app.ideaReview).map(([key, value]: [string, any], i) => (
+                                        <div key={i} className="text-sm">
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300 capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
+                                          <p className="text-slate-600 dark:text-slate-400 mt-1">{String(value || 'N/A')}</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Business Plan Section for Rejected */}
+                                <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                                  <Button 
+                                    variant="ghost" 
+                                    className="w-full justify-start text-cyan-600 hover:text-cyan-700 font-semibold"
+                                    onClick={() => setExpandedBusinessPlan(prev => ({ ...prev, [`rejected-${app.id}`]: !prev[`rejected-${app.id}`] }))}
+                                    data-testid={`button-toggle-businessplan-rejected-${idx}`}
+                                  >
+                                    {expandedBusinessPlan[`rejected-${app.id}`] ? "▼" : "▶"} Business Plan AI Draft (11 Sections)
+                                  </Button>
+                                  {expandedBusinessPlan[`rejected-${app.id}`] && app.businessPlan && (
+                                    <div className="mt-4 space-y-4 max-h-96 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-4 rounded">
+                                      <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                        <p className="font-semibold text-slate-700 dark:text-slate-300">1. Executive Summary</p>
+                                        <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.executiveSummary || 'N/A'}</p>
+                                      </div>
+                                      <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                        <p className="font-semibold text-slate-700 dark:text-slate-300">2. Problem Statement</p>
+                                        <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.problemStatement || 'N/A'}</p>
+                                      </div>
+                                      <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                        <p className="font-semibold text-slate-700 dark:text-slate-300">3. Solution</p>
+                                        <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.solution || 'N/A'}</p>
+                                      </div>
+                                      <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                        <p className="font-semibold text-slate-700 dark:text-slate-300">4. Target Market</p>
+                                        <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.targetMarket || 'N/A'}</p>
+                                      </div>
+                                      <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                        <p className="font-semibold text-slate-700 dark:text-slate-300">5. Competitive Analysis</p>
+                                        <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.competitiveAnalysis || 'N/A'}</p>
+                                      </div>
+                                      <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                        <p className="font-semibold text-slate-700 dark:text-slate-300">6. Business Model</p>
+                                        <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.businessModel || 'N/A'}</p>
+                                      </div>
+                                      <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                        <p className="font-semibold text-slate-700 dark:text-slate-300">7. Marketing Strategy</p>
+                                        <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.marketingStrategy || 'N/A'}</p>
+                                      </div>
+                                      <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                        <p className="font-semibold text-slate-700 dark:text-slate-300">8. Financial Projections</p>
+                                        <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.financialProjections || 'N/A'}</p>
+                                      </div>
+                                      <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                        <p className="font-semibold text-slate-700 dark:text-slate-300">9. Team</p>
+                                        <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.team || 'N/A'}</p>
+                                      </div>
+                                      <div className="text-sm border-b border-slate-200 dark:border-slate-700 pb-3">
+                                        <p className="font-semibold text-slate-700 dark:text-slate-300">10. Milestones</p>
+                                        <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.milestones || 'N/A'}</p>
+                                      </div>
+                                      <div className="text-sm">
+                                        <p className="font-semibold text-slate-700 dark:text-slate-300">11. Funding Requirements</p>
+                                        <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.fundingRequirements || 'N/A'}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                               </CardContent>
                             </Card>
                           ))}
