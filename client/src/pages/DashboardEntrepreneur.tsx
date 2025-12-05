@@ -5,8 +5,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, Check, AlertCircle, User, LogOut } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { DashboardHeader } from "@/components/DashboardHeader";
-import { DashboardFooter } from "@/components/DashboardFooter";
 import { useLocation } from "wouter";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -1159,7 +1157,6 @@ export default function DashboardEntrepreneur() {
           </Card>
         </div>
       </main>
-      <DashboardFooter />
     </div>
   );
 }

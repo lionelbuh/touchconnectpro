@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Globe, Lightbulb, Star, Briefcase, TrendingUp } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Globe, Lightbulb, Star, Briefcase, TrendingUp, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -37,6 +37,9 @@ export default function Login() {
   const [state, setState] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>("entrepreneur");
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   
   // Form state
   const [loginEmail, setLoginEmail] = useState("");
@@ -45,6 +48,99 @@ export default function Login() {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [recoveryEmail, setRecoveryEmail] = useState("");
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const supabase = await getSupabase();
+        if (!supabase) {
+          setCheckingAuth(false);
+          return;
+        }
+        
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && user.email) {
+          const email = user.email.toLowerCase();
+          setUserEmail(email);
+          
+          // Check application tables to find user role
+          let role: string | null = null;
+          
+          // Check ideas table (entrepreneurs)
+          const { data: entrepreneurApp } = await supabase
+            .from("ideas")
+            .select("status")
+            .ilike("entrepreneur_email", email)
+            .eq("status", "approved")
+            .limit(1);
+          
+          if (entrepreneurApp && entrepreneurApp.length > 0) {
+            role = "entrepreneur";
+          }
+          
+          // Check mentor_applications
+          if (!role) {
+            const { data: mentorApp } = await supabase
+              .from("mentor_applications")
+              .select("status")
+              .ilike("email", email)
+              .eq("status", "approved")
+              .limit(1);
+            
+            if (mentorApp && mentorApp.length > 0) {
+              role = "mentor";
+            }
+          }
+          
+          // Check coach_applications
+          if (!role) {
+            const { data: coachApp } = await supabase
+              .from("coach_applications")
+              .select("status")
+              .ilike("email", email)
+              .eq("status", "approved")
+              .limit(1);
+            
+            if (coachApp && coachApp.length > 0) {
+              role = "coach";
+            }
+          }
+          
+          // Check investor_applications
+          if (!role) {
+            const { data: investorApp } = await supabase
+              .from("investor_applications")
+              .select("status")
+              .ilike("email", email)
+              .eq("status", "approved")
+              .limit(1);
+            
+            if (investorApp && investorApp.length > 0) {
+              role = "investor";
+            }
+          }
+          
+          if (role) {
+            setUserRole(role);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking auth:", error);
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+    
+    checkUser();
+  }, []);
+
+  const handleGoToDashboard = () => {
+    if (userRole === "entrepreneur") navigate("/dashboard-entrepreneur");
+    else if (userRole === "mentor") navigate("/dashboard-mentor");
+    else if (userRole === "coach") navigate("/dashboard-coach");
+    else if (userRole === "investor") navigate("/dashboard-investor");
+  };
 
   const handleLogin = async () => {
     if (!loginEmail || !loginPassword) {
@@ -239,6 +335,68 @@ export default function Login() {
     else if (role === "coach") navigate("/become-coach");
     else if (role === "investor") navigate("/investors");
   };
+
+  // Show loading while checking auth
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-background flex items-center justify-center py-12 px-4">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-cyan-500 mx-auto" />
+          <p className="text-slate-400 mt-4">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show dashboard button if user is logged in
+  if (userRole) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-background flex items-center justify-center py-12 px-4">
+        <div className="w-full max-w-md">
+          <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl shadow-2xl">
+            <CardHeader className="space-y-2 pb-6">
+              <CardTitle className="text-3xl font-display font-bold text-white">Welcome Back!</CardTitle>
+              <CardDescription className="text-slate-400">
+                You're already signed in as {userEmail}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button
+                onClick={handleGoToDashboard}
+                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50"
+                data-testid="button-go-to-dashboard"
+              >
+                Go to My Dashboard
+              </Button>
+              
+              <Button
+                onClick={async () => {
+                  const supabase = await getSupabase();
+                  if (supabase) {
+                    await supabase.auth.signOut();
+                  }
+                  setUserRole(null);
+                  setUserEmail(null);
+                  toast.success("Logged out successfully");
+                }}
+                variant="outline"
+                className="w-full border-slate-600 text-slate-300 hover:bg-slate-800/50"
+                data-testid="button-logout-login"
+              >
+                Sign Out
+              </Button>
+
+              <Link href="/" className="block">
+                <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800/50">
+                  Back to Home
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-background flex items-center justify-center py-12 px-4">

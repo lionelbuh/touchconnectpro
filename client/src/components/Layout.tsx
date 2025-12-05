@@ -13,14 +13,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     setMobileMenuOpen(false);
   }, [location]);
 
-  // Hide nav and footer on dashboard pages
-  const isDashboard = [
-    "/dashboard-entrepreneur",
-    "/dashboard-coach",
-    "/dashboard-mentor",
-    "/dashboard-investor"
-  ].includes(location);
-
   const links = [
     { href: "/", label: "Home" },
     { href: "/how-it-works", label: "How it works" },
@@ -30,8 +22,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-background text-foreground">
-      {/* Navbar - Hidden on dashboard pages */}
-      {!isDashboard && (
+      {/* Navbar */}
       <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-24 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
@@ -103,15 +94,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         )}
       </nav>
-      )}
 
       {/* Main Content */}
       <main className="flex-1">
         {children}
       </main>
 
-      {/* Footer - Hidden on dashboard pages */}
-      {!isDashboard && (
+      {/* Footer */}
       <footer className="border-t border-border bg-muted/30 py-12">
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
@@ -162,7 +151,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           © {new Date().getFullYear()} TouchConnectPro. All rights reserved.
         </div>
       </footer>
-      )}
     </div>
   );
 }

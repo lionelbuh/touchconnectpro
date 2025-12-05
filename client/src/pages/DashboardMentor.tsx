@@ -7,8 +7,6 @@ import { Users, MessageSquare, Calendar, Settings, ChevronRight, Plus, LogOut, B
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
-import { DashboardHeader } from "@/components/DashboardHeader";
-import { DashboardFooter } from "@/components/DashboardFooter";
 import { useLocation } from "wouter";
 
 interface MentorProfileData {
@@ -254,9 +252,7 @@ export default function DashboardMentor() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
-      <DashboardHeader userName={mentorProfile.fullName} />
-      <div className="flex flex-1 bg-slate-50 dark:bg-slate-950">
+    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Sidebar */}
       <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
         <div className="p-6 flex flex-col h-full">
@@ -717,8 +713,6 @@ export default function DashboardMentor() {
           </Card>
         </div>
       )}
-      </div>
-      <DashboardFooter />
     </div>
   );
 }

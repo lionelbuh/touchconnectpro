@@ -7,8 +7,6 @@ import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
-import { DashboardHeader } from "@/components/DashboardHeader";
-import { DashboardFooter } from "@/components/DashboardFooter";
 
 interface InvestorProfile {
   id: string;
@@ -126,9 +124,7 @@ export default function DashboardInvestor() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
-      <DashboardHeader userName={profile?.full_name || "Investor"} />
-      <div className="flex flex-1 bg-slate-50 dark:bg-slate-950">
+    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
         <div className="p-6 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-6">
@@ -308,8 +304,6 @@ export default function DashboardInvestor() {
           </div>
         </div>
       </main>
-      <DashboardFooter />
-      </div>
     </div>
   );
 }
