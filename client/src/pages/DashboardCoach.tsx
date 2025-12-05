@@ -7,6 +7,7 @@ import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
+import { DashboardHeader } from "@/components/DashboardHeader";
 
 interface CoachProfile {
   id: string;
@@ -117,7 +118,9 @@ export default function DashboardCoach() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
+      <DashboardHeader userName={profile?.full_name || "Coach"} />
+      <div className="flex flex-1 bg-slate-50 dark:bg-slate-950">
       <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
         <div className="p-6 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-6">
@@ -281,6 +284,7 @@ export default function DashboardCoach() {
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }
