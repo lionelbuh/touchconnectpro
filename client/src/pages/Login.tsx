@@ -66,18 +66,94 @@ export default function Login() {
       if (error) throw error;
       
       if (data.user) {
-        // First try to get role from users table
-        const { data: profile } = await supabase
-          .from("users")
-          .select("role")
-          .eq("id", data.user.id);
+        const userEmail = data.user.email?.toLowerCase();
+        console.log("[LOGIN] User email:", userEmail);
         
-        // Fallback to user_metadata if not in users table
-        let userRole = profile?.[0]?.role || data.user.user_metadata?.user_type || "entrepreneur";
+        // Determine role from application tables (source of truth)
+        let applicationRole: string | null = null;
         
-        console.log("[LOGIN] User ID:", data.user.id);
-        console.log("[LOGIN] Profile from DB:", profile);
-        console.log("[LOGIN] user_metadata:", data.user.user_metadata);
+        if (userEmail) {
+          console.log("[LOGIN] Checking application tables for email:", userEmail);
+          
+          // Check ideas table (entrepreneurs)
+          const { data: entrepreneurApp } = await supabase
+            .from("ideas")
+            .select("status, entrepreneur_email")
+            .ilike("entrepreneur_email", userEmail)
+            .eq("status", "approved")
+            .limit(1);
+          
+          if (entrepreneurApp && entrepreneurApp.length > 0) {
+            applicationRole = "entrepreneur";
+            console.log("[LOGIN] Found approved entrepreneur application");
+          }
+          
+          // Check mentor_applications
+          if (!applicationRole) {
+            const { data: mentorApp } = await supabase
+              .from("mentor_applications")
+              .select("status, email")
+              .ilike("email", userEmail)
+              .eq("status", "approved")
+              .limit(1);
+            
+            if (mentorApp && mentorApp.length > 0) {
+              applicationRole = "mentor";
+              console.log("[LOGIN] Found approved mentor application");
+            }
+          }
+          
+          // Check coach_applications
+          if (!applicationRole) {
+            const { data: coachApp } = await supabase
+              .from("coach_applications")
+              .select("status, email")
+              .ilike("email", userEmail)
+              .eq("status", "approved")
+              .limit(1);
+            
+            if (coachApp && coachApp.length > 0) {
+              applicationRole = "coach";
+              console.log("[LOGIN] Found approved coach application");
+            }
+          }
+          
+          // Check investor_applications
+          if (!applicationRole) {
+            const { data: investorApp } = await supabase
+              .from("investor_applications")
+              .select("status, email")
+              .ilike("email", userEmail)
+              .eq("status", "approved")
+              .limit(1);
+            
+            if (investorApp && investorApp.length > 0) {
+              applicationRole = "investor";
+              console.log("[LOGIN] Found approved investor application");
+            }
+          }
+        }
+        
+        // Use application role as source of truth, fallback to users table, then metadata
+        let userRole = applicationRole;
+        
+        if (!userRole) {
+          // Fallback to users table
+          const { data: profile } = await supabase
+            .from("users")
+            .select("role")
+            .eq("id", data.user.id);
+          
+          userRole = profile?.[0]?.role;
+          console.log("[LOGIN] Role from users table:", userRole);
+        }
+        
+        // Final fallback to user_metadata
+        if (!userRole) {
+          userRole = data.user.user_metadata?.user_type || "entrepreneur";
+          console.log("[LOGIN] Using fallback role from metadata:", userRole);
+        }
+        
         console.log("[LOGIN] Final role:", userRole);
         
         let dashboardPath = "/dashboard-entrepreneur";
