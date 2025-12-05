@@ -8,6 +8,7 @@ import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { DashboardHeader } from "@/components/DashboardHeader";
+import { DashboardFooter } from "@/components/DashboardFooter";
 import { useLocation } from "wouter";
 
 interface MentorProfileData {
@@ -717,6 +718,7 @@ export default function DashboardMentor() {
         </div>
       )}
       </div>
+      <DashboardFooter />
     </div>
   );
 }

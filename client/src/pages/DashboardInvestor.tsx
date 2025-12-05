@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
 import { DashboardHeader } from "@/components/DashboardHeader";
+import { DashboardFooter } from "@/components/DashboardFooter";
 
 interface InvestorProfile {
   id: string;
@@ -307,6 +308,7 @@ export default function DashboardInvestor() {
           </div>
         </div>
       </main>
+      <DashboardFooter />
       </div>
     </div>
   );

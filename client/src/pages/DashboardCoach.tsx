@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
 import { DashboardHeader } from "@/components/DashboardHeader";
+import { DashboardFooter } from "@/components/DashboardFooter";
 
 interface CoachProfile {
   id: string;
@@ -284,6 +285,7 @@ export default function DashboardCoach() {
           </div>
         </div>
       </main>
+      <DashboardFooter />
       </div>
     </div>
   );
