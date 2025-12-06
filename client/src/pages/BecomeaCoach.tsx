@@ -470,13 +470,7 @@ export default function BecomeaCoach() {
 
                     <div className="flex gap-3 pt-6">
                       <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)} data-testid="button-cancel-coach-form">Cancel</Button>
-                      <Button type="submit" onClick={(e) => {
-                        console.log("Submit button clicked");
-                        if (e.currentTarget.form) {
-                          console.log("Form found, submitting...");
-                          e.currentTarget.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-                        }
-                      }} className="flex-1 bg-cyan-600 hover:bg-cyan-700" data-testid="button-submit-coach-form">Submit Application</Button>
+                      <Button type="submit" className="flex-1 bg-cyan-600 hover:bg-cyan-700" data-testid="button-submit-coach-form">Submit Application</Button>
                     </div>
                   </form>
                 )}
