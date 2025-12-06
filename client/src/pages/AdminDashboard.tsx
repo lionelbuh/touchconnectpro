@@ -21,6 +21,7 @@ interface MentorApplication {
   state?: string;
   rejection_reason?: string;
   updated_at?: string;
+  is_resubmitted?: boolean;
 }
 
 interface CoachApplication {
@@ -37,6 +38,7 @@ interface CoachApplication {
   state?: string;
   rejection_reason?: string;
   updated_at?: string;
+  is_resubmitted?: boolean;
 }
 
 interface InvestorApplication {
@@ -54,6 +56,7 @@ interface InvestorApplication {
   state?: string;
   rejection_reason?: string;
   updated_at?: string;
+  is_resubmitted?: boolean;
 }
 
 interface EntrepreneurApplication {
@@ -70,6 +73,7 @@ interface EntrepreneurApplication {
   portfolio?: string;
   rejection_reason?: string;
   updated_at?: string;
+  is_resubmitted?: boolean;
   [key: string]: any;
 }
 
@@ -637,7 +641,7 @@ export default function AdminDashboard() {
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
                             <div className="flex gap-2">
-                              {app.isResubmission && <Badge className="bg-purple-600">Resubmission</Badge>}
+                              {app.is_resubmitted && <Badge className="bg-purple-600">Resubmission</Badge>}
                               <Badge className="bg-emerald-600">Pending</Badge>
                             </div>
                           </div>
@@ -807,6 +811,7 @@ export default function AdminDashboard() {
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
                             <div className="flex gap-2">
+                              {app.is_resubmitted && <Badge className="bg-purple-600">Resubmission</Badge>}
                               <Badge className="bg-amber-600">Pending</Badge>
                             </div>
                           </div>
@@ -996,6 +1001,7 @@ export default function AdminDashboard() {
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
                             <div className="flex gap-2">
+                              {app.is_resubmitted && <Badge className="bg-purple-600">Resubmission</Badge>}
                               <Badge className="bg-amber-600">Pending</Badge>
                             </div>
                           </div>
