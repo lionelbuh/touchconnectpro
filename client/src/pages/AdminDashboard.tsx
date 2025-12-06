@@ -2259,7 +2259,7 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle>Assign {selectedMember.name} to Portfolio</CardTitle>
+              <CardTitle>Assign {selectedMember.name} to Mentor</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -2271,9 +2271,15 @@ export default function AdminDashboard() {
                   data-testid="select-mentor"
                 >
                   <option value="">Choose a mentor...</option>
-                  <option value="mentor-1">Sarah Chen</option>
-                  <option value="mentor-2">John Smith</option>
-                  <option value="mentor-3">Emma Wilson</option>
+                  {approvedMentors.length === 0 ? (
+                    <option disabled>No approved mentors available</option>
+                  ) : (
+                    approvedMentors.map((mentor) => (
+                      <option key={mentor.id} value={mentor.id}>
+                        {mentor.fullName} - {mentor.expertise}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
               <div>
@@ -2285,14 +2291,21 @@ export default function AdminDashboard() {
                   data-testid="select-portfolio"
                 >
                   <option value="">Choose a portfolio...</option>
-                  <option value="1">Portfolio 1</option>
-                  <option value="2">Portfolio 2</option>
-                  <option value="3">Portfolio 3</option>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                    <option key={num} value={num}>Portfolio {num}</option>
+                  ))}
                 </select>
               </div>
               <div className="flex gap-2 pt-4">
                 <Button variant="outline" className="flex-1" onClick={() => setShowPortfolioModal(false)}>Cancel</Button>
-                <Button className="flex-1 bg-cyan-600 hover:bg-cyan-700" onClick={handleAssignPortfolio} data-testid="button-assign">Assign</Button>
+                <Button 
+                  className="flex-1 bg-cyan-600 hover:bg-cyan-700" 
+                  onClick={handleAssignPortfolio} 
+                  disabled={!selectedMentor || !portfolioAssignment}
+                  data-testid="button-assign"
+                >
+                  Assign
+                </Button>
               </div>
             </CardContent>
           </Card>
