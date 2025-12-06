@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
@@ -764,7 +764,10 @@ export default function DashboardEntrepreneur() {
                     {hasActiveMentor ? (
                       <div className="flex flex-col md:flex-row gap-6">
                         <div className="flex items-center gap-4">
-                          <Avatar className="h-16 w-16 border-2 border-cyan-200">
+                          <Avatar className="h-20 w-20 border-2 border-cyan-200">
+                            {mentorData.mentor?.photo_url ? (
+                              <AvatarImage src={mentorData.mentor.photo_url} alt={mentorData.mentor?.full_name || "Mentor"} />
+                            ) : null}
                             <AvatarFallback className="bg-cyan-500 text-white text-xl">
                               {mentorData.mentor?.full_name?.substring(0, 2).toUpperCase() || "MT"}
                             </AvatarFallback>

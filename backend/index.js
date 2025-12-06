@@ -1239,13 +1239,35 @@ app.get("/api/entrepreneur/:email", async (req, res) => {
     // Get mentor assignment if exists
     const { data: assignmentData } = await supabase
       .from("mentor_assignments")
-      .select("*, mentor:mentor_id(*)")
+      .select("*")
       .eq("entrepreneur_id", ideaData.id)
+      .eq("status", "active")
       .single();
 
-    // Get mentor notes if assigned
+    let mentorProfile = null;
     let mentorNotes = [];
+
     if (assignmentData) {
+      // Fetch mentor profile from mentor_applications table
+      const { data: mentorData } = await supabase
+        .from("mentor_applications")
+        .select("*")
+        .eq("id", assignmentData.mentor_id)
+        .single();
+
+      if (mentorData) {
+        mentorProfile = {
+          id: mentorData.id,
+          full_name: mentorData.fullName,
+          email: mentorData.email,
+          expertise: mentorData.expertise,
+          linkedin: mentorData.linkedin,
+          bio: mentorData.bio,
+          photo_url: mentorData.photoUrl
+        };
+      }
+
+      // Get mentor notes
       const { data: notesData } = await supabase
         .from("mentor_notes")
         .select("*")
@@ -1256,7 +1278,11 @@ app.get("/api/entrepreneur/:email", async (req, res) => {
 
     return res.json({
       ...ideaData,
-      mentorAssignment: assignmentData || null,
+      mentorAssignment: assignmentData ? {
+        ...assignmentData,
+        status: "active",
+        mentor: mentorProfile
+      } : null,
       mentorNotes
     });
   } catch (error) {
