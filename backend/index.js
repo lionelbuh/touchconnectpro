@@ -240,6 +240,40 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId)
   }
 }
 
+// Helper function to check if email exists in any other category
+async function checkEmailInOtherCategories(email, currentCategory) {
+  const categories = {
+    entrepreneur: { table: "ideas", emailColumn: "entrepreneur_email" },
+    mentor: { table: "mentor_applications", emailColumn: "email" },
+    coach: { table: "coach_applications", emailColumn: "email" },
+    investor: { table: "investor_applications", emailColumn: "email" }
+  };
+
+  const otherCategories = Object.entries(categories).filter(([key]) => key !== currentCategory);
+
+  for (const [categoryName, config] of otherCategories) {
+    const { data, error } = await supabase
+      .from(config.table)
+      .select("id, status")
+      .eq(config.emailColumn, email)
+      .limit(1);
+
+    if (data && data.length > 0) {
+      const status = data[0].status;
+      // Only block if they have a non-rejected application in another category
+      if (status !== "rejected") {
+        return {
+          exists: true,
+          category: categoryName,
+          status: status
+        };
+      }
+    }
+  }
+
+  return { exists: false };
+}
+
 app.post("/api/ideas", async (req, res) => {
   console.log("[POST /api/ideas] Called");
   console.log("[Payload] fullName:", req.body?.fullName, "email:", req.body?.email);
@@ -250,6 +284,15 @@ app.post("/api/ideas", async (req, res) => {
     if (!fullName || !email) {
       console.log("[VALIDATION] Missing: fullName =", fullName, ", email =", email);
       return res.status(400).json({ error: "Name and email required" });
+    }
+
+    // Check if email exists in another category
+    const crossCategoryCheck = await checkEmailInOtherCategories(email, "entrepreneur");
+    if (crossCategoryCheck.exists) {
+      console.log("[CROSS-CATEGORY] Email already used in:", crossCategoryCheck.category);
+      return res.status(400).json({ 
+        error: `This email is already registered as a ${crossCategoryCheck.category}. You cannot apply for multiple roles with the same email.` 
+      });
     }
 
     // Check for existing application with same email
@@ -406,6 +449,15 @@ app.post("/api/mentors", async (req, res) => {
 
     if (!email || !fullName || !bio || !expertise || !experience || !country) {
       return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Check if email exists in another category
+    const crossCategoryCheck = await checkEmailInOtherCategories(email, "mentor");
+    if (crossCategoryCheck.exists) {
+      console.log("[CROSS-CATEGORY] Email already used in:", crossCategoryCheck.category);
+      return res.status(400).json({ 
+        error: `This email is already registered as a ${crossCategoryCheck.category}. You cannot apply for multiple roles with the same email.` 
+      });
     }
 
     // Check if there's an existing application with this email
@@ -601,6 +653,15 @@ app.post("/api/coaches", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
+    // Check if email exists in another category
+    const crossCategoryCheck = await checkEmailInOtherCategories(email, "coach");
+    if (crossCategoryCheck.exists) {
+      console.log("[CROSS-CATEGORY] Email already used in:", crossCategoryCheck.category);
+      return res.status(400).json({ 
+        error: `This email is already registered as a ${crossCategoryCheck.category}. You cannot apply for multiple roles with the same email.` 
+      });
+    }
+
     // Check if there's an existing application with this email
     const { data: existingApp } = await supabase
       .from("coach_applications")
@@ -792,6 +853,15 @@ app.post("/api/investors", async (req, res) => {
 
     if (!email || !fullName || !fundName || !investmentFocus || !investmentPreference || !investmentAmount || !country) {
       return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Check if email exists in another category
+    const crossCategoryCheck = await checkEmailInOtherCategories(email, "investor");
+    if (crossCategoryCheck.exists) {
+      console.log("[CROSS-CATEGORY] Email already used in:", crossCategoryCheck.category);
+      return res.status(400).json({ 
+        error: `This email is already registered as a ${crossCategoryCheck.category}. You cannot apply for multiple roles with the same email.` 
+      });
     }
 
     // Check if there's an existing application with this email
