@@ -370,7 +370,55 @@ app.post("/api/mentors", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    console.log("[INSERT] Saving mentor application for:", email);
+    // Check if there's an existing application with this email
+    const { data: existingApp } = await supabase
+      .from("mentor_applications")
+      .select("id, status")
+      .ilike("email", email)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (existingApp && existingApp.length > 0) {
+      const existing = existingApp[0];
+      
+      if (existing.status === "approved") {
+        return res.status(400).json({ error: "You already have an approved application. Please login to access your dashboard." });
+      }
+      
+      if (existing.status === "pending" || existing.status === "submitted") {
+        return res.status(400).json({ error: "You already have a pending application. Please wait for admin review." });
+      }
+      
+      // If rejected, update the existing record to allow resubmission
+      if (existing.status === "rejected") {
+        console.log("[UPDATE] Resubmitting rejected mentor application for:", email);
+        const { data, error } = await supabase
+          .from("mentor_applications")
+          .update({
+            full_name: fullName,
+            linkedin: linkedin || null,
+            bio,
+            expertise,
+            experience,
+            country,
+            state: state || null,
+            status: "submitted",
+            resubmitted_at: new Date().toISOString()
+          })
+          .eq("id", existing.id)
+          .select();
+
+        if (error) {
+          console.error("[DB ERROR]:", error);
+          return res.status(400).json({ error: error.message });
+        }
+
+        console.log("[SUCCESS] Mentor application resubmitted");
+        return res.json({ success: true, id: data?.[0]?.id, resubmission: true });
+      }
+    }
+
+    console.log("[INSERT] Saving new mentor application for:", email);
     const { data, error } = await supabase
       .from("mentor_applications")
       .insert({
@@ -516,7 +564,55 @@ app.post("/api/coaches", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    console.log("[INSERT] Saving coach application for:", email);
+    // Check if there's an existing application with this email
+    const { data: existingApp } = await supabase
+      .from("coach_applications")
+      .select("id, status")
+      .ilike("email", email)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (existingApp && existingApp.length > 0) {
+      const existing = existingApp[0];
+      
+      if (existing.status === "approved") {
+        return res.status(400).json({ error: "You already have an approved application. Please login to access your dashboard." });
+      }
+      
+      if (existing.status === "pending" || existing.status === "submitted") {
+        return res.status(400).json({ error: "You already have a pending application. Please wait for admin review." });
+      }
+      
+      // If rejected, update the existing record to allow resubmission
+      if (existing.status === "rejected") {
+        console.log("[UPDATE] Resubmitting rejected coach application for:", email);
+        const { data, error } = await supabase
+          .from("coach_applications")
+          .update({
+            full_name: fullName,
+            linkedin: linkedin || null,
+            expertise,
+            focus_areas: focusAreas,
+            hourly_rate: hourlyRate,
+            country,
+            state: state || null,
+            status: "submitted",
+            resubmitted_at: new Date().toISOString()
+          })
+          .eq("id", existing.id)
+          .select();
+
+        if (error) {
+          console.error("[DB ERROR]:", error);
+          return res.status(400).json({ error: error.message });
+        }
+
+        console.log("[SUCCESS] Coach application resubmitted");
+        return res.json({ success: true, id: data?.[0]?.id, resubmission: true });
+      }
+    }
+
+    console.log("[INSERT] Saving new coach application for:", email);
     const { data, error } = await supabase
       .from("coach_applications")
       .insert({
@@ -662,7 +758,56 @@ app.post("/api/investors", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    console.log("[INSERT] Saving investor application for:", email);
+    // Check if there's an existing application with this email
+    const { data: existingApp } = await supabase
+      .from("investor_applications")
+      .select("id, status")
+      .ilike("email", email)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (existingApp && existingApp.length > 0) {
+      const existing = existingApp[0];
+      
+      if (existing.status === "approved") {
+        return res.status(400).json({ error: "You already have an approved application. Please login to access your dashboard." });
+      }
+      
+      if (existing.status === "pending" || existing.status === "submitted") {
+        return res.status(400).json({ error: "You already have a pending application. Please wait for admin review." });
+      }
+      
+      // If rejected, update the existing record to allow resubmission
+      if (existing.status === "rejected") {
+        console.log("[UPDATE] Resubmitting rejected investor application for:", email);
+        const { data, error } = await supabase
+          .from("investor_applications")
+          .update({
+            full_name: fullName,
+            linkedin: linkedin || null,
+            fund_name: fundName,
+            investment_focus: investmentFocus,
+            investment_preference: investmentPreference,
+            investment_amount: investmentAmount,
+            country,
+            state: state || null,
+            status: "submitted",
+            resubmitted_at: new Date().toISOString()
+          })
+          .eq("id", existing.id)
+          .select();
+
+        if (error) {
+          console.error("[DB ERROR]:", error);
+          return res.status(400).json({ error: error.message });
+        }
+
+        console.log("[SUCCESS] Investor application resubmitted");
+        return res.json({ success: true, id: data?.[0]?.id, resubmission: true });
+      }
+    }
+
+    console.log("[INSERT] Saving new investor application for:", email);
     const { data, error } = await supabase
       .from("investor_applications")
       .insert({

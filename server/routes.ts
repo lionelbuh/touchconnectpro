@@ -75,7 +75,52 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Name and email required" });
       }
 
-      console.log("[INSERT] Saving to ideas table for:", email);
+      // Check if there's an existing application with this email
+      const { data: existingApp } = await (client
+        .from("ideas")
+        .select("id, status")
+        .ilike("entrepreneur_email", email)
+        .order("created_at", { ascending: false })
+        .limit(1) as any);
+
+      if (existingApp && existingApp.length > 0) {
+        const existing = existingApp[0];
+        
+        if (existing.status === "approved") {
+          return res.status(400).json({ error: "You already have an approved application. Please login to access your dashboard." });
+        }
+        
+        if (existing.status === "pending" || existing.status === "submitted") {
+          return res.status(400).json({ error: "You already have a pending application. Please wait for admin review." });
+        }
+        
+        // If rejected, update the existing record to allow resubmission
+        if (existing.status === "rejected") {
+          console.log("[UPDATE] Resubmitting rejected entrepreneur application for:", email);
+          const { data, error } = await (client
+            .from("ideas")
+            .update({
+              entrepreneur_name: fullName,
+              data: formData || {},
+              business_plan: businessPlan || {},
+              linkedin_profile: linkedinWebsite || "",
+              status: "submitted",
+              resubmitted_at: new Date().toISOString()
+            } as any)
+            .eq("id", existing.id)
+            .select() as any);
+
+          if (error) {
+            console.error("[DB ERROR]:", error);
+            return res.status(400).json({ error: error.message });
+          }
+
+          console.log("[SUCCESS] Entrepreneur application resubmitted");
+          return res.json({ success: true, id: data?.[0]?.id, resubmission: true });
+        }
+      }
+
+      console.log("[INSERT] Saving new entry to ideas table for:", email);
       const { data, error } = await (client
         .from("ideas")
         .insert({
