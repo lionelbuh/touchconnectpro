@@ -169,15 +169,13 @@ export default function DashboardEntrepreneur() {
             // Mark as submitted if we have data
             if (data.id) {
               setSubmitted(true);
-            }
-          }
-          
-          // Fetch messages if entrepreneur data exists
-          if (entrepreneurData?.id) {
-            const messagesResponse = await fetch(`${API_BASE_URL}/api/messages/${entrepreneurData.id}`);
-            if (messagesResponse.ok) {
-              const messagesData = await messagesResponse.json();
-              setMessages(messagesData);
+              
+              // Fetch messages using the freshly fetched data.id (not stale state)
+              const messagesResponse = await fetch(`${API_BASE_URL}/api/messages/${data.id}`);
+              if (messagesResponse.ok) {
+                const messagesData = await messagesResponse.json();
+                setMessages(messagesData);
+              }
             }
           }
         } else {
