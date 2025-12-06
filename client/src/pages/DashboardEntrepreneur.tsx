@@ -24,6 +24,7 @@ export default function DashboardEntrepreneur() {
   const [mentorNotes, setMentorNotes] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [entrepreneurReadMessageIds, setEntrepreneurReadMessageIds] = useState<number[]>([]);
   const [entrepreneurData, setEntrepreneurData] = useState<any>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [userEmail, setUserEmail] = useState<string>("");
@@ -120,6 +121,8 @@ export default function DashboardEntrepreneur() {
     
     const savedMessages = localStorage.getItem("tcp_messageHistory");
     if (savedMessages) setMessages(JSON.parse(savedMessages));
+    const savedEntrepreneurRead = localStorage.getItem("tcp_entrepreneurReadMessageIds");
+    if (savedEntrepreneurRead) setEntrepreneurReadMessageIds(JSON.parse(savedEntrepreneurRead));
     
     const params = new URLSearchParams(window.location.search);
     if (params.get("submitted") === "true") {
@@ -225,6 +228,20 @@ export default function DashboardEntrepreneur() {
   useEffect(() => {
     localStorage.setItem("tcp_profileData", JSON.stringify(profileData));
   }, [profileData]);
+
+  useEffect(() => {
+    if (activeTab === "messages" && userEmail) {
+      const adminMessagesToMark = messages
+        .filter(m => m.toEmail === userEmail && m.from === "Admin" && !entrepreneurReadMessageIds.includes(m.id))
+        .map(m => m.id);
+      if (adminMessagesToMark.length > 0) {
+        const combined = [...entrepreneurReadMessageIds, ...adminMessagesToMark];
+        const updatedReadIds = combined.filter((id, index) => combined.indexOf(id) === index);
+        setEntrepreneurReadMessageIds(updatedReadIds);
+        localStorage.setItem("tcp_entrepreneurReadMessageIds", JSON.stringify(updatedReadIds));
+      }
+    }
+  }, [activeTab, userEmail, messages, entrepreneurReadMessageIds]);
 
   const steps = [
     {
@@ -657,8 +674,8 @@ export default function DashboardEntrepreneur() {
                 data-testid="button-messages-tab"
               >
                 <MessageSquare className="mr-2 h-4 w-4" /> Messages
-                {messages.filter(m => m.toEmail === userEmail || m.fromEmail === userEmail).length > 0 && (
-                  <span className="ml-auto bg-cyan-100 dark:bg-cyan-900 text-cyan-600 dark:text-cyan-400 text-xs px-2 py-0.5 rounded-full">{messages.filter(m => m.toEmail === userEmail || m.fromEmail === userEmail).length}</span>
+                {messages.filter(m => m.toEmail === userEmail && m.from === "Admin" && !entrepreneurReadMessageIds.includes(m.id)).length > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">{messages.filter(m => m.toEmail === userEmail && m.from === "Admin" && !entrepreneurReadMessageIds.includes(m.id)).length}</span>
                 )}
               </Button>
               <Button 

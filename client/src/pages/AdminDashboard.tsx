@@ -98,6 +98,7 @@ export default function AdminDashboard() {
   const [portfolioAssignment, setPortfolioAssignment] = useState("");
   const [showPortfolioModal, setShowPortfolioModal] = useState(false);
   const [messageHistory, setMessageHistory] = useState<any[]>([]);
+  const [adminReadMessageIds, setAdminReadMessageIds] = useState<number[]>([]);
   const [disabledProfessionals, setDisabledProfessionals] = useState<{[key: string]: boolean}>({});
   const [expandedProposal, setExpandedProposal] = useState<{[key: string]: boolean}>({});
   const [expandedBusinessPlan, setExpandedBusinessPlan] = useState<{[key: string]: boolean}>({});
@@ -198,6 +199,10 @@ export default function AdminDashboard() {
       const savedMessages = localStorage.getItem("tcp_messageHistory");
       if (savedMessages) {
         setMessageHistory(JSON.parse(savedMessages));
+      }
+      const savedAdminRead = localStorage.getItem("tcp_adminReadMessageIds");
+      if (savedAdminRead) {
+        setAdminReadMessageIds(JSON.parse(savedAdminRead));
       }
       const savedDisabled = localStorage.getItem("tcp_disabledProfessionals");
       if (savedDisabled) {
@@ -384,6 +389,24 @@ export default function AdminDashboard() {
       setShowMessageModal(false);
       setSelectedMember(null);
     }
+  };
+
+  const markMessagesAsReadByAdmin = (memberEmail: string) => {
+    const messagesToMark = messageHistory
+      .filter(m => m.fromEmail === memberEmail && m.from !== "Admin")
+      .map(m => m.id);
+    if (messagesToMark.length > 0) {
+      const combined = [...adminReadMessageIds, ...messagesToMark];
+      const updatedReadIds = combined.filter((id, index) => combined.indexOf(id) === index);
+      setAdminReadMessageIds(updatedReadIds);
+      localStorage.setItem("tcp_adminReadMessageIds", JSON.stringify(updatedReadIds));
+    }
+  };
+
+  const openConversationModal = (member: User) => {
+    setSelectedMember(member);
+    setShowMessageModal(true);
+    markMessagesAsReadByAdmin(member.email);
   };
 
   const handleToggleProfessionalStatus = (type: "entrepreneur" | "mentor" | "coach" | "investor", idx: number) => {
@@ -1065,9 +1088,9 @@ export default function AdminDashboard() {
                   data-testid="button-members-subtab-messaging"
                 >
                   <MessageSquare className="mr-2 h-4 w-4" /> Messages
-                  {messageHistory.filter(m => m.from !== "Admin").length > 0 && (
+                  {messageHistory.filter(m => m.from !== "Admin" && !adminReadMessageIds.includes(m.id)).length > 0 && (
                     <span className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full animate-pulse">
-                      {messageHistory.filter(m => m.from !== "Admin").length}
+                      {messageHistory.filter(m => m.from !== "Admin" && !adminReadMessageIds.includes(m.id)).length}
                     </span>
                   )}
                 </Button>
@@ -1948,26 +1971,27 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").map((entrepreneur, idx) => {
-                          const hasReplies = messageHistory.filter(m => m.fromEmail === entrepreneur.email).length > 0;
+                          const unreadReplies = messageHistory.filter(m => m.fromEmail === entrepreneur.email && !adminReadMessageIds.includes(m.id)).length;
+                          const hasUnreadReplies = unreadReplies > 0;
                           return (
-                          <Card key={`msg-${entrepreneur.id}`} className={hasReplies ? "border-l-4 border-l-amber-500" : ""}>
+                          <Card key={`msg-${entrepreneur.id}`} className={hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-3">
                                   <div>
                                     <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                                       {entrepreneur.fullName}
-                                      {hasReplies && (
+                                      {hasUnreadReplies && (
                                         <span className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 text-xs px-2 py-0.5 rounded-full animate-pulse">
-                                          New Reply
+                                          {unreadReplies} New
                                         </span>
                                       )}
                                     </p>
                                     <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
                                   </div>
                                 </div>
-                                <Button onClick={() => {setSelectedMember({id: entrepreneur.id, name: entrepreneur.fullName, email: entrepreneur.email, type: "entrepreneur", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-entrepreneur-${idx}`} size="sm" className={hasReplies ? "bg-amber-600 hover:bg-amber-700" : ""}>
-                                  <MessageSquare className="mr-2 h-4 w-4" /> {hasReplies ? "View Reply" : "Message"}
+                                <Button onClick={() => openConversationModal({id: entrepreneur.id, name: entrepreneur.fullName, email: entrepreneur.email, type: "entrepreneur", status: "active"})} data-testid={`button-message-entrepreneur-${idx}`} size="sm" className={hasUnreadReplies ? "bg-amber-600 hover:bg-amber-700" : ""}>
+                                  <MessageSquare className="mr-2 h-4 w-4" /> {hasUnreadReplies ? "View Reply" : "Message"}
                                 </Button>
                               </div>
                             </CardContent>
