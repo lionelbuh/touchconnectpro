@@ -1369,17 +1369,45 @@ app.post("/api/messages", async (req, res) => {
 // Assign mentor to entrepreneur
 app.post("/api/mentor-assignments", async (req, res) => {
   try {
-    const { entrepreneurId, mentorId, meetingLink } = req.body;
+    const { entrepreneurId, mentorId, portfolioNumber, meetingLink } = req.body;
 
-    if (!entrepreneurId || !mentorId) {
-      return res.status(400).json({ error: "Missing required fields" });
+    if (!entrepreneurId || !mentorId || !portfolioNumber) {
+      return res.status(400).json({ error: "Missing required fields (entrepreneurId, mentorId, portfolioNumber)" });
     }
 
+    // Check if entrepreneur already has an assignment
+    const { data: existing } = await supabase
+      .from("mentor_assignments")
+      .select("id")
+      .eq("entrepreneur_id", entrepreneurId)
+      .eq("status", "active")
+      .single();
+
+    if (existing) {
+      // Update existing assignment
+      const { data, error } = await supabase
+        .from("mentor_assignments")
+        .update({
+          mentor_id: mentorId,
+          portfolio_number: portfolioNumber,
+          meeting_link: meetingLink || null
+        })
+        .eq("id", existing.id)
+        .select();
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+      return res.json({ success: true, assignment: data?.[0], updated: true });
+    }
+
+    // Create new assignment
     const { data, error } = await supabase
       .from("mentor_assignments")
       .insert({
         entrepreneur_id: entrepreneurId,
         mentor_id: mentorId,
+        portfolio_number: portfolioNumber,
         meeting_link: meetingLink || null,
         status: "active"
       })
@@ -1390,6 +1418,107 @@ app.post("/api/mentor-assignments", async (req, res) => {
     }
 
     return res.json({ success: true, assignment: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get entrepreneur's assigned mentor with full mentor profile
+app.get("/api/mentor-assignments/entrepreneur/:entrepreneurId", async (req, res) => {
+  try {
+    const { entrepreneurId } = req.params;
+
+    const { data: assignment, error: assignmentError } = await supabase
+      .from("mentor_assignments")
+      .select("*")
+      .eq("entrepreneur_id", entrepreneurId)
+      .eq("status", "active")
+      .single();
+
+    if (assignmentError || !assignment) {
+      return res.json({ assignment: null });
+    }
+
+    // Fetch mentor profile
+    const { data: mentor, error: mentorError } = await supabase
+      .from("mentor_applications")
+      .select("*")
+      .eq("id", assignment.mentor_id)
+      .single();
+
+    if (mentorError) {
+      return res.json({ 
+        assignment,
+        mentor: null 
+      });
+    }
+
+    return res.json({ 
+      assignment,
+      mentor: {
+        id: mentor.id,
+        full_name: mentor.fullName,
+        email: mentor.email,
+        expertise: mentor.expertise,
+        linkedin: mentor.linkedin,
+        bio: mentor.bio,
+        photo_url: mentor.photoUrl
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get mentor's assigned entrepreneurs (portfolio)
+app.get("/api/mentor-assignments/mentor/:mentorId", async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+
+    const { data: assignments, error: assignmentError } = await supabase
+      .from("mentor_assignments")
+      .select("*")
+      .eq("mentor_id", mentorId)
+      .eq("status", "active");
+
+    if (assignmentError) {
+      return res.status(400).json({ error: assignmentError.message });
+    }
+
+    if (!assignments || assignments.length === 0) {
+      return res.json({ entrepreneurs: [] });
+    }
+
+    // Fetch entrepreneur profiles
+    const entrepreneurIds = assignments.map(a => a.entrepreneur_id);
+    const { data: entrepreneurs, error: entError } = await supabase
+      .from("entrepreneur_applications")
+      .select("*")
+      .in("id", entrepreneurIds);
+
+    if (entError) {
+      return res.json({ entrepreneurs: [] });
+    }
+
+    // Combine data
+    const portfolioData = assignments.map(assignment => {
+      const entrepreneur = entrepreneurs.find(e => e.id === assignment.entrepreneur_id);
+      return {
+        assignment_id: assignment.id,
+        portfolio_number: assignment.portfolio_number,
+        meeting_link: assignment.meeting_link,
+        entrepreneur: entrepreneur ? {
+          id: entrepreneur.id,
+          full_name: entrepreneur.fullName,
+          email: entrepreneur.email,
+          linkedin: entrepreneur.linkedin,
+          business_idea: entrepreneur.businessIdea,
+          photo_url: entrepreneur.photoUrl
+        } : null
+      };
+    });
+
+    return res.json({ entrepreneurs: portfolioData });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
