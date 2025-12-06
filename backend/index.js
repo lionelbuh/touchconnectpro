@@ -263,12 +263,13 @@ app.post("/api/ideas", async (req, res) => {
       // If rejected, allow resubmission by updating existing record
       if (existingApp.status === "rejected") {
         console.log("[RESUBMIT] Updating rejected application for:", email);
+        const updatedFormData = { ...(formData || {}), isResubmission: true };
         const { data: updatedData, error: updateError } = await supabase
           .from("ideas")
           .update({
-            status: "resubmitted",
+            status: "submitted",
             entrepreneur_name: fullName,
-            data: formData || {},
+            data: updatedFormData,
             business_plan: businessPlan || {},
             linkedin_profile: linkedinWebsite || ""
           })

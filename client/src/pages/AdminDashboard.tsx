@@ -563,7 +563,7 @@ export default function AdminDashboard() {
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
                             <div className="flex gap-2">
-                              {app.status === "resubmitted" && <Badge className="bg-purple-600">Resubmission</Badge>}
+                              {app.isResubmission && <Badge className="bg-purple-600">Resubmission</Badge>}
                               <Badge className="bg-emerald-600">Pending</Badge>
                             </div>
                           </div>
