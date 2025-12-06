@@ -374,7 +374,7 @@ app.post("/api/mentors", async (req, res) => {
     const { data: existingApp } = await supabase
       .from("mentor_applications")
       .select("id, status")
-      .ilike("email", email)
+      .eq("email", email)
       .order("created_at", { ascending: false })
       .limit(1);
 
@@ -568,7 +568,7 @@ app.post("/api/coaches", async (req, res) => {
     const { data: existingApp } = await supabase
       .from("coach_applications")
       .select("id, status")
-      .ilike("email", email)
+      .eq("email", email)
       .order("created_at", { ascending: false })
       .limit(1);
 
@@ -762,7 +762,7 @@ app.post("/api/investors", async (req, res) => {
     const { data: existingApp } = await supabase
       .from("investor_applications")
       .select("id, status")
-      .ilike("email", email)
+      .eq("email", email)
       .order("created_at", { ascending: false })
       .limit(1);
 

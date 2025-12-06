@@ -79,7 +79,7 @@ export async function registerRoutes(
       const { data: existingApp } = await (client
         .from("ideas")
         .select("id, status")
-        .ilike("entrepreneur_email", email)
+        .eq("entrepreneur_email", email)
         .order("created_at", { ascending: false })
         .limit(1) as any);
 
