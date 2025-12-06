@@ -458,10 +458,35 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleAssignPortfolio = () => {
-    if (portfolioAssignment && selectedMember) {
-      console.log(`Assigned ${selectedMember.name} to portfolio ${portfolioAssignment}`);
+  const handleAssignPortfolio = async () => {
+    if (portfolioAssignment && selectedMember && selectedMentor) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/mentor-assignments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            entrepreneurId: selectedMember.id,
+            mentorId: selectedMentor,
+            portfolioNumber: parseInt(portfolioAssignment)
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`Successfully assigned ${selectedMember.name} to mentor portfolio ${portfolioAssignment}`, data);
+          alert(`${selectedMember.name} has been assigned to the selected mentor's Portfolio ${portfolioAssignment}`);
+        } else {
+          const error = await response.json();
+          console.error("Error assigning portfolio:", error);
+          alert("Failed to assign portfolio: " + (error.error || "Unknown error"));
+        }
+      } catch (err) {
+        console.error("Error assigning portfolio:", err);
+        alert("Failed to assign portfolio. Please try again.");
+      }
+      
       setPortfolioAssignment("");
+      setSelectedMentor("");
       setShowPortfolioModal(false);
       setSelectedMember(null);
     }
