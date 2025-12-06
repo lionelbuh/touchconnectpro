@@ -15,7 +15,8 @@ interface MentorApplication {
   bio: string;
   expertise: string;
   experience: string;
-  status: "pending" | "approved" | "rejected" | "resubmitted";
+  status: "pending" | "approved" | "rejected";
+  is_resubmitted?: boolean;
   submittedAt: string;
   country?: string;
   state?: string;
@@ -29,7 +30,8 @@ interface CoachApplication {
   expertise: string;
   focusAreas: string;
   hourlyRate: string;
-  status: "pending" | "approved" | "rejected" | "resubmitted";
+  status: "pending" | "approved" | "rejected";
+  is_resubmitted?: boolean;
   submittedAt: string;
   country?: string;
   state?: string;
@@ -44,7 +46,8 @@ interface InvestorApplication {
   investmentFocus: string;
   investmentPreference: string;
   investmentAmount: string;
-  status: "pending" | "approved" | "rejected" | "resubmitted";
+  status: "pending" | "approved" | "rejected";
+  is_resubmitted?: boolean;
   submittedAt: string;
   country?: string;
   state?: string;
@@ -56,7 +59,8 @@ interface EntrepreneurApplication {
   ideaName: string;
   problem: string;
   solution: string;
-  status: "pending" | "approved" | "rejected" | "submitted" | "resubmitted";
+  status: "pending" | "approved" | "rejected" | "submitted";
+  is_resubmitted?: boolean;
   submittedAt: string;
   id: string;
   ideaReview?: any;
@@ -510,10 +514,10 @@ export default function AdminDashboard() {
     }
   };
 
-  const pendingEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "pending" || app.status === "submitted" || app.status === "resubmitted");
-  const pendingMentorApplications = mentorApplications.filter(app => app.status === "pending" || app.status === "resubmitted");
-  const pendingCoachApplications = coachApplications.filter(app => app.status === "pending" || app.status === "resubmitted");
-  const pendingInvestorApplications = investorApplications.filter(app => app.status === "pending" || app.status === "resubmitted");
+  const pendingEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "pending" || app.status === "submitted");
+  const pendingMentorApplications = mentorApplications.filter(app => app.status === "pending");
+  const pendingCoachApplications = coachApplications.filter(app => app.status === "pending");
+  const pendingInvestorApplications = investorApplications.filter(app => app.status === "pending");
   const rejectedEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "rejected");
   const rejectedMentorApplications = mentorApplications.filter(app => app.status === "rejected");
   const rejectedCoachApplications = coachApplications.filter(app => app.status === "rejected");
@@ -799,7 +803,7 @@ export default function AdminDashboard() {
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
                             <div className="flex gap-2">
-                              {app.status === "resubmitted" && <Badge className="bg-purple-600">Resubmission</Badge>}
+                              {app.is_resubmitted && <Badge className="bg-purple-600">Resubmission</Badge>}
                               <Badge className="bg-amber-600">Pending</Badge>
                             </div>
                           </div>
@@ -989,7 +993,7 @@ export default function AdminDashboard() {
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
                             <div className="flex gap-2">
-                              {app.status === "resubmitted" && <Badge className="bg-purple-600">Resubmission</Badge>}
+                              {app.is_resubmitted && <Badge className="bg-purple-600">Resubmission</Badge>}
                               <Badge className="bg-amber-600">Pending</Badge>
                             </div>
                           </div>
