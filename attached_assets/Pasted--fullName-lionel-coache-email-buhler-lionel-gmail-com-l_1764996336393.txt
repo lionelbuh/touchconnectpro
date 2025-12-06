@@ -1,0 +1,53 @@
+{fullName: 'lionel coache', email: 'buhler.lionel@gmail.com', linkedin: 'linkedin.com', expertise: 'Business Planning, Product Development, Customer Discovery, Content Marketing', focusAreas: 'early', …}
+index-CMJye_yE.js:386  POST https://touchconnectprowebswervice.onrender.com/api/coaches 400 (Bad Request)
+x @ index-CMJye_yE.js:386
+Qx @ index-CMJye_yE.js:48
+(anonymous) @ index-CMJye_yE.js:48
+s0 @ index-CMJye_yE.js:48
+gh @ index-CMJye_yE.js:48
+Rh @ index-CMJye_yE.js:49
+S1 @ index-CMJye_yE.js:49
+onClick @ index-CMJye_yE.js:386
+Qx @ index-CMJye_yE.js:48
+(anonymous) @ index-CMJye_yE.js:48
+s0 @ index-CMJye_yE.js:48
+gh @ index-CMJye_yE.js:48
+Rh @ index-CMJye_yE.js:49
+S1 @ index-CMJye_yE.js:49Understand this error
+index-CMJye_yE.js:386 Response status: 400
+index-CMJye_yE.js:386  POST https://touchconnectprowebswervice.onrender.com/api/coaches 400 (Bad Request)
+x @ index-CMJye_yE.js:386
+Qx @ index-CMJye_yE.js:48
+(anonymous) @ index-CMJye_yE.js:48
+s0 @ index-CMJye_yE.js:48
+gh @ index-CMJye_yE.js:48
+Rh @ index-CMJye_yE.js:49
+S1 @ index-CMJye_yE.js:49Understand this error
+index-CMJye_yE.js:386 Response status: 400
+index-CMJye_yE.js:386 Coach submission error: Error: You already have a pending application. Please wait for admin review.
+    at x (index-CMJye_yE.js:386:19385)
+x @ index-CMJye_yE.js:386
+await in x
+Qx @ index-CMJye_yE.js:48
+(anonymous) @ index-CMJye_yE.js:48
+s0 @ index-CMJye_yE.js:48
+gh @ index-CMJye_yE.js:48
+Rh @ index-CMJye_yE.js:49
+S1 @ index-CMJye_yE.js:49
+onClick @ index-CMJye_yE.js:386
+Qx @ index-CMJye_yE.js:48
+(anonymous) @ index-CMJye_yE.js:48
+s0 @ index-CMJye_yE.js:48
+gh @ index-CMJye_yE.js:48
+Rh @ index-CMJye_yE.js:49
+S1 @ index-CMJye_yE.js:49Understand this error
+index-CMJye_yE.js:386 Coach submission error: Error: You already have a pending application. Please wait for admin review.
+    at x (index-CMJye_yE.js:386:19385)
+x @ index-CMJye_yE.js:386
+await in x
+Qx @ index-CMJye_yE.js:48
+(anonymous) @ index-CMJye_yE.js:48
+s0 @ index-CMJye_yE.js:48
+gh @ index-CMJye_yE.js:48
+Rh @ index-CMJye_yE.js:49
+S1 @ index-CMJye_yE.js:49Understand this error
