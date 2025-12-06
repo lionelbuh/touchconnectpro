@@ -31,13 +31,45 @@ const US_STATES = [
   "Wisconsin", "Wyoming", "District of Columbia"
 ];
 
+const EXPERTISE_OPTIONS = [
+  "Business Planning",
+  "Pitch Preparation",
+  "Market Research",
+  "Product Development",
+  "Marketing Strategy",
+  "Sales & Go-to-Market",
+  "Fundraising & Investor Relations",
+  "Financial Planning",
+  "Operations & Scaling",
+  "Tech & Engineering",
+  "Legal & Compliance",
+  "HR & Team Building",
+  "Customer Discovery",
+  "Brand Strategy",
+  "Digital Marketing",
+  "Content Marketing",
+  "Social Media Strategy",
+  "Customer Support",
+  "Growth Hacking",
+  "Data Analysis"
+];
+
 export default function BecomeaCoach() {
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    fullName: string;
+    email: string;
+    linkedin: string;
+    expertise: string[];
+    focusAreas: string;
+    hourlyRate: string;
+    country: string;
+    state: string;
+  }>({
     fullName: "",
     email: "",
     linkedin: "",
-    expertise: "",
+    expertise: [] as string[],
     focusAreas: "",
     hourlyRate: "",
     country: "",
@@ -45,15 +77,20 @@ export default function BecomeaCoach() {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target as HTMLInputElement | HTMLTextAreaElement;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleExpertiseChange = (selectedOptions: HTMLCollection) => {
+    const selected = Array.from(selectedOptions).map((option: any) => option.value);
+    setFormData(prev => ({ ...prev, expertise: selected as string[] }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.email || !formData.expertise || !formData.focusAreas || !formData.hourlyRate || !formData.country) {
-      alert("Please fill in all required fields");
+    if (!formData.fullName || !formData.email || !Array.isArray(formData.expertise) || formData.expertise.length === 0 || !formData.focusAreas || !formData.hourlyRate || !formData.country) {
+      alert("Please fill in all required fields and select at least one area of expertise");
       return;
     }
     if (formData.country === "United States" && !formData.state) {
@@ -62,10 +99,14 @@ export default function BecomeaCoach() {
     }
     
     try {
+      const submitData = {
+        ...formData,
+        expertise: formData.expertise.join(", ")
+      };
       const response = await fetch(`${API_BASE_URL}/api/coaches`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
 
       if (!response.ok) {
@@ -83,7 +124,7 @@ export default function BecomeaCoach() {
   const handleCloseModal = () => {
     setSubmitted(false);
     setShowForm(false);
-    setFormData({ fullName: "", email: "", linkedin: "", expertise: "", focusAreas: "", hourlyRate: "", country: "", state: "" });
+    setFormData({ fullName: "", email: "", linkedin: "", expertise: [], focusAreas: "", hourlyRate: "", country: "", state: "" });
   };
 
   return (
@@ -335,15 +376,20 @@ export default function BecomeaCoach() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Areas of Expertise *</label>
-                      <textarea
-                        name="expertise"
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Areas of Expertise * (Select one or more)</label>
+                      <select
+                        multiple
                         value={formData.expertise}
-                        onChange={handleInputChange}
-                        placeholder="e.g., Product Development, Marketing, Fundraising"
-                        className="w-full min-h-24 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                        data-testid="textarea-coach-expertise"
-                      />
+                        onChange={(e) => handleExpertiseChange(e.target.selectedOptions)}
+                        className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        data-testid="select-coach-expertise"
+                        style={{ minHeight: "120px" }}
+                      >
+                        {EXPERTISE_OPTIONS.map(option => (
+                          <option key={option} value={option}>{option}</option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Hold Ctrl/Cmd to select multiple options</p>
                     </div>
 
                     <div>
