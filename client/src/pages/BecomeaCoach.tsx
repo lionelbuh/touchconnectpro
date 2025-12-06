@@ -89,8 +89,11 @@ export default function BecomeaCoach() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Coach form submitted, validating...", formData);
+    
     if (!formData.fullName || !formData.email || !Array.isArray(formData.expertise) || formData.expertise.length === 0 || !formData.focusAreas || !formData.hourlyRate || !formData.country) {
       alert("Please fill in all required fields and select at least one area of expertise");
+      console.log("Validation failed", { fullName: formData.fullName, email: formData.email, expertise: formData.expertise, focusAreas: formData.focusAreas, hourlyRate: formData.hourlyRate, country: formData.country });
       return;
     }
     if (formData.country === "United States" && !formData.state) {
@@ -103,21 +106,27 @@ export default function BecomeaCoach() {
         ...formData,
         expertise: formData.expertise.join(", ")
       };
+      console.log("Submitting to:", `${API_BASE_URL}/api/coaches`);
+      console.log("Submit data:", submitData);
+      
       const response = await fetch(`${API_BASE_URL}/api/coaches`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submitData),
       });
 
+      console.log("Response status:", response.status);
+      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to submit application");
       }
 
+      console.log("Submit successful!");
       setSubmitted(true);
     } catch (error: any) {
-      alert("Error submitting application: " + error.message);
       console.error("Coach submission error:", error);
+      alert("Error submitting application: " + error.message);
     }
   };
 
@@ -460,8 +469,14 @@ export default function BecomeaCoach() {
                     )}
 
                     <div className="flex gap-3 pt-6">
-                      <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>Cancel</Button>
-                      <Button type="submit" className="flex-1 bg-cyan-600 hover:bg-cyan-700" data-testid="button-submit-coach-form">Submit Application</Button>
+                      <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)} data-testid="button-cancel-coach-form">Cancel</Button>
+                      <Button type="submit" onClick={(e) => {
+                        console.log("Submit button clicked");
+                        if (e.currentTarget.form) {
+                          console.log("Form found, submitting...");
+                          e.currentTarget.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                        }
+                      }} className="flex-1 bg-cyan-600 hover:bg-cyan-700" data-testid="button-submit-coach-form">Submit Application</Button>
                     </div>
                   </form>
                 )}
