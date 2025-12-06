@@ -2,11 +2,35 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, BookOpen, DollarSign, Users, Settings, Star, Save, Loader2, Link as LinkIcon, Target, LogOut } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { LayoutDashboard, BookOpen, DollarSign, Users, Settings, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
+
+const EXPERTISE_OPTIONS = [
+  "Business Planning",
+  "Pitch Preparation",
+  "Market Research",
+  "Product Development",
+  "Marketing Strategy",
+  "Sales & Go-to-Market",
+  "Fundraising & Investor Relations",
+  "Financial Planning",
+  "Operations & Scaling",
+  "Tech & Engineering",
+  "Legal & Compliance",
+  "HR & Team Building",
+  "Customer Discovery",
+  "Brand Strategy",
+  "Digital Marketing",
+  "Content Marketing",
+  "Social Media Strategy",
+  "Customer Support",
+  "Growth Hacking",
+  "Data Analysis"
+];
 
 interface CoachProfile {
   id: string;
@@ -26,7 +50,7 @@ export default function DashboardCoach() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [expertise, setExpertise] = useState("");
+  const [expertise, setExpertise] = useState<string[]>([]);
   const [focusAreas, setFocusAreas] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
   const [linkedin, setLinkedin] = useState("");
@@ -61,7 +85,8 @@ export default function DashboardCoach() {
         if (response.ok) {
           const data = await response.json();
           setProfile(data);
-          setExpertise(data.expertise || "");
+          // Parse comma-separated expertise string into array
+          setExpertise(data.expertise ? data.expertise.split(", ").map((e: string) => e.trim()).filter((e: string) => e) : []);
           setFocusAreas(data.focus_areas || "");
           setHourlyRate(data.hourly_rate || "");
           setLinkedin(data.linkedin || "");
@@ -76,8 +101,22 @@ export default function DashboardCoach() {
     loadProfile();
   }, []);
 
+  const handleExpertiseChange = (selectedOptions: HTMLCollection) => {
+    const selected = Array.from(selectedOptions).map((option: any) => option.value);
+    setExpertise(selected as string[]);
+  };
+
+  const removeExpertise = (item: string) => {
+    setExpertise(expertise.filter(e => e !== item));
+  };
+
   const handleSave = async () => {
     if (!profile?.id) return;
+
+    if (expertise.length === 0) {
+      toast.error("Please select at least one area of expertise");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -85,7 +124,7 @@ export default function DashboardCoach() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          expertise,
+          expertise: expertise.join(", "),
           focusAreas,
           hourlyRate,
           linkedin
@@ -193,20 +232,35 @@ export default function DashboardCoach() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">What do you specialize in?</p>
+                {expertise.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {expertise.map(item => (
+                      <Badge key={item} variant="secondary" className="bg-cyan-200 dark:bg-cyan-900 text-cyan-900 dark:text-cyan-100 flex items-center gap-2 pr-1">
+                        {item}
+                        <button
+                          onClick={() => removeExpertise(item)}
+                          className="hover:text-cyan-700 dark:hover:text-cyan-300"
+                          data-testid={`button-remove-expertise-${item}`}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
                 <select 
+                  multiple
                   value={expertise}
-                  onChange={(e) => setExpertise(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20" 
+                  onChange={(e) => handleExpertiseChange(e.target.selectedOptions)}
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
                   data-testid="select-coach-expertise"
+                  style={{ minHeight: "120px" }}
                 >
-                  <option value="">Select your expertise...</option>
-                  <option value="Product Development">Product Development</option>
-                  <option value="Marketing & Growth">Marketing & Growth</option>
-                  <option value="Finance & Fundraising">Finance & Fundraising</option>
-                  <option value="Operations & Management">Operations & Management</option>
-                  <option value="Sales Strategy">Sales Strategy</option>
-                  <option value="Other">Other</option>
+                  {EXPERTISE_OPTIONS.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
                 </select>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Hold Ctrl/Cmd to select multiple options</p>
               </CardContent>
             </Card>
 
