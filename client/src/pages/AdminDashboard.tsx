@@ -1060,11 +1060,16 @@ export default function AdminDashboard() {
                 <Button 
                   variant={activeMembersSubTab === "messaging" ? "default" : "outline"}
                   onClick={() => setActiveMembersSubTab("messaging")}
-                  className={activeMembersSubTab === "messaging" ? "bg-slate-700 hover:bg-slate-800" : ""}
+                  className={`${activeMembersSubTab === "messaging" ? "bg-slate-700 hover:bg-slate-800" : ""} relative`}
                   size="sm"
                   data-testid="button-members-subtab-messaging"
                 >
-                  <MessageSquare className="mr-2 h-4 w-4" /> Send Messages
+                  <MessageSquare className="mr-2 h-4 w-4" /> Messages
+                  {messageHistory.filter(m => m.from !== "Admin").length > 0 && (
+                    <span className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full animate-pulse">
+                      {messageHistory.filter(m => m.from !== "Admin").length}
+                    </span>
+                  )}
                 </Button>
                 <Button 
                   variant={activeMembersSubTab === "management" ? "default" : "outline"}
@@ -1942,22 +1947,34 @@ export default function AdminDashboard() {
                           </CardContent>
                         </Card>
                       ) : (
-                        filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").map((entrepreneur, idx) => (
-                          <Card key={`msg-${entrepreneur.id}`}>
+                        filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").map((entrepreneur, idx) => {
+                          const hasReplies = messageHistory.filter(m => m.fromEmail === entrepreneur.email).length > 0;
+                          return (
+                          <Card key={`msg-${entrepreneur.id}`} className={hasReplies ? "border-l-4 border-l-amber-500" : ""}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
-                                <div>
-                                  <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
-                                  <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
+                                <div className="flex items-center gap-3">
+                                  <div>
+                                    <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                                      {entrepreneur.fullName}
+                                      {hasReplies && (
+                                        <span className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 text-xs px-2 py-0.5 rounded-full animate-pulse">
+                                          New Reply
+                                        </span>
+                                      )}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
+                                  </div>
                                 </div>
-                                <Button onClick={() => {setSelectedMember({id: entrepreneur.id, name: entrepreneur.fullName, email: entrepreneur.email, type: "entrepreneur", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-entrepreneur-${idx}`} size="sm">
-                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
+                                <Button onClick={() => {setSelectedMember({id: entrepreneur.id, name: entrepreneur.fullName, email: entrepreneur.email, type: "entrepreneur", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-entrepreneur-${idx}`} size="sm" className={hasReplies ? "bg-amber-600 hover:bg-amber-700" : ""}>
+                                  <MessageSquare className="mr-2 h-4 w-4" /> {hasReplies ? "View Reply" : "Message"}
                                 </Button>
                               </div>
                             </CardContent>
                           </Card>
-                        ))
-                      )}
+                          );
+                        }))
+                      }
                     </div>
                   </div>
                   )}
@@ -2261,20 +2278,26 @@ export default function AdminDashboard() {
       {/* Messaging Modal */}
       {showMessageModal && selectedMember && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-2xl max-h-96 overflow-y-auto">
+          <Card className="w-full max-w-2xl max-h-[500px] overflow-y-auto">
             <CardHeader>
-              <CardTitle>Send Message to {selectedMember.name}</CardTitle>
+              <CardTitle>Conversation with {selectedMember.name}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {messageHistory.filter(m => m.toEmail === selectedMember.email).length > 0 && (
+              {messageHistory.filter(m => m.toEmail === selectedMember.email || m.fromEmail === selectedMember.email).length > 0 && (
               <div className="mb-4 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                 <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Message History</h4>
-                <div className="space-y-2 max-h-24 overflow-y-auto">
-                  {messageHistory.filter(m => m.toEmail === selectedMember.email).map(msg => (
-                    <div key={msg.id} className="text-xs bg-white dark:bg-slate-700 p-2 rounded">
-                      <p className="font-semibold text-slate-700 dark:text-slate-200">{msg.from} → {msg.to}</p>
-                      <p className="text-slate-600 dark:text-slate-400">{msg.message}</p>
-                      <p className="text-slate-500 text-xs">{new Date(msg.timestamp).toLocaleString()}</p>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {messageHistory
+                    .filter(m => m.toEmail === selectedMember.email || m.fromEmail === selectedMember.email)
+                    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+                    .map(msg => (
+                    <div key={msg.id} className={`text-xs p-2 rounded ${msg.from === "Admin" ? "bg-white dark:bg-slate-700" : "bg-amber-50 dark:bg-amber-900/30 border-l-2 border-l-amber-500"}`}>
+                      <p className={`font-semibold ${msg.from === "Admin" ? "text-slate-700 dark:text-slate-200" : "text-amber-700 dark:text-amber-400"}`}>
+                        {msg.from === "Admin" ? `Admin → ${msg.to}` : `${msg.from} → Admin`}
+                        {msg.from !== "Admin" && <span className="ml-2 text-xs bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded">Reply</span>}
+                      </p>
+                      <p className="text-slate-600 dark:text-slate-400 mt-1">{msg.message}</p>
+                      <p className="text-slate-500 text-xs mt-1">{new Date(msg.timestamp).toLocaleString()}</p>
                     </div>
                   ))}
                 </div>
