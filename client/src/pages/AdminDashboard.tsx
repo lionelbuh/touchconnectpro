@@ -140,7 +140,8 @@ export default function AdminDashboard() {
               country: m.country,
               state: m.state,
               status: m.status === "submitted" ? "pending" : m.status,
-              submittedAt: m.created_at
+              submittedAt: m.created_at,
+              is_resubmitted: m.is_resubmitted
             }));
             setMentorApplications(mappedMentors);
             setApprovedMentors(mappedMentors.filter((app: any) => app.status === "approved"));
@@ -169,7 +170,8 @@ export default function AdminDashboard() {
               country: c.country,
               state: c.state,
               status: c.status === "submitted" ? "pending" : c.status,
-              submittedAt: c.created_at
+              submittedAt: c.created_at,
+              is_resubmitted: c.is_resubmitted
             }));
             setCoachApplications(mappedCoaches);
             setApprovedCoaches(mappedCoaches.filter((app: any) => app.status === "approved"));
@@ -199,7 +201,8 @@ export default function AdminDashboard() {
               country: i.country,
               state: i.state,
               status: i.status === "submitted" ? "pending" : i.status,
-              submittedAt: i.created_at
+              submittedAt: i.created_at,
+              is_resubmitted: i.is_resubmitted
             }));
             setInvestorApplications(mappedInvestors);
             setApprovedInvestors(mappedInvestors.filter((app: any) => app.status === "approved"));
@@ -252,6 +255,7 @@ export default function AdminDashboard() {
             ideaReview: idea.data?.ideaReview || {},
             businessPlan: idea.business_plan || {},
             linkedin: idea.linkedin_profile || "",
+            is_resubmitted: idea.is_resubmitted,
             ...idea.data
           }));
           console.log("Mapped entrepreneurs:", entrepreneurs.length);
@@ -906,7 +910,7 @@ export default function AdminDashboard() {
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
                             <div className="flex gap-2">
-                              {app.status === "resubmitted" && <Badge className="bg-purple-600">Resubmission</Badge>}
+                              {app.is_resubmitted && <Badge className="bg-purple-600">Resubmission</Badge>}
                               <Badge className="bg-cyan-600">Pending</Badge>
                             </div>
                           </div>
