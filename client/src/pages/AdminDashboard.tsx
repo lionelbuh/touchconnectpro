@@ -56,7 +56,7 @@ interface EntrepreneurApplication {
   ideaName: string;
   problem: string;
   solution: string;
-  status: "pending" | "approved" | "rejected" | "submitted";
+  status: "pending" | "approved" | "rejected" | "submitted" | "resubmitted";
   submittedAt: string;
   id: string;
   ideaReview?: any;
@@ -562,7 +562,10 @@ export default function AdminDashboard() {
                               <CardTitle>{app.fullName}</CardTitle>
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
-                            <Badge className="bg-emerald-600">Pending</Badge>
+                            <div className="flex gap-2">
+                              {app.status === "resubmitted" && <Badge className="bg-purple-600">Resubmission</Badge>}
+                              <Badge className="bg-emerald-600">Pending</Badge>
+                            </div>
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -996,151 +999,6 @@ export default function AdminDashboard() {
             </div>
             )}
 
-            {/* Rejected Applications */}
-            {(rejectedMentorApplications.length > 0 || rejectedCoachApplications.length > 0 || rejectedInvestorApplications.length > 0) && (
-              <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
-                <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Rejected Applications</h2>
-                
-                {rejectedMentorApplications.length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Rejected Mentors ({rejectedMentorApplications.length})</h3>
-                    <div className="space-y-3">
-                      {rejectedMentorApplications.map((app, idx) => (
-                        <Card key={idx} className="border-l-4 border-l-red-500 opacity-75">
-                          <CardHeader>
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1">
-                                <CardTitle>{app.fullName}</CardTitle>
-                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
-                              </div>
-                              <Badge className="bg-red-100 text-red-800">Rejected</Badge>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
-                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Years Experience</p>
-                                <p className="text-slate-900 dark:text-white">{app.experience}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
-                                <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
-                                <p className="text-slate-900 dark:text-white">{app.expertise}</p>
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
-                              <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.bio}</p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {rejectedCoachApplications.length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Rejected Coaches ({rejectedCoachApplications.length})</h3>
-                    <div className="space-y-3">
-                      {rejectedCoachApplications.map((app, idx) => (
-                        <Card key={idx} className="border-l-4 border-l-red-500 opacity-75">
-                          <CardHeader>
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1">
-                                <CardTitle>{app.fullName}</CardTitle>
-                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
-                              </div>
-                              <Badge className="bg-red-100 text-red-800">Rejected</Badge>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
-                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Hourly Rate</p>
-                                <p className="text-slate-900 dark:text-white">${app.hourlyRate}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
-                                <p className="text-slate-900 dark:text-white">{app.expertise}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
-                                <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
-                              <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.focusAreas}</p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {rejectedInvestorApplications.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Rejected Investors ({rejectedInvestorApplications.length})</h3>
-                    <div className="space-y-3">
-                      {rejectedInvestorApplications.map((app, idx) => (
-                        <Card key={idx} className="border-l-4 border-l-red-500 opacity-75">
-                          <CardHeader>
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1">
-                                <CardTitle>{app.fullName}</CardTitle>
-                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
-                              </div>
-                              <Badge className="bg-red-100 text-red-800">Rejected</Badge>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
-                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Fund Name</p>
-                                <p className="text-slate-900 dark:text-white">{app.fundName}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Amount</p>
-                                <p className="text-slate-900 dark:text-white">{app.investmentAmount}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Preference</p>
-                                <p className="text-slate-900 dark:text-white">{app.investmentPreference}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
-                                <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Focus</p>
-                              <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.investmentFocus}</p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         )}
 

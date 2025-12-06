@@ -252,6 +252,43 @@ app.post("/api/ideas", async (req, res) => {
       return res.status(400).json({ error: "Name and email required" });
     }
 
+    // Check for existing application with same email
+    const { data: existingApp, error: checkError } = await supabase
+      .from("ideas")
+      .select("*")
+      .eq("entrepreneur_email", email)
+      .single();
+
+    if (existingApp) {
+      // If rejected, allow resubmission by updating existing record
+      if (existingApp.status === "rejected") {
+        console.log("[RESUBMIT] Updating rejected application for:", email);
+        const { data: updatedData, error: updateError } = await supabase
+          .from("ideas")
+          .update({
+            status: "resubmitted",
+            entrepreneur_name: fullName,
+            data: formData || {},
+            business_plan: businessPlan || {},
+            linkedin_profile: linkedinWebsite || ""
+          })
+          .eq("id", existingApp.id)
+          .select();
+
+        if (updateError) {
+          console.error("[DB ERROR]:", updateError);
+          return res.status(400).json({ error: updateError.message });
+        }
+
+        console.log("[RESUBMIT SUCCESS] Application updated with id:", updatedData?.[0]?.id);
+        return res.json({ success: true, id: updatedData?.[0]?.id, resubmitted: true });
+      } else {
+        // If already submitted/pending/approved, don't allow duplicate
+        console.log("[DUPLICATE] Application already exists for:", email, "status:", existingApp.status);
+        return res.status(400).json({ error: "An application with this email already exists" });
+      }
+    }
+
     console.log("[INSERT] Saving to ideas table for:", email);
     const { data, error } = await supabase
       .from("ideas")
