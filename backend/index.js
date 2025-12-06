@@ -1345,55 +1345,6 @@ app.post("/api/mentor-notes", async (req, res) => {
   }
 });
 
-// Get messages between mentor and entrepreneur
-app.get("/api/messages/:entrepreneurId", async (req, res) => {
-  try {
-    const { entrepreneurId } = req.params;
-
-    const { data, error } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("entrepreneur_id", entrepreneurId)
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
-
-    return res.json(data || []);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-});
-
-// Send message
-app.post("/api/messages", async (req, res) => {
-  try {
-    const { entrepreneurId, senderId, senderType, content } = req.body;
-
-    if (!entrepreneurId || !senderId || !senderType || !content) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    const { data, error } = await supabase
-      .from("messages")
-      .insert({
-        entrepreneur_id: entrepreneurId,
-        sender_id: senderId,
-        sender_type: senderType,
-        content
-      })
-      .select();
-
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
-
-    return res.json({ success: true, message: data?.[0] });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-});
 
 // Assign mentor to entrepreneur
 app.post("/api/mentor-assignments", async (req, res) => {
