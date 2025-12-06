@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Users, MessageSquare, Calendar, Settings, ChevronRight, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2 } from "lucide-react";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -44,24 +44,20 @@ export default function DashboardMentor() {
     approved: true
   });
 
-  const [portfolios, setPortfolios] = useState([
-    {
-      id: 1,
-      name: "Portfolio 1",
-      memberCount: 8,
-      members: [
-        { id: 1, name: "Alex Johnson", company: "TechFlow", stage: "Seed" },
-        { id: 2, name: "Maria Garcia", company: "DataSync", stage: "Pre-seed" },
-        { id: 3, name: "James Wilson", company: "CloudHub", stage: "Series A" },
-        { id: 4, name: "Emily Zhang", company: "AITools", stage: "Seed" },
-        { id: 5, name: "David Brown", company: "FinanceApp", stage: "Pre-seed" },
-        { id: 6, name: "Lisa Anderson", company: "HealthTech", stage: "Seed" },
-        { id: 7, name: "Michael Lee", company: "EduPlatform", stage: "Series A" },
-        { id: 8, name: "Jennifer Davis", company: "MarketPlace", stage: "Pre-seed" }
-      ],
-      lastMeeting: "2024-11-25"
-    }
-  ]);
+  const [portfolios, setPortfolios] = useState<Array<{
+    id: number;
+    name: string;
+    memberCount: number;
+    members: Array<{
+      id: string;
+      name: string;
+      email: string;
+      linkedin?: string;
+      businessIdea?: string;
+      photoUrl?: string;
+    }>;
+    lastMeeting: string;
+  }>>([]);
 
   const [messages, setMessages] = useState([
     { id: 1, from: "Alex Johnson", text: "Thanks for the feedback on our pitch deck!", timestamp: "Today 2:30 PM" },
@@ -118,14 +114,54 @@ export default function DashboardMentor() {
     }
 
     loadProfile();
-
-    const savedPortfolios = localStorage.getItem("tcp_mentorPortfolios");
-    if (savedPortfolios) setPortfolios(JSON.parse(savedPortfolios));
   }, []);
 
+  // Fetch assigned entrepreneurs when profileId changes
   useEffect(() => {
-    localStorage.setItem("tcp_mentorPortfolios", JSON.stringify(portfolios));
-  }, [portfolios]);
+    async function fetchAssignedEntrepreneurs() {
+      if (!profileId) return;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/mentor/${profileId}`);
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Group entrepreneurs by portfolio number (1-10)
+          const portfolioMap: { [key: number]: typeof data.entrepreneurs } = {};
+          
+          data.entrepreneurs?.forEach((item: any) => {
+            const portfolioNum = item.portfolio_number || 1;
+            if (!portfolioMap[portfolioNum]) {
+              portfolioMap[portfolioNum] = [];
+            }
+            portfolioMap[portfolioNum].push(item);
+          });
+          
+          // Create portfolios array
+          const portfoliosArray = Object.entries(portfolioMap).map(([num, members]) => ({
+            id: parseInt(num),
+            name: `Portfolio ${num}`,
+            memberCount: members.length,
+            members: members.map((m: any) => ({
+              id: m.entrepreneur?.id || "",
+              name: m.entrepreneur?.full_name || "Unknown",
+              email: m.entrepreneur?.email || "",
+              linkedin: m.entrepreneur?.linkedin,
+              businessIdea: m.entrepreneur?.business_idea,
+              photoUrl: m.entrepreneur?.photo_url
+            })),
+            lastMeeting: ""
+          }));
+          
+          setPortfolios(portfoliosArray.length > 0 ? portfoliosArray : []);
+        }
+      } catch (error) {
+        console.error("Error fetching assigned entrepreneurs:", error);
+      }
+    }
+    
+    fetchAssignedEntrepreneurs();
+  }, [profileId]);
 
   const handleSaveProfile = async () => {
     if (!profileId) return;
@@ -415,10 +451,26 @@ export default function DashboardMentor() {
                       <div>
                         <p className="text-sm font-semibold text-muted-foreground mb-3">Members: {portfolio.memberCount}/10</p>
                         {portfolio.members.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
+                          <div className="space-y-3">
                             {portfolio.members.map((member) => (
-                              <div key={member.id} className="bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full text-xs">
-                                {member.name}
+                              <div key={member.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                                <Avatar className="h-12 w-12 border border-cyan-200">
+                                  {member.photoUrl ? (
+                                    <AvatarImage src={member.photoUrl} alt={member.name} />
+                                  ) : null}
+                                  <AvatarFallback className="bg-cyan-500 text-white">
+                                    {member.name.substring(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold text-slate-900 dark:text-white text-sm">{member.name}</h4>
+                                  <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+                                  {member.linkedin && (
+                                    <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 text-xs flex items-center gap-1 mt-1">
+                                      <ExternalLink className="h-3 w-3" /> LinkedIn
+                                    </a>
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>
