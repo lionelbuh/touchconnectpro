@@ -15,7 +15,7 @@ interface MentorApplication {
   bio: string;
   expertise: string;
   experience: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "resubmitted";
   submittedAt: string;
   country?: string;
   state?: string;
@@ -29,7 +29,7 @@ interface CoachApplication {
   expertise: string;
   focusAreas: string;
   hourlyRate: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "resubmitted";
   submittedAt: string;
   country?: string;
   state?: string;
@@ -44,7 +44,7 @@ interface InvestorApplication {
   investmentFocus: string;
   investmentPreference: string;
   investmentAmount: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "resubmitted";
   submittedAt: string;
   country?: string;
   state?: string;
@@ -444,10 +444,10 @@ export default function AdminDashboard() {
     }
   };
 
-  const pendingEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "pending" || app.status === "submitted");
-  const pendingMentorApplications = mentorApplications.filter(app => app.status === "pending");
-  const pendingCoachApplications = coachApplications.filter(app => app.status === "pending");
-  const pendingInvestorApplications = investorApplications.filter(app => app.status === "pending");
+  const pendingEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "pending" || app.status === "submitted" || app.status === "resubmitted");
+  const pendingMentorApplications = mentorApplications.filter(app => app.status === "pending" || app.status === "resubmitted");
+  const pendingCoachApplications = coachApplications.filter(app => app.status === "pending" || app.status === "resubmitted");
+  const pendingInvestorApplications = investorApplications.filter(app => app.status === "pending" || app.status === "resubmitted");
   const rejectedEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "rejected");
   const rejectedMentorApplications = mentorApplications.filter(app => app.status === "rejected");
   const rejectedCoachApplications = coachApplications.filter(app => app.status === "rejected");
@@ -729,7 +729,10 @@ export default function AdminDashboard() {
                               <CardTitle>{app.fullName}</CardTitle>
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
-                            <Badge className="bg-amber-600">Pending</Badge>
+                            <div className="flex gap-2">
+                              {app.status === "resubmitted" && <Badge className="bg-purple-600">Resubmission</Badge>}
+                              <Badge className="bg-amber-600">Pending</Badge>
+                            </div>
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -821,7 +824,10 @@ export default function AdminDashboard() {
                               <CardTitle>{app.fullName}</CardTitle>
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
-                            <Badge className="bg-cyan-600">Pending</Badge>
+                            <div className="flex gap-2">
+                              {app.status === "resubmitted" && <Badge className="bg-purple-600">Resubmission</Badge>}
+                              <Badge className="bg-cyan-600">Pending</Badge>
+                            </div>
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -913,7 +919,10 @@ export default function AdminDashboard() {
                               <CardTitle>{app.fullName}</CardTitle>
                               <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                             </div>
-                            <Badge className="bg-amber-600">Pending</Badge>
+                            <div className="flex gap-2">
+                              {app.status === "resubmitted" && <Badge className="bg-purple-600">Resubmission</Badge>}
+                              <Badge className="bg-amber-600">Pending</Badge>
+                            </div>
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -998,15 +1007,37 @@ export default function AdminDashboard() {
                     <div className="space-y-3">
                       {rejectedMentorApplications.map((app, idx) => (
                         <Card key={idx} className="border-l-4 border-l-red-500 opacity-75">
-                          <CardContent className="pt-6">
+                          <CardHeader>
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <p className="font-semibold text-slate-900 dark:text-white">{app.fullName}</p>
-                                  <Badge className="bg-red-100 text-red-800">Rejected</Badge>
-                                </div>
-                                <p className="text-sm text-muted-foreground">{app.email}</p>
+                                <CardTitle>{app.fullName}</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
+                              <Badge className="bg-red-100 text-red-800">Rejected</Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Years Experience</p>
+                                <p className="text-slate-900 dark:text-white">{app.experience}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                                <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
+                                <p className="text-slate-900 dark:text-white">{app.expertise}</p>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
+                              <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.bio}</p>
                             </div>
                           </CardContent>
                         </Card>
@@ -1021,15 +1052,37 @@ export default function AdminDashboard() {
                     <div className="space-y-3">
                       {rejectedCoachApplications.map((app, idx) => (
                         <Card key={idx} className="border-l-4 border-l-red-500 opacity-75">
-                          <CardContent className="pt-6">
+                          <CardHeader>
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <p className="font-semibold text-slate-900 dark:text-white">{app.fullName}</p>
-                                  <Badge className="bg-red-100 text-red-800">Rejected</Badge>
-                                </div>
-                                <p className="text-sm text-muted-foreground">{app.email}</p>
+                                <CardTitle>{app.fullName}</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
+                              <Badge className="bg-red-100 text-red-800">Rejected</Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Hourly Rate</p>
+                                <p className="text-slate-900 dark:text-white">${app.hourlyRate}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
+                                <p className="text-slate-900 dark:text-white">{app.expertise}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                                <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
+                              <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.focusAreas}</p>
                             </div>
                           </CardContent>
                         </Card>
@@ -1044,15 +1097,41 @@ export default function AdminDashboard() {
                     <div className="space-y-3">
                       {rejectedInvestorApplications.map((app, idx) => (
                         <Card key={idx} className="border-l-4 border-l-red-500 opacity-75">
-                          <CardContent className="pt-6">
+                          <CardHeader>
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <p className="font-semibold text-slate-900 dark:text-white">{app.fullName}</p>
-                                  <Badge className="bg-red-100 text-red-800">Rejected</Badge>
-                                </div>
-                                <p className="text-sm text-muted-foreground">{app.email}</p>
+                                <CardTitle>{app.fullName}</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
+                              <Badge className="bg-red-100 text-red-800">Rejected</Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Fund Name</p>
+                                <p className="text-slate-900 dark:text-white">{app.fundName}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Amount</p>
+                                <p className="text-slate-900 dark:text-white">{app.investmentAmount}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Preference</p>
+                                <p className="text-slate-900 dark:text-white">{app.investmentPreference}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                                <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Focus</p>
+                              <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.investmentFocus}</p>
                             </div>
                           </CardContent>
                         </Card>
