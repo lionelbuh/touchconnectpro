@@ -196,9 +196,15 @@ export default function AdminDashboard() {
       } catch (err) {
         console.error("Error fetching investors:", err);
       }
-      const savedMessages = localStorage.getItem("tcp_messageHistory");
-      if (savedMessages) {
-        setMessageHistory(JSON.parse(savedMessages));
+      // Load all messages from database
+      try {
+        const messagesResponse = await fetch(`${API_BASE_URL}/api/messages`);
+        if (messagesResponse.ok) {
+          const messagesData = await messagesResponse.json();
+          setMessageHistory(messagesData.messages || []);
+        }
+      } catch (err) {
+        console.error("Error fetching messages:", err);
       }
       const savedAdminRead = localStorage.getItem("tcp_adminReadMessageIds");
       if (savedAdminRead) {
@@ -371,30 +377,42 @@ export default function AdminDashboard() {
     setMembers(updated);
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (messageText.trim() && selectedMember) {
-      const newMessage = {
-        id: Date.now(),
-        from: "Admin",
-        to: selectedMember.name,
-        toEmail: selectedMember.email,
-        message: messageText,
-        timestamp: new Date().toISOString()
-      };
-      const updated = [...messageHistory, newMessage];
-      setMessageHistory(updated);
-      localStorage.setItem("tcp_messageHistory", JSON.stringify(updated));
-      console.log(`Message sent to ${selectedMember.name}: ${messageText}`);
-      setMessageText("");
-      setShowMessageModal(false);
-      setSelectedMember(null);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/messages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fromName: "Admin",
+            fromEmail: "admin@touchconnectpro.com",
+            toName: selectedMember.name,
+            toEmail: selectedMember.email,
+            message: messageText
+          })
+        });
+        if (response.ok) {
+          // Reload all messages
+          const messagesResponse = await fetch(`${API_BASE_URL}/api/messages`);
+          if (messagesResponse.ok) {
+            const messagesData = await messagesResponse.json();
+            setMessageHistory(messagesData.messages || []);
+          }
+          console.log(`Message sent to ${selectedMember.name}: ${messageText}`);
+          setMessageText("");
+          setShowMessageModal(false);
+          setSelectedMember(null);
+        }
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
     }
   };
 
   const markMessagesAsReadByAdmin = (memberEmail: string) => {
     const messagesToMark = messageHistory
-      .filter(m => m.fromEmail === memberEmail && m.from !== "Admin")
-      .map(m => m.id);
+      .filter((m: any) => m.from_email === memberEmail && m.from_email !== "admin@touchconnectpro.com")
+      .map((m: any) => m.id);
     if (messagesToMark.length > 0) {
       const combined = [...adminReadMessageIds, ...messagesToMark];
       const updatedReadIds = combined.filter((id, index) => combined.indexOf(id) === index);
@@ -1113,9 +1131,9 @@ export default function AdminDashboard() {
                   data-testid="button-members-subtab-messaging"
                 >
                   <MessageSquare className="mr-2 h-4 w-4" /> Messages
-                  {messageHistory.filter(m => m.from !== "Admin" && !adminReadMessageIds.includes(m.id)).length > 0 && (
+                  {messageHistory.filter((m: any) => m.from_email !== "admin@touchconnectpro.com" && !adminReadMessageIds.includes(m.id)).length > 0 && (
                     <span className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full animate-pulse">
-                      {messageHistory.filter(m => m.from !== "Admin" && !adminReadMessageIds.includes(m.id)).length}
+                      {messageHistory.filter((m: any) => m.from_email !== "admin@touchconnectpro.com" && !adminReadMessageIds.includes(m.id)).length}
                     </span>
                   )}
                 </Button>
@@ -1996,7 +2014,7 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").map((entrepreneur, idx) => {
-                          const unreadReplies = messageHistory.filter(m => m.fromEmail === entrepreneur.email && !adminReadMessageIds.includes(m.id)).length;
+                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === entrepreneur.email && !adminReadMessageIds.includes(m.id)).length;
                           const hasUnreadReplies = unreadReplies > 0;
                           return (
                           <Card key={`msg-${entrepreneur.id}`} className={hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""}>
@@ -2039,21 +2057,32 @@ export default function AdminDashboard() {
                           </CardContent>
                         </Card>
                       ) : (
-                        filterAndSort(mentorApplications.filter(app => app.status === "approved"), "fullName").map((mentor, idx) => (
-                          <Card key={idx}>
+                        filterAndSort(mentorApplications.filter(app => app.status === "approved"), "fullName").map((mentor, idx) => {
+                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === mentor.email && !adminReadMessageIds.includes(m.id)).length;
+                          const hasUnreadReplies = unreadReplies > 0;
+                          return (
+                          <Card key={idx} className={hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
                                 <div>
-                                  <p className="font-semibold text-slate-900 dark:text-white">{mentor.fullName}</p>
+                                  <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                                    {mentor.fullName}
+                                    {hasUnreadReplies && (
+                                      <span className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 text-xs px-2 py-0.5 rounded-full animate-pulse">
+                                        {unreadReplies} New
+                                      </span>
+                                    )}
+                                  </p>
                                   <p className="text-sm text-muted-foreground">{mentor.email}</p>
                                 </div>
-                                <Button onClick={() => {setSelectedMember({id: mentor.id, name: mentor.fullName, email: mentor.email, type: "mentor", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-mentor-${idx}`} size="sm">
-                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
+                                <Button onClick={() => openConversationModal({id: mentor.id, name: mentor.fullName, email: mentor.email, type: "mentor", status: "active"})} data-testid={`button-message-mentor-${idx}`} size="sm" className={hasUnreadReplies ? "bg-amber-600 hover:bg-amber-700" : ""}>
+                                  <MessageSquare className="mr-2 h-4 w-4" /> {hasUnreadReplies ? "View Reply" : "Message"}
                                 </Button>
                               </div>
                             </CardContent>
                           </Card>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   </div>
@@ -2070,21 +2099,32 @@ export default function AdminDashboard() {
                           </CardContent>
                         </Card>
                       ) : (
-                        filterAndSort(coachApplications.filter(app => app.status === "approved"), "fullName").map((coach, idx) => (
-                          <Card key={idx}>
+                        filterAndSort(coachApplications.filter(app => app.status === "approved"), "fullName").map((coach, idx) => {
+                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === coach.email && !adminReadMessageIds.includes(m.id)).length;
+                          const hasUnreadReplies = unreadReplies > 0;
+                          return (
+                          <Card key={idx} className={hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
                                 <div>
-                                  <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
+                                  <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                                    {coach.fullName}
+                                    {hasUnreadReplies && (
+                                      <span className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 text-xs px-2 py-0.5 rounded-full animate-pulse">
+                                        {unreadReplies} New
+                                      </span>
+                                    )}
+                                  </p>
                                   <p className="text-sm text-muted-foreground">{coach.email}</p>
                                 </div>
-                                <Button onClick={() => {setSelectedMember({id: coach.id, name: coach.fullName, email: coach.email, type: "coach", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-coach-${idx}`} size="sm">
-                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
+                                <Button onClick={() => openConversationModal({id: coach.id, name: coach.fullName, email: coach.email, type: "coach", status: "active"})} data-testid={`button-message-coach-${idx}`} size="sm" className={hasUnreadReplies ? "bg-amber-600 hover:bg-amber-700" : ""}>
+                                  <MessageSquare className="mr-2 h-4 w-4" /> {hasUnreadReplies ? "View Reply" : "Message"}
                                 </Button>
                               </div>
                             </CardContent>
                           </Card>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   </div>
@@ -2101,21 +2141,32 @@ export default function AdminDashboard() {
                           </CardContent>
                         </Card>
                       ) : (
-                        filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").map((investor, idx) => (
-                          <Card key={idx}>
+                        filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").map((investor, idx) => {
+                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === investor.email && !adminReadMessageIds.includes(m.id)).length;
+                          const hasUnreadReplies = unreadReplies > 0;
+                          return (
+                          <Card key={idx} className={hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
                                 <div>
-                                  <p className="font-semibold text-slate-900 dark:text-white">{investor.fullName}</p>
+                                  <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                                    {investor.fullName}
+                                    {hasUnreadReplies && (
+                                      <span className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 text-xs px-2 py-0.5 rounded-full animate-pulse">
+                                        {unreadReplies} New
+                                      </span>
+                                    )}
+                                  </p>
                                   <p className="text-sm text-muted-foreground">{investor.email}</p>
                                 </div>
-                                <Button onClick={() => {setSelectedMember({id: investor.id, name: investor.fullName, email: investor.email, type: "investor", status: "active"}); setShowMessageModal(true);}} data-testid={`button-message-investor-${idx}`} size="sm">
-                                  <MessageSquare className="mr-2 h-4 w-4" /> Message
+                                <Button onClick={() => openConversationModal({id: investor.id, name: investor.fullName, email: investor.email, type: "investor", status: "active"})} data-testid={`button-message-investor-${idx}`} size="sm" className={hasUnreadReplies ? "bg-amber-600 hover:bg-amber-700" : ""}>
+                                  <MessageSquare className="mr-2 h-4 w-4" /> {hasUnreadReplies ? "View Reply" : "Message"}
                                 </Button>
                               </div>
                             </CardContent>
                           </Card>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   </div>
@@ -2345,21 +2396,21 @@ export default function AdminDashboard() {
               <CardTitle>Conversation with {selectedMember.name}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {messageHistory.filter(m => m.toEmail === selectedMember.email || m.fromEmail === selectedMember.email).length > 0 && (
+              {messageHistory.filter((m: any) => m.to_email === selectedMember.email || m.from_email === selectedMember.email).length > 0 && (
               <div className="mb-4 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                 <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Message History</h4>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {messageHistory
-                    .filter(m => m.toEmail === selectedMember.email || m.fromEmail === selectedMember.email)
-                    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-                    .map(msg => (
-                    <div key={msg.id} className={`text-xs p-2 rounded ${msg.from === "Admin" ? "bg-white dark:bg-slate-700" : "bg-amber-50 dark:bg-amber-900/30 border-l-2 border-l-amber-500"}`}>
-                      <p className={`font-semibold ${msg.from === "Admin" ? "text-slate-700 dark:text-slate-200" : "text-amber-700 dark:text-amber-400"}`}>
-                        {msg.from === "Admin" ? `Admin → ${msg.to}` : `${msg.from} → Admin`}
-                        {msg.from !== "Admin" && <span className="ml-2 text-xs bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded">Reply</span>}
+                    .filter((m: any) => m.to_email === selectedMember.email || m.from_email === selectedMember.email)
+                    .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                    .map((msg: any) => (
+                    <div key={msg.id} className={`text-xs p-2 rounded ${msg.from_email === "admin@touchconnectpro.com" ? "bg-white dark:bg-slate-700" : "bg-amber-50 dark:bg-amber-900/30 border-l-2 border-l-amber-500"}`}>
+                      <p className={`font-semibold ${msg.from_email === "admin@touchconnectpro.com" ? "text-slate-700 dark:text-slate-200" : "text-amber-700 dark:text-amber-400"}`}>
+                        {msg.from_email === "admin@touchconnectpro.com" ? `Admin → ${msg.to_name}` : `${msg.from_name} → Admin`}
+                        {msg.from_email !== "admin@touchconnectpro.com" && <span className="ml-2 text-xs bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded">Reply</span>}
                       </p>
                       <p className="text-slate-600 dark:text-slate-400 mt-1">{msg.message}</p>
-                      <p className="text-slate-500 text-xs mt-1">{new Date(msg.timestamp).toLocaleString()}</p>
+                      <p className="text-slate-500 text-xs mt-1">{new Date(msg.created_at).toLocaleString()}</p>
                     </div>
                   ))}
                 </div>

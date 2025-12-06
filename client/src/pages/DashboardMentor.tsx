@@ -72,6 +72,8 @@ export default function DashboardMentor() {
 
   const [newMessage, setNewMessage] = useState("");
   const [newMeeting, setNewMeeting] = useState({ date: "", time: "", topic: "" });
+  const [adminMessage, setAdminMessage] = useState("");
+  const [adminMessages, setAdminMessages] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadProfile() {
@@ -115,6 +117,23 @@ export default function DashboardMentor() {
 
     loadProfile();
   }, []);
+
+  // Load admin messages from database
+  useEffect(() => {
+    async function loadMessages() {
+      if (!mentorProfile.email) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setAdminMessages(data.messages || []);
+        }
+      } catch (error) {
+        console.error("Error loading messages:", error);
+      }
+    }
+    loadMessages();
+  }, [mentorProfile.email]);
 
   // Fetch assigned entrepreneurs when profileId changes
   useEffect(() => {
@@ -515,20 +534,97 @@ export default function DashboardMentor() {
           {/* Messages Tab */}
           {activeTab === "messages" && (
             <div>
-              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-8">Messages</h1>
-              <div className="space-y-4">
-                {messages.map((msg) => (
-                  <Card key={msg.id} className="border-l-4 border-l-cyan-500">
-                    <CardContent className="pt-6">
-                      <div className="flex justify-between items-start mb-2">
-                        <p className="font-semibold text-slate-900 dark:text-white">{msg.from}</p>
-                        <p className="text-xs text-muted-foreground">{msg.timestamp}</p>
-                      </div>
-                      <p className="text-slate-600 dark:text-slate-400">{msg.text}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Messages</h1>
+              <p className="text-muted-foreground mb-8">Communicate with the TouchConnectPro admin team.</p>
+
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-cyan-600" />
+                    Send a Message to Admin
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <textarea
+                    value={adminMessage}
+                    onChange={(e) => setAdminMessage(e.target.value)}
+                    placeholder="Type your message to the admin team..."
+                    className="w-full min-h-24 p-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    data-testid="textarea-admin-message"
+                  />
+                  <Button 
+                    onClick={async () => {
+                      if (adminMessage.trim() && mentorProfile.email) {
+                        try {
+                          const response = await fetch(`${API_BASE_URL}/api/messages`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              fromName: mentorProfile.fullName,
+                              fromEmail: mentorProfile.email,
+                              toName: "Admin",
+                              toEmail: "admin@touchconnectpro.com",
+                              message: adminMessage
+                            })
+                          });
+                          if (response.ok) {
+                            const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
+                            if (loadResponse.ok) {
+                              const data = await loadResponse.json();
+                              setAdminMessages(data.messages || []);
+                            }
+                            setAdminMessage("");
+                            toast.success("Message sent to admin!");
+                          } else {
+                            toast.error("Failed to send message");
+                          }
+                        } catch (error) {
+                          toast.error("Error sending message");
+                        }
+                      }
+                    }}
+                    disabled={!adminMessage.trim()}
+                    className="bg-cyan-600 hover:bg-cyan-700"
+                    data-testid="button-send-admin-message"
+                  >
+                    <MessageSquare className="mr-2 h-4 w-4" /> Send Message
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-cyan-600" />
+                    Message History
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {adminMessages.length > 0 ? (
+                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                      {adminMessages.map((msg: any) => (
+                          <div 
+                            key={msg.id} 
+                            className={`p-4 rounded-lg ${msg.from_email === "admin@touchconnectpro.com" ? "bg-cyan-50 dark:bg-cyan-950/30 border-l-4 border-l-cyan-500" : "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400"}`}
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <span className={`font-semibold ${msg.from_email === "admin@touchconnectpro.com" ? "text-cyan-700 dark:text-cyan-400" : "text-slate-700 dark:text-slate-300"}`}>
+                                {msg.from_email === "admin@touchconnectpro.com" ? "From Admin" : "You"}
+                              </span>
+                              <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                            </div>
+                            <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                      <p className="text-muted-foreground">No messages yet. Send a message to get started!</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           )}
 

@@ -1576,6 +1576,108 @@ app.patch("/api/mentor-assignments/:id", async (req, res) => {
   }
 });
 
+// ===== MESSAGES API ENDPOINTS =====
+
+// Send a new message
+app.post("/api/messages", async (req, res) => {
+  try {
+    const { fromName, fromEmail, toName, toEmail, message } = req.body;
+
+    if (!fromEmail || !toEmail || !message) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const { data, error } = await supabase
+      .from("messages")
+      .insert({
+        from_name: fromName || "Unknown",
+        from_email: fromEmail,
+        to_name: toName || "Unknown",
+        to_email: toEmail,
+        message: message,
+        is_read: false
+      })
+      .select();
+
+    if (error) {
+      console.error("[POST /api/messages] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    console.log(`[POST /api/messages] Message sent from ${fromEmail} to ${toEmail}`);
+    return res.json({ success: true, message: data?.[0] });
+  } catch (error) {
+    console.error("[POST /api/messages] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get messages for a user (by email)
+app.get("/api/messages/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .or(`from_email.eq.${email},to_email.eq.${email}`)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[GET /api/messages/:email] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.json({ messages: data || [] });
+  } catch (error) {
+    console.error("[GET /api/messages/:email] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all messages (for admin)
+app.get("/api/messages", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[GET /api/messages] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.json({ messages: data || [] });
+  } catch (error) {
+    console.error("[GET /api/messages] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Mark message as read
+app.patch("/api/messages/:id/read", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data, error } = await supabase
+      .from("messages")
+      .update({ is_read: true })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.error("[PATCH /api/messages/:id/read] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.json({ success: true, message: data?.[0] });
+  } catch (error) {
+    console.error("[PATCH /api/messages/:id/read] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/", (req, res) => {
   return res.json({ 
     message: "TouchConnectPro Backend API",

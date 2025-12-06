@@ -119,10 +119,7 @@ export default function DashboardEntrepreneur() {
     if (savedProfile) setProfileData(JSON.parse(savedProfile));
     if (savedSubmitted) setSubmitted(JSON.parse(savedSubmitted));
     
-    const savedMessages = localStorage.getItem("tcp_messageHistory");
-    if (savedMessages) setMessages(JSON.parse(savedMessages));
-    const savedEntrepreneurRead = localStorage.getItem("tcp_entrepreneurReadMessageIds");
-    if (savedEntrepreneurRead) setEntrepreneurReadMessageIds(JSON.parse(savedEntrepreneurRead));
+    // Messages will be loaded from database after user email is available
     
     const params = new URLSearchParams(window.location.search);
     if (params.get("submitted") === "true") {
@@ -229,11 +226,28 @@ export default function DashboardEntrepreneur() {
     localStorage.setItem("tcp_profileData", JSON.stringify(profileData));
   }, [profileData]);
 
+  // Load messages from database
+  useEffect(() => {
+    async function loadMessages() {
+      if (!userEmail) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setMessages(data.messages || []);
+        }
+      } catch (error) {
+        console.error("Error loading messages:", error);
+      }
+    }
+    loadMessages();
+  }, [userEmail]);
+
   useEffect(() => {
     if (activeTab === "messages" && userEmail) {
       const adminMessagesToMark = messages
-        .filter(m => m.toEmail === userEmail && m.from === "Admin" && !entrepreneurReadMessageIds.includes(m.id))
-        .map(m => m.id);
+        .filter((m: any) => m.to_email === userEmail && m.from_email === "admin@touchconnectpro.com" && !entrepreneurReadMessageIds.includes(m.id))
+        .map((m: any) => m.id);
       if (adminMessagesToMark.length > 0) {
         const combined = [...entrepreneurReadMessageIds, ...adminMessagesToMark];
         const updatedReadIds = combined.filter((id, index) => combined.indexOf(id) === index);
@@ -674,8 +688,8 @@ export default function DashboardEntrepreneur() {
                 data-testid="button-messages-tab"
               >
                 <MessageSquare className="mr-2 h-4 w-4" /> Messages
-                {messages.filter(m => m.toEmail === userEmail && m.from === "Admin" && !entrepreneurReadMessageIds.includes(m.id)).length > 0 && (
-                  <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">{messages.filter(m => m.toEmail === userEmail && m.from === "Admin" && !entrepreneurReadMessageIds.includes(m.id)).length}</span>
+                {messages.filter((m: any) => m.to_email === userEmail && m.from_email === "admin@touchconnectpro.com" && !entrepreneurReadMessageIds.includes(m.id)).length > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">{messages.filter((m: any) => m.to_email === userEmail && m.from_email === "admin@touchconnectpro.com" && !entrepreneurReadMessageIds.includes(m.id)).length}</span>
                 )}
               </Button>
               <Button 
@@ -1014,24 +1028,34 @@ export default function DashboardEntrepreneur() {
                       data-testid="textarea-new-message"
                     />
                     <Button 
-                      onClick={() => {
-                        if (newMessage.trim()) {
-                          const msg = {
-                            id: Date.now(),
-                            from: profileData.fullName,
-                            fromEmail: userEmail,
-                            to: "Admin",
-                            toEmail: "admin@touchconnectpro.com",
-                            message: newMessage,
-                            timestamp: new Date().toISOString()
-                          };
-                          const savedMessages = localStorage.getItem("tcp_messageHistory");
-                          const existing = savedMessages ? JSON.parse(savedMessages) : [];
-                          const updated = [...existing, msg];
-                          localStorage.setItem("tcp_messageHistory", JSON.stringify(updated));
-                          setMessages(updated);
-                          setNewMessage("");
-                          toast.success("Message sent to admin!");
+                      onClick={async () => {
+                        if (newMessage.trim() && userEmail) {
+                          try {
+                            const response = await fetch(`${API_BASE_URL}/api/messages`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                fromName: profileData.fullName,
+                                fromEmail: userEmail,
+                                toName: "Admin",
+                                toEmail: "admin@touchconnectpro.com",
+                                message: newMessage
+                              })
+                            });
+                            if (response.ok) {
+                              const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
+                              if (loadResponse.ok) {
+                                const data = await loadResponse.json();
+                                setMessages(data.messages || []);
+                              }
+                              setNewMessage("");
+                              toast.success("Message sent to admin!");
+                            } else {
+                              toast.error("Failed to send message");
+                            }
+                          } catch (error) {
+                            toast.error("Error sending message");
+                          }
                         }
                       }}
                       disabled={!newMessage.trim()}
@@ -1051,21 +1075,18 @@ export default function DashboardEntrepreneur() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {messages.filter(m => m.toEmail === userEmail || m.fromEmail === userEmail).length > 0 ? (
+                    {messages.length > 0 ? (
                       <div className="space-y-4 max-h-96 overflow-y-auto">
-                        {messages
-                          .filter(m => m.toEmail === userEmail || m.fromEmail === userEmail)
-                          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                          .map((msg) => (
+                        {messages.map((msg: any) => (
                             <div 
                               key={msg.id} 
-                              className={`p-4 rounded-lg ${msg.from === "Admin" ? "bg-cyan-50 dark:bg-cyan-950/30 border-l-4 border-l-cyan-500" : "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400"}`}
+                              className={`p-4 rounded-lg ${msg.from_email === "admin@touchconnectpro.com" ? "bg-cyan-50 dark:bg-cyan-950/30 border-l-4 border-l-cyan-500" : "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400"}`}
                             >
                               <div className="flex justify-between items-start mb-2">
-                                <span className={`font-semibold ${msg.from === "Admin" ? "text-cyan-700 dark:text-cyan-400" : "text-slate-700 dark:text-slate-300"}`}>
-                                  {msg.from === "Admin" ? "From Admin" : `You`}
+                                <span className={`font-semibold ${msg.from_email === "admin@touchconnectpro.com" ? "text-cyan-700 dark:text-cyan-400" : "text-slate-700 dark:text-slate-300"}`}>
+                                  {msg.from_email === "admin@touchconnectpro.com" ? "From Admin" : `You`}
                                 </span>
-                                <span className="text-xs text-muted-foreground">{new Date(msg.timestamp).toLocaleString()}</span>
+                                <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
                               </div>
                               <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
                             </div>
