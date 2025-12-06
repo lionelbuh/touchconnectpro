@@ -492,7 +492,7 @@ app.post("/api/mentors", async (req, res) => {
             experience,
             country,
             state: state || null,
-            status: "resubmitted"
+            status: "pending"
           })
           .eq("id", existing.id)
           .select();
@@ -694,7 +694,7 @@ app.post("/api/coaches", async (req, res) => {
             hourly_rate: hourlyRate,
             country,
             state: state || null,
-            status: "resubmitted"
+            status: "pending"
           })
           .eq("id", existing.id)
           .select();
@@ -897,7 +897,7 @@ app.post("/api/investors", async (req, res) => {
             investment_amount: investmentAmount,
             country,
             state: state || null,
-            status: "resubmitted"
+            status: "pending"
           })
           .eq("id", existing.id)
           .select();
