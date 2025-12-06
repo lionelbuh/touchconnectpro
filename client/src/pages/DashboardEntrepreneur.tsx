@@ -536,6 +536,18 @@ export default function DashboardEntrepreneur() {
     }
   };
 
+  // Show loading screen while fetching data
+  if (isLoadingData) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950 items-center justify-center">
+        <div className="text-center">
+          <div className="h-16 w-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (showSuccessPage && !submitted) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
