@@ -18,7 +18,7 @@ export default function DashboardEntrepreneur() {
   const [showSuccessPage, setShowSuccessPage] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile" | "notes">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile" | "notes" | "messages">("overview");
   const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
   const [mentorData, setMentorData] = useState<any>(null);
   const [mentorNotes, setMentorNotes] = useState<any[]>([]);
@@ -117,6 +117,9 @@ export default function DashboardEntrepreneur() {
     if (savedBusinessPlan) setBusinessPlanData(JSON.parse(savedBusinessPlan));
     if (savedProfile) setProfileData(JSON.parse(savedProfile));
     if (savedSubmitted) setSubmitted(JSON.parse(savedSubmitted));
+    
+    const savedMessages = localStorage.getItem("tcp_messageHistory");
+    if (savedMessages) setMessages(JSON.parse(savedMessages));
     
     const params = new URLSearchParams(window.location.search);
     if (params.get("submitted") === "true") {
@@ -648,6 +651,17 @@ export default function DashboardEntrepreneur() {
                 )}
               </Button>
               <Button 
+                variant={activeTab === "messages" ? "secondary" : "ghost"}
+                className="w-full justify-start font-medium text-slate-600"
+                onClick={() => setActiveTab("messages")}
+                data-testid="button-messages-tab"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" /> Messages
+                {messages.filter(m => m.toEmail === userEmail || m.fromEmail === userEmail).length > 0 && (
+                  <span className="ml-auto bg-cyan-100 dark:bg-cyan-900 text-cyan-600 dark:text-cyan-400 text-xs px-2 py-0.5 rounded-full">{messages.filter(m => m.toEmail === userEmail || m.fromEmail === userEmail).length}</span>
+                )}
+              </Button>
+              <Button 
                 variant={activeTab === "profile" ? "secondary" : "ghost"}
                 className="w-full justify-start font-medium text-slate-600"
                 onClick={() => setActiveTab("profile")}
@@ -955,6 +969,96 @@ export default function DashboardEntrepreneur() {
                     </CardContent>
                   </Card>
                 )}
+              </div>
+            )}
+
+            {/* Messages Tab */}
+            {activeTab === "messages" && (
+              <div>
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Messages</h1>
+                <p className="text-muted-foreground mb-8">Communicate with the TouchConnectPro admin team.</p>
+
+                <Card className="mb-6">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Send className="h-5 w-5 text-cyan-600" />
+                      Send a Message to Admin
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <textarea
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder="Type your message to the admin team..."
+                      className="w-full min-h-24 p-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      data-testid="textarea-new-message"
+                    />
+                    <Button 
+                      onClick={() => {
+                        if (newMessage.trim()) {
+                          const msg = {
+                            id: Date.now(),
+                            from: profileData.fullName,
+                            fromEmail: userEmail,
+                            to: "Admin",
+                            toEmail: "admin@touchconnectpro.com",
+                            message: newMessage,
+                            timestamp: new Date().toISOString()
+                          };
+                          const savedMessages = localStorage.getItem("tcp_messageHistory");
+                          const existing = savedMessages ? JSON.parse(savedMessages) : [];
+                          const updated = [...existing, msg];
+                          localStorage.setItem("tcp_messageHistory", JSON.stringify(updated));
+                          setMessages(updated);
+                          setNewMessage("");
+                          toast.success("Message sent to admin!");
+                        }
+                      }}
+                      disabled={!newMessage.trim()}
+                      className="bg-cyan-600 hover:bg-cyan-700"
+                      data-testid="button-send-message"
+                    >
+                      <Send className="mr-2 h-4 w-4" /> Send Message
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <MessageSquare className="h-5 w-5 text-cyan-600" />
+                      Message History
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {messages.filter(m => m.toEmail === userEmail || m.fromEmail === userEmail).length > 0 ? (
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
+                        {messages
+                          .filter(m => m.toEmail === userEmail || m.fromEmail === userEmail)
+                          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                          .map((msg) => (
+                            <div 
+                              key={msg.id} 
+                              className={`p-4 rounded-lg ${msg.from === "Admin" ? "bg-cyan-50 dark:bg-cyan-950/30 border-l-4 border-l-cyan-500" : "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400"}`}
+                            >
+                              <div className="flex justify-between items-start mb-2">
+                                <span className={`font-semibold ${msg.from === "Admin" ? "text-cyan-700 dark:text-cyan-400" : "text-slate-700 dark:text-slate-300"}`}>
+                                  {msg.from === "Admin" ? "From Admin" : `You`}
+                                </span>
+                                <span className="text-xs text-muted-foreground">{new Date(msg.timestamp).toLocaleString()}</span>
+                              </div>
+                              <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
+                            </div>
+                          ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                        <p className="text-muted-foreground">No messages yet. Send a message to get started!</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             )}
 
