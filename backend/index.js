@@ -28,7 +28,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "https://touchconnectpro.com";
+const FRONTEND_URL = process.env.FRONTEND_URL || (process.env.NODE_ENV === "development" ? "http://localhost:5000" : "https://touchconnectpro.com");
 
 async function getResendClient() {
   // First try direct RESEND_API_KEY (for Render and other deployments)
