@@ -1130,10 +1130,231 @@ app.post("/api/set-password", async (req, res) => {
   }
 });
 
+// Get all approved coaches
+app.get("/api/coaches/approved", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .select("*")
+      .eq("status", "approved")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json(data || []);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get entrepreneur data by email (including mentor assignment)
+app.get("/api/entrepreneur/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const decodedEmail = decodeURIComponent(email);
+
+    // Get entrepreneur's idea/application
+    const { data: ideaData, error: ideaError } = await supabase
+      .from("ideas")
+      .select("*")
+      .eq("entrepreneur_email", decodedEmail)
+      .single();
+
+    if (ideaError || !ideaData) {
+      return res.status(404).json({ error: "Entrepreneur not found" });
+    }
+
+    // Get mentor assignment if exists
+    const { data: assignmentData } = await supabase
+      .from("mentor_assignments")
+      .select("*, mentor:mentor_id(*)")
+      .eq("entrepreneur_id", ideaData.id)
+      .single();
+
+    // Get mentor notes if assigned
+    let mentorNotes = [];
+    if (assignmentData) {
+      const { data: notesData } = await supabase
+        .from("mentor_notes")
+        .select("*")
+        .eq("entrepreneur_id", ideaData.id)
+        .order("created_at", { ascending: true });
+      mentorNotes = notesData || [];
+    }
+
+    return res.json({
+      ...ideaData,
+      mentorAssignment: assignmentData || null,
+      mentorNotes
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get mentor notes for an entrepreneur
+app.get("/api/mentor-notes/:entrepreneurId", async (req, res) => {
+  try {
+    const { entrepreneurId } = req.params;
+
+    const { data, error } = await supabase
+      .from("mentor_notes")
+      .select("*")
+      .eq("entrepreneur_id", entrepreneurId)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json(data || []);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Add mentor note
+app.post("/api/mentor-notes", async (req, res) => {
+  try {
+    const { entrepreneurId, mentorId, stepNumber, title, content, type } = req.body;
+
+    if (!entrepreneurId || !mentorId || !title || !content) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const { data, error } = await supabase
+      .from("mentor_notes")
+      .insert({
+        entrepreneur_id: entrepreneurId,
+        mentor_id: mentorId,
+        step_number: stepNumber || null,
+        title,
+        content,
+        type: type || "recommendation"
+      })
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, note: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get messages between mentor and entrepreneur
+app.get("/api/messages/:entrepreneurId", async (req, res) => {
+  try {
+    const { entrepreneurId } = req.params;
+
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("entrepreneur_id", entrepreneurId)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json(data || []);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Send message
+app.post("/api/messages", async (req, res) => {
+  try {
+    const { entrepreneurId, senderId, senderType, content } = req.body;
+
+    if (!entrepreneurId || !senderId || !senderType || !content) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const { data, error } = await supabase
+      .from("messages")
+      .insert({
+        entrepreneur_id: entrepreneurId,
+        sender_id: senderId,
+        sender_type: senderType,
+        content
+      })
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, message: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Assign mentor to entrepreneur
+app.post("/api/mentor-assignments", async (req, res) => {
+  try {
+    const { entrepreneurId, mentorId, meetingLink } = req.body;
+
+    if (!entrepreneurId || !mentorId) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const { data, error } = await supabase
+      .from("mentor_assignments")
+      .insert({
+        entrepreneur_id: entrepreneurId,
+        mentor_id: mentorId,
+        meeting_link: meetingLink || null,
+        status: "active"
+      })
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, assignment: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Update mentor assignment (e.g., meeting link)
+app.patch("/api/mentor-assignments/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { meetingLink, status } = req.body;
+
+    const updates = {};
+    if (meetingLink !== undefined) updates.meeting_link = meetingLink;
+    if (status !== undefined) updates.status = status;
+
+    const { data, error } = await supabase
+      .from("mentor_assignments")
+      .update(updates)
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, assignment: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/", (req, res) => {
   return res.json({ 
     message: "TouchConnectPro Backend API",
-    endpoints: ["/api/submit", "/api/ideas", "/api/mentors", "/api/coaches", "/api/investors", "/api/test", "/api/password-token/:token", "/api/set-password"]
+    endpoints: ["/api/submit", "/api/ideas", "/api/mentors", "/api/coaches", "/api/investors", "/api/test", "/api/password-token/:token", "/api/set-password", "/api/coaches/approved", "/api/entrepreneur/:email", "/api/mentor-notes", "/api/messages", "/api/mentor-assignments"]
   });
 });
 

@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, Check, AlertCircle, User, LogOut } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useLocation } from "wouter";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { API_BASE_URL } from "@/config";
 
 export default function DashboardEntrepreneur() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -17,8 +18,15 @@ export default function DashboardEntrepreneur() {
   const [showSuccessPage, setShowSuccessPage] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile" | "notes">("overview");
   const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
+  const [mentorData, setMentorData] = useState<any>(null);
+  const [mentorNotes, setMentorNotes] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [entrepreneurData, setEntrepreneurData] = useState<any>(null);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [userEmail, setUserEmail] = useState<string>("");
   const [businessPlanData, setBusinessPlanData] = useState<any>({
     executiveSummary: "",
     problemStatement: "",
@@ -96,19 +104,11 @@ export default function DashboardEntrepreneur() {
     const savedBusinessPlan = localStorage.getItem("tcp_businessPlan");
     const savedProfile = localStorage.getItem("tcp_profileData");
     const savedSubmitted = localStorage.getItem("tcp_submitted");
-    const savedCoachApplications = localStorage.getItem("tcp_coachApplications");
     
     if (savedFormData) setFormData(JSON.parse(savedFormData));
     if (savedBusinessPlan) setBusinessPlanData(JSON.parse(savedBusinessPlan));
     if (savedProfile) setProfileData(JSON.parse(savedProfile));
     if (savedSubmitted) setSubmitted(JSON.parse(savedSubmitted));
-    
-    // Load approved coaches
-    if (savedCoachApplications) {
-      const coachApps = JSON.parse(savedCoachApplications);
-      const approved = coachApps.filter((app: any) => app.status === "approved");
-      setApprovedCoaches(approved);
-    }
     
     const params = new URLSearchParams(window.location.search);
     if (params.get("submitted") === "true") {
@@ -116,6 +116,93 @@ export default function DashboardEntrepreneur() {
       localStorage.setItem("tcp_submitted", "true");
       window.history.replaceState({}, document.title, window.location.pathname);
     }
+
+    // Get user email from Supabase auth or localStorage
+    const fetchUserData = async () => {
+      setIsLoadingData(true);
+      try {
+        const supabase = await getSupabase();
+        if (!supabase) {
+          console.error("Supabase client not available");
+          setIsLoadingData(false);
+          return;
+        }
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user?.email) {
+          setUserEmail(user.email);
+          
+          // Fetch entrepreneur data from API
+          const response = await fetch(`${API_BASE_URL}/api/entrepreneur/${encodeURIComponent(user.email)}`);
+          if (response.ok) {
+            const data = await response.json();
+            setEntrepreneurData(data);
+            
+            // Set form data from application
+            if (data.data) {
+              setFormData(prev => ({ ...prev, ...data.data }));
+            }
+            
+            // Set business plan from application
+            if (data.business_plan) {
+              setBusinessPlanData(data.business_plan);
+            }
+            
+            // Set profile data
+            setProfileData(prev => ({
+              ...prev,
+              fullName: data.entrepreneur_name || prev.fullName,
+              email: data.entrepreneur_email || prev.email,
+              linkedIn: data.linkedin_profile || prev.linkedIn
+            }));
+            
+            // Set mentor data if assigned
+            if (data.mentorAssignment) {
+              setMentorData(data.mentorAssignment);
+            }
+            
+            // Set mentor notes
+            if (data.mentorNotes) {
+              setMentorNotes(data.mentorNotes);
+            }
+            
+            // Mark as submitted if we have data
+            if (data.id) {
+              setSubmitted(true);
+            }
+          }
+          
+          // Fetch messages if entrepreneur data exists
+          if (entrepreneurData?.id) {
+            const messagesResponse = await fetch(`${API_BASE_URL}/api/messages/${entrepreneurData.id}`);
+            if (messagesResponse.ok) {
+              const messagesData = await messagesResponse.json();
+              setMessages(messagesData);
+            }
+          }
+        } else {
+          // Fallback to localStorage for profile data
+          const storedProfile = localStorage.getItem("tcp_profileData");
+          if (storedProfile) {
+            const profile = JSON.parse(storedProfile);
+            setUserEmail(profile.email);
+          }
+        }
+        
+        // Fetch approved coaches
+        const coachesResponse = await fetch(`${API_BASE_URL}/api/coaches/approved`);
+        if (coachesResponse.ok) {
+          const coachesData = await coachesResponse.json();
+          setApprovedCoaches(coachesData);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
   useEffect(() => {
@@ -399,12 +486,49 @@ export default function DashboardEntrepreneur() {
     }));
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const supabase = await getSupabase();
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
     localStorage.removeItem("tcp_formData");
     localStorage.removeItem("tcp_businessPlan");
     localStorage.removeItem("tcp_profileData");
     localStorage.removeItem("tcp_submitted");
     window.location.href = "/";
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !entrepreneurData?.id) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          entrepreneurId: entrepreneurData.id,
+          senderId: entrepreneurData.id,
+          senderType: "entrepreneur",
+          content: newMessage
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(prev => [...prev, data.message]);
+        setNewMessage("");
+        toast.success("Message sent!");
+      } else {
+        toast.error("Failed to send message");
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error("Failed to send message");
+    }
   };
 
   if (showSuccessPage && !submitted) {
@@ -443,17 +567,23 @@ export default function DashboardEntrepreneur() {
   }
 
   if (submitted) {
+    const hasActiveMentor = mentorData && mentorData.status === "active";
+    const entrepreneurStatus = entrepreneurData?.status || "pending";
+    const statusDisplay = entrepreneurStatus === "approved" ? (hasActiveMentor ? "Active Member" : "Approved - Awaiting Mentor") : "On Waiting List";
+    const statusColor = entrepreneurStatus === "approved" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400";
+    const avatarColor = entrepreneurStatus === "approved" ? "bg-emerald-500" : "bg-amber-500";
+
     return (
       <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
-        <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
+        <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col justify-between">
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <Avatar className="h-10 w-10 border border-slate-200 bg-amber-500">
-                <AvatarFallback className="text-white">EN</AvatarFallback>
+              <Avatar className={`h-10 w-10 border border-slate-200 ${avatarColor}`}>
+                <AvatarFallback className="text-white">{profileData.fullName?.substring(0, 2).toUpperCase() || "EN"}</AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-bold text-sm">Entrepreneur</div>
-                <div className="text-xs text-amber-600 dark:text-amber-400 font-semibold">On Waiting List</div>
+                <div className="font-bold text-sm">{profileData.fullName || "Entrepreneur"}</div>
+                <div className={`text-xs font-semibold ${statusColor}`}>{statusDisplay}</div>
               </div>
             </div>
             <nav className="space-y-1">
@@ -482,6 +612,25 @@ export default function DashboardEntrepreneur() {
                 <Target className="mr-2 h-4 w-4" /> Business Plan
               </Button>
               <Button 
+                variant={activeTab === "coaches" ? "secondary" : "ghost"}
+                className="w-full justify-start font-medium text-slate-600"
+                onClick={() => setActiveTab("coaches")}
+                data-testid="button-coaches-tab"
+              >
+                <GraduationCap className="mr-2 h-4 w-4" /> Available Coaches
+              </Button>
+              <Button 
+                variant={activeTab === "notes" ? "secondary" : "ghost"}
+                className="w-full justify-start font-medium text-slate-600"
+                onClick={() => setActiveTab("notes")}
+                data-testid="button-notes-tab"
+              >
+                <ClipboardList className="mr-2 h-4 w-4" /> Mentor Notes
+                {mentorNotes.length > 0 && (
+                  <span className="ml-auto bg-cyan-100 dark:bg-cyan-900 text-cyan-600 dark:text-cyan-400 text-xs px-2 py-0.5 rounded-full">{mentorNotes.length}</span>
+                )}
+              </Button>
+              <Button 
                 variant={activeTab === "profile" ? "secondary" : "ghost"}
                 className="w-full justify-start font-medium text-slate-600"
                 onClick={() => setActiveTab("profile")}
@@ -490,16 +639,16 @@ export default function DashboardEntrepreneur() {
                 <User className="mr-2 h-4 w-4" /> Profile
               </Button>
             </nav>
-            <div className="mt-auto pt-6 border-t border-slate-200 dark:border-slate-800">
-              <Button 
-                variant="ghost"
-                className="w-full justify-start font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
-                onClick={handleLogout}
-                data-testid="button-logout"
-              >
-                <LogOut className="mr-2 h-4 w-4" /> Logout
-              </Button>
-            </div>
+          </div>
+          <div className="p-6 border-t border-slate-200 dark:border-slate-800">
+            <Button 
+              variant="destructive"
+              className="w-full justify-start font-medium bg-red-600 hover:bg-red-700 text-white"
+              onClick={handleLogout}
+              data-testid="button-logout"
+            >
+              <LogOut className="mr-2 h-4 w-4" /> Sign Out
+            </Button>
           </div>
         </aside>
 
@@ -508,8 +657,20 @@ export default function DashboardEntrepreneur() {
             {/* Overview Tab */}
             {activeTab === "overview" && (
               <div>
-                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Project Dashboard</h1>
-                <p className="text-muted-foreground mb-8">Welcome back! Here's what's happening with <span className="font-semibold text-foreground">{formData.ideaName || "Your Idea"}</span>.</p>
+                <div className="flex justify-between items-start mb-8">
+                  <div>
+                    <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Welcome, {profileData.fullName?.split(" ")[0] || "Entrepreneur"}!</h1>
+                    <p className="text-muted-foreground">Here's what's happening with <span className="font-semibold text-foreground">{formData.ideaName || entrepreneurData?.data?.ideaName || "Your Idea"}</span>.</p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="text-red-600 border-red-200 hover:bg-red-50 dark:hover:bg-red-950/20 md:hidden"
+                    onClick={handleLogout}
+                    data-testid="button-logout-mobile"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" /> Sign Out
+                  </Button>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                   <Card className="border-l-4 border-l-cyan-500 shadow-sm">
@@ -517,86 +678,266 @@ export default function DashboardEntrepreneur() {
                       <CardTitle className="text-sm font-medium text-muted-foreground">Current Stage</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">Business Plan Complete</div>
-                      <p className="text-xs text-muted-foreground mt-1">Awaiting mentor approval</p>
+                      <div className="text-2xl font-bold">{entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete"}</div>
+                      <p className="text-xs text-muted-foreground mt-1">{entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval"}</p>
                     </CardContent>
                   </Card>
                   
-                  <Card className="border-l-4 border-l-amber-500 shadow-sm">
+                  <Card className={`border-l-4 ${entrepreneurStatus === "approved" ? "border-l-emerald-500" : "border-l-amber-500"} shadow-sm`}>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Status</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">Waiting List</div>
-                      <p className="text-xs text-muted-foreground mt-1">not yet fully approved in your Mentor's portfolio</p>
+                      <div className={`text-2xl font-bold ${entrepreneurStatus === "approved" ? "text-emerald-600" : ""}`}>{statusDisplay}</div>
+                      <p className="text-xs text-muted-foreground mt-1">{entrepreneurStatus === "approved" ? "Full platform access" : "Pending mentor selection"}</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-purple-500 shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Mentor Notes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{mentorNotes.length}</div>
+                      <p className="text-xs text-muted-foreground mt-1">{mentorNotes.length === 1 ? "recommendation" : "recommendations"} from your mentor</p>
                     </CardContent>
                   </Card>
                 </div>
 
-                <Card className="mb-8">
+                {/* My Mentor Section */}
+                <Card className="mb-6 border-l-4 border-l-cyan-500">
                   <CardHeader>
-                    <CardTitle>What Happens Next</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-cyan-600" />
+                      My Mentor
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex gap-4">
-                      <div className="h-8 w-8 bg-cyan-100 dark:bg-cyan-900/50 rounded-full flex items-center justify-center flex-shrink-0 text-cyan-600 font-semibold">1</div>
-                      <div>
-                        <p className="font-semibold text-slate-900 dark:text-white">Mentors Review Your Plan</p>
-                        <p className="text-sm text-muted-foreground">Our mentor committee evaluates your business plan and idea</p>
+                  <CardContent>
+                    {hasActiveMentor ? (
+                      <div className="flex flex-col md:flex-row gap-6">
+                        <div className="flex items-center gap-4">
+                          <Avatar className="h-16 w-16 border-2 border-cyan-200">
+                            <AvatarFallback className="bg-cyan-500 text-white text-xl">
+                              {mentorData.mentor?.full_name?.substring(0, 2).toUpperCase() || "MT"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className="font-bold text-lg text-slate-900 dark:text-white">{mentorData.mentor?.full_name || "Your Mentor"}</h3>
+                            <p className="text-sm text-muted-foreground">{mentorData.mentor?.expertise || "Business & Strategy"}</p>
+                            {mentorData.mentor?.linkedin && (
+                              <a href={mentorData.mentor.linkedin} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 text-sm flex items-center gap-1 mt-1">
+                                <ExternalLink className="h-3 w-3" /> LinkedIn Profile
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex-1 space-y-3">
+                          {mentorData.meeting_link && (
+                            <a href={mentorData.meeting_link} target="_blank" rel="noopener noreferrer" className="block">
+                              <Button className="w-full bg-cyan-600 hover:bg-cyan-700" data-testid="button-join-meeting">
+                                <Calendar className="mr-2 h-4 w-4" /> Join Monthly Meeting
+                              </Button>
+                            </a>
+                          )}
+                          <Button 
+                            variant="outline" 
+                            className="w-full border-cyan-200 text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-950/20"
+                            onClick={() => setActiveTab("notes")}
+                            data-testid="button-view-notes"
+                          >
+                            <ClipboardList className="mr-2 h-4 w-4" /> View Mentor Notes ({mentorNotes.length})
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-4">
-                      <div className="h-8 w-8 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center flex-shrink-0 text-slate-600 font-semibold">2</div>
-                      <div>
-                        <p className="font-semibold text-slate-900 dark:text-white">Mentor Assignment</p>
-                        <p className="text-sm text-muted-foreground">A mentor chooses to work with you and we'll contact you</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-4">
-                      <div className="h-8 w-8 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center flex-shrink-0 text-slate-600 font-semibold">3</div>
-                      <div>
-                        <p className="font-semibold text-slate-900 dark:text-white">Active Membership</p>
-                        <p className="text-sm text-muted-foreground">Join as a member and start your mentorship journey ($49/mo)</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card className="border-l-4 border-l-cyan-500">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Users className="h-5 w-5 text-cyan-600" />
-                        My Mentor
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                    ) : (
                       <div className="text-center py-8">
                         <div className="h-16 w-16 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center mx-auto mb-4">
                           <Users className="h-8 w-8 text-cyan-600" />
                         </div>
-                        <p className="text-slate-600 dark:text-slate-400">Once your project is approved, your assigned mentor will appear in this section.</p>
+                        <p className="text-slate-600 dark:text-slate-400 mb-2">Once your project is approved and a mentor accepts you, their profile will appear here.</p>
+                        <p className="text-sm text-muted-foreground">You'll be able to schedule meetings and receive personalized guidance.</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Messages Section (only show if mentor assigned) */}
+                {hasActiveMentor && (
+                  <Card className="mb-6 border-l-4 border-l-emerald-500">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageSquare className="h-5 w-5 text-emerald-600" />
+                        Messages with Mentor
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 max-h-64 overflow-y-auto mb-4">
+                        {messages.length > 0 ? (
+                          <div className="space-y-3">
+                            {messages.map((msg, idx) => (
+                              <div key={idx} className={`flex ${msg.sender_type === "entrepreneur" ? "justify-end" : "justify-start"}`}>
+                                <div className={`max-w-[80%] px-4 py-2 rounded-lg ${msg.sender_type === "entrepreneur" ? "bg-cyan-600 text-white" : "bg-white dark:bg-slate-700 border"}`}>
+                                  <p className="text-sm">{msg.content}</p>
+                                  <p className={`text-xs mt-1 ${msg.sender_type === "entrepreneur" ? "text-cyan-100" : "text-muted-foreground"}`}>
+                                    {new Date(msg.created_at).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-center text-muted-foreground py-8">No messages yet. Start a conversation with your mentor!</p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          placeholder="Type a message to your mentor..."
+                          className="flex-1"
+                          onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                          data-testid="input-message"
+                        />
+                        <Button onClick={handleSendMessage} className="bg-emerald-600 hover:bg-emerald-700" data-testid="button-send-message">
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Quick Links */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="border-l-4 border-l-purple-500 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setActiveTab("coaches")}>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <GraduationCap className="h-5 w-5 text-purple-600" />
+                        Available Coaches
+                      </CardTitle>
+                      <CardDescription>Browse specialized coaches to accelerate your growth</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl font-bold text-purple-600">{approvedCoaches.length}</span>
+                        <Button variant="outline" className="border-purple-200 text-purple-600" data-testid="button-view-coaches">
+                          View All <ChevronRight className="ml-1 h-4 w-4" />
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="border-l-4 border-l-emerald-500">
+                  <Card className="border-l-4 border-l-amber-500 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setActiveTab("idea")}>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <MessageSquare className="h-5 w-5 text-emerald-600" />
-                        Coaches
+                        <Lightbulb className="h-5 w-5 text-amber-600" />
+                        My Idea & Business Plan
                       </CardTitle>
+                      <CardDescription>Review your submitted idea and business plan</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-center py-8">
-                        <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-4">
-                          <MessageSquare className="h-8 w-8 text-emerald-600" />
-                        </div>
-                        <p className="text-slate-600 dark:text-slate-400">Once your project is approved, this space will populate with available coaches.</p>
-                      </div>
+                      <Button variant="outline" className="w-full border-amber-200 text-amber-600" data-testid="button-view-idea">
+                        View Submission <ChevronRight className="ml-1 h-4 w-4" />
+                      </Button>
                     </CardContent>
                   </Card>
                 </div>
+              </div>
+            )}
+
+            {/* Coaches Tab */}
+            {activeTab === "coaches" && (
+              <div>
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Available Coaches</h1>
+                <p className="text-muted-foreground mb-8">Browse our approved coaches who can help accelerate your startup journey with specialized expertise.</p>
+
+                {approvedCoaches.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {approvedCoaches.map((coach) => (
+                      <Card key={coach.id} className="border-l-4 border-l-purple-500">
+                        <CardHeader>
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-12 w-12 border-2 border-purple-200">
+                              <AvatarFallback className="bg-purple-500 text-white">
+                                {coach.full_name?.substring(0, 2).toUpperCase() || "CO"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <CardTitle className="text-lg">{coach.full_name}</CardTitle>
+                              <p className="text-sm text-muted-foreground">{coach.expertise}</p>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
+                            <p className="text-sm text-slate-700 dark:text-slate-300">{coach.focus_areas}</p>
+                          </div>
+                          <div className="flex justify-between items-center pt-2">
+                            <span className="text-lg font-bold text-purple-600">${coach.hourly_rate}/hr</span>
+                            {coach.linkedin && (
+                              <a href={coach.linkedin} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700 flex items-center gap-1 text-sm">
+                                <ExternalLink className="h-3 w-3" /> LinkedIn
+                              </a>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="text-center py-12">
+                    <CardContent>
+                      <GraduationCap className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No Coaches Available Yet</h3>
+                      <p className="text-muted-foreground">Coaches are being approved and will appear here soon.</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+
+            {/* Mentor Notes Tab */}
+            {activeTab === "notes" && (
+              <div>
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Notes & Recommendations</h1>
+                <p className="text-muted-foreground mb-8">Your mentor's step-by-step guidance and recommendations for your startup journey.</p>
+
+                {mentorNotes.length > 0 ? (
+                  <div className="space-y-4">
+                    {mentorNotes.map((note, idx) => (
+                      <Card key={note.id || idx} className={`border-l-4 ${note.type === "milestone" ? "border-l-emerald-500" : note.type === "action" ? "border-l-amber-500" : "border-l-cyan-500"}`}>
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start gap-4">
+                            <div className={`h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 ${note.type === "milestone" ? "bg-emerald-100 text-emerald-600" : note.type === "action" ? "bg-amber-100 text-amber-600" : "bg-cyan-100 text-cyan-600"} font-bold`}>
+                              {note.step_number || idx + 1}
+                            </div>
+                            <div className="flex-1">
+                              <CardTitle className="text-lg">{note.title}</CardTitle>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {note.type === "milestone" ? "Milestone" : note.type === "action" ? "Action Item" : "Recommendation"} • {new Date(note.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{note.content}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="text-center py-12">
+                    <CardContent>
+                      <ClipboardList className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No Notes Yet</h3>
+                      <p className="text-muted-foreground">
+                        {hasActiveMentor 
+                          ? "Your mentor hasn't added any notes yet. Check back soon for guidance and recommendations."
+                          : "Once you're assigned a mentor, their notes and recommendations will appear here."}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
 
