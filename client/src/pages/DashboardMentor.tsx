@@ -170,12 +170,25 @@ export default function DashboardMentor() {
   // Fetch assigned entrepreneurs when profileId changes
   useEffect(() => {
     async function fetchAssignedEntrepreneurs() {
-      if (!profileId) return;
+      if (!profileId) {
+        console.log("[DashboardMentor] profileId not set yet");
+        return;
+      }
       
+      console.log("[DashboardMentor] Fetching entrepreneurs for mentor ID:", profileId);
       try {
         const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/mentor/${profileId}`);
+        console.log("[DashboardMentor] Fetch response status:", response.status);
+        
         if (response.ok) {
           const data = await response.json();
+          console.log("[DashboardMentor] Received data:", data);
+          
+          if (!data.entrepreneurs || data.entrepreneurs.length === 0) {
+            console.log("[DashboardMentor] No entrepreneurs found for this mentor");
+            setPortfolios([]);
+            return;
+          }
           
           // Group entrepreneurs by portfolio number (1-10)
           const portfolioMap: { [key: number]: typeof data.entrepreneurs } = {};
@@ -204,10 +217,15 @@ export default function DashboardMentor() {
             lastMeeting: ""
           }));
           
+          console.log("[DashboardMentor] Created portfolios array:", portfoliosArray);
           setPortfolios(portfoliosArray.length > 0 ? portfoliosArray : []);
+        } else {
+          console.error("[DashboardMentor] Fetch failed with status:", response.status);
+          const error = await response.json();
+          console.error("[DashboardMentor] Error details:", error);
         }
       } catch (error) {
-        console.error("Error fetching assigned entrepreneurs:", error);
+        console.error("[DashboardMentor] Error fetching assigned entrepreneurs:", error);
       }
     }
     

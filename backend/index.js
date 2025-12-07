@@ -1531,6 +1531,7 @@ app.get("/api/mentor-assignments/entrepreneur/:entrepreneurId", async (req, res)
 app.get("/api/mentor-assignments/mentor/:mentorId", async (req, res) => {
   try {
     const { mentorId } = req.params;
+    console.log("[GET /api/mentor-assignments/mentor/:mentorId] Looking for assignments with mentor_id:", mentorId);
 
     const { data: assignments, error: assignmentError } = await supabase
       .from("mentor_assignments")
@@ -1538,11 +1539,15 @@ app.get("/api/mentor-assignments/mentor/:mentorId", async (req, res) => {
       .eq("mentor_id", mentorId)
       .eq("status", "active");
 
+    console.log("[GET /api/mentor-assignments/mentor/:mentorId] Assignments found:", assignments?.length || 0);
+
     if (assignmentError) {
+      console.error("[GET /api/mentor-assignments/mentor/:mentorId] Error:", assignmentError);
       return res.status(400).json({ error: assignmentError.message });
     }
 
     if (!assignments || assignments.length === 0) {
+      console.log("[GET /api/mentor-assignments/mentor/:mentorId] No assignments found");
       return res.json({ entrepreneurs: [] });
     }
 
