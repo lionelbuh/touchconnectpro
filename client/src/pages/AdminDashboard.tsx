@@ -450,15 +450,25 @@ export default function AdminDashboard() {
     }
   };
 
-  const markMessagesAsReadByAdmin = (memberEmail: string) => {
+  const markMessagesAsReadByAdmin = async (memberEmail: string) => {
     const messagesToMark = messageHistory
-      .filter((m: any) => m.from_email === memberEmail && m.from_email !== "admin@touchconnectpro.com")
-      .map((m: any) => m.id);
+      .filter((m: any) => m.from_email === memberEmail && m.to_email === "admin@touchconnectpro.com" && !m.is_read);
+    
     if (messagesToMark.length > 0) {
-      const combined = [...adminReadMessageIds, ...messagesToMark];
-      const updatedReadIds = combined.filter((id, index) => combined.indexOf(id) === index);
-      setAdminReadMessageIds(updatedReadIds);
-      localStorage.setItem("tcp_adminReadMessageIds", JSON.stringify(updatedReadIds));
+      try {
+        // Mark each message as read in the database
+        await Promise.all(messagesToMark.map((m: any) => 
+          fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PUT" })
+        ));
+        // Reload messages to refresh unread counts
+        const messagesResponse = await fetch(`${API_BASE_URL}/api/messages`);
+        if (messagesResponse.ok) {
+          const messagesData = await messagesResponse.json();
+          setMessageHistory(messagesData.messages || []);
+        }
+      } catch (error) {
+        console.error("Error marking messages as read:", error);
+      }
     }
   };
 
@@ -1192,9 +1202,9 @@ export default function AdminDashboard() {
                   data-testid="button-members-subtab-messaging"
                 >
                   <MessageSquare className="mr-2 h-4 w-4" /> Messages
-                  {messageHistory.filter((m: any) => m.from_email !== "admin@touchconnectpro.com" && !adminReadMessageIds.includes(m.id)).length > 0 && (
+                  {messageHistory.filter((m: any) => m.to_email === "admin@touchconnectpro.com" && !m.is_read).length > 0 && (
                     <span className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full animate-pulse">
-                      {messageHistory.filter((m: any) => m.from_email !== "admin@touchconnectpro.com" && !adminReadMessageIds.includes(m.id)).length}
+                      {messageHistory.filter((m: any) => m.to_email === "admin@touchconnectpro.com" && !m.is_read).length}
                     </span>
                   )}
                 </Button>
@@ -2086,7 +2096,7 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").map((entrepreneur, idx) => {
-                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === entrepreneur.email && !adminReadMessageIds.includes(m.id)).length;
+                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === entrepreneur.email && m.to_email === "admin@touchconnectpro.com" && !m.is_read).length;
                           const hasUnreadReplies = unreadReplies > 0;
                           return (
                           <Card key={`msg-${entrepreneur.id}`} className={hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""}>
@@ -2130,7 +2140,7 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(mentorApplications.filter(app => app.status === "approved"), "fullName").map((mentor, idx) => {
-                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === mentor.email && !adminReadMessageIds.includes(m.id)).length;
+                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === mentor.email && m.to_email === "admin@touchconnectpro.com" && !m.is_read).length;
                           const hasUnreadReplies = unreadReplies > 0;
                           return (
                           <Card key={idx} className={hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""}>
@@ -2172,7 +2182,7 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(coachApplications.filter(app => app.status === "approved"), "fullName").map((coach, idx) => {
-                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === coach.email && !adminReadMessageIds.includes(m.id)).length;
+                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === coach.email && m.to_email === "admin@touchconnectpro.com" && !m.is_read).length;
                           const hasUnreadReplies = unreadReplies > 0;
                           return (
                           <Card key={idx} className={hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""}>
@@ -2214,7 +2224,7 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").map((investor, idx) => {
-                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === investor.email && !adminReadMessageIds.includes(m.id)).length;
+                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === investor.email && m.to_email === "admin@touchconnectpro.com" && !m.is_read).length;
                           const hasUnreadReplies = unreadReplies > 0;
                           return (
                           <Card key={idx} className={hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""}>
