@@ -518,6 +518,9 @@ export default function DashboardMentor() {
                                 <div className="flex-1 min-w-0">
                                   <h4 className="font-semibold text-slate-900 dark:text-white text-sm">{member.name}</h4>
                                   <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+                                  {member.businessIdea && (
+                                    <p className="text-xs text-cyan-600 dark:text-cyan-400 mt-1 line-clamp-2">{member.businessIdea}</p>
+                                  )}
                                   {member.linkedin && (
                                     <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 text-xs flex items-center gap-1 mt-1">
                                       <ExternalLink className="h-3 w-3" /> LinkedIn

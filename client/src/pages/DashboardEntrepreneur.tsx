@@ -792,10 +792,8 @@ export default function DashboardEntrepreneur() {
                           <div>
                             <h3 className="font-bold text-lg text-slate-900 dark:text-white">{mentorData.mentor?.full_name || "Your Mentor"}</h3>
                             <p className="text-sm text-muted-foreground">{mentorData.mentor?.expertise || "Business & Strategy"}</p>
-                            {mentorData.mentor?.linkedin && (
-                              <a href={mentorData.mentor.linkedin} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 text-sm flex items-center gap-1 mt-1">
-                                <ExternalLink className="h-3 w-3" /> LinkedIn Profile
-                              </a>
+                            {mentorData.mentor?.experience && (
+                              <p className="text-sm text-muted-foreground mt-1">{mentorData.mentor.experience} years of experience</p>
                             )}
                           </div>
                         </div>

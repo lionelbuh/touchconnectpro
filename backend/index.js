@@ -1397,6 +1397,46 @@ app.post("/api/mentor-assignments", async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
+    // Fetch entrepreneur and mentor details for system messages
+    const { data: entrepreneur } = await supabase
+      .from("entrepreneur_applications")
+      .select("email, full_name, fullName")
+      .eq("id", entrepreneurId)
+      .single();
+    
+    const { data: mentor } = await supabase
+      .from("mentor_applications")
+      .select("email, full_name, fullName")
+      .eq("id", mentorId)
+      .single();
+
+    if (entrepreneur && mentor) {
+      const entrepreneurEmail = entrepreneur.email;
+      const entrepreneurName = entrepreneur.full_name || entrepreneur.fullName || "Entrepreneur";
+      const mentorEmail = mentor.email;
+      const mentorName = mentor.full_name || mentor.fullName || "Mentor";
+
+      // Send system message to entrepreneur about mentor assignment
+      await supabase.from("messages").insert({
+        from_name: "System",
+        from_email: "admin@touchconnectpro.com",
+        to_name: entrepreneurName,
+        to_email: entrepreneurEmail,
+        message: `Great news! You have been assigned to ${mentorName}'s Portfolio ${portfolioNumber}. Visit your dashboard to see your mentor's profile and connect with them.`,
+        is_read: false
+      });
+
+      // Send system message to mentor about new entrepreneur
+      await supabase.from("messages").insert({
+        from_name: "System",
+        from_email: "admin@touchconnectpro.com",
+        to_name: mentorName,
+        to_email: mentorEmail,
+        message: `${entrepreneurName} has been added to your Portfolio ${portfolioNumber}. Visit your dashboard to view their profile and business idea.`,
+        is_read: false
+      });
+    }
+
     return res.json({ success: true, assignment: data?.[0] });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -1437,12 +1477,10 @@ app.get("/api/mentor-assignments/entrepreneur/:entrepreneurId", async (req, res)
       assignment,
       mentor: {
         id: mentor.id,
-        full_name: mentor.fullName,
-        email: mentor.email,
+        full_name: mentor.full_name || mentor.fullName,
         expertise: mentor.expertise,
-        linkedin: mentor.linkedin,
-        bio: mentor.bio,
-        photo_url: mentor.photoUrl
+        experience: mentor.experience,
+        photo_url: mentor.photo_url || mentor.photoUrl
       }
     });
   } catch (error) {
@@ -1480,7 +1518,7 @@ app.get("/api/mentor-assignments/mentor/:mentorId", async (req, res) => {
       return res.json({ entrepreneurs: [] });
     }
 
-    // Combine data
+    // Combine data (handle both snake_case and camelCase field names from Supabase)
     const portfolioData = assignments.map(assignment => {
       const entrepreneur = entrepreneurs.find(e => e.id === assignment.entrepreneur_id);
       return {
@@ -1489,11 +1527,11 @@ app.get("/api/mentor-assignments/mentor/:mentorId", async (req, res) => {
         meeting_link: assignment.meeting_link,
         entrepreneur: entrepreneur ? {
           id: entrepreneur.id,
-          full_name: entrepreneur.fullName,
-          email: entrepreneur.email,
-          linkedin: entrepreneur.linkedin,
-          business_idea: entrepreneur.businessIdea,
-          photo_url: entrepreneur.photoUrl
+          full_name: entrepreneur.full_name || entrepreneur.fullName || "",
+          email: entrepreneur.email || "",
+          linkedin: entrepreneur.linkedin || "",
+          business_idea: entrepreneur.business_idea || entrepreneur.businessIdea || "",
+          photo_url: entrepreneur.photo_url || entrepreneur.photoUrl || ""
         } : null
       };
     });
