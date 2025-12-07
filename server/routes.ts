@@ -302,6 +302,75 @@ export async function registerRoutes(
     }
   });
 
+  // Get mentor profile by email
+  app.get("/api/mentors/profile/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { email } = req.params;
+      const decodedEmail = decodeURIComponent(email);
+      
+      console.log("[GET /api/mentors/profile/:email] Looking up profile for:", decodedEmail);
+      
+      const { data, error } = await (client
+        .from("mentor_applications")
+        .select("*")
+        .eq("email", decodedEmail)
+        .eq("status", "approved")
+        .single() as any);
+
+      console.log("[GET /api/mentors/profile/:email] Result:", { found: !!data, error: error?.message });
+
+      if (error || !data) {
+        return res.status(404).json({ error: "Profile not found" });
+      }
+
+      return res.json(data);
+    } catch (error: any) {
+      console.error("[GET /api/mentors/profile/:email] Exception:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update mentor profile by ID
+  app.put("/api/mentors/profile/:id", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      const { bio, expertise, experience, linkedin } = req.body;
+
+      console.log("[PUT /api/mentors/profile/:id] Updating profile:", id);
+
+      const { data, error } = await (client
+        .from("mentor_applications")
+        .update({
+          bio,
+          expertise,
+          experience,
+          linkedin: linkedin || null
+        } as any)
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        console.error("[PUT /api/mentors/profile/:id] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, mentor: data?.[0] });
+    } catch (error: any) {
+      console.error("[PUT /api/mentors/profile/:id] Exception:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // ===== MENTOR ASSIGNMENTS ENDPOINTS =====
 
   // Get all mentor assignments (for admin dashboard badges)
