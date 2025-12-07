@@ -923,7 +923,7 @@ export async function registerRoutes(
   });
 
   // Mark message as read
-  app.put("/api/messages/:id/read", async (req, res) => {
+  app.patch("/api/messages/:id/read", async (req, res) => {
     try {
       const client = getSupabaseClient();
       if (!client) {
@@ -939,13 +939,13 @@ export async function registerRoutes(
         .select() as any);
 
       if (error) {
-        console.error("[PUT /api/messages/:id/read] Error:", error);
+        console.error("[PATCH /api/messages/:id/read] Error:", error);
         return res.status(500).json({ error: error.message });
       }
 
       return res.json({ success: true, message: data?.[0] });
     } catch (error: any) {
-      console.error("[PUT /api/messages/:id/read] Error:", error);
+      console.error("[PATCH /api/messages/:id/read] Error:", error);
       return res.status(500).json({ error: error.message });
     }
   });

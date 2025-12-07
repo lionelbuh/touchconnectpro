@@ -1040,17 +1040,14 @@ export default function DashboardEntrepreneur() {
                     if (el) el.classList.toggle('hidden');
                     // Mark all admin messages as read
                     const unreadAdminMsgs = adminMsgs.filter((m: any) => m.to_email === userEmail && !m.is_read);
-                    console.log("[DEBUG] Admin section clicked. Unread count:", unreadAdminMsgs.length, "Messages:", unreadAdminMsgs.map((m:any) => m.id));
                     if (unreadAdminMsgs.length > 0) {
                       try {
-                        const results = await Promise.all(unreadAdminMsgs.map((m: any) => 
-                          fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PUT" }).then(r => r.json())
+                        await Promise.all(unreadAdminMsgs.map((m: any) => 
+                          fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PATCH" })
                         ));
-                        console.log("[DEBUG] Mark as read results:", results);
                         const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
                         if (loadResponse.ok) {
                           const data = await loadResponse.json();
-                          console.log("[DEBUG] Reloaded messages:", data.messages?.length, "Unread admin:", data.messages?.filter((m:any) => m.to_email === userEmail && m.from_email === "admin@touchconnectpro.com" && !m.is_read).length);
                           setMessages(data.messages || []);
                         }
                       } catch (e) { console.error("Error marking as read:", e); }
@@ -1126,7 +1123,7 @@ export default function DashboardEntrepreneur() {
                               <div key={msg.id} onClick={async () => {
                                 if (!isFromMe && !msg.is_read) {
                                   try {
-                                    await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PUT" });
+                                    await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PATCH" });
                                     const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
                                     if (loadResponse.ok) {
                                       const data = await loadResponse.json();
@@ -1164,7 +1161,7 @@ export default function DashboardEntrepreneur() {
                       if (unreadMentorMsgs.length > 0) {
                         try {
                           await Promise.all(unreadMentorMsgs.map((m: any) => 
-                            fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PUT" })
+                            fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PATCH" })
                           ));
                           const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
                           if (loadResponse.ok) {
@@ -1244,7 +1241,7 @@ export default function DashboardEntrepreneur() {
                                 <div key={msg.id} onClick={async () => {
                                   if (!isFromMe && !msg.is_read) {
                                     try {
-                                      await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PUT" });
+                                      await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PATCH" });
                                       const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
                                       if (loadResponse.ok) {
                                         const data = await loadResponse.json();

@@ -749,7 +749,7 @@ export default function DashboardMentor() {
                   if (unreadAdminMsgs.length > 0) {
                     try {
                       await Promise.all(unreadAdminMsgs.map((m: any) => 
-                        fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PUT" })
+                        fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PATCH" })
                       ));
                       const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
                       if (loadResponse.ok) {
@@ -829,7 +829,7 @@ export default function DashboardMentor() {
                             <div key={msg.id} onClick={async () => {
                               if (!isFromMe && !msg.is_read) {
                                 try {
-                                  await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PUT" });
+                                  await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PATCH" });
                                   const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
                                   if (loadResponse.ok) {
                                     const data = await loadResponse.json();
@@ -876,7 +876,7 @@ export default function DashboardMentor() {
                       if (unreadEntMsgs.length > 0) {
                         try {
                           await Promise.all(unreadEntMsgs.map((m: any) => 
-                            fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PUT" })
+                            fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PATCH" })
                           ));
                           const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
                           if (loadResponse.ok) {
@@ -924,7 +924,7 @@ export default function DashboardMentor() {
                                 <div key={msg.id} onClick={async () => {
                                   if (!isFromMe && !msg.is_read) {
                                     try {
-                                      await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PUT" });
+                                      await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PATCH" });
                                       const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
                                       if (loadResponse.ok) {
                                         const data = await loadResponse.json();

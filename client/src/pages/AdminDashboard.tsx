@@ -458,7 +458,7 @@ export default function AdminDashboard() {
       try {
         // Mark each message as read in the database
         await Promise.all(messagesToMark.map((m: any) => 
-          fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PUT" })
+          fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PATCH" })
         ));
         // Reload messages to refresh unread counts
         const messagesResponse = await fetch(`${API_BASE_URL}/api/messages`);
