@@ -1629,12 +1629,12 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
     }
   
 
-    // Fetch entrepreneur profiles from entrepreneur_ideas table (where assignments point to)
+    // Fetch entrepreneur profiles from ideas table (where assignments point to)
     const entrepreneurIds = assignments.map(a => a.entrepreneur_id);
     console.log("[GET /api/mentor-assignments/mentor-email/:email] Looking up entrepreneur IDs:", entrepreneurIds);
     
     const { data: entrepreneurs, error: entError } = await supabase
-      .from("entrepreneur_ideas")
+      .from("ideas")
       .select("*")
       .in("id", entrepreneurIds);
 

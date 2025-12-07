@@ -586,12 +586,12 @@ export async function registerRoutes(
         return res.json({ entrepreneurs: [] });
       }
 
-      // Fetch entrepreneur profiles from entrepreneur_ideas table (where assignments point to)
+      // Fetch entrepreneur profiles from ideas table (where assignments point to)
       const entrepreneurIds = assignments.map((a: any) => a.entrepreneur_id);
       console.log("[GET /api/mentor-assignments/mentor-email/:email] Looking up entrepreneur IDs:", entrepreneurIds);
       
       const { data: entrepreneurs, error: entError } = await (client
-        .from("entrepreneur_ideas")
+        .from("ideas")
         .select("*")
         .in("id", entrepreneurIds) as any);
 
