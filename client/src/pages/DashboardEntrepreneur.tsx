@@ -181,11 +181,14 @@ export default function DashboardEntrepreneur() {
             if (data.id) {
               setSubmitted(true);
               
-              // Fetch messages using the freshly fetched data.id (not stale state)
-              const messagesResponse = await fetch(`${API_BASE_URL}/api/messages/${data.id}`);
-              if (messagesResponse.ok) {
-                const messagesData = await messagesResponse.json();
-                setMessages(messagesData);
+              // Fetch messages using the entrepreneur's email
+              const entrepreneurEmail = data.entrepreneur_email || user.email;
+              if (entrepreneurEmail) {
+                const messagesResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(entrepreneurEmail)}`);
+                if (messagesResponse.ok) {
+                  const messagesData = await messagesResponse.json();
+                  setMessages(messagesData.messages || []);
+                }
               }
             }
           }
