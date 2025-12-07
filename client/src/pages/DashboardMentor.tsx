@@ -74,6 +74,7 @@ export default function DashboardMentor() {
   const [newMeeting, setNewMeeting] = useState({ date: "", time: "", topic: "" });
   const [adminMessage, setAdminMessage] = useState("");
   const [adminMessages, setAdminMessages] = useState<any[]>([]);
+  const [mentorReadMessageIds, setMentorReadMessageIds] = useState<string[]>([]);
 
   useEffect(() => {
     async function loadProfile() {
@@ -118,6 +119,14 @@ export default function DashboardMentor() {
     loadProfile();
   }, []);
 
+  // Load read message IDs from localStorage
+  useEffect(() => {
+    const savedReadIds = localStorage.getItem("tcp_mentorReadMessageIds");
+    if (savedReadIds) {
+      setMentorReadMessageIds(JSON.parse(savedReadIds));
+    }
+  }, []);
+
   // Load admin messages from database
   useEffect(() => {
     async function loadMessages() {
@@ -134,6 +143,26 @@ export default function DashboardMentor() {
     }
     loadMessages();
   }, [mentorProfile.email]);
+
+  // Mark admin messages as read when viewing messages tab
+  useEffect(() => {
+    if (activeTab === "messages" && mentorProfile.email) {
+      const adminMessagesToMark = adminMessages
+        .filter((m: any) => m.to_email === mentorProfile.email && m.from_email === "admin@touchconnectpro.com" && !mentorReadMessageIds.includes(m.id))
+        .map((m: any) => m.id);
+      
+      if (adminMessagesToMark.length > 0) {
+        const updatedReadIds = [...mentorReadMessageIds, ...adminMessagesToMark];
+        setMentorReadMessageIds(updatedReadIds);
+        localStorage.setItem("tcp_mentorReadMessageIds", JSON.stringify(updatedReadIds));
+      }
+    }
+  }, [activeTab, adminMessages, mentorProfile.email, mentorReadMessageIds]);
+
+  // Calculate unread message count
+  const unreadMessageCount = adminMessages.filter(
+    (m: any) => m.to_email === mentorProfile.email && m.from_email === "admin@touchconnectpro.com" && !mentorReadMessageIds.includes(m.id)
+  ).length;
 
   // Fetch assigned entrepreneurs when profileId changes
   useEffect(() => {
@@ -339,11 +368,16 @@ export default function DashboardMentor() {
             </Button>
             <Button 
               variant={activeTab === "messages" ? "secondary" : "ghost"}
-              className="w-full justify-start font-medium text-slate-600"
+              className="w-full justify-start font-medium text-slate-600 relative"
               onClick={() => setActiveTab("messages")}
               data-testid="button-messages-tab"
             >
               <MessageSquare className="mr-2 h-4 w-4" /> Messages
+              {unreadMessageCount > 0 && (
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  {unreadMessageCount}
+                </span>
+              )}
             </Button>
             <Button 
               variant={activeTab === "meetings" ? "secondary" : "ghost"}
