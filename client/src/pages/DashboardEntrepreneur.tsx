@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useLocation } from "wouter";
 import { getSupabase } from "@/lib/supabase";
@@ -1211,48 +1211,70 @@ export default function DashboardEntrepreneur() {
                         className="w-full min-h-20 p-3 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         data-testid="textarea-mentor-message"
                       />
-                      <Button 
-                        onClick={async () => {
-                          if (newMessage.trim() && userEmail && mentorData.mentor?.email) {
-                            try {
-                              const response = await fetch(`${API_BASE_URL}/api/messages`, {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({
-                                  fromName: profileData.fullName,
-                                  fromEmail: userEmail,
-                                  toName: mentorData.mentor?.full_name || "Mentor",
-                                  toEmail: mentorData.mentor?.email,
-                                  message: newMessage
-                                })
-                              });
-                              if (response.ok) {
-                                const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
-                                if (loadResponse.ok) {
-                                  const data = await loadResponse.json();
-                                  setMessages(data.messages || []);
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={async () => {
+                            if (newMessage.trim() && userEmail && mentorData.mentor?.email) {
+                              try {
+                                const response = await fetch(`${API_BASE_URL}/api/messages`, {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    fromName: profileData.fullName,
+                                    fromEmail: userEmail,
+                                    toName: mentorData.mentor?.full_name || "Mentor",
+                                    toEmail: mentorData.mentor?.email,
+                                    message: newMessage
+                                  })
+                                });
+                                if (response.ok) {
+                                  const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
+                                  if (loadResponse.ok) {
+                                    const data = await loadResponse.json();
+                                    setMessages(data.messages || []);
+                                  }
+                                  setNewMessage("");
+                                  toast.success(`Message sent to ${mentorData.mentor?.full_name || "your mentor"}!`);
+                                } else {
+                                  toast.error("Failed to send message");
                                 }
-                                setNewMessage("");
-                                toast.success(`Message sent to ${mentorData.mentor?.full_name || "your mentor"}!`);
-                              } else {
-                                toast.error("Failed to send message");
+                              } catch (error) {
+                                toast.error("Error sending message");
+                              }
+                            }
+                          }}
+                          disabled={!newMessage.trim() || !mentorData.mentor?.email}
+                          size="sm"
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                          data-testid="button-send-mentor-message"
+                        >
+                          <Send className="mr-2 h-4 w-4" /> Send
+                        </Button>
+                        <Button 
+                          onClick={async () => {
+                            try {
+                              const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
+                              if (loadResponse.ok) {
+                                const data = await loadResponse.json();
+                                setMessages(data.messages || []);
+                                toast.success("Messages refreshed!");
                               }
                             } catch (error) {
-                              toast.error("Error sending message");
+                              toast.error("Error refreshing messages");
                             }
-                          }
-                        }}
-                        disabled={!newMessage.trim() || !mentorData.mentor?.email}
-                        size="sm"
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                        data-testid="button-send-mentor-message"
-                      >
-                        <Send className="mr-2 h-4 w-4" /> Send
-                      </Button>
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="border-emerald-300 text-emerald-600 hover:bg-emerald-50"
+                          data-testid="button-refresh-mentor-messages"
+                        >
+                          <RefreshCw className="mr-2 h-4 w-4" /> Refresh
+                        </Button>
+                      </div>
                       
-                      {mentorMsgs.length > 0 && (
-                        <div className="border-t pt-4 mt-4">
-                          <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
+                      <div className="border-t pt-4 mt-4">
+                        <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
+                        {mentorMsgs.length > 0 ? (
                           <div className="space-y-3 max-h-64 overflow-y-auto">
                             {mentorMsgs.map((msg: any) => {
                               const isFromMe = msg.from_email === userEmail;
@@ -1282,8 +1304,10 @@ export default function DashboardEntrepreneur() {
                               );
                             })}
                           </div>
-                        </div>
-                      )}
+                        ) : (
+                          <p className="text-sm text-muted-foreground text-center py-4">No messages yet. Start the conversation!</p>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 )}
