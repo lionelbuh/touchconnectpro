@@ -586,35 +586,47 @@ export async function registerRoutes(
         return res.json({ entrepreneurs: [] });
       }
 
-      // Fetch entrepreneur profiles
+      // Fetch entrepreneur profiles from entrepreneur_ideas table (where assignments point to)
       const entrepreneurIds = assignments.map((a: any) => a.entrepreneur_id);
+      console.log("[GET /api/mentor-assignments/mentor-email/:email] Looking up entrepreneur IDs:", entrepreneurIds);
+      
       const { data: entrepreneurs, error: entError } = await (client
-        .from("entrepreneur_applications")
+        .from("entrepreneur_ideas")
         .select("*")
         .in("id", entrepreneurIds) as any);
 
+      console.log("[GET /api/mentor-assignments/mentor-email/:email] Entrepreneur lookup result:", { 
+        count: entrepreneurs?.length, 
+        error: entError?.message,
+        entrepreneurs: entrepreneurs?.map((e: any) => ({ id: e.id, name: e.entrepreneur_name, email: e.entrepreneur_email }))
+      });
+
       if (entError) {
+        console.error("[GET /api/mentor-assignments/mentor-email/:email] Error fetching entrepreneurs:", entError);
         return res.json({ entrepreneurs: [] });
       }
 
-      // Combine data (handle both snake_case and camelCase field names from Supabase)
+      // Combine data - entrepreneur_ideas has data in different structure
       const portfolioData = assignments.map((assignment: any) => {
         const entrepreneur = entrepreneurs?.find((e: any) => e.id === assignment.entrepreneur_id);
+        const entData = entrepreneur?.data || {};
         return {
           assignment_id: assignment.id,
           portfolio_number: assignment.portfolio_number,
           meeting_link: assignment.meeting_link,
           entrepreneur: entrepreneur ? {
             id: entrepreneur.id,
-            full_name: entrepreneur.full_name || "",
-            email: entrepreneur.email || "",
-            linkedin: entrepreneur.linkedin || "",
-            business_idea: entrepreneur.business_idea || entrepreneur.businessIdea || "",
-            photo_url: entrepreneur.photo_url || entrepreneur.photoUrl || ""
+            full_name: entrepreneur.entrepreneur_name || entData.fullName || "",
+            email: entrepreneur.entrepreneur_email || entData.email || "",
+            linkedin: entData.linkedin || entData.linkedinWebsite || "",
+            business_idea: entData.ideaDescription || entData.ideaName || "",
+            idea_name: entData.ideaName || "",
+            photo_url: ""
           } : null
         };
       });
 
+      console.log("[GET /api/mentor-assignments/mentor-email/:email] Returning portfolio data:", portfolioData.length);
       return res.json({ entrepreneurs: portfolioData });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
