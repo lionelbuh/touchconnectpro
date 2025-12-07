@@ -204,6 +204,45 @@ export async function registerRoutes(
     }
   });
 
+  // Toggle entrepreneur disabled status
+  app.patch("/api/ideas/:id/toggle-disabled", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      
+      // First get current state
+      const { data: current, error: getError } = await (client
+        .from("ideas")
+        .select("is_disabled")
+        .eq("id", id)
+        .single() as any);
+
+      if (getError) {
+        return res.status(400).json({ error: getError.message });
+      }
+
+      const newState = !current?.is_disabled;
+      
+      const { data, error } = await (client
+        .from("ideas")
+        .update({ is_disabled: newState } as any)
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, is_disabled: newState, idea: data?.[0] });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Save mentor application
   app.post("/api/mentors", async (req, res) => {
     console.log("[POST /api/mentors] Called");
@@ -297,6 +336,44 @@ export async function registerRoutes(
       }
 
       return res.json({ success: true, mentor: data?.[0] });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Toggle mentor disabled status
+  app.patch("/api/mentors/:id/toggle-disabled", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      
+      const { data: current, error: getError } = await (client
+        .from("mentor_applications")
+        .select("is_disabled")
+        .eq("id", id)
+        .single() as any);
+
+      if (getError) {
+        return res.status(400).json({ error: getError.message });
+      }
+
+      const newState = !current?.is_disabled;
+      
+      const { data, error } = await (client
+        .from("mentor_applications")
+        .update({ is_disabled: newState } as any)
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, is_disabled: newState, mentor: data?.[0] });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
     }
@@ -946,6 +1023,82 @@ export async function registerRoutes(
       return res.json({ success: true, message: data?.[0] });
     } catch (error: any) {
       console.error("[PATCH /api/messages/:id/read] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Toggle coach disabled status
+  app.patch("/api/coaches/:id/toggle-disabled", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      
+      const { data: current, error: getError } = await (client
+        .from("coach_applications")
+        .select("is_disabled")
+        .eq("id", id)
+        .single() as any);
+
+      if (getError) {
+        return res.status(400).json({ error: getError.message });
+      }
+
+      const newState = !current?.is_disabled;
+      
+      const { data, error } = await (client
+        .from("coach_applications")
+        .update({ is_disabled: newState } as any)
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, is_disabled: newState, coach: data?.[0] });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Toggle investor disabled status
+  app.patch("/api/investors/:id/toggle-disabled", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      
+      const { data: current, error: getError } = await (client
+        .from("investor_applications")
+        .select("is_disabled")
+        .eq("id", id)
+        .single() as any);
+
+      if (getError) {
+        return res.status(400).json({ error: getError.message });
+      }
+
+      const newState = !current?.is_disabled;
+      
+      const { data, error } = await (client
+        .from("investor_applications")
+        .update({ is_disabled: newState } as any)
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, is_disabled: newState, investor: data?.[0] });
+    } catch (error: any) {
       return res.status(500).json({ error: error.message });
     }
   });
