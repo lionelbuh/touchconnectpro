@@ -752,5 +752,203 @@ export async function registerRoutes(
     }
   });
 
+  // Get entrepreneur data by email (for entrepreneur dashboard)
+  app.get("/api/entrepreneur/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { email } = req.params;
+      const decodedEmail = decodeURIComponent(email);
+
+      // Get entrepreneur's idea/application
+      const { data: ideaData, error: ideaError } = await (client
+        .from("ideas")
+        .select("*")
+        .eq("entrepreneur_email", decodedEmail)
+        .single() as any);
+
+      if (ideaError || !ideaData) {
+        return res.status(404).json({ error: "Entrepreneur not found" });
+      }
+
+      // Get mentor assignment if exists
+      const { data: assignmentData } = await (client
+        .from("mentor_assignments")
+        .select("*")
+        .eq("entrepreneur_id", ideaData.id)
+        .eq("status", "active")
+        .single() as any);
+
+      let mentorProfile = null;
+      let mentorNotes: any[] = [];
+
+      if (assignmentData) {
+        // Fetch mentor profile from mentor_applications table
+        const { data: mentorData } = await (client
+          .from("mentor_applications")
+          .select("*")
+          .eq("id", assignmentData.mentor_id)
+          .single() as any);
+
+        if (mentorData) {
+          mentorProfile = {
+            id: mentorData.id,
+            full_name: mentorData.full_name || mentorData.fullName || "",
+            email: mentorData.email || "",
+            expertise: mentorData.expertise || "",
+            experience: mentorData.experience || "",
+            linkedin: mentorData.linkedin || "",
+            bio: mentorData.bio || "",
+            photo_url: mentorData.photo_url || mentorData.photoUrl || ""
+          };
+        }
+
+        // Get mentor notes
+        const { data: notesData } = await (client
+          .from("mentor_notes")
+          .select("*")
+          .eq("entrepreneur_id", ideaData.id)
+          .order("created_at", { ascending: true }) as any);
+        mentorNotes = notesData || [];
+      }
+
+      return res.json({
+        ...ideaData,
+        mentorAssignment: assignmentData ? {
+          ...assignmentData,
+          status: "active",
+          mentor: mentorProfile
+        } : null,
+        mentorNotes
+      });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // POST message
+  app.post("/api/messages", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { fromName, fromEmail, toName, toEmail, message } = req.body;
+
+      if (!fromEmail || !toEmail || !message) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const { data, error } = await (client
+        .from("messages")
+        .insert({
+          from_name: fromName || "Unknown",
+          from_email: fromEmail,
+          to_name: toName || "Unknown",
+          to_email: toEmail,
+          message: message,
+          is_read: false
+        } as any)
+        .select() as any);
+
+      if (error) {
+        console.error("[POST /api/messages] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      console.log(`[POST /api/messages] Message sent from ${fromEmail} to ${toEmail}`);
+      return res.json({ success: true, message: data?.[0] });
+    } catch (error: any) {
+      console.error("[POST /api/messages] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get messages for a user (by email)
+  app.get("/api/messages/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { email } = req.params;
+      const decodedEmail = decodeURIComponent(email);
+
+      const { data, error } = await (client
+        .from("messages")
+        .select("*")
+        .or(`from_email.eq.${decodedEmail},to_email.eq.${decodedEmail}`)
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[GET /api/messages/:email] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.json({ messages: data || [] });
+    } catch (error: any) {
+      console.error("[GET /api/messages/:email] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get all messages (for admin)
+  app.get("/api/messages", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { data, error } = await (client
+        .from("messages")
+        .select("*")
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[GET /api/messages] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.json({ messages: data || [] });
+    } catch (error: any) {
+      console.error("[GET /api/messages] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Mark message as read
+  app.patch("/api/messages/:id/read", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+
+      const { data, error } = await (client
+        .from("messages")
+        .update({ is_read: true } as any)
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        console.error("[PATCH /api/messages/:id/read] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.json({ success: true, message: data?.[0] });
+    } catch (error: any) {
+      console.error("[PATCH /api/messages/:id/read] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }
