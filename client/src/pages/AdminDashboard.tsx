@@ -6,6 +6,7 @@ import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAl
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { API_BASE_URL } from "@/config";
+import { toast } from "sonner";
 
 interface MentorApplication {
   id: string;
@@ -487,6 +488,8 @@ export default function AdminDashboard() {
       
       if (response.ok) {
         const data = await response.json();
+        const newStatus = data.is_disabled ? "disabled" : "enabled";
+        toast.success(`User ${newStatus} successfully!`);
         // Reload the applications to get updated is_disabled status
         if (type === "entrepreneur") {
           const ideasResponse = await fetch(`${API_BASE_URL}/api/ideas`);
@@ -520,10 +523,17 @@ export default function AdminDashboard() {
         }
         console.log(`${type} disabled status toggled:`, data);
       } else {
-        console.error("Failed to toggle disabled status");
+        const errorData = await response.json();
+        console.error("Failed to toggle disabled status:", errorData);
+        if (errorData.error?.includes("is_disabled does not exist")) {
+          toast.error("Database setup required. Please run the migration script in Supabase SQL Editor.");
+        } else {
+          toast.error(`Failed to toggle status: ${errorData.error || "Unknown error"}`);
+        }
       }
     } catch (error) {
       console.error("Error toggling disabled status:", error);
+      toast.error("Network error. Please try again.");
     }
   };
 
