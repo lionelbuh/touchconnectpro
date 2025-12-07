@@ -113,11 +113,13 @@ export default function DashboardEntrepreneur() {
     const savedBusinessPlan = localStorage.getItem("tcp_businessPlan");
     const savedProfile = localStorage.getItem("tcp_profileData");
     const savedSubmitted = localStorage.getItem("tcp_submitted");
+    const savedReadMessageIds = localStorage.getItem("tcp_entrepreneurReadMessageIds");
     
     if (savedFormData) setFormData(JSON.parse(savedFormData));
     if (savedBusinessPlan) setBusinessPlanData(JSON.parse(savedBusinessPlan));
     if (savedProfile) setProfileData(JSON.parse(savedProfile));
     if (savedSubmitted) setSubmitted(JSON.parse(savedSubmitted));
+    if (savedReadMessageIds) setEntrepreneurReadMessageIds(JSON.parse(savedReadMessageIds));
     
     // Messages will be loaded from database after user email is available
     
