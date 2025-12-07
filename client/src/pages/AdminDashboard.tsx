@@ -90,7 +90,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<"approvals" | "members">("approvals");
   const [activeMembersSubTab, setActiveMembersSubTab] = useState<"portfolio" | "messaging" | "management">("portfolio");
   const [activeApprovalsSubTab, setActiveApprovalsSubTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
-  const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
+  const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled">("entrepreneurs");
   const [mentorApplications, setMentorApplications] = useState<MentorApplication[]>([]);
   const [coachApplications, setCoachApplications] = useState<CoachApplication[]>([]);
   const [investorApplications, setInvestorApplications] = useState<InvestorApplication[]>([]);
@@ -1233,6 +1233,27 @@ export default function AdminDashboard() {
                 >
                   Investors
                 </Button>
+                <Button 
+                  variant={activeMembersCategoryTab === "disabled" ? "default" : "ghost"}
+                  onClick={() => { setActiveMembersCategoryTab("disabled"); setActiveMembersSubTab("management"); }}
+                  className={activeMembersCategoryTab === "disabled" ? "bg-red-600 hover:bg-red-700" : ""}
+                  data-testid="button-members-disabled-subtab"
+                >
+                  <ShieldAlert className="mr-1 h-4 w-4" />
+                  Disabled
+                  {(() => {
+                    const disabledCount = 
+                      entrepreneurApplications.filter(a => a.status === "approved" && a.is_disabled).length +
+                      mentorApplications.filter(a => a.status === "approved" && (a as any).is_disabled).length +
+                      coachApplications.filter(a => a.status === "approved" && (a as any).is_disabled).length +
+                      investorApplications.filter(a => a.status === "approved" && (a as any).is_disabled).length;
+                    return disabledCount > 0 ? (
+                      <span className="ml-2 bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300 text-xs px-1.5 py-0.5 rounded-full">
+                        {disabledCount}
+                      </span>
+                    ) : null;
+                  })()}
+                </Button>
               </div>
               
               {/* Action Sub-tabs */}
@@ -2317,19 +2338,19 @@ export default function AdminDashboard() {
                   {/* Entrepreneurs - show only when selected */}
                   {activeMembersCategoryTab === "entrepreneurs" && (
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Approved Entrepreneurs</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Active Entrepreneurs</h4>
                     <div className="space-y-3">
-                      {filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").length === 0 ? (
+                      {filterAndSort(entrepreneurApplications.filter(app => app.status === "approved" && !app.is_disabled), "fullName").length === 0 ? (
                         <Card>
                           <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
-                            No approved entrepreneurs to manage
+                            No active entrepreneurs to manage. Check the "Disabled" tab for inactive users.
                           </CardContent>
                         </Card>
                       ) : (
-                        filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").map((entrepreneur, idx) => {
+                        filterAndSort(entrepreneurApplications.filter(app => app.status === "approved" && !app.is_disabled), "fullName").map((entrepreneur, idx) => {
                           const isDisabled = entrepreneur.is_disabled;
                           return (
-                          <Card key={`mgmt-${entrepreneur.id}`} className={isDisabled ? "opacity-60" : ""}>
+                          <Card key={`mgmt-${entrepreneur.id}`}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
                                 <div>
@@ -2355,19 +2376,19 @@ export default function AdminDashboard() {
                   {/* Mentors - show only when selected */}
                   {activeMembersCategoryTab === "mentors" && (
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">🎓 Approved Mentors</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">🎓 Active Mentors</h4>
                     <div className="space-y-3">
-                      {filterAndSort(mentorApplications.filter(app => app.status === "approved"), "fullName").length === 0 ? (
+                      {filterAndSort(mentorApplications.filter(app => app.status === "approved" && !(app as any).is_disabled), "fullName").length === 0 ? (
                         <Card>
                           <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
-                            No approved mentors to manage
+                            No active mentors to manage. Check the "Disabled" tab for inactive users.
                           </CardContent>
                         </Card>
                       ) : (
-                        filterAndSort(mentorApplications.filter(app => app.status === "approved"), "fullName").map((mentor, idx) => {
-                          const isDisabled = mentor.is_disabled;
+                        filterAndSort(mentorApplications.filter(app => app.status === "approved" && !(app as any).is_disabled), "fullName").map((mentor, idx) => {
+                          const isDisabled = (mentor as any).is_disabled;
                           return (
-                          <Card key={mentor.id} className={isDisabled ? "opacity-60" : ""}>
+                          <Card key={mentor.id}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
                                 <div>
@@ -2393,19 +2414,19 @@ export default function AdminDashboard() {
                   {/* Coaches - show only when selected */}
                   {activeMembersCategoryTab === "coaches" && (
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💪 Approved Coaches</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💪 Active Coaches</h4>
                     <div className="space-y-3">
-                      {filterAndSort(coachApplications.filter(app => app.status === "approved"), "fullName").length === 0 ? (
+                      {filterAndSort(coachApplications.filter(app => app.status === "approved" && !(app as any).is_disabled), "fullName").length === 0 ? (
                         <Card>
                           <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
-                            No approved coaches to manage
+                            No active coaches to manage. Check the "Disabled" tab for inactive users.
                           </CardContent>
                         </Card>
                       ) : (
-                        filterAndSort(coachApplications.filter(app => app.status === "approved"), "fullName").map((coach, idx) => {
-                          const isDisabled = coach.is_disabled;
+                        filterAndSort(coachApplications.filter(app => app.status === "approved" && !(app as any).is_disabled), "fullName").map((coach, idx) => {
+                          const isDisabled = (coach as any).is_disabled;
                           return (
-                          <Card key={coach.id} className={isDisabled ? "opacity-60" : ""}>
+                          <Card key={coach.id}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
                                 <div>
@@ -2431,19 +2452,19 @@ export default function AdminDashboard() {
                   {/* Investors - show only when selected */}
                   {activeMembersCategoryTab === "investors" && (
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💰 Approved Investors</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">💰 Active Investors</h4>
                     <div className="space-y-3">
-                      {filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").length === 0 ? (
+                      {filterAndSort(investorApplications.filter(app => app.status === "approved" && !(app as any).is_disabled), "fullName").length === 0 ? (
                         <Card>
                           <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
-                            No approved investors to manage
+                            No active investors to manage. Check the "Disabled" tab for inactive users.
                           </CardContent>
                         </Card>
                       ) : (
-                        filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").map((investor, idx) => {
-                          const isDisabled = investor.is_disabled;
+                        filterAndSort(investorApplications.filter(app => app.status === "approved" && !(app as any).is_disabled), "fullName").map((investor, idx) => {
+                          const isDisabled = (investor as any).is_disabled;
                           return (
-                          <Card key={investor.id} className={isDisabled ? "opacity-60" : ""}>
+                          <Card key={investor.id}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
                                 <div>
@@ -2463,6 +2484,125 @@ export default function AdminDashboard() {
                           );
                         })
                       )}
+                    </div>
+                  </div>
+                  )}
+                  {/* Disabled Users - show only when selected */}
+                  {activeMembersCategoryTab === "disabled" && (
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                      <ShieldAlert className="h-5 w-5 text-red-600" />
+                      All Disabled Users
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">Users that have been disabled. Click "Enable" to reactivate their account.</p>
+                    <div className="space-y-3">
+                      {(() => {
+                        const disabledEntrepreneurs = entrepreneurApplications.filter(a => a.status === "approved" && a.is_disabled);
+                        const disabledMentors = mentorApplications.filter(a => a.status === "approved" && (a as any).is_disabled);
+                        const disabledCoaches = coachApplications.filter(a => a.status === "approved" && (a as any).is_disabled);
+                        const disabledInvestors = investorApplications.filter(a => a.status === "approved" && (a as any).is_disabled);
+                        const totalDisabled = disabledEntrepreneurs.length + disabledMentors.length + disabledCoaches.length + disabledInvestors.length;
+                        
+                        if (totalDisabled === 0) {
+                          return (
+                            <Card>
+                              <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                                <ShieldAlert className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                                No disabled users. All members are currently active.
+                              </CardContent>
+                            </Card>
+                          );
+                        }
+                        
+                        return (
+                          <>
+                            {disabledEntrepreneurs.map((entrepreneur, idx) => (
+                              <Card key={`disabled-ent-${entrepreneur.id}`} className="border-l-4 border-l-red-500">
+                                <CardContent className="pt-6">
+                                  <div className="flex justify-between items-center">
+                                    <div>
+                                      <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
+                                      <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
+                                      <div className="flex gap-2 mt-1">
+                                        <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">Entrepreneur</Badge>
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                          Inactive
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <Button onClick={() => handleToggleProfessionalStatus("entrepreneur", entrepreneur.id)} data-testid={`button-enable-disabled-entrepreneur-${idx}`} size="sm" className="bg-green-600 hover:bg-green-700">
+                                      <Power className="mr-2 h-4 w-4" /> Enable
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                            {disabledMentors.map((mentor, idx) => (
+                              <Card key={`disabled-mentor-${mentor.id}`} className="border-l-4 border-l-red-500">
+                                <CardContent className="pt-6">
+                                  <div className="flex justify-between items-center">
+                                    <div>
+                                      <p className="font-semibold text-slate-900 dark:text-white">{mentor.fullName}</p>
+                                      <p className="text-sm text-muted-foreground">{mentor.email}</p>
+                                      <div className="flex gap-2 mt-1">
+                                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">Mentor</Badge>
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                          Inactive
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <Button onClick={() => handleToggleProfessionalStatus("mentor", mentor.id)} data-testid={`button-enable-disabled-mentor-${idx}`} size="sm" className="bg-green-600 hover:bg-green-700">
+                                      <Power className="mr-2 h-4 w-4" /> Enable
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                            {disabledCoaches.map((coach, idx) => (
+                              <Card key={`disabled-coach-${coach.id}`} className="border-l-4 border-l-red-500">
+                                <CardContent className="pt-6">
+                                  <div className="flex justify-between items-center">
+                                    <div>
+                                      <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
+                                      <p className="text-sm text-muted-foreground">{coach.email}</p>
+                                      <div className="flex gap-2 mt-1">
+                                        <Badge variant="outline" className="text-xs bg-cyan-50 text-cyan-700 border-cyan-200">Coach</Badge>
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                          Inactive
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <Button onClick={() => handleToggleProfessionalStatus("coach", coach.id)} data-testid={`button-enable-disabled-coach-${idx}`} size="sm" className="bg-green-600 hover:bg-green-700">
+                                      <Power className="mr-2 h-4 w-4" /> Enable
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                            {disabledInvestors.map((investor, idx) => (
+                              <Card key={`disabled-investor-${investor.id}`} className="border-l-4 border-l-red-500">
+                                <CardContent className="pt-6">
+                                  <div className="flex justify-between items-center">
+                                    <div>
+                                      <p className="font-semibold text-slate-900 dark:text-white">{investor.fullName}</p>
+                                      <p className="text-sm text-muted-foreground">{investor.email}</p>
+                                      <div className="flex gap-2 mt-1">
+                                        <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">Investor</Badge>
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                          Inactive
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <Button onClick={() => handleToggleProfessionalStatus("investor", investor.id)} data-testid={`button-enable-disabled-investor-${idx}`} size="sm" className="bg-green-600 hover:bg-green-700">
+                                      <Power className="mr-2 h-4 w-4" /> Enable
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                   )}
