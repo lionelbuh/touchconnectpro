@@ -118,6 +118,7 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [showRejected, setShowRejected] = useState<{[key: string]: boolean}>({});
+  const [mentorAssignments, setMentorAssignments] = useState<{[entrepreneurId: string]: {mentorId: string; mentorName: string; portfolioNumber: number}}>({})
 
   useEffect(() => {
     const loadData = async () => {
@@ -266,6 +267,30 @@ export default function AdminDashboard() {
         }
       } catch (err) {
         console.error("=== ADMIN FETCH ERROR ===", err);
+      }
+
+      // Fetch all mentor assignments to show badges
+      try {
+        const assignmentsResponse = await fetch(`${API_BASE_URL}/api/mentor-assignments`);
+        if (assignmentsResponse.ok) {
+          const assignmentsData = await assignmentsResponse.json();
+          console.log("Assignments received:", assignmentsData);
+          if (Array.isArray(assignmentsData.assignments)) {
+            const assignmentMap: {[entrepreneurId: string]: {mentorId: string; mentorName: string; portfolioNumber: number}} = {};
+            assignmentsData.assignments.forEach((a: any) => {
+              if (a.entrepreneur_id && a.mentor_id) {
+                assignmentMap[a.entrepreneur_id] = {
+                  mentorId: a.mentor_id,
+                  mentorName: a.mentor_name || "Mentor",
+                  portfolioNumber: a.portfolio_number || 1
+                };
+              }
+            });
+            setMentorAssignments(assignmentMap);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching mentor assignments:", err);
       }
     };
 
@@ -508,6 +533,26 @@ export default function AdminDashboard() {
         if (response.ok) {
           const data = await response.json();
           console.log(`Successfully assigned ${selectedMember.name} to mentor portfolio ${portfolioAssignment}`, data);
+          
+          // Refresh mentor assignments to update the badge
+          const assignmentsResponse = await fetch(`${API_BASE_URL}/api/mentor-assignments`);
+          if (assignmentsResponse.ok) {
+            const assignmentsData = await assignmentsResponse.json();
+            if (Array.isArray(assignmentsData.assignments)) {
+              const assignmentMap: {[entrepreneurId: string]: {mentorId: string; mentorName: string; portfolioNumber: number}} = {};
+              assignmentsData.assignments.forEach((a: any) => {
+                if (a.entrepreneur_id && a.mentor_id) {
+                  assignmentMap[a.entrepreneur_id] = {
+                    mentorId: a.mentor_id,
+                    mentorName: a.mentor_name || "Mentor",
+                    portfolioNumber: a.portfolio_number || 1
+                  };
+                }
+              });
+              setMentorAssignments(assignmentMap);
+            }
+          }
+          
           alert(`${selectedMember.name} has been assigned to the selected mentor's Portfolio ${portfolioAssignment}`);
         } else {
           const error = await response.json();
@@ -1224,7 +1269,18 @@ export default function AdminDashboard() {
                                 <CardTitle>{app.fullName}</CardTitle>
                                 <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
-                              <Badge className="bg-emerald-600">Approved</Badge>
+                              <div className="flex gap-2">
+                                <Badge className="bg-emerald-600">Approved</Badge>
+                                {mentorAssignments[app.id] ? (
+                                  <Badge className="bg-cyan-600">
+                                    Mentor: {mentorAssignments[app.id].mentorName} (P{mentorAssignments[app.id].portfolioNumber})
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-amber-600 border-amber-600">
+                                    No Mentor Assigned
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">

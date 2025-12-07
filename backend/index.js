@@ -1261,12 +1261,13 @@ app.get("/api/entrepreneur/:email", async (req, res) => {
       if (mentorData) {
         mentorProfile = {
           id: mentorData.id,
-          full_name: mentorData.fullName,
-          email: mentorData.email,
-          expertise: mentorData.expertise,
-          linkedin: mentorData.linkedin,
-          bio: mentorData.bio,
-          photo_url: mentorData.photoUrl
+          full_name: mentorData.full_name || mentorData.fullName || "",
+          email: mentorData.email || "",
+          expertise: mentorData.expertise || "",
+          experience: mentorData.experience || "",
+          linkedin: mentorData.linkedin || "",
+          bio: mentorData.bio || "",
+          photo_url: mentorData.photo_url || mentorData.photoUrl || ""
         };
       }
 
@@ -1345,6 +1346,44 @@ app.post("/api/mentor-notes", async (req, res) => {
   }
 });
 
+
+// Get all mentor assignments (for admin dashboard badges)
+app.get("/api/mentor-assignments", async (req, res) => {
+  try {
+    const { data: assignments, error: assignmentError } = await supabase
+      .from("mentor_assignments")
+      .select("*")
+      .eq("status", "active");
+
+    if (assignmentError) {
+      return res.status(400).json({ error: assignmentError.message });
+    }
+
+    if (!assignments || assignments.length === 0) {
+      return res.json({ assignments: [] });
+    }
+
+    // Fetch all mentor names for the assignments
+    const mentorIds = [...new Set(assignments.map(a => a.mentor_id))];
+    const { data: mentors } = await supabase
+      .from("mentor_applications")
+      .select("id, full_name, fullName")
+      .in("id", mentorIds);
+
+    // Map mentor names to assignments
+    const assignmentsWithMentorNames = assignments.map(a => {
+      const mentor = mentors?.find(m => m.id === a.mentor_id);
+      return {
+        ...a,
+        mentor_name: mentor?.full_name || mentor?.fullName || "Mentor"
+      };
+    });
+
+    return res.json({ assignments: assignmentsWithMentorNames });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
 
 // Assign mentor to entrepreneur
 app.post("/api/mentor-assignments", async (req, res) => {
