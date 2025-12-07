@@ -1273,7 +1273,7 @@ export default function AdminDashboard() {
                                 <Badge className="bg-emerald-600">Approved</Badge>
                                 {mentorAssignments[app.id] ? (
                                   <Badge className="bg-cyan-600">
-                                    Mentor: {mentorAssignments[app.id].mentorName} (P{mentorAssignments[app.id].portfolioNumber})
+                                    {mentorAssignments[app.id].mentorName} (P{mentorAssignments[app.id].portfolioNumber})
                                   </Badge>
                                 ) : (
                                   <Badge variant="outline" className="text-amber-600 border-amber-600">
