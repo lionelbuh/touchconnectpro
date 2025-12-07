@@ -1649,7 +1649,7 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
       return res.json({ entrepreneurs: [] });
     }
 
-    // Combine data - entrepreneur_ideas has data in different structure
+    // Combine data - ideas table has data in different structure
     const portfolioData = assignments.map(assignment => {
       const entrepreneur = entrepreneurs?.find(e => e.id === assignment.entrepreneur_id);
       const entData = entrepreneur?.data || {};
@@ -1664,7 +1664,11 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
           linkedin: entData.linkedin || entData.linkedinWebsite || "",
           business_idea: entData.ideaDescription || entData.ideaName || "",
           idea_name: entData.ideaName || "",
-          photo_url: ""
+          country: entData.country || "",
+          state: entData.state || "",
+          photo_url: "",
+          ideaReview: entData.ideaReview || entData,
+          businessPlan: entrepreneur.business_plan || {}
         } : null
       };
     });

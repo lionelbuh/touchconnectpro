@@ -24,6 +24,7 @@ export default function DashboardEntrepreneur() {
   const [mentorNotes, setMentorNotes] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [adminMessageText, setAdminMessageText] = useState("");
   const [entrepreneurReadMessageIds, setEntrepreneurReadMessageIds] = useState<number[]>([]);
   const [entrepreneurData, setEntrepreneurData] = useState<any>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -1013,8 +1014,67 @@ export default function DashboardEntrepreneur() {
             {activeTab === "messages" && (
               <div>
                 <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Messages</h1>
-                <p className="text-muted-foreground mb-8">Communicate with the TouchConnectPro admin team.</p>
+                <p className="text-muted-foreground mb-8">Communicate with your mentor and the TouchConnectPro admin team.</p>
 
+                {/* Message to Mentor (if assigned) */}
+                {hasActiveMentor && mentorData && (
+                  <Card className="mb-6 border-emerald-200 dark:border-emerald-900/30">
+                    <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/20">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <GraduationCap className="h-5 w-5 text-emerald-600" />
+                        Message Your Mentor: {mentorData.mentorName}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-4">
+                      <textarea
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder={`Type your message to ${mentorData.mentorName}...`}
+                        className="w-full min-h-24 p-4 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        data-testid="textarea-mentor-message"
+                      />
+                      <Button 
+                        onClick={async () => {
+                          if (newMessage.trim() && userEmail && mentorData.mentorEmail) {
+                            try {
+                              const response = await fetch(`${API_BASE_URL}/api/messages`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  fromName: profileData.fullName,
+                                  fromEmail: userEmail,
+                                  toName: mentorData.mentorName,
+                                  toEmail: mentorData.mentorEmail,
+                                  message: newMessage
+                                })
+                              });
+                              if (response.ok) {
+                                const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
+                                if (loadResponse.ok) {
+                                  const data = await loadResponse.json();
+                                  setMessages(data.messages || []);
+                                }
+                                setNewMessage("");
+                                toast.success(`Message sent to ${mentorData.mentorName}!`);
+                              } else {
+                                toast.error("Failed to send message");
+                              }
+                            } catch (error) {
+                              toast.error("Error sending message");
+                            }
+                          }
+                        }}
+                        disabled={!newMessage.trim()}
+                        className="bg-emerald-600 hover:bg-emerald-700"
+                        data-testid="button-send-mentor-message"
+                      >
+                        <Send className="mr-2 h-4 w-4" /> Send to Mentor
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Message to Admin */}
                 <Card className="mb-6">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -1024,15 +1084,15 @@ export default function DashboardEntrepreneur() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <textarea
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
+                      value={adminMessageText}
+                      onChange={(e) => setAdminMessageText(e.target.value)}
                       placeholder="Type your message to the admin team..."
                       className="w-full min-h-24 p-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      data-testid="textarea-new-message"
+                      data-testid="textarea-admin-message"
                     />
                     <Button 
                       onClick={async () => {
-                        if (newMessage.trim() && userEmail) {
+                        if (adminMessageText.trim() && userEmail) {
                           try {
                             const response = await fetch(`${API_BASE_URL}/api/messages`, {
                               method: "POST",
@@ -1042,7 +1102,7 @@ export default function DashboardEntrepreneur() {
                                 fromEmail: userEmail,
                                 toName: "Admin",
                                 toEmail: "admin@touchconnectpro.com",
-                                message: newMessage
+                                message: adminMessageText
                               })
                             });
                             if (response.ok) {
@@ -1051,7 +1111,7 @@ export default function DashboardEntrepreneur() {
                                 const data = await loadResponse.json();
                                 setMessages(data.messages || []);
                               }
-                              setNewMessage("");
+                              setAdminMessageText("");
                               toast.success("Message sent to admin!");
                             } else {
                               toast.error("Failed to send message");
@@ -1061,15 +1121,16 @@ export default function DashboardEntrepreneur() {
                           }
                         }
                       }}
-                      disabled={!newMessage.trim()}
+                      disabled={!adminMessageText.trim()}
                       className="bg-cyan-600 hover:bg-cyan-700"
-                      data-testid="button-send-message"
+                      data-testid="button-send-admin-message"
                     >
-                      <Send className="mr-2 h-4 w-4" /> Send Message
+                      <Send className="mr-2 h-4 w-4" /> Send to Admin
                     </Button>
                   </CardContent>
                 </Card>
 
+                {/* Message History */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -1080,20 +1141,35 @@ export default function DashboardEntrepreneur() {
                   <CardContent>
                     {messages.length > 0 ? (
                       <div className="space-y-4 max-h-96 overflow-y-auto">
-                        {messages.map((msg: any) => (
-                            <div 
-                              key={msg.id} 
-                              className={`p-4 rounded-lg ${msg.from_email === "admin@touchconnectpro.com" ? "bg-cyan-50 dark:bg-cyan-950/30 border-l-4 border-l-cyan-500" : "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400"}`}
-                            >
+                        {messages.map((msg: any) => {
+                          const isFromAdmin = msg.from_email === "admin@touchconnectpro.com";
+                          const isFromMentor = hasActiveMentor && mentorData && msg.from_email === mentorData.mentorEmail;
+                          const isFromMe = msg.from_email === userEmail;
+                          
+                          let bgClass = "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400";
+                          let labelClass = "text-slate-700 dark:text-slate-300";
+                          let label = "You";
+                          
+                          if (isFromAdmin) {
+                            bgClass = "bg-cyan-50 dark:bg-cyan-950/30 border-l-4 border-l-cyan-500";
+                            labelClass = "text-cyan-700 dark:text-cyan-400";
+                            label = "From Admin";
+                          } else if (isFromMentor) {
+                            bgClass = "bg-emerald-50 dark:bg-emerald-950/30 border-l-4 border-l-emerald-500";
+                            labelClass = "text-emerald-700 dark:text-emerald-400";
+                            label = `From Mentor (${mentorData.mentorName})`;
+                          }
+                          
+                          return (
+                            <div key={msg.id} className={`p-4 rounded-lg ${bgClass}`}>
                               <div className="flex justify-between items-start mb-2">
-                                <span className={`font-semibold ${msg.from_email === "admin@touchconnectpro.com" ? "text-cyan-700 dark:text-cyan-400" : "text-slate-700 dark:text-slate-300"}`}>
-                                  {msg.from_email === "admin@touchconnectpro.com" ? "From Admin" : `You`}
-                                </span>
+                                <span className={`font-semibold ${labelClass}`}>{label}</span>
                                 <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
                               </div>
                               <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
                             </div>
-                          ))}
+                          );
+                        })}
                       </div>
                     ) : (
                       <div className="text-center py-8">

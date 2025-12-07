@@ -12,19 +12,33 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Session)
 
-**Email & Authentication System:**
-- ✅ Integrated Resend for transactional emails (approval/rejection notifications)
-- ✅ Created `password_tokens` table in Supabase for secure password setup links (7-day expiry)
-- ✅ Users receive approval emails with password setup link
-- ✅ After password setup, users are routed to their personal dashboard based on role
-- ✅ Login now properly redirects to role-specific dashboards (entrepreneur, mentor, coach, investor)
-- ✅ Fixed admin dashboard approve/reject buttons with proper styling
+**Mentor Dashboard - Full Entrepreneur Profile View:**
+- ✅ Mentors can now view complete entrepreneur profiles in portfolio tab
+- ✅ Expandable "Idea Proposal (43 Questions)" section with full ideaReview data
+- ✅ Expandable "Business Plan AI Draft (11 Sections)" with all business plan fields
+- ✅ Added country, state, LinkedIn, and idea name fields to entrepreneur cards
+- ✅ API endpoint updated to return ideaReview and businessPlan data for assigned entrepreneurs
+
+**Mentor-Entrepreneur Direct Messaging:**
+- ✅ Mentors can send direct messages to individual entrepreneurs via modal
+- ✅ Entrepreneurs see mentor message section when assigned (green-themed)
+- ✅ Message history now displays mentor messages with distinct styling (emerald green)
+- ✅ Two-way messaging between mentors and entrepreneurs fully functional
+
+**Previous Session - Email & Authentication System:**
+- Integrated Resend for transactional emails (approval/rejection notifications)
+- Created `password_tokens` table in Supabase for secure password setup links (7-day expiry)
+- Users receive approval emails with password setup link
+- After password setup, users are routed to their personal dashboard based on role
+- Login now properly redirects to role-specific dashboards (entrepreneur, mentor, coach, investor)
+- Fixed admin dashboard approve/reject buttons with proper styling
 
 **Backend Improvements:**
 - Updated `/api/set-password` to create user profile in `users` table with role
 - Added support for `RESEND_API_KEY` environment variable (for Render deployment)
 - Added detailed logging for email sending and error tracking
 - Email sends with branded HTML templates for approved/rejected users
+- Updated `/api/mentor-assignments/mentor-email/:email` to return full entrepreneur data including ideaReview and businessPlan
 
 **Deployment:**
 - Backend now requires: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `FRONTEND_URL` environment variables on Render

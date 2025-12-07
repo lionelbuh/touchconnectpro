@@ -54,16 +54,21 @@ export default function DashboardMentor() {
       email: string;
       linkedin?: string;
       businessIdea?: string;
+      ideaName?: string;
+      country?: string;
+      state?: string;
       photoUrl?: string;
+      ideaReview?: any;
+      businessPlan?: any;
     }>;
     lastMeeting: string;
   }>>([]);
+  
+  const [expandedProposal, setExpandedProposal] = useState<{[key: string]: boolean}>({});
+  const [expandedBusinessPlan, setExpandedBusinessPlan] = useState<{[key: string]: boolean}>({});
 
-  const [messages, setMessages] = useState([
-    { id: 1, from: "Alex Johnson", text: "Thanks for the feedback on our pitch deck!", timestamp: "Today 2:30 PM" },
-    { id: 2, from: "Maria Garcia", text: "Can we schedule a call next week?", timestamp: "Yesterday 10:15 AM" },
-    { id: 3, from: "James Wilson", text: "Your advice on GTM was really helpful", timestamp: "2 days ago" }
-  ]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [entrepreneurMessages, setEntrepreneurMessages] = useState<any[]>([]);
 
   const [meetings, setMeetings] = useState([
     { id: 1, portfolio: 1, date: "2024-12-01", time: "10:00 AM", attendees: 9, topic: "Q4 Planning & Strategy" },
@@ -212,7 +217,12 @@ export default function DashboardMentor() {
               email: m.entrepreneur?.email || "",
               linkedin: m.entrepreneur?.linkedin,
               businessIdea: m.entrepreneur?.business_idea,
-              photoUrl: m.entrepreneur?.photo_url
+              ideaName: m.entrepreneur?.idea_name,
+              country: m.entrepreneur?.country,
+              state: m.entrepreneur?.state,
+              photoUrl: m.entrepreneur?.photo_url,
+              ideaReview: m.entrepreneur?.ideaReview,
+              businessPlan: m.entrepreneur?.businessPlan
             })),
             lastMeeting: ""
           }));
@@ -525,42 +535,144 @@ export default function DashboardMentor() {
                       <div>
                         <p className="text-sm font-semibold text-muted-foreground mb-3">Members: {portfolio.memberCount}/10</p>
                         {portfolio.members.length > 0 ? (
-                          <div className="space-y-3">
-                            {portfolio.members.map((member) => (
-                              <div key={member.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                                <Avatar className="h-12 w-12 border border-cyan-200">
-                                  {member.photoUrl ? (
-                                    <AvatarImage src={member.photoUrl} alt={member.name} />
-                                  ) : null}
-                                  <AvatarFallback className="bg-cyan-500 text-white">
-                                    {member.name.substring(0, 2).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-semibold text-slate-900 dark:text-white text-sm">{member.name}</h4>
-                                  <p className="text-xs text-muted-foreground truncate">{member.email}</p>
-                                  {member.businessIdea && (
-                                    <p className="text-xs text-cyan-600 dark:text-cyan-400 mt-1 line-clamp-2">{member.businessIdea}</p>
-                                  )}
-                                  {member.linkedin && (
-                                    <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 text-xs flex items-center gap-1 mt-1">
-                                      <ExternalLink className="h-3 w-3" /> LinkedIn
-                                    </a>
-                                  )}
-                                </div>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedEntrepreneur(member);
-                                    setShowEntrepreneurMessageModal(true);
-                                  }}
-                                  data-testid={`button-message-entrepreneur-${member.id}`}
-                                >
-                                  <MessageSquare className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            ))}
+                          <div className="space-y-4">
+                            {portfolio.members.map((member) => {
+                              const isProposalExpanded = expandedProposal[`member-${member.id}`];
+                              const isBusinessPlanExpanded = expandedBusinessPlan[`member-${member.id}`];
+                              return (
+                              <Card key={member.id} className="border-l-4 border-l-emerald-500">
+                                <CardContent className="pt-4 space-y-4">
+                                  <div className="flex items-start gap-3">
+                                    <Avatar className="h-12 w-12 border border-cyan-200">
+                                      {member.photoUrl ? (
+                                        <AvatarImage src={member.photoUrl} alt={member.name} />
+                                      ) : null}
+                                      <AvatarFallback className="bg-cyan-500 text-white">
+                                        {member.name.substring(0, 2).toUpperCase()}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 min-w-0">
+                                      <h4 className="font-semibold text-slate-900 dark:text-white">{member.name}</h4>
+                                      <p className="text-xs text-muted-foreground">{member.email}</p>
+                                    </div>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedEntrepreneur(member);
+                                        setShowEntrepreneurMessageModal(true);
+                                      }}
+                                      data-testid={`button-message-entrepreneur-${member.id}`}
+                                    >
+                                      <MessageSquare className="h-3 w-3 mr-1" /> Message
+                                    </Button>
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-2 gap-3 text-sm">
+                                    <div>
+                                      <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Idea/Company</p>
+                                      <p className="text-slate-900 dark:text-white">{member.ideaName || member.businessIdea || "—"}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                      {member.linkedin ? (
+                                        <a href={member.linkedin.startsWith("http") ? member.linkedin : `https://${member.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 flex items-center gap-1">
+                                          <ExternalLink className="h-3 w-3" /> View Profile
+                                        </a>
+                                      ) : <p className="text-slate-500">—</p>}
+                                    </div>
+                                    <div>
+                                      <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                                      <p className="text-slate-900 dark:text-white">{member.country || "—"}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
+                                      <p className="text-slate-900 dark:text-white">{member.state || "—"}</p>
+                                    </div>
+                                  </div>
+
+                                  <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+                                    <Button 
+                                      variant="ghost" 
+                                      className="w-full justify-start text-cyan-600 hover:text-cyan-700 font-semibold text-sm"
+                                      onClick={() => setExpandedProposal({...expandedProposal, [`member-${member.id}`]: !isProposalExpanded})}
+                                      data-testid={`button-expand-proposal-${member.id}`}
+                                    >
+                                      {isProposalExpanded ? "▼" : "▶"} Idea Proposal (43 Questions)
+                                    </Button>
+                                    {isProposalExpanded && member.ideaReview && (
+                                      <div className="mt-3 space-y-2 max-h-64 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-3 rounded text-xs">
+                                        {Object.entries(member.ideaReview).map(([key, value]: [string, any], i) => (
+                                          <div key={i}>
+                                            <p className="font-semibold text-slate-700 dark:text-slate-300 capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
+                                            <p className="text-slate-600 dark:text-slate-400 mt-0.5">{String(value || 'N/A')}</p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+                                    <Button 
+                                      variant="ghost" 
+                                      className="w-full justify-start text-cyan-600 hover:text-cyan-700 font-semibold text-sm"
+                                      onClick={() => setExpandedBusinessPlan({...expandedBusinessPlan, [`member-${member.id}`]: !isBusinessPlanExpanded})}
+                                      data-testid={`button-expand-businessplan-${member.id}`}
+                                    >
+                                      {isBusinessPlanExpanded ? "▼" : "▶"} Business Plan AI Draft (11 Sections)
+                                    </Button>
+                                    {isBusinessPlanExpanded && member.businessPlan && (
+                                      <div className="mt-3 space-y-3 max-h-64 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-3 rounded text-xs">
+                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300">1. Executive Summary</p>
+                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.executiveSummary || 'N/A'}</p>
+                                        </div>
+                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300">2. Problem Statement</p>
+                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.problemStatement || 'N/A'}</p>
+                                        </div>
+                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300">3. Solution</p>
+                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.solution || 'N/A'}</p>
+                                        </div>
+                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300">4. Target Market</p>
+                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.targetMarket || 'N/A'}</p>
+                                        </div>
+                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300">5. Market Size</p>
+                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.marketSize || 'N/A'}</p>
+                                        </div>
+                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300">6. Revenue Model</p>
+                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.revenueModel || 'N/A'}</p>
+                                        </div>
+                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300">7. Competitive Advantage</p>
+                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.competitiveAdvantage || 'N/A'}</p>
+                                        </div>
+                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300">8. 12-Month Roadmap</p>
+                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.roadmap12Month || 'N/A'}</p>
+                                        </div>
+                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300">9. Funding Requirements</p>
+                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.fundingRequirements || 'N/A'}</p>
+                                        </div>
+                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300">10. Risks & Mitigation</p>
+                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.risksAndMitigation || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300">11. Success Metrics</p>
+                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.successMetrics || 'N/A'}</p>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )})}
                           </div>
                         ) : (
                           <p className="text-xs text-muted-foreground">No members added yet</p>
@@ -601,10 +713,12 @@ export default function DashboardMentor() {
           )}
 
           {/* Messages Tab */}
-          {activeTab === "messages" && (
+          {activeTab === "messages" && (() => {
+            const allEntrepreneurEmails = portfolios.flatMap(p => p.members.map(m => m.email.toLowerCase()));
+            return (
             <div>
               <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Messages</h1>
-              <p className="text-muted-foreground mb-8">Communicate with the TouchConnectPro admin team.</p>
+              <p className="text-muted-foreground mb-8">Communicate with your entrepreneurs and the TouchConnectPro admin team.</p>
 
               <Card className="mb-6">
                 <CardHeader>
@@ -671,20 +785,36 @@ export default function DashboardMentor() {
                 <CardContent>
                   {adminMessages.length > 0 ? (
                     <div className="space-y-4 max-h-96 overflow-y-auto">
-                      {adminMessages.map((msg: any) => (
-                          <div 
-                            key={msg.id} 
-                            className={`p-4 rounded-lg ${msg.from_email === "admin@touchconnectpro.com" ? "bg-cyan-50 dark:bg-cyan-950/30 border-l-4 border-l-cyan-500" : "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400"}`}
-                          >
+                      {adminMessages.map((msg: any) => {
+                        const isFromAdmin = msg.from_email === "admin@touchconnectpro.com";
+                        const isFromEntrepreneur = allEntrepreneurEmails.includes(msg.from_email?.toLowerCase());
+                        const isFromMe = msg.from_email === mentorProfile.email;
+                        
+                        let bgClass = "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400";
+                        let labelClass = "text-slate-700 dark:text-slate-300";
+                        let label = "You";
+                        
+                        if (isFromAdmin) {
+                          bgClass = "bg-cyan-50 dark:bg-cyan-950/30 border-l-4 border-l-cyan-500";
+                          labelClass = "text-cyan-700 dark:text-cyan-400";
+                          label = "From Admin";
+                        } else if (isFromEntrepreneur) {
+                          const entrepreneurName = portfolios.flatMap(p => p.members).find(m => m.email.toLowerCase() === msg.from_email?.toLowerCase())?.name || msg.from_name;
+                          bgClass = "bg-emerald-50 dark:bg-emerald-950/30 border-l-4 border-l-emerald-500";
+                          labelClass = "text-emerald-700 dark:text-emerald-400";
+                          label = `From Entrepreneur (${entrepreneurName})`;
+                        }
+                        
+                        return (
+                          <div key={msg.id} className={`p-4 rounded-lg ${bgClass}`}>
                             <div className="flex justify-between items-start mb-2">
-                              <span className={`font-semibold ${msg.from_email === "admin@touchconnectpro.com" ? "text-cyan-700 dark:text-cyan-400" : "text-slate-700 dark:text-slate-300"}`}>
-                                {msg.from_email === "admin@touchconnectpro.com" ? "From Admin" : "You"}
-                              </span>
+                              <span className={`font-semibold ${labelClass}`}>{label}</span>
                               <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
                             </div>
                             <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
                           </div>
-                        ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="text-center py-8">
@@ -695,7 +825,8 @@ export default function DashboardMentor() {
                 </CardContent>
               </Card>
             </div>
-          )}
+          );
+          })()}
 
           {/* Meetings Tab */}
           {activeTab === "meetings" && (
@@ -916,6 +1047,11 @@ export default function DashboardMentor() {
                         })
                       });
                       if (response.ok) {
+                        const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
+                        if (loadResponse.ok) {
+                          const data = await loadResponse.json();
+                          setAdminMessages(data.messages || []);
+                        }
                         setEntrepreneurMessage("");
                         setShowEntrepreneurMessageModal(false);
                         toast.success("Message sent to " + selectedEntrepreneur.name);
