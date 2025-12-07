@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink } from "lucide-react";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -167,9 +167,9 @@ export default function DashboardMentor() {
     }
   }, [activeTab, adminMessages, mentorProfile.email, mentorReadMessageIds]);
 
-  // Calculate unread message count
+  // Calculate unread message count using is_read from database
   const unreadMessageCount = adminMessages.filter(
-    (m: any) => m.to_email === mentorProfile.email && m.from_email === "admin@touchconnectpro.com" && !mentorReadMessageIds.includes(m.id)
+    (m: any) => m.to_email === mentorProfile.email && !m.is_read
   ).length;
 
   // Fetch assigned entrepreneurs when mentor email is available
