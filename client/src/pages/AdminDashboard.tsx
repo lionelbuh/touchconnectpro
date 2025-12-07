@@ -143,7 +143,8 @@ export default function AdminDashboard() {
               state: m.state,
               status: m.status === "submitted" ? "pending" : m.status,
               submittedAt: m.created_at,
-              is_resubmitted: m.is_resubmitted
+              is_resubmitted: m.is_resubmitted,
+              is_disabled: m.is_disabled || false
             }));
             setMentorApplications(mappedMentors);
             setApprovedMentors(mappedMentors.filter((app: any) => app.status === "approved"));
@@ -173,7 +174,8 @@ export default function AdminDashboard() {
               state: c.state,
               status: c.status === "submitted" ? "pending" : c.status,
               submittedAt: c.created_at,
-              is_resubmitted: c.is_resubmitted
+              is_resubmitted: c.is_resubmitted,
+              is_disabled: c.is_disabled || false
             }));
             setCoachApplications(mappedCoaches);
             setApprovedCoaches(mappedCoaches.filter((app: any) => app.status === "approved"));
@@ -204,7 +206,8 @@ export default function AdminDashboard() {
               state: i.state,
               status: i.status === "submitted" ? "pending" : i.status,
               submittedAt: i.created_at,
-              is_resubmitted: i.is_resubmitted
+              is_resubmitted: i.is_resubmitted,
+              is_disabled: i.is_disabled || false
             }));
             setInvestorApplications(mappedInvestors);
             setApprovedInvestors(mappedInvestors.filter((app: any) => app.status === "approved"));
@@ -258,6 +261,7 @@ export default function AdminDashboard() {
             businessPlan: idea.business_plan || {},
             linkedin: idea.linkedin_profile || "",
             is_resubmitted: idea.is_resubmitted,
+            is_disabled: idea.is_disabled || false,
             ...idea.data
           }));
           console.log("Mapped entrepreneurs:", entrepreneurs.length);
