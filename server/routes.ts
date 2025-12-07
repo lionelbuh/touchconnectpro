@@ -302,6 +302,338 @@ export async function registerRoutes(
     }
   });
 
+  // ===== MENTOR ASSIGNMENTS ENDPOINTS =====
+
+  // Get all mentor assignments (for admin dashboard badges)
+  app.get("/api/mentor-assignments", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      console.log("[GET /api/mentor-assignments] Fetching all active assignments...");
+      const { data: assignments, error: assignmentError } = await (client
+        .from("mentor_assignments")
+        .select("*")
+        .eq("status", "active") as any);
+
+      console.log("[GET /api/mentor-assignments] Query result:", { count: assignments?.length, error: assignmentError?.message });
+
+      if (assignmentError) {
+        console.error("[GET /api/mentor-assignments] Error:", assignmentError);
+        return res.status(400).json({ error: assignmentError.message });
+      }
+
+      if (!assignments || assignments.length === 0) {
+        console.log("[GET /api/mentor-assignments] No active assignments found");
+        return res.json({ assignments: [] });
+      }
+
+      // Fetch all mentor names for the assignments
+      const mentorIds = Array.from(new Set(assignments.map((a: any) => a.mentor_id)));
+      console.log("[GET /api/mentor-assignments] Looking up mentor IDs:", mentorIds);
+      
+      const { data: mentors, error: mentorError } = await (client
+        .from("mentor_applications")
+        .select("id, full_name")
+        .in("id", mentorIds) as any);
+
+      console.log("[GET /api/mentor-assignments] Mentor lookup result:", { mentors, error: mentorError?.message });
+
+      // Map mentor names to assignments
+      const assignmentsWithMentorNames = assignments.map((a: any) => {
+        const mentor = mentors?.find((m: any) => m.id === a.mentor_id);
+        const mentorName = mentor?.full_name || "Mentor";
+        console.log("[GET /api/mentor-assignments] Mapping mentor for assignment:", { 
+          mentor_id: a.mentor_id, 
+          found_mentor: !!mentor,
+          mentor_name: mentorName 
+        });
+        return {
+          ...a,
+          mentor_name: mentorName
+        };
+      });
+
+      console.log("[GET /api/mentor-assignments] Returning", assignmentsWithMentorNames.length, "assignments");
+      return res.json({ assignments: assignmentsWithMentorNames });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Create or update mentor assignment
+  app.post("/api/mentor-assignments", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { entrepreneurId, mentorId, portfolioNumber, meetingLink } = req.body;
+      console.log("[POST /api/mentor-assignments] Request received:", { entrepreneurId, mentorId, portfolioNumber });
+
+      if (!entrepreneurId || !mentorId || !portfolioNumber) {
+        return res.status(400).json({ error: "Missing required fields (entrepreneurId, mentorId, portfolioNumber)" });
+      }
+
+      // Check if entrepreneur already has an assignment
+      const { data: existing } = await (client
+        .from("mentor_assignments")
+        .select("id")
+        .eq("entrepreneur_id", entrepreneurId)
+        .eq("status", "active")
+        .single() as any);
+
+      if (existing) {
+        // Update existing assignment
+        const { data, error } = await (client
+          .from("mentor_assignments")
+          .update({
+            mentor_id: mentorId,
+            portfolio_number: portfolioNumber,
+            meeting_link: meetingLink || null
+          } as any)
+          .eq("id", existing.id)
+          .select() as any);
+
+        if (error) {
+          return res.status(400).json({ error: error.message });
+        }
+        return res.json({ success: true, assignment: data?.[0], updated: true });
+      }
+
+      // Create new assignment
+      console.log("[POST /api/mentor-assignments] Creating assignment with mentor_id:", mentorId);
+      const { data, error } = await (client
+        .from("mentor_assignments")
+        .insert({
+          entrepreneur_id: entrepreneurId,
+          mentor_id: mentorId,
+          portfolio_number: portfolioNumber,
+          meeting_link: meetingLink || null,
+          status: "active"
+        } as any)
+        .select() as any);
+
+      console.log("[POST /api/mentor-assignments] Assignment created:", data?.[0]?.id, "Error:", error?.message);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      // Fetch entrepreneur and mentor details for system messages
+      const { data: entrepreneur } = await (client
+        .from("entrepreneur_applications")
+        .select("email, full_name")
+        .eq("id", entrepreneurId)
+        .single() as any);
+      
+      const { data: mentor } = await (client
+        .from("mentor_applications")
+        .select("email, full_name")
+        .eq("id", mentorId)
+        .single() as any);
+
+      if (entrepreneur && mentor) {
+        const entrepreneurEmail = entrepreneur.email;
+        const entrepreneurName = entrepreneur.full_name || "Entrepreneur";
+        const mentorEmail = mentor.email;
+        const mentorName = mentor.full_name || "Mentor";
+
+        // Send system message to entrepreneur about mentor assignment
+        await (client.from("messages").insert({
+          from_name: "System",
+          from_email: "admin@touchconnectpro.com",
+          to_name: entrepreneurName,
+          to_email: entrepreneurEmail,
+          message: `Great news! You have been assigned to ${mentorName}'s Portfolio ${portfolioNumber}. Visit your dashboard to see your mentor's profile and connect with them.`,
+          is_read: false
+        } as any) as any);
+
+        // Send system message to mentor about new entrepreneur
+        await (client.from("messages").insert({
+          from_name: "System",
+          from_email: "admin@touchconnectpro.com",
+          to_name: mentorName,
+          to_email: mentorEmail,
+          message: `${entrepreneurName} has been added to your Portfolio ${portfolioNumber}. Visit your dashboard to view their profile and business idea.`,
+          is_read: false
+        } as any) as any);
+      }
+
+      return res.json({ success: true, assignment: data?.[0] });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get mentor's assigned entrepreneurs by email (portfolio)
+  app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { email } = req.params;
+      const decodedEmail = decodeURIComponent(email);
+      console.log("[GET /api/mentor-assignments/mentor-email/:email] Looking for mentor with email:", decodedEmail);
+
+      // First, find the mentor by email
+      const { data: mentorData, error: mentorError } = await (client
+        .from("mentor_applications")
+        .select("id, email, full_name")
+        .eq("email", decodedEmail)
+        .single() as any);
+
+      console.log("[GET /api/mentor-assignments/mentor-email/:email] Mentor lookup result:", mentorData);
+
+      if (mentorError || !mentorData) {
+        console.error("[GET /api/mentor-assignments/mentor-email/:email] Mentor not found with email:", decodedEmail, "Error:", mentorError?.message);
+        return res.json({ entrepreneurs: [] });
+      }
+
+      const mentorId = mentorData.id;
+      console.log("[GET /api/mentor-assignments/mentor-email/:email] Found mentor ID:", mentorId, "Name:", mentorData.full_name);
+
+      // Now fetch assignments for this mentor
+      const { data: assignments, error: assignmentError } = await (client
+        .from("mentor_assignments")
+        .select("*")
+        .eq("mentor_id", mentorId)
+        .eq("status", "active") as any);
+
+      console.log("[GET /api/mentor-assignments/mentor-email/:email] Assignments found:", assignments?.length || 0);
+
+      if (assignmentError) {
+        console.error("[GET /api/mentor-assignments/mentor-email/:email] Error:", assignmentError);
+        return res.status(400).json({ error: assignmentError.message });
+      }
+
+      if (!assignments || assignments.length === 0) {
+        console.log("[GET /api/mentor-assignments/mentor-email/:email] No assignments found");
+        return res.json({ entrepreneurs: [] });
+      }
+
+      // Fetch entrepreneur profiles
+      const entrepreneurIds = assignments.map((a: any) => a.entrepreneur_id);
+      const { data: entrepreneurs, error: entError } = await (client
+        .from("entrepreneur_applications")
+        .select("*")
+        .in("id", entrepreneurIds) as any);
+
+      if (entError) {
+        return res.json({ entrepreneurs: [] });
+      }
+
+      // Combine data (handle both snake_case and camelCase field names from Supabase)
+      const portfolioData = assignments.map((assignment: any) => {
+        const entrepreneur = entrepreneurs?.find((e: any) => e.id === assignment.entrepreneur_id);
+        return {
+          assignment_id: assignment.id,
+          portfolio_number: assignment.portfolio_number,
+          meeting_link: assignment.meeting_link,
+          entrepreneur: entrepreneur ? {
+            id: entrepreneur.id,
+            full_name: entrepreneur.full_name || "",
+            email: entrepreneur.email || "",
+            linkedin: entrepreneur.linkedin || "",
+            business_idea: entrepreneur.business_idea || entrepreneur.businessIdea || "",
+            photo_url: entrepreneur.photo_url || entrepreneur.photoUrl || ""
+          } : null
+        };
+      });
+
+      return res.json({ entrepreneurs: portfolioData });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get entrepreneur's assigned mentor
+  app.get("/api/mentor-assignments/entrepreneur/:entrepreneurId", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { entrepreneurId } = req.params;
+
+      const { data: assignment, error: assignmentError } = await (client
+        .from("mentor_assignments")
+        .select("*")
+        .eq("entrepreneur_id", entrepreneurId)
+        .eq("status", "active")
+        .single() as any);
+
+      if (assignmentError || !assignment) {
+        return res.json({ mentor: null });
+      }
+
+      // Fetch mentor profile
+      const { data: mentor, error: mentorError } = await (client
+        .from("mentor_applications")
+        .select("*")
+        .eq("id", assignment.mentor_id)
+        .single() as any);
+
+      if (mentorError || !mentor) {
+        return res.json({ mentor: null });
+      }
+
+      return res.json({
+        mentor: {
+          id: mentor.id,
+          full_name: mentor.full_name,
+          email: mentor.email,
+          linkedin: mentor.linkedin,
+          bio: mentor.bio,
+          expertise: mentor.expertise,
+          experience: mentor.experience,
+          photo_url: mentor.photo_url || mentor.photoUrl
+        },
+        portfolio_number: assignment.portfolio_number,
+        meeting_link: assignment.meeting_link
+      });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update mentor assignment (e.g., meeting link)
+  app.patch("/api/mentor-assignments/:id", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      const { meetingLink, status } = req.body;
+
+      const updates: any = {};
+      if (meetingLink !== undefined) updates.meeting_link = meetingLink;
+      if (status !== undefined) updates.status = status;
+
+      const { data, error } = await (client
+        .from("mentor_assignments")
+        .update(updates)
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, assignment: data?.[0] });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Test endpoint to verify Supabase connection
   app.get("/api/test", async (req, res) => {
     try {

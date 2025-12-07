@@ -1350,35 +1350,51 @@ app.post("/api/mentor-notes", async (req, res) => {
 // Get all mentor assignments (for admin dashboard badges)
 app.get("/api/mentor-assignments", async (req, res) => {
   try {
+    console.log("[GET /api/mentor-assignments] Fetching all active assignments...");
     const { data: assignments, error: assignmentError } = await supabase
       .from("mentor_assignments")
       .select("*")
       .eq("status", "active");
 
+    console.log("[GET /api/mentor-assignments] Query result:", { count: assignments?.length, error: assignmentError?.message });
+
     if (assignmentError) {
+      console.error("[GET /api/mentor-assignments] Error:", assignmentError);
       return res.status(400).json({ error: assignmentError.message });
     }
 
     if (!assignments || assignments.length === 0) {
+      console.log("[GET /api/mentor-assignments] No active assignments found");
       return res.json({ assignments: [] });
     }
 
     // Fetch all mentor names for the assignments
     const mentorIds = [...new Set(assignments.map(a => a.mentor_id))];
-    const { data: mentors } = await supabase
+    console.log("[GET /api/mentor-assignments] Looking up mentor IDs:", mentorIds);
+    
+    const { data: mentors, error: mentorError } = await supabase
       .from("mentor_applications")
-      .select("id, full_name, fullName")
+      .select("id, full_name")
       .in("id", mentorIds);
+
+    console.log("[GET /api/mentor-assignments] Mentor lookup result:", { mentors, error: mentorError?.message });
 
     // Map mentor names to assignments
     const assignmentsWithMentorNames = assignments.map(a => {
       const mentor = mentors?.find(m => m.id === a.mentor_id);
+      const mentorName = mentor?.full_name || "Mentor";
+      console.log("[GET /api/mentor-assignments] Mapping mentor for assignment:", { 
+        mentor_id: a.mentor_id, 
+        found_mentor: !!mentor,
+        mentor_name: mentorName 
+      });
       return {
         ...a,
-        mentor_name: mentor?.full_name || mentor?.fullName || "Mentor"
+        mentor_name: mentorName
       };
     });
 
+    console.log("[GET /api/mentor-assignments] Returning", assignmentsWithMentorNames.length, "assignments");
     return res.json({ assignments: assignmentsWithMentorNames });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -1443,21 +1459,21 @@ app.post("/api/mentor-assignments", async (req, res) => {
     // Fetch entrepreneur and mentor details for system messages
     const { data: entrepreneur } = await supabase
       .from("entrepreneur_applications")
-      .select("email, full_name, fullName")
+      .select("email, full_name")
       .eq("id", entrepreneurId)
       .single();
     
     const { data: mentor } = await supabase
       .from("mentor_applications")
-      .select("email, full_name, fullName")
+      .select("email, full_name")
       .eq("id", mentorId)
       .single();
 
     if (entrepreneur && mentor) {
       const entrepreneurEmail = entrepreneur.email;
-      const entrepreneurName = entrepreneur.full_name || entrepreneur.fullName || "Entrepreneur";
+      const entrepreneurName = entrepreneur.full_name || "Entrepreneur";
       const mentorEmail = mentor.email;
-      const mentorName = mentor.full_name || mentor.fullName || "Mentor";
+      const mentorName = mentor.full_name || "Mentor";
 
       // Send system message to entrepreneur about mentor assignment
       await supabase.from("messages").insert({
@@ -1579,7 +1595,7 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
     // First, find the mentor by email
     const { data: mentorData, error: mentorError } = await supabase
       .from("mentor_applications")
-      .select("id, email, full_name, fullName")
+      .select("id, email, full_name")
       .eq("email", decodedEmail)
       .single();
 
@@ -1591,7 +1607,7 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
     }
 
     const mentorId = mentorData.id;
-    console.log("[GET /api/mentor-assignments/mentor-email/:email] Found mentor ID:", mentorId, "Name:", mentorData.full_name || mentorData.fullName);
+    console.log("[GET /api/mentor-assignments/mentor-email/:email] Found mentor ID:", mentorId, "Name:", mentorData.full_name);
 
     // Now fetch assignments for this mentor
     const { data: assignments, error: assignmentError } = await supabase
@@ -1624,7 +1640,7 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
       return res.json({ entrepreneurs: [] });
     }
 
-    // Combine data (handle both snake_case and camelCase field names from Supabase)
+    // Combine data (Supabase stores data in snake_case only)
     const portfolioData = assignments.map(assignment => {
       const entrepreneur = entrepreneurs.find(e => e.id === assignment.entrepreneur_id);
       return {
@@ -1633,11 +1649,11 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
         meeting_link: assignment.meeting_link,
         entrepreneur: entrepreneur ? {
           id: entrepreneur.id,
-          full_name: entrepreneur.full_name || entrepreneur.fullName || "",
+          full_name: entrepreneur.full_name || "",
           email: entrepreneur.email || "",
           linkedin: entrepreneur.linkedin || "",
-          business_idea: entrepreneur.business_idea || entrepreneur.businessIdea || "",
-          photo_url: entrepreneur.photo_url || entrepreneur.photoUrl || ""
+          business_idea: entrepreneur.business_idea || "",
+          photo_url: entrepreneur.photo_url || ""
         } : null
       };
     });
