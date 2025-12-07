@@ -714,25 +714,56 @@ export default function DashboardMentor() {
 
           {/* Messages Tab */}
           {activeTab === "messages" && (() => {
-            const allEntrepreneurEmails = portfolios.flatMap(p => p.members.map(m => m.email.toLowerCase()));
+            const allEntrepreneurs = portfolios.flatMap(p => p.members);
+            
+            const adminMsgs = adminMessages.filter((m: any) => 
+              m.from_email === "admin@touchconnectpro.com" || m.to_email === "admin@touchconnectpro.com"
+            );
+            const adminUnread = adminMsgs.filter((m: any) => 
+              m.to_email === mentorProfile.email && !m.is_read
+            ).length;
+            
+            const entrepreneurConversations = allEntrepreneurs.map(ent => {
+              const msgs = adminMessages.filter((m: any) => 
+                (m.from_email?.toLowerCase() === ent.email.toLowerCase()) || 
+                (m.to_email?.toLowerCase() === ent.email.toLowerCase())
+              );
+              const unread = msgs.filter((m: any) => 
+                m.to_email === mentorProfile.email && !m.is_read
+              ).length;
+              return { ...ent, messages: msgs, unreadCount: unread };
+            }).filter(e => e.messages.length > 0 || allEntrepreneurs.some(ae => ae.email === e.email));
+            
             return (
             <div>
               <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Messages</h1>
               <p className="text-muted-foreground mb-8">Communicate with your entrepreneurs and the TouchConnectPro admin team.</p>
 
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5 text-cyan-600" />
-                    Send a Message to Admin
+              {/* Admin Section */}
+              <Card className="mb-6 border-cyan-200 dark:border-cyan-900/30">
+                <CardHeader className="bg-cyan-50/50 dark:bg-cyan-950/20 cursor-pointer" onClick={() => {
+                  const el = document.getElementById('admin-messages-section');
+                  if (el) el.classList.toggle('hidden');
+                }}>
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-5 w-5 text-cyan-600" />
+                      Admin
+                      {adminUnread > 0 && (
+                        <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" data-testid="badge-admin-unread">
+                          {adminUnread} new
+                        </span>
+                      )}
+                    </div>
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent id="admin-messages-section" className="space-y-4 pt-4">
                   <textarea
                     value={adminMessage}
                     onChange={(e) => setAdminMessage(e.target.value)}
                     placeholder="Type your message to the admin team..."
-                    className="w-full min-h-24 p-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    className="w-full min-h-20 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     data-testid="textarea-admin-message"
                   />
                   <Button 
@@ -767,63 +798,117 @@ export default function DashboardMentor() {
                       }
                     }}
                     disabled={!adminMessage.trim()}
+                    size="sm"
                     className="bg-cyan-600 hover:bg-cyan-700"
                     data-testid="button-send-admin-message"
                   >
-                    <MessageSquare className="mr-2 h-4 w-4" /> Send Message
+                    <Send className="mr-2 h-4 w-4" /> Send
                   </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5 text-cyan-600" />
-                    Message History
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {adminMessages.length > 0 ? (
-                    <div className="space-y-4 max-h-96 overflow-y-auto">
-                      {adminMessages.map((msg: any) => {
-                        const isFromAdmin = msg.from_email === "admin@touchconnectpro.com";
-                        const isFromEntrepreneur = allEntrepreneurEmails.includes(msg.from_email?.toLowerCase());
-                        const isFromMe = msg.from_email === mentorProfile.email;
-                        
-                        let bgClass = "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400";
-                        let labelClass = "text-slate-700 dark:text-slate-300";
-                        let label = "You";
-                        
-                        if (isFromAdmin) {
-                          bgClass = "bg-cyan-50 dark:bg-cyan-950/30 border-l-4 border-l-cyan-500";
-                          labelClass = "text-cyan-700 dark:text-cyan-400";
-                          label = "From Admin";
-                        } else if (isFromEntrepreneur) {
-                          const entrepreneurName = portfolios.flatMap(p => p.members).find(m => m.email.toLowerCase() === msg.from_email?.toLowerCase())?.name || msg.from_name;
-                          bgClass = "bg-emerald-50 dark:bg-emerald-950/30 border-l-4 border-l-emerald-500";
-                          labelClass = "text-emerald-700 dark:text-emerald-400";
-                          label = `From Entrepreneur (${entrepreneurName})`;
-                        }
-                        
-                        return (
-                          <div key={msg.id} className={`p-4 rounded-lg ${bgClass}`}>
-                            <div className="flex justify-between items-start mb-2">
-                              <span className={`font-semibold ${labelClass}`}>{label}</span>
-                              <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                  
+                  {adminMsgs.length > 0 && (
+                    <div className="border-t pt-4 mt-4">
+                      <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
+                      <div className="space-y-3 max-h-64 overflow-y-auto">
+                        {adminMsgs.map((msg: any) => {
+                          const isFromMe = msg.from_email === mentorProfile.email;
+                          return (
+                            <div key={msg.id} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-cyan-50 dark:bg-cyan-950/30'}`}>
+                              <div className="flex justify-between items-start mb-1">
+                                <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-cyan-700 dark:text-cyan-400'}`}>
+                                  {isFromMe ? 'You' : 'Admin'}
+                                </span>
+                                <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                              </div>
+                              <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
                             </div>
-                            <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                      <p className="text-muted-foreground">No messages yet. Send a message to get started!</p>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
+
+              {/* Entrepreneur Sections */}
+              {allEntrepreneurs.map((ent, idx) => {
+                const entMsgs = adminMessages.filter((m: any) => 
+                  (m.from_email?.toLowerCase() === ent.email.toLowerCase()) || 
+                  (m.to_email?.toLowerCase() === ent.email.toLowerCase())
+                );
+                const entUnread = entMsgs.filter((m: any) => 
+                  m.to_email === mentorProfile.email && !m.is_read
+                ).length;
+                
+                return (
+                  <Card key={ent.email} className="mb-4 border-emerald-200 dark:border-emerald-900/30">
+                    <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/20 cursor-pointer py-3" onClick={() => {
+                      const el = document.getElementById(`entrepreneur-messages-${idx}`);
+                      if (el) el.classList.toggle('hidden');
+                    }}>
+                      <CardTitle className="text-base flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <GraduationCap className="h-4 w-4 text-emerald-600" />
+                          {ent.name}
+                          {entUnread > 0 && (
+                            <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" data-testid={`badge-entrepreneur-unread-${idx}`}>
+                              {entUnread} new
+                            </span>
+                          )}
+                        </div>
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent id={`entrepreneur-messages-${idx}`} className="space-y-3 pt-3 hidden">
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm"
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                          onClick={() => {
+                            setSelectedEntrepreneur(ent);
+                            setShowEntrepreneurMessageModal(true);
+                          }}
+                          data-testid={`button-send-to-${ent.email}`}
+                        >
+                          <Send className="mr-2 h-3 w-3" /> Send Message
+                        </Button>
+                      </div>
+                      
+                      {entMsgs.length > 0 ? (
+                        <div className="border-t pt-3 mt-2">
+                          <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
+                          <div className="space-y-2 max-h-48 overflow-y-auto">
+                            {entMsgs.map((msg: any) => {
+                              const isFromMe = msg.from_email === mentorProfile.email;
+                              return (
+                                <div key={msg.id} className={`p-2 rounded-lg text-sm ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-emerald-50 dark:bg-emerald-950/30'}`}>
+                                  <div className="flex justify-between items-start mb-1">
+                                    <span className={`text-xs font-semibold ${isFromMe ? 'text-slate-600 dark:text-slate-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
+                                      {isFromMe ? 'You' : ent.name}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                                  </div>
+                                  <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground py-2">No messages yet with this entrepreneur.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+              
+              {allEntrepreneurs.length === 0 && (
+                <Card>
+                  <CardContent className="text-center py-8">
+                    <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                    <p className="text-muted-foreground">No entrepreneurs assigned yet. Check your Portfolios tab.</p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           );
           })()}

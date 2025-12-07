@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useLocation } from "wouter";
 import { getSupabase } from "@/lib/supabase";
@@ -1011,83 +1011,53 @@ export default function DashboardEntrepreneur() {
             )}
 
             {/* Messages Tab */}
-            {activeTab === "messages" && (
+            {activeTab === "messages" && (() => {
+              const adminMsgs = messages.filter((m: any) => 
+                m.from_email === "admin@touchconnectpro.com" || m.to_email === "admin@touchconnectpro.com"
+              );
+              const adminUnread = adminMsgs.filter((m: any) => 
+                m.to_email === userEmail && !m.is_read
+              ).length;
+              
+              const mentorEmail = mentorData?.mentor?.email;
+              const mentorMsgs = mentorEmail ? messages.filter((m: any) => 
+                m.from_email?.toLowerCase() === mentorEmail.toLowerCase() || 
+                m.to_email?.toLowerCase() === mentorEmail.toLowerCase()
+              ) : [];
+              const mentorUnread = mentorMsgs.filter((m: any) => 
+                m.to_email === userEmail && !m.is_read
+              ).length;
+              
+              return (
               <div>
                 <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Messages</h1>
                 <p className="text-muted-foreground mb-8">Communicate with your mentor and the TouchConnectPro admin team.</p>
 
-                {/* Message to Mentor (if assigned) */}
-                {hasActiveMentor && mentorData && mentorData.mentor && (
-                  <Card className="mb-6 border-emerald-200 dark:border-emerald-900/30">
-                    <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/20">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <GraduationCap className="h-5 w-5 text-emerald-600" />
-                        Message Your Mentor: {mentorData.mentor?.full_name || "Your Mentor"}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 pt-4">
-                      <textarea
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder={`Type your message to ${mentorData.mentor?.full_name || "your mentor"}...`}
-                        className="w-full min-h-24 p-4 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        data-testid="textarea-mentor-message"
-                      />
-                      <Button 
-                        onClick={async () => {
-                          if (newMessage.trim() && userEmail && mentorData.mentor?.email) {
-                            try {
-                              const response = await fetch(`${API_BASE_URL}/api/messages`, {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({
-                                  fromName: profileData.fullName,
-                                  fromEmail: userEmail,
-                                  toName: mentorData.mentor?.full_name || "Mentor",
-                                  toEmail: mentorData.mentor?.email,
-                                  message: newMessage
-                                })
-                              });
-                              if (response.ok) {
-                                const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
-                                if (loadResponse.ok) {
-                                  const data = await loadResponse.json();
-                                  setMessages(data.messages || []);
-                                }
-                                setNewMessage("");
-                                toast.success(`Message sent to ${mentorData.mentor?.full_name || "your mentor"}!`);
-                              } else {
-                                toast.error("Failed to send message");
-                              }
-                            } catch (error) {
-                              toast.error("Error sending message");
-                            }
-                          }
-                        }}
-                        disabled={!newMessage.trim() || !mentorData.mentor?.email}
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                        data-testid="button-send-mentor-message"
-                      >
-                        <Send className="mr-2 h-4 w-4" /> Send to Mentor
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Message to Admin */}
-                <Card className="mb-6">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Send className="h-5 w-5 text-cyan-600" />
-                      Send a Message to Admin
+                {/* Admin Section */}
+                <Card className="mb-6 border-cyan-200 dark:border-cyan-900/30">
+                  <CardHeader className="bg-cyan-50/50 dark:bg-cyan-950/20 cursor-pointer" onClick={() => {
+                    const el = document.getElementById('admin-messages-section');
+                    if (el) el.classList.toggle('hidden');
+                  }}>
+                    <CardTitle className="text-lg flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="h-5 w-5 text-cyan-600" />
+                        Admin
+                        {adminUnread > 0 && (
+                          <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" data-testid="badge-admin-unread">
+                            {adminUnread} new
+                          </span>
+                        )}
+                      </div>
+                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent id="admin-messages-section" className="space-y-4 pt-4">
                     <textarea
                       value={adminMessageText}
                       onChange={(e) => setAdminMessageText(e.target.value)}
                       placeholder="Type your message to the admin team..."
-                      className="w-full min-h-24 p-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      className="w-full min-h-20 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       data-testid="textarea-admin-message"
                     />
                     <Button 
@@ -1122,65 +1092,141 @@ export default function DashboardEntrepreneur() {
                         }
                       }}
                       disabled={!adminMessageText.trim()}
+                      size="sm"
                       className="bg-cyan-600 hover:bg-cyan-700"
                       data-testid="button-send-admin-message"
                     >
-                      <Send className="mr-2 h-4 w-4" /> Send to Admin
+                      <Send className="mr-2 h-4 w-4" /> Send
                     </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Message History */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <MessageSquare className="h-5 w-5 text-cyan-600" />
-                      Message History
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {messages.length > 0 ? (
-                      <div className="space-y-4 max-h-96 overflow-y-auto">
-                        {messages.map((msg: any) => {
-                          const isFromAdmin = msg.from_email === "admin@touchconnectpro.com";
-                          const isFromMentor = hasActiveMentor && mentorData?.mentor && msg.from_email === mentorData.mentor?.email;
-                          const isFromMe = msg.from_email === userEmail;
-                          
-                          let bgClass = "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400";
-                          let labelClass = "text-slate-700 dark:text-slate-300";
-                          let label = "You";
-                          
-                          if (isFromAdmin) {
-                            bgClass = "bg-cyan-50 dark:bg-cyan-950/30 border-l-4 border-l-cyan-500";
-                            labelClass = "text-cyan-700 dark:text-cyan-400";
-                            label = "From Admin";
-                          } else if (isFromMentor) {
-                            bgClass = "bg-emerald-50 dark:bg-emerald-950/30 border-l-4 border-l-emerald-500";
-                            labelClass = "text-emerald-700 dark:text-emerald-400";
-                            label = `From Mentor (${mentorData.mentor?.full_name || "Mentor"})`;
-                          }
-                          
-                          return (
-                            <div key={msg.id} className={`p-4 rounded-lg ${bgClass}`}>
-                              <div className="flex justify-between items-start mb-2">
-                                <span className={`font-semibold ${labelClass}`}>{label}</span>
-                                <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                    
+                    {adminMsgs.length > 0 && (
+                      <div className="border-t pt-4 mt-4">
+                        <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
+                        <div className="space-y-3 max-h-64 overflow-y-auto">
+                          {adminMsgs.map((msg: any) => {
+                            const isFromMe = msg.from_email === userEmail;
+                            return (
+                              <div key={msg.id} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-cyan-50 dark:bg-cyan-950/30'}`}>
+                                <div className="flex justify-between items-start mb-1">
+                                  <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-cyan-700 dark:text-cyan-400'}`}>
+                                    {isFromMe ? 'You' : 'Admin'}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                                </div>
+                                <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
                               </div>
-                              <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                        <p className="text-muted-foreground">No messages yet. Send a message to get started!</p>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Mentor Section (if assigned) */}
+                {hasActiveMentor && mentorData && mentorData.mentor && (
+                  <Card className="mb-6 border-emerald-200 dark:border-emerald-900/30">
+                    <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/20 cursor-pointer" onClick={() => {
+                      const el = document.getElementById('mentor-messages-section');
+                      if (el) el.classList.toggle('hidden');
+                    }}>
+                      <CardTitle className="text-lg flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <GraduationCap className="h-5 w-5 text-emerald-600" />
+                          Mentor: {mentorData.mentor?.full_name || "Your Mentor"}
+                          {mentorUnread > 0 && (
+                            <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" data-testid="badge-mentor-unread">
+                              {mentorUnread} new
+                            </span>
+                          )}
+                        </div>
+                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent id="mentor-messages-section" className="space-y-4 pt-4">
+                      <textarea
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder={`Type your message to ${mentorData.mentor?.full_name || "your mentor"}...`}
+                        className="w-full min-h-20 p-3 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        data-testid="textarea-mentor-message"
+                      />
+                      <Button 
+                        onClick={async () => {
+                          if (newMessage.trim() && userEmail && mentorData.mentor?.email) {
+                            try {
+                              const response = await fetch(`${API_BASE_URL}/api/messages`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  fromName: profileData.fullName,
+                                  fromEmail: userEmail,
+                                  toName: mentorData.mentor?.full_name || "Mentor",
+                                  toEmail: mentorData.mentor?.email,
+                                  message: newMessage
+                                })
+                              });
+                              if (response.ok) {
+                                const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
+                                if (loadResponse.ok) {
+                                  const data = await loadResponse.json();
+                                  setMessages(data.messages || []);
+                                }
+                                setNewMessage("");
+                                toast.success(`Message sent to ${mentorData.mentor?.full_name || "your mentor"}!`);
+                              } else {
+                                toast.error("Failed to send message");
+                              }
+                            } catch (error) {
+                              toast.error("Error sending message");
+                            }
+                          }
+                        }}
+                        disabled={!newMessage.trim() || !mentorData.mentor?.email}
+                        size="sm"
+                        className="bg-emerald-600 hover:bg-emerald-700"
+                        data-testid="button-send-mentor-message"
+                      >
+                        <Send className="mr-2 h-4 w-4" /> Send
+                      </Button>
+                      
+                      {mentorMsgs.length > 0 && (
+                        <div className="border-t pt-4 mt-4">
+                          <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
+                          <div className="space-y-3 max-h-64 overflow-y-auto">
+                            {mentorMsgs.map((msg: any) => {
+                              const isFromMe = msg.from_email === userEmail;
+                              return (
+                                <div key={msg.id} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-emerald-50 dark:bg-emerald-950/30'}`}>
+                                  <div className="flex justify-between items-start mb-1">
+                                    <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-emerald-700 dark:text-emerald-400'}`}>
+                                      {isFromMe ? 'You' : mentorData.mentor?.full_name || 'Mentor'}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                                  </div>
+                                  <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {/* No Mentor Assigned Message */}
+                {!hasActiveMentor && (
+                  <Card className="border-slate-200 dark:border-slate-800">
+                    <CardContent className="text-center py-8">
+                      <GraduationCap className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                      <p className="text-muted-foreground">You haven't been assigned a mentor yet. Once assigned, you'll be able to message them here.</p>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
-            )}
+            );
+            })()}
 
             {/* My Idea Tab */}
             {activeTab === "idea" && (
