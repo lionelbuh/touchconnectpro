@@ -1527,29 +1527,47 @@ app.get("/api/mentor-assignments/entrepreneur/:entrepreneurId", async (req, res)
   }
 });
 
-// Get mentor's assigned entrepreneurs (portfolio)
-app.get("/api/mentor-assignments/mentor/:mentorId", async (req, res) => {
+// Get mentor's assigned entrepreneurs by email (portfolio)
+app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
   try {
-    const { mentorId } = req.params;
-    console.log("[GET /api/mentor-assignments/mentor/:mentorId] Looking for assignments with mentor_id:", mentorId);
+    const { email } = req.params;
+    const decodedEmail = decodeURIComponent(email);
+    console.log("[GET /api/mentor-assignments/mentor-email/:email] Looking for mentor with email:", decodedEmail);
 
+    // First, find the mentor by email
+    const { data: mentorData, error: mentorError } = await supabase
+      .from("mentor_applications")
+      .select("id")
+      .eq("email", decodedEmail)
+      .single();
+
+    if (mentorError || !mentorData) {
+      console.error("[GET /api/mentor-assignments/mentor-email/:email] Mentor not found with email:", decodedEmail);
+      return res.json({ entrepreneurs: [] });
+    }
+
+    const mentorId = mentorData.id;
+    console.log("[GET /api/mentor-assignments/mentor-email/:email] Found mentor ID:", mentorId);
+
+    // Now fetch assignments for this mentor
     const { data: assignments, error: assignmentError } = await supabase
       .from("mentor_assignments")
       .select("*")
       .eq("mentor_id", mentorId)
       .eq("status", "active");
 
-    console.log("[GET /api/mentor-assignments/mentor/:mentorId] Assignments found:", assignments?.length || 0);
+    console.log("[GET /api/mentor-assignments/mentor-email/:email] Assignments found:", assignments?.length || 0);
 
     if (assignmentError) {
-      console.error("[GET /api/mentor-assignments/mentor/:mentorId] Error:", assignmentError);
+      console.error("[GET /api/mentor-assignments/mentor-email/:email] Error:", assignmentError);
       return res.status(400).json({ error: assignmentError.message });
     }
 
     if (!assignments || assignments.length === 0) {
-      console.log("[GET /api/mentor-assignments/mentor/:mentorId] No assignments found");
+      console.log("[GET /api/mentor-assignments/mentor-email/:email] No assignments found");
       return res.json({ entrepreneurs: [] });
     }
+  
 
     // Fetch entrepreneur profiles
     const entrepreneurIds = assignments.map(a => a.entrepreneur_id);

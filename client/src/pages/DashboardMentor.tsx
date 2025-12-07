@@ -167,17 +167,17 @@ export default function DashboardMentor() {
     (m: any) => m.to_email === mentorProfile.email && m.from_email === "admin@touchconnectpro.com" && !mentorReadMessageIds.includes(m.id)
   ).length;
 
-  // Fetch assigned entrepreneurs when profileId changes
+  // Fetch assigned entrepreneurs when mentor email is available
   useEffect(() => {
     async function fetchAssignedEntrepreneurs() {
-      if (!profileId) {
-        console.log("[DashboardMentor] profileId not set yet");
+      if (!mentorProfile.email) {
+        console.log("[DashboardMentor] Mentor email not set yet");
         return;
       }
       
-      console.log("[DashboardMentor] Fetching entrepreneurs for mentor ID:", profileId);
+      console.log("[DashboardMentor] Fetching entrepreneurs for mentor email:", mentorProfile.email);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/mentor/${profileId}`);
+        const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/mentor-email/${encodeURIComponent(mentorProfile.email)}`);
         console.log("[DashboardMentor] Fetch response status:", response.status);
         
         if (response.ok) {
@@ -230,7 +230,7 @@ export default function DashboardMentor() {
     }
     
     fetchAssignedEntrepreneurs();
-  }, [profileId]);
+  }, [mentorProfile.email]);
 
   const handleSaveProfile = async () => {
     if (!profileId) return;
