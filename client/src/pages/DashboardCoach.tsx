@@ -57,6 +57,7 @@ export default function DashboardCoach() {
   const [activeTab, setActiveTab] = useState<"overview" | "messages">("overview");
   const [adminMessage, setAdminMessage] = useState("");
   const [adminMessages, setAdminMessages] = useState<any[]>([]);
+  const [coachReadMessageIds, setCoachReadMessageIds] = useState<string[]>([]);
 
   const handleLogout = async () => {
     try {
@@ -104,6 +105,14 @@ export default function DashboardCoach() {
     loadProfile();
   }, []);
 
+  // Load read message IDs from localStorage
+  useEffect(() => {
+    const savedReadIds = localStorage.getItem("tcp_coachReadMessageIds");
+    if (savedReadIds) {
+      setCoachReadMessageIds(JSON.parse(savedReadIds));
+    }
+  }, []);
+
   // Load admin messages from database
   useEffect(() => {
     async function loadMessages() {
@@ -120,6 +129,26 @@ export default function DashboardCoach() {
     }
     loadMessages();
   }, [profile?.email]);
+
+  // Mark admin messages as read when viewing messages tab
+  useEffect(() => {
+    if (activeTab === "messages" && profile?.email) {
+      const adminMessagesToMark = adminMessages
+        .filter((m: any) => m.to_email === profile.email && m.from_email === "admin@touchconnectpro.com" && !coachReadMessageIds.includes(m.id))
+        .map((m: any) => m.id);
+      
+      if (adminMessagesToMark.length > 0) {
+        const updatedReadIds = [...coachReadMessageIds, ...adminMessagesToMark];
+        setCoachReadMessageIds(updatedReadIds);
+        localStorage.setItem("tcp_coachReadMessageIds", JSON.stringify(updatedReadIds));
+      }
+    }
+  }, [activeTab, adminMessages, profile?.email, coachReadMessageIds]);
+
+  // Calculate unread message count
+  const unreadMessageCount = adminMessages.filter(
+    (m: any) => m.to_email === profile?.email && m.from_email === "admin@touchconnectpro.com" && !coachReadMessageIds.includes(m.id)
+  ).length;
 
   const handleExpertiseChange = (selectedOptions: HTMLCollection) => {
     const selected = Array.from(selectedOptions).map((option: any) => option.value);
@@ -201,11 +230,16 @@ export default function DashboardCoach() {
             </Button>
             <Button 
               variant={activeTab === "messages" ? "secondary" : "ghost"} 
-              className="w-full justify-start font-medium text-slate-600"
+              className="w-full justify-start font-medium text-slate-600 relative"
               onClick={() => setActiveTab("messages")}
               data-testid="button-messages-tab"
             >
               <MessageSquare className="mr-2 h-4 w-4" /> Messages
+              {unreadMessageCount > 0 && (
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  {unreadMessageCount}
+                </span>
+              )}
             </Button>
             <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
               <BookOpen className="mr-2 h-4 w-4" /> My Courses

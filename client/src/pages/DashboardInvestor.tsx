@@ -36,6 +36,7 @@ export default function DashboardInvestor() {
   const [activeTab, setActiveTab] = useState<"overview" | "messages">("overview");
   const [adminMessage, setAdminMessage] = useState("");
   const [adminMessages, setAdminMessages] = useState<any[]>([]);
+  const [investorReadMessageIds, setInvestorReadMessageIds] = useState<string[]>([]);
 
   const handleLogout = async () => {
     try {
@@ -85,6 +86,14 @@ export default function DashboardInvestor() {
     loadProfile();
   }, []);
 
+  // Load read message IDs from localStorage
+  useEffect(() => {
+    const savedReadIds = localStorage.getItem("tcp_investorReadMessageIds");
+    if (savedReadIds) {
+      setInvestorReadMessageIds(JSON.parse(savedReadIds));
+    }
+  }, []);
+
   // Load admin messages from database
   useEffect(() => {
     async function loadMessages() {
@@ -101,6 +110,26 @@ export default function DashboardInvestor() {
     }
     loadMessages();
   }, [profile?.email]);
+
+  // Mark admin messages as read when viewing messages tab
+  useEffect(() => {
+    if (activeTab === "messages" && profile?.email) {
+      const adminMessagesToMark = adminMessages
+        .filter((m: any) => m.to_email === profile.email && m.from_email === "admin@touchconnectpro.com" && !investorReadMessageIds.includes(m.id))
+        .map((m: any) => m.id);
+      
+      if (adminMessagesToMark.length > 0) {
+        const updatedReadIds = [...investorReadMessageIds, ...adminMessagesToMark];
+        setInvestorReadMessageIds(updatedReadIds);
+        localStorage.setItem("tcp_investorReadMessageIds", JSON.stringify(updatedReadIds));
+      }
+    }
+  }, [activeTab, adminMessages, profile?.email, investorReadMessageIds]);
+
+  // Calculate unread message count
+  const unreadMessageCount = adminMessages.filter(
+    (m: any) => m.to_email === profile?.email && m.from_email === "admin@touchconnectpro.com" && !investorReadMessageIds.includes(m.id)
+  ).length;
 
   const handleSave = async () => {
     if (!profile?.id) return;
@@ -169,11 +198,16 @@ export default function DashboardInvestor() {
             </Button>
             <Button 
               variant={activeTab === "messages" ? "secondary" : "ghost"} 
-              className="w-full justify-start font-medium text-slate-600"
+              className="w-full justify-start font-medium text-slate-600 relative"
               onClick={() => setActiveTab("messages")}
               data-testid="button-messages-tab"
             >
               <MessageSquare className="mr-2 h-4 w-4" /> Messages
+              {unreadMessageCount > 0 && (
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  {unreadMessageCount}
+                </span>
+              )}
             </Button>
             <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
               <TrendingUp className="mr-2 h-4 w-4" /> My Investments
