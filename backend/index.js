@@ -1054,6 +1054,138 @@ app.patch("/api/investors/:id", async (req, res) => {
   }
 });
 
+// Toggle entrepreneur disabled status
+app.patch("/api/ideas/:id/toggle-disabled", async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const { data: current, error: getError } = await supabase
+      .from("ideas")
+      .select("is_disabled")
+      .eq("id", id)
+      .single();
+
+    if (getError) {
+      return res.status(400).json({ error: getError.message });
+    }
+
+    const newState = !current?.is_disabled;
+    
+    const { data, error } = await supabase
+      .from("ideas")
+      .update({ is_disabled: newState })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, is_disabled: newState, idea: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Toggle mentor disabled status
+app.patch("/api/mentors/:id/toggle-disabled", async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const { data: current, error: getError } = await supabase
+      .from("mentor_applications")
+      .select("is_disabled")
+      .eq("id", id)
+      .single();
+
+    if (getError) {
+      return res.status(400).json({ error: getError.message });
+    }
+
+    const newState = !current?.is_disabled;
+    
+    const { data, error } = await supabase
+      .from("mentor_applications")
+      .update({ is_disabled: newState })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, is_disabled: newState, mentor: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Toggle coach disabled status
+app.patch("/api/coaches/:id/toggle-disabled", async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const { data: current, error: getError } = await supabase
+      .from("coach_applications")
+      .select("is_disabled")
+      .eq("id", id)
+      .single();
+
+    if (getError) {
+      return res.status(400).json({ error: getError.message });
+    }
+
+    const newState = !current?.is_disabled;
+    
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .update({ is_disabled: newState })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, is_disabled: newState, coach: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Toggle investor disabled status
+app.patch("/api/investors/:id/toggle-disabled", async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const { data: current, error: getError } = await supabase
+      .from("investor_applications")
+      .select("is_disabled")
+      .eq("id", id)
+      .single();
+
+    if (getError) {
+      return res.status(400).json({ error: getError.message });
+    }
+
+    const newState = !current?.is_disabled;
+    
+    const { data, error } = await supabase
+      .from("investor_applications")
+      .update({ is_disabled: newState })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, is_disabled: newState, investor: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/api/password-token/:token", async (req, res) => {
   try {
     const { token } = req.params;

@@ -29,6 +29,7 @@ export default function DashboardEntrepreneur() {
   const [entrepreneurData, setEntrepreneurData] = useState<any>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [userEmail, setUserEmail] = useState<string>("");
+  const [isAccountDisabled, setIsAccountDisabled] = useState(false);
   const [businessPlanData, setBusinessPlanData] = useState<any>({
     executiveSummary: "",
     problemStatement: "",
@@ -151,6 +152,9 @@ export default function DashboardEntrepreneur() {
           if (response.ok) {
             const data = await response.json();
             setEntrepreneurData(data);
+            
+            // Check if account is disabled
+            setIsAccountDisabled(data.is_disabled === true);
             
             // Set form data from application
             if (data.data) {
@@ -1031,7 +1035,22 @@ export default function DashboardEntrepreneur() {
               return (
               <div>
                 <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Messages</h1>
-                <p className="text-muted-foreground mb-8">Communicate with your mentor and the TouchConnectPro admin team.</p>
+                <p className="text-muted-foreground mb-4">Communicate with your mentor and the TouchConnectPro admin team.</p>
+
+                {/* Account Disabled Warning */}
+                {isAccountDisabled && (
+                  <Card className="mb-6 border-red-300 bg-red-50 dark:bg-red-950/20 dark:border-red-800">
+                    <CardContent className="pt-4 pb-4">
+                      <div className="flex items-center gap-3">
+                        <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                        <div>
+                          <p className="font-semibold text-red-800 dark:text-red-300">Account Inactive</p>
+                          <p className="text-sm text-red-700 dark:text-red-400">Your account is currently inactive. You can only contact the Admin team. To reactivate your membership, please reach out to Admin.</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Admin Section */}
                 <Card className="mb-6 border-cyan-200 dark:border-cyan-900/30">
@@ -1150,8 +1169,8 @@ export default function DashboardEntrepreneur() {
                   </CardContent>
                 </Card>
 
-                {/* Mentor Section (if assigned) */}
-                {hasActiveMentor && mentorData && mentorData.mentor && (
+                {/* Mentor Section (if assigned) - hidden when account is disabled */}
+                {hasActiveMentor && mentorData && mentorData.mentor && !isAccountDisabled && (
                   <Card className="mb-6 border-emerald-200 dark:border-emerald-900/30">
                     <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/20 cursor-pointer" onClick={async () => {
                       const el = document.getElementById('mentor-messages-section');

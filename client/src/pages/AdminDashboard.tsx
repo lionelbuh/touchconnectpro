@@ -478,11 +478,53 @@ export default function AdminDashboard() {
     markMessagesAsReadByAdmin(member.email);
   };
 
-  const handleToggleProfessionalStatus = (type: "entrepreneur" | "mentor" | "coach" | "investor", idx: number) => {
-    const key = `${type}-${idx}`;
-    const updated = { ...disabledProfessionals, [key]: !disabledProfessionals[key] };
-    setDisabledProfessionals(updated);
-    localStorage.setItem("tcp_disabledProfessionals", JSON.stringify(updated));
+  const handleToggleProfessionalStatus = async (type: "entrepreneur" | "mentor" | "coach" | "investor", id: string) => {
+    try {
+      const endpoint = type === "entrepreneur" ? "ideas" : type === "mentor" ? "mentors" : type === "coach" ? "coaches" : "investors";
+      const response = await fetch(`${API_BASE_URL}/api/${endpoint}/${id}/toggle-disabled`, {
+        method: "PATCH"
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Reload the applications to get updated is_disabled status
+        if (type === "entrepreneur") {
+          const ideasResponse = await fetch(`${API_BASE_URL}/api/ideas`);
+          if (ideasResponse.ok) {
+            const ideasData = await ideasResponse.json();
+            const allIdeas = ideasData || [];
+            setEntrepreneurApplications(allIdeas);
+            setApprovedEntrepreneurs(allIdeas.filter((app: any) => app.status === "approved"));
+          }
+        } else if (type === "mentor") {
+          const mentorsResponse = await fetch(`${API_BASE_URL}/api/mentors`);
+          if (mentorsResponse.ok) {
+            const mentorsData = await mentorsResponse.json();
+            setMentorApplications(mentorsData || []);
+            setApprovedMentors((mentorsData || []).filter((m: any) => m.status === "approved"));
+          }
+        } else if (type === "coach") {
+          const coachesResponse = await fetch(`${API_BASE_URL}/api/coaches`);
+          if (coachesResponse.ok) {
+            const coachesData = await coachesResponse.json();
+            setCoachApplications(coachesData.coaches || coachesData || []);
+            setApprovedCoaches((coachesData.coaches || coachesData || []).filter((c: any) => c.status === "approved"));
+          }
+        } else if (type === "investor") {
+          const investorsResponse = await fetch(`${API_BASE_URL}/api/investors`);
+          if (investorsResponse.ok) {
+            const investorsData = await investorsResponse.json();
+            setInvestorApplications(investorsData.investors || investorsData || []);
+            setApprovedInvestors((investorsData.investors || investorsData || []).filter((i: any) => i.status === "approved"));
+          }
+        }
+        console.log(`${type} disabled status toggled:`, data);
+      } else {
+        console.error("Failed to toggle disabled status");
+      }
+    } catch (error) {
+      console.error("Error toggling disabled status:", error);
+    }
   };
 
   const handleApproveEntrepreneur = async (index: number) => {
@@ -2275,7 +2317,7 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").map((entrepreneur, idx) => {
-                          const isDisabled = disabledProfessionals[`entrepreneur-${idx}`];
+                          const isDisabled = entrepreneur.is_disabled;
                           return (
                           <Card key={`mgmt-${entrepreneur.id}`} className={isDisabled ? "opacity-60" : ""}>
                             <CardContent className="pt-6">
@@ -2283,9 +2325,12 @@ export default function AdminDashboard() {
                                 <div>
                                   <p className="font-semibold text-slate-900 dark:text-white">{entrepreneur.fullName}</p>
                                   <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
+                                  <span className={`text-xs px-2 py-0.5 rounded-full ${isDisabled ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"}`}>
+                                    {isDisabled ? "Inactive" : "Active"}
+                                  </span>
                                 </div>
                                 <div className="flex gap-2">
-                                  <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("entrepreneur", idx)} data-testid={`button-toggle-entrepreneur-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
+                                  <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("entrepreneur", entrepreneur.id)} data-testid={`button-toggle-entrepreneur-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
                                   <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-entrepreneur-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
                                 </div>
                               </div>
@@ -2310,17 +2355,20 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(mentorApplications.filter(app => app.status === "approved"), "fullName").map((mentor, idx) => {
-                          const isDisabled = disabledProfessionals[`mentor-${idx}`];
+                          const isDisabled = mentor.is_disabled;
                           return (
-                          <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
+                          <Card key={mentor.id} className={isDisabled ? "opacity-60" : ""}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
                                 <div>
                                   <p className="font-semibold text-slate-900 dark:text-white">{mentor.fullName}</p>
                                   <p className="text-sm text-muted-foreground">{mentor.email}</p>
+                                  <span className={`text-xs px-2 py-0.5 rounded-full ${isDisabled ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"}`}>
+                                    {isDisabled ? "Inactive" : "Active"}
+                                  </span>
                                 </div>
                                 <div className="flex gap-2">
-                                  <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("mentor", idx)} data-testid={`button-toggle-mentor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
+                                  <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("mentor", mentor.id)} data-testid={`button-toggle-mentor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
                                   <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-mentor-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
                                 </div>
                               </div>
@@ -2345,17 +2393,20 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(coachApplications.filter(app => app.status === "approved"), "fullName").map((coach, idx) => {
-                          const isDisabled = disabledProfessionals[`coach-${idx}`];
+                          const isDisabled = coach.is_disabled;
                           return (
-                          <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
+                          <Card key={coach.id} className={isDisabled ? "opacity-60" : ""}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
                                 <div>
                                   <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
                                   <p className="text-sm text-muted-foreground">{coach.email}</p>
+                                  <span className={`text-xs px-2 py-0.5 rounded-full ${isDisabled ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"}`}>
+                                    {isDisabled ? "Inactive" : "Active"}
+                                  </span>
                                 </div>
                                 <div className="flex gap-2">
-                                  <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("coach", idx)} data-testid={`button-toggle-coach-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
+                                  <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("coach", coach.id)} data-testid={`button-toggle-coach-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
                                   <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-coach-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
                                 </div>
                               </div>
@@ -2380,17 +2431,20 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").map((investor, idx) => {
-                          const isDisabled = disabledProfessionals[`investor-${idx}`];
+                          const isDisabled = investor.is_disabled;
                           return (
-                          <Card key={idx} className={isDisabled ? "opacity-60" : ""}>
+                          <Card key={investor.id} className={isDisabled ? "opacity-60" : ""}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
                                 <div>
                                   <p className="font-semibold text-slate-900 dark:text-white">{investor.fullName}</p>
                                   <p className="text-sm text-muted-foreground">{investor.email}</p>
+                                  <span className={`text-xs px-2 py-0.5 rounded-full ${isDisabled ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"}`}>
+                                    {isDisabled ? "Inactive" : "Active"}
+                                  </span>
                                 </div>
                                 <div className="flex gap-2">
-                                  <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("investor", idx)} data-testid={`button-toggle-investor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
+                                  <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("investor", investor.id)} data-testid={`button-toggle-investor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
                                   <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-investor-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
                                 </div>
                               </div>
