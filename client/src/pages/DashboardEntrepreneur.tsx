@@ -1017,25 +1017,25 @@ export default function DashboardEntrepreneur() {
                 <p className="text-muted-foreground mb-8">Communicate with your mentor and the TouchConnectPro admin team.</p>
 
                 {/* Message to Mentor (if assigned) */}
-                {hasActiveMentor && mentorData && (
+                {hasActiveMentor && mentorData && mentorData.mentor && (
                   <Card className="mb-6 border-emerald-200 dark:border-emerald-900/30">
                     <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/20">
                       <CardTitle className="text-lg flex items-center gap-2">
                         <GraduationCap className="h-5 w-5 text-emerald-600" />
-                        Message Your Mentor: {mentorData.mentorName}
+                        Message Your Mentor: {mentorData.mentor?.full_name || "Your Mentor"}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-4">
                       <textarea
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder={`Type your message to ${mentorData.mentorName}...`}
+                        placeholder={`Type your message to ${mentorData.mentor?.full_name || "your mentor"}...`}
                         className="w-full min-h-24 p-4 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         data-testid="textarea-mentor-message"
                       />
                       <Button 
                         onClick={async () => {
-                          if (newMessage.trim() && userEmail && mentorData.mentorEmail) {
+                          if (newMessage.trim() && userEmail && mentorData.mentor?.email) {
                             try {
                               const response = await fetch(`${API_BASE_URL}/api/messages`, {
                                 method: "POST",
@@ -1043,8 +1043,8 @@ export default function DashboardEntrepreneur() {
                                 body: JSON.stringify({
                                   fromName: profileData.fullName,
                                   fromEmail: userEmail,
-                                  toName: mentorData.mentorName,
-                                  toEmail: mentorData.mentorEmail,
+                                  toName: mentorData.mentor?.full_name || "Mentor",
+                                  toEmail: mentorData.mentor?.email,
                                   message: newMessage
                                 })
                               });
@@ -1055,7 +1055,7 @@ export default function DashboardEntrepreneur() {
                                   setMessages(data.messages || []);
                                 }
                                 setNewMessage("");
-                                toast.success(`Message sent to ${mentorData.mentorName}!`);
+                                toast.success(`Message sent to ${mentorData.mentor?.full_name || "your mentor"}!`);
                               } else {
                                 toast.error("Failed to send message");
                               }
@@ -1064,7 +1064,7 @@ export default function DashboardEntrepreneur() {
                             }
                           }
                         }}
-                        disabled={!newMessage.trim()}
+                        disabled={!newMessage.trim() || !mentorData.mentor?.email}
                         className="bg-emerald-600 hover:bg-emerald-700"
                         data-testid="button-send-mentor-message"
                       >
@@ -1143,7 +1143,7 @@ export default function DashboardEntrepreneur() {
                       <div className="space-y-4 max-h-96 overflow-y-auto">
                         {messages.map((msg: any) => {
                           const isFromAdmin = msg.from_email === "admin@touchconnectpro.com";
-                          const isFromMentor = hasActiveMentor && mentorData && msg.from_email === mentorData.mentorEmail;
+                          const isFromMentor = hasActiveMentor && mentorData?.mentor && msg.from_email === mentorData.mentor?.email;
                           const isFromMe = msg.from_email === userEmail;
                           
                           let bgClass = "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400";
@@ -1157,7 +1157,7 @@ export default function DashboardEntrepreneur() {
                           } else if (isFromMentor) {
                             bgClass = "bg-emerald-50 dark:bg-emerald-950/30 border-l-4 border-l-emerald-500";
                             labelClass = "text-emerald-700 dark:text-emerald-400";
-                            label = `From Mentor (${mentorData.mentorName})`;
+                            label = `From Mentor (${mentorData.mentor?.full_name || "Mentor"})`;
                           }
                           
                           return (
