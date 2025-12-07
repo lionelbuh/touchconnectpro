@@ -1106,7 +1106,20 @@ export default function DashboardEntrepreneur() {
                           {adminMsgs.map((msg: any) => {
                             const isFromMe = msg.from_email === userEmail;
                             return (
-                              <div key={msg.id} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-cyan-50 dark:bg-cyan-950/30'}`}>
+                              <div key={msg.id} onClick={async () => {
+                                if (!isFromMe && !msg.is_read) {
+                                  try {
+                                    await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PUT" });
+                                    const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
+                                    if (loadResponse.ok) {
+                                      const data = await loadResponse.json();
+                                      setMessages(data.messages || []);
+                                    }
+                                  } catch (e) {
+                                    console.error("Error marking as read:", e);
+                                  }
+                                }
+                              }} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-cyan-50 dark:bg-cyan-950/30'} ${!isFromMe && !msg.is_read ? 'cursor-pointer opacity-70 hover:opacity-100' : ''}`}>
                                 <div className="flex justify-between items-start mb-1">
                                   <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-cyan-700 dark:text-cyan-400'}`}>
                                     {isFromMe ? 'You' : 'Admin'}
@@ -1197,7 +1210,20 @@ export default function DashboardEntrepreneur() {
                             {mentorMsgs.map((msg: any) => {
                               const isFromMe = msg.from_email === userEmail;
                               return (
-                                <div key={msg.id} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-emerald-50 dark:bg-emerald-950/30'}`}>
+                                <div key={msg.id} onClick={async () => {
+                                  if (!isFromMe && !msg.is_read) {
+                                    try {
+                                      await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PUT" });
+                                      const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
+                                      if (loadResponse.ok) {
+                                        const data = await loadResponse.json();
+                                        setMessages(data.messages || []);
+                                      }
+                                    } catch (e) {
+                                      console.error("Error marking as read:", e);
+                                    }
+                                  }
+                                }} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-emerald-50 dark:bg-emerald-950/30'} ${!isFromMe && !msg.is_read ? 'cursor-pointer opacity-70 hover:opacity-100' : ''}`}>
                                   <div className="flex justify-between items-start mb-1">
                                     <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-emerald-700 dark:text-emerald-400'}`}>
                                       {isFromMe ? 'You' : mentorData.mentor?.full_name || 'Mentor'}

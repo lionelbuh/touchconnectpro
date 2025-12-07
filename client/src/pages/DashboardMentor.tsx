@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Users, MessageSquare, Calendar, Settings, ChevronRight, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink } from "lucide-react";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -812,7 +812,20 @@ export default function DashboardMentor() {
                         {adminMsgs.map((msg: any) => {
                           const isFromMe = msg.from_email === mentorProfile.email;
                           return (
-                            <div key={msg.id} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-cyan-50 dark:bg-cyan-950/30'}`}>
+                            <div key={msg.id} onClick={async () => {
+                              if (!isFromMe && !msg.is_read) {
+                                try {
+                                  await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PUT" });
+                                  const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
+                                  if (loadResponse.ok) {
+                                    const data = await loadResponse.json();
+                                    setAdminMessages(data.messages || []);
+                                  }
+                                } catch (e) {
+                                  console.error("Error marking as read:", e);
+                                }
+                              }
+                            }} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-cyan-50 dark:bg-cyan-950/30'} ${!isFromMe && !msg.is_read ? 'cursor-pointer opacity-70 hover:opacity-100' : ''}`}>
                               <div className="flex justify-between items-start mb-1">
                                 <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-cyan-700 dark:text-cyan-400'}`}>
                                   {isFromMe ? 'You' : 'Admin'}
@@ -880,7 +893,20 @@ export default function DashboardMentor() {
                             {entMsgs.map((msg: any) => {
                               const isFromMe = msg.from_email === mentorProfile.email;
                               return (
-                                <div key={msg.id} className={`p-2 rounded-lg text-sm ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-emerald-50 dark:bg-emerald-950/30'}`}>
+                                <div key={msg.id} onClick={async () => {
+                                  if (!isFromMe && !msg.is_read) {
+                                    try {
+                                      await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PUT" });
+                                      const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
+                                      if (loadResponse.ok) {
+                                        const data = await loadResponse.json();
+                                        setAdminMessages(data.messages || []);
+                                      }
+                                    } catch (e) {
+                                      console.error("Error marking as read:", e);
+                                    }
+                                  }
+                                }} className={`p-2 rounded-lg text-sm ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-emerald-50 dark:bg-emerald-950/30'} ${!isFromMe && !msg.is_read ? 'cursor-pointer opacity-70 hover:opacity-100' : ''}`}>
                                   <div className="flex justify-between items-start mb-1">
                                     <span className={`text-xs font-semibold ${isFromMe ? 'text-slate-600 dark:text-slate-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
                                       {isFromMe ? 'You' : ent.name}
