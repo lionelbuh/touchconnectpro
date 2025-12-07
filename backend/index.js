@@ -1389,6 +1389,7 @@ app.get("/api/mentor-assignments", async (req, res) => {
 app.post("/api/mentor-assignments", async (req, res) => {
   try {
     const { entrepreneurId, mentorId, portfolioNumber, meetingLink } = req.body;
+    console.log("[POST /api/mentor-assignments] Request received:", { entrepreneurId, mentorId, portfolioNumber });
 
     if (!entrepreneurId || !mentorId || !portfolioNumber) {
       return res.status(400).json({ error: "Missing required fields (entrepreneurId, mentorId, portfolioNumber)" });
@@ -1421,6 +1422,7 @@ app.post("/api/mentor-assignments", async (req, res) => {
     }
 
     // Create new assignment
+    console.log("[POST /api/mentor-assignments] Creating assignment with mentor_id:", mentorId);
     const { data, error } = await supabase
       .from("mentor_assignments")
       .insert({
@@ -1431,6 +1433,8 @@ app.post("/api/mentor-assignments", async (req, res) => {
         status: "active"
       })
       .select();
+
+    console.log("[POST /api/mentor-assignments] Assignment created:", data?.[0]?.id, "Error:", error?.message);
 
     if (error) {
       return res.status(400).json({ error: error.message });
@@ -1527,6 +1531,44 @@ app.get("/api/mentor-assignments/entrepreneur/:entrepreneurId", async (req, res)
   }
 });
 
+// DEBUG: Check what's in the database for a mentor
+app.get("/api/debug/mentor-assignments/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const decodedEmail = decodeURIComponent(email);
+    
+    // Get mentor from mentor_applications
+    const { data: mentor } = await supabase
+      .from("mentor_applications")
+      .select("id, email, full_name")
+      .eq("email", decodedEmail)
+      .single();
+    
+    // Get all assignments with that mentor_id
+    const { data: assignments } = await supabase
+      .from("mentor_assignments")
+      .select("*")
+      .eq("mentor_id", mentor?.id);
+    
+    // Also show ALL assignments to see what mentor_ids exist
+    const { data: allAssignments } = await supabase
+      .from("mentor_assignments")
+      .select("mentor_id")
+      .limit(10);
+    
+    return res.json({
+      mentorEmail: decodedEmail,
+      mentorId: mentor?.id,
+      mentorFromDb: mentor,
+      assignmentsForThisMentor: assignments?.length || 0,
+      assignmentDetails: assignments,
+      allAssignmentMentorIds: allAssignments?.map(a => a.mentor_id)
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // Get mentor's assigned entrepreneurs by email (portfolio)
 app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
   try {
@@ -1537,17 +1579,19 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
     // First, find the mentor by email
     const { data: mentorData, error: mentorError } = await supabase
       .from("mentor_applications")
-      .select("id")
+      .select("id, email, full_name, fullName")
       .eq("email", decodedEmail)
       .single();
 
+    console.log("[GET /api/mentor-assignments/mentor-email/:email] Mentor lookup result:", mentorData);
+
     if (mentorError || !mentorData) {
-      console.error("[GET /api/mentor-assignments/mentor-email/:email] Mentor not found with email:", decodedEmail);
+      console.error("[GET /api/mentor-assignments/mentor-email/:email] Mentor not found with email:", decodedEmail, "Error:", mentorError?.message);
       return res.json({ entrepreneurs: [] });
     }
 
     const mentorId = mentorData.id;
-    console.log("[GET /api/mentor-assignments/mentor-email/:email] Found mentor ID:", mentorId);
+    console.log("[GET /api/mentor-assignments/mentor-email/:email] Found mentor ID:", mentorId, "Name:", mentorData.full_name || mentorData.fullName);
 
     // Now fetch assignments for this mentor
     const { data: assignments, error: assignmentError } = await supabase
