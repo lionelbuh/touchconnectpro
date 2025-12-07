@@ -1035,9 +1035,23 @@ export default function DashboardEntrepreneur() {
 
                 {/* Admin Section */}
                 <Card className="mb-6 border-cyan-200 dark:border-cyan-900/30">
-                  <CardHeader className="bg-cyan-50/50 dark:bg-cyan-950/20 cursor-pointer" onClick={() => {
+                  <CardHeader className="bg-cyan-50/50 dark:bg-cyan-950/20 cursor-pointer" onClick={async () => {
                     const el = document.getElementById('admin-messages-section');
                     if (el) el.classList.toggle('hidden');
+                    // Mark all admin messages as read
+                    const unreadAdminMsgs = adminMsgs.filter((m: any) => m.to_email === userEmail && !m.is_read);
+                    if (unreadAdminMsgs.length > 0) {
+                      try {
+                        await Promise.all(unreadAdminMsgs.map((m: any) => 
+                          fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PUT" })
+                        ));
+                        const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
+                        if (loadResponse.ok) {
+                          const data = await loadResponse.json();
+                          setMessages(data.messages || []);
+                        }
+                      } catch (e) { console.error("Error marking as read:", e); }
+                    }
                   }}>
                     <CardTitle className="text-lg flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -1139,9 +1153,23 @@ export default function DashboardEntrepreneur() {
                 {/* Mentor Section (if assigned) */}
                 {hasActiveMentor && mentorData && mentorData.mentor && (
                   <Card className="mb-6 border-emerald-200 dark:border-emerald-900/30">
-                    <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/20 cursor-pointer" onClick={() => {
+                    <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/20 cursor-pointer" onClick={async () => {
                       const el = document.getElementById('mentor-messages-section');
                       if (el) el.classList.toggle('hidden');
+                      // Mark all mentor messages as read
+                      const unreadMentorMsgs = mentorMsgs.filter((m: any) => m.to_email === userEmail && !m.is_read);
+                      if (unreadMentorMsgs.length > 0) {
+                        try {
+                          await Promise.all(unreadMentorMsgs.map((m: any) => 
+                            fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PUT" })
+                          ));
+                          const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
+                          if (loadResponse.ok) {
+                            const data = await loadResponse.json();
+                            setMessages(data.messages || []);
+                          }
+                        } catch (e) { console.error("Error marking as read:", e); }
+                      }
                     }}>
                       <CardTitle className="text-lg flex items-center justify-between">
                         <div className="flex items-center gap-2">
