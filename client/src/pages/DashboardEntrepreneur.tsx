@@ -630,9 +630,15 @@ export default function DashboardEntrepreneur() {
   if (submitted) {
     const hasActiveMentor = mentorData && mentorData.status === "active";
     const entrepreneurStatus = entrepreneurData?.status || "pending";
-    const statusDisplay = entrepreneurStatus === "approved" ? (hasActiveMentor ? "Active Member" : "Approved - Awaiting Mentor") : "On Waiting List";
-    const statusColor = entrepreneurStatus === "approved" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400";
-    const avatarColor = entrepreneurStatus === "approved" ? "bg-emerald-500" : "bg-amber-500";
+    const statusDisplay = isAccountDisabled 
+      ? "Disabled" 
+      : (entrepreneurStatus === "approved" ? (hasActiveMentor ? "Active Member" : "Approved - Awaiting Mentor") : "On Waiting List");
+    const statusColor = isAccountDisabled 
+      ? "text-red-600 dark:text-red-400" 
+      : (entrepreneurStatus === "approved" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400");
+    const avatarColor = isAccountDisabled 
+      ? "bg-red-500" 
+      : (entrepreneurStatus === "approved" ? "bg-emerald-500" : "bg-amber-500");
 
     return (
       <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
@@ -745,13 +751,17 @@ export default function DashboardEntrepreneur() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <Card className="border-l-4 border-l-cyan-500 shadow-sm">
+                  <Card className={`border-l-4 ${isAccountDisabled ? "border-l-red-500" : "border-l-cyan-500"} shadow-sm`}>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Current Stage</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete"}</div>
-                      <p className="text-xs text-muted-foreground mt-1">{entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval"}</p>
+                      <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : ""}`}>
+                        {isAccountDisabled ? "Disabled Member" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {isAccountDisabled ? "Contact admin to reactivate" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
+                      </p>
                     </CardContent>
                   </Card>
                   
@@ -991,7 +1001,15 @@ export default function DashboardEntrepreneur() {
                 <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Available Coaches</h1>
                 <p className="text-muted-foreground mb-8">Browse our approved coaches who can help accelerate your startup journey with specialized expertise.</p>
 
-                {approvedCoaches.length > 0 ? (
+                {isAccountDisabled ? (
+                  <Card className="border-red-300 bg-red-50 dark:bg-red-950/20 dark:border-red-800">
+                    <CardContent className="pt-6 pb-6 text-center">
+                      <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-2">Access Restricted</h3>
+                      <p className="text-red-700 dark:text-red-400">Your account is currently disabled. Please contact the Admin team via the Messages tab to reactivate your membership and access the coaches list.</p>
+                    </CardContent>
+                  </Card>
+                ) : approvedCoaches.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {approvedCoaches.map((coach) => (
                       <Card key={coach.id} className="border-l-4 border-l-purple-500">
