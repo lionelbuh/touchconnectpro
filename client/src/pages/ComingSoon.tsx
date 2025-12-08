@@ -1,22 +1,45 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Rocket, Lightbulb, Mail, Bell } from "lucide-react";
+import { Rocket, Lightbulb, Mail, Bell, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function ComingSoon() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
+    if (!email) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/early-access", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit");
+      }
+
       setSubmitted(true);
       setEmail("");
-      setTimeout(() => setSubmitted(false), 3000);
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -66,15 +89,29 @@ export default function ComingSoon() {
               />
               <Button
                 type="submit"
-                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold px-6 h-auto py-3 rounded-lg whitespace-nowrap"
+                disabled={loading}
+                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold px-6 h-auto py-3 rounded-lg whitespace-nowrap disabled:opacity-50"
+                data-testid="button-notify-me"
               >
-                Notify Me
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  "Notify Me"
+                )}
               </Button>
             </div>
             {submitted && (
-              <div className="text-green-400 font-medium flex items-center gap-2">
+              <div className="text-green-400 font-medium flex items-center gap-2" data-testid="text-success-message">
                 <Bell className="h-4 w-4" />
                 Thanks! We'll be in touch soon.
+              </div>
+            )}
+            {error && (
+              <div className="text-red-400 font-medium" data-testid="text-error-message">
+                {error}
               </div>
             )}
           </form>

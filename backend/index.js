@@ -1998,10 +1998,98 @@ app.patch("/api/messages/:id/read", async (req, res) => {
   }
 });
 
+// Early Access Signup - sends notification to hello@touchconnectpro.com
+app.post("/api/early-access", async (req, res) => {
+  console.log("[POST /api/early-access] Called");
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    console.log("[EARLY ACCESS] New signup request from:", email);
+
+    // Store in Supabase
+    try {
+      await supabase
+        .from("early_access_signups")
+        .insert({ email, created_at: new Date().toISOString() });
+      console.log("[EARLY ACCESS] Saved to database");
+    } catch (dbError) {
+      console.log("[EARLY ACCESS] Database save skipped:", dbError.message);
+    }
+
+    // Send notification email to admin
+    const resendData = await getResendClient();
+    
+    if (resendData) {
+      const { client: resend, fromEmail } = resendData;
+      
+      try {
+        await resend.emails.send({
+          from: fromEmail,
+          to: "hello@touchconnectpro.com",
+          subject: "New Early Access Signup - TouchConnectPro",
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                .email-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #06b6d4; margin: 20px 0; text-align: center; }
+                .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>New Early Access Request!</h1>
+                </div>
+                <div class="content">
+                  <p>Someone just signed up for early access to TouchConnectPro.</p>
+                  
+                  <div class="email-box">
+                    <strong>Email Address:</strong><br>
+                    <span style="font-size: 18px; color: #06b6d4;">${email}</span>
+                  </div>
+                  
+                  <p>They're interested in being notified when the AI tools are ready.</p>
+                  
+                  <p style="color: #64748b; font-size: 14px;">
+                    Received: ${new Date().toLocaleString()}
+                  </p>
+                </div>
+                <div class="footer">
+                  <p>&copy; ${new Date().getFullYear()} TouchConnectPro</p>
+                </div>
+              </div>
+            </body>
+            </html>
+          `
+        });
+        console.log("[EARLY ACCESS] Notification email sent to hello@touchconnectpro.com");
+      } catch (emailError) {
+        console.error("[EARLY ACCESS] Email send failed:", emailError.message);
+      }
+    } else {
+      console.log("[EARLY ACCESS] Resend not configured, skipping notification email");
+    }
+
+    return res.json({ success: true, message: "Early access signup received" });
+  } catch (error) {
+    console.error("[EARLY ACCESS] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/", (req, res) => {
   return res.json({ 
     message: "TouchConnectPro Backend API",
-    endpoints: ["/api/submit", "/api/ideas", "/api/mentors", "/api/coaches", "/api/investors", "/api/test", "/api/password-token/:token", "/api/set-password", "/api/coaches/approved", "/api/entrepreneur/:email", "/api/mentor-notes", "/api/messages", "/api/mentor-assignments"]
+    endpoints: ["/api/submit", "/api/ideas", "/api/mentors", "/api/coaches", "/api/investors", "/api/test", "/api/password-token/:token", "/api/set-password", "/api/coaches/approved", "/api/entrepreneur/:email", "/api/mentor-notes", "/api/messages", "/api/mentor-assignments", "/api/early-access"]
   });
 });
 

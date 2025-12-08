@@ -2,8 +2,76 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { createClient } from "@supabase/supabase-js";
+import { Resend } from "resend";
 
 let supabase: ReturnType<typeof createClient> | null = null;
+let resendClient: Resend | null = null;
+
+async function getResendClient(): Promise<{ client: Resend; fromEmail: string } | null> {
+  try {
+    if (resendClient) {
+      return {
+        client: resendClient,
+        fromEmail: process.env.RESEND_FROM_EMAIL || "hello@touchconnectpro.com"
+      };
+    }
+
+    // First try direct RESEND_API_KEY (for production deployments like Render)
+    if (process.env.RESEND_API_KEY) {
+      console.log("[RESEND] Using RESEND_API_KEY environment variable");
+      resendClient = new Resend(process.env.RESEND_API_KEY);
+      return {
+        client: resendClient,
+        fromEmail: process.env.RESEND_FROM_EMAIL || "hello@touchconnectpro.com"
+      };
+    }
+
+    // Fallback to Replit connectors (for development on Replit)
+    const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
+    const xReplitToken = process.env.REPL_IDENTITY 
+      ? 'repl ' + process.env.REPL_IDENTITY 
+      : process.env.WEB_REPL_RENEWAL 
+      ? 'depl ' + process.env.WEB_REPL_RENEWAL 
+      : null;
+
+    if (!xReplitToken || !hostname) {
+      console.log("[RESEND] No RESEND_API_KEY and no Replit connector available");
+      return null;
+    }
+
+    const response = await fetch(
+      'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=resend',
+      {
+        headers: {
+          'Accept': 'application/json',
+          'X_REPLIT_TOKEN': xReplitToken
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.log("[RESEND] Failed to fetch connection settings");
+      return null;
+    }
+
+    const connections = await response.json();
+    const connectionSettings = connections?.items?.[0];
+
+    if (!connectionSettings?.settings?.api_key) {
+      console.log("[RESEND] No API key found in connection settings");
+      return null;
+    }
+
+    resendClient = new Resend(connectionSettings.settings.api_key);
+    return {
+      client: resendClient,
+      fromEmail: connectionSettings.settings.from_email || "hello@touchconnectpro.com"
+    };
+  } catch (error) {
+    console.error("[RESEND] Error getting client:", error);
+    return null;
+  }
+}
 
 function getSupabaseClient() {
   try {
@@ -1220,6 +1288,101 @@ export async function registerRoutes(
 
       return res.json({ success: true, investor: data?.[0] });
     } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Early Access Signup - sends notification to hello@touchconnectpro.com
+  app.post("/api/early-access", async (req, res) => {
+    console.log("[POST /api/early-access] Called");
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      console.log("[EARLY ACCESS] New signup request from:", email);
+
+      // Store in Supabase (create early_access_signups table if needed)
+      const client = getSupabaseClient();
+      if (client) {
+        try {
+          const { error: dbError } = await (client
+            .from("early_access_signups")
+            .insert({ email, created_at: new Date().toISOString() } as any) as any);
+          if (dbError) {
+            console.log("[EARLY ACCESS] Database save skipped:", dbError.message);
+          } else {
+            console.log("[EARLY ACCESS] Saved to database");
+          }
+        } catch (dbError: any) {
+          console.log("[EARLY ACCESS] Database save error:", dbError.message);
+        }
+      }
+
+      // Send notification email to admin
+      const resendData = await getResendClient();
+      
+      if (resendData) {
+        const { client: resend, fromEmail } = resendData;
+        
+        try {
+          await resend.emails.send({
+            from: fromEmail,
+            to: "hello@touchconnectpro.com",
+            subject: "New Early Access Signup - TouchConnectPro",
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                  .email-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #06b6d4; margin: 20px 0; text-align: center; }
+                  .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <h1>New Early Access Request!</h1>
+                  </div>
+                  <div class="content">
+                    <p>Someone just signed up for early access to TouchConnectPro.</p>
+                    
+                    <div class="email-box">
+                      <strong>Email Address:</strong><br>
+                      <span style="font-size: 18px; color: #06b6d4;">${email}</span>
+                    </div>
+                    
+                    <p>They're interested in being notified when the AI tools are ready.</p>
+                    
+                    <p style="color: #64748b; font-size: 14px;">
+                      Received: ${new Date().toLocaleString()}
+                    </p>
+                  </div>
+                  <div class="footer">
+                    <p>&copy; ${new Date().getFullYear()} TouchConnectPro</p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `
+          });
+          console.log("[EARLY ACCESS] Notification email sent to hello@touchconnectpro.com");
+        } catch (emailError: any) {
+          console.error("[EARLY ACCESS] Email send failed:", emailError.message);
+        }
+      } else {
+        console.log("[EARLY ACCESS] Resend not configured, skipping notification email");
+      }
+
+      return res.json({ success: true, message: "Early access signup received" });
+    } catch (error: any) {
+      console.error("[EARLY ACCESS] Error:", error.message);
       return res.status(500).json({ error: error.message });
     }
   });
