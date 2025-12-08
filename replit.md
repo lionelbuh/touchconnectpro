@@ -12,6 +12,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Session)
 
+**Pre-Approval Status for Entrepreneurs:**
+- ✅ Admin can "Pre-Approve" entrepreneurs who are awaiting payment confirmation
+- ✅ Pre-approved entrepreneurs appear in dedicated section with amber styling
+- ✅ "Approve (Payment Received)" button converts pre-approved to fully approved
+- ✅ Pre-approved entrepreneurs get view-only dashboard access with payment-pending messaging
+- ✅ API endpoint updated to accept "pre-approved" status alongside "approved" and "rejected"
+- ✅ Distinct status hierarchy: pending → pre-approved → approved (or pending → approved/rejected directly)
+
 **Mentor Dashboard - Full Entrepreneur Profile View:**
 - ✅ Mentors can now view complete entrepreneur profiles in portfolio tab
 - ✅ Expandable "Idea Proposal (43 Questions)" section with full ideaReview data
