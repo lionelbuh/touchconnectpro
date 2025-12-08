@@ -175,6 +175,64 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId)
       </body>
       </html>
     `;
+  } else if (status === "pre-approved") {
+    const token = await createPasswordToken(email, userType, applicationId);
+    
+    if (!token) {
+      console.error("[EMAIL] Failed to create password token for:", email);
+      return { success: false, reason: "Failed to create password token" };
+    }
+    
+    const setPasswordUrl = `${FRONTEND_URL}/set-password?token=${token}`;
+    
+    subject = `TouchConnectPro - Your Application is Pre-Approved! Complete Your Membership`;
+    htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; background: #f59e0b; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+          .highlight-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px; }
+          .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Great News, ${fullName}!</h1>
+          </div>
+          <div class="content">
+            <p>Your application to join TouchConnectPro as an <strong>entrepreneur</strong> has been <strong style="color: #f59e0b;">pre-approved</strong>!</p>
+            
+            <div class="highlight-box">
+              <p style="margin: 0;"><strong>Next Step:</strong> Complete your membership payment to unlock full access to your dashboard and connect with mentors.</p>
+            </div>
+            
+            <p>In the meantime, you can access your dashboard in <strong>view-only mode</strong> to review your application and business plan.</p>
+            
+            <p>To access your dashboard, please set up your password by clicking the button below:</p>
+            
+            <p style="text-align: center;">
+              <a href="${setPasswordUrl}" class="button">Set Up Your Password</a>
+            </p>
+            
+            <p style="font-size: 14px; color: #64748b;">This link will expire in 7 days. If you didn't apply to TouchConnectPro, please ignore this email.</p>
+            
+            <p>Once you complete your membership payment, your account will be fully activated and you'll have access to all platform features.</p>
+            
+            <p>Best regards,<br>The TouchConnectPro Team</p>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
   } else {
     subject = `TouchConnectPro - Application Update`;
     htmlContent = `
