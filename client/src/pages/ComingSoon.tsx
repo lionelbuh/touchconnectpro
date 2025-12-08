@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Rocket, Lightbulb, Mail, Bell, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "@/config";
 
 export default function ComingSoon() {
   const [email, setEmail] = useState("");
@@ -21,7 +22,7 @@ export default function ComingSoon() {
     setError("");
 
     try {
-      const response = await fetch("/api/early-access", {
+      const response = await fetch(`${API_BASE_URL}/api/early-access`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
