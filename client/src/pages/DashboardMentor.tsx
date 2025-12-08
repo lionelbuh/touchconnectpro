@@ -19,6 +19,7 @@ interface MentorProfileData {
   experience: string;
   country: string;
   state: string | null;
+  is_disabled?: boolean;
 }
 
 export default function DashboardMentor() {
@@ -32,6 +33,7 @@ export default function DashboardMentor() {
   const [profileId, setProfileId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isAccountDisabled, setIsAccountDisabled] = useState(false);
 
   const [mentorProfile, setMentorProfile] = useState({
     fullName: "",
@@ -103,6 +105,7 @@ export default function DashboardMentor() {
         if (response.ok) {
           const data: MentorProfileData = await response.json();
           setProfileId(data.id);
+          setIsAccountDisabled(data.is_disabled || false);
           setMentorProfile({
             fullName: data.full_name || "",
             email: data.email || "",
@@ -372,12 +375,14 @@ export default function DashboardMentor() {
       <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
         <div className="p-6 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-6">
-            <Avatar className="h-10 w-10 border border-slate-200 bg-cyan-500">
+            <Avatar className={`h-10 w-10 border border-slate-200 ${isAccountDisabled ? "bg-red-500" : "bg-cyan-500"}`}>
               <AvatarFallback className="text-white">SC</AvatarFallback>
             </Avatar>
             <div>
               <div className="font-bold text-sm">{mentorProfile.fullName}</div>
-              <div className="text-xs text-muted-foreground">Mentor</div>
+              <div className={`text-xs ${isAccountDisabled ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
+                {isAccountDisabled ? "Disabled" : "Mentor"}
+              </div>
             </div>
           </div>
           <nav className="space-y-1 flex-1">
@@ -446,8 +451,25 @@ export default function DashboardMentor() {
           {/* Overview Tab */}
           {activeTab === "overview" && (
             <div>
+              {isAccountDisabled && (
+                <Card className="mb-6 border-red-300 bg-red-50 dark:bg-red-950/20 dark:border-red-800">
+                  <CardContent className="pt-6 pb-6">
+                    <div className="flex items-start gap-4">
+                      <AlertCircle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h3 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-1">Account Disabled</h3>
+                        <p className="text-red-700 dark:text-red-400">Your mentor account has been disabled. Your dashboard is currently in view-only mode. Please use the Messages tab to contact the Admin team if you would like to reactivate your account.</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
               <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Dashboard</h1>
-              <p className="text-muted-foreground mb-8">Welcome back, {mentorProfile.fullName}! Manage your portfolios and mentees here.</p>
+              <p className="text-muted-foreground mb-8">
+                {isAccountDisabled 
+                  ? "Your dashboard is currently in view-only mode."
+                  : `Welcome back, ${mentorProfile.fullName}! Manage your portfolios and mentees here.`}
+              </p>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <Card className="border-l-4 border-l-cyan-500 shadow-sm">
@@ -518,7 +540,7 @@ export default function DashboardMentor() {
                   <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Portfolios</h1>
                   <p className="text-muted-foreground">Manage your mentee portfolios ({portfolios.length}/20)</p>
                 </div>
-                {portfolios.length < 20 && (
+                {portfolios.length < 20 && !isAccountDisabled && (
                   <Button className="bg-cyan-600 hover:bg-cyan-700" onClick={handleAddPortfolio} data-testid="button-add-portfolio">
                     <Plus className="mr-2 h-4 w-4" /> Add Portfolio
                   </Button>
@@ -555,17 +577,19 @@ export default function DashboardMentor() {
                                       <h4 className="font-semibold text-slate-900 dark:text-white">{member.name}</h4>
                                       <p className="text-xs text-muted-foreground">{member.email}</p>
                                     </div>
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm"
-                                      onClick={() => {
-                                        setSelectedEntrepreneur(member);
-                                        setShowEntrepreneurMessageModal(true);
-                                      }}
-                                      data-testid={`button-message-entrepreneur-${member.id}`}
-                                    >
-                                      <MessageSquare className="h-3 w-3 mr-1" /> Message
-                                    </Button>
+                                    {!isAccountDisabled && (
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => {
+                                          setSelectedEntrepreneur(member);
+                                          setShowEntrepreneurMessageModal(true);
+                                        }}
+                                        data-testid={`button-message-entrepreneur-${member.id}`}
+                                      >
+                                        <MessageSquare className="h-3 w-3 mr-1" /> Message
+                                      </Button>
+                                    )}
                                   </div>
                                   
                                   <div className="grid grid-cols-2 gap-3 text-sm">
@@ -900,19 +924,21 @@ export default function DashboardMentor() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent id={`entrepreneur-messages-${idx}`} className="space-y-3 pt-3 hidden">
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm"
-                          className="bg-emerald-600 hover:bg-emerald-700"
-                          onClick={() => {
-                            setSelectedEntrepreneur(ent);
-                            setShowEntrepreneurMessageModal(true);
-                          }}
-                          data-testid={`button-send-to-${ent.email}`}
-                        >
-                          <Send className="mr-2 h-3 w-3" /> Send Message
-                        </Button>
-                      </div>
+                      {!isAccountDisabled && (
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm"
+                            className="bg-emerald-600 hover:bg-emerald-700"
+                            onClick={() => {
+                              setSelectedEntrepreneur(ent);
+                              setShowEntrepreneurMessageModal(true);
+                            }}
+                            data-testid={`button-send-to-${ent.email}`}
+                          >
+                            <Send className="mr-2 h-3 w-3" /> Send Message
+                          </Button>
+                        </div>
+                      )}
                       
                       {entMsgs.length > 0 ? (
                         <div className="border-t pt-3 mt-2">
@@ -1001,16 +1027,22 @@ export default function DashboardMentor() {
               <div className="flex justify-between items-center mb-8">
                 <div>
                   <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Profile</h1>
-                  <p className="text-muted-foreground">Your professional profile visible to mentees and admins</p>
+                  <p className="text-muted-foreground">
+                    {isAccountDisabled 
+                      ? "Your profile is currently in view-only mode."
+                      : "Your professional profile visible to mentees and admins"}
+                  </p>
                 </div>
-                <Button 
-                  onClick={() => setIsEditingProfile(!isEditingProfile)}
-                  variant={isEditingProfile ? "destructive" : "default"}
-                  className={isEditingProfile ? "bg-red-600 hover:bg-red-700" : "bg-cyan-600 hover:bg-cyan-700"}
-                  data-testid="button-edit-profile"
-                >
-                  {isEditingProfile ? "Cancel" : "Edit Profile"}
-                </Button>
+                {!isAccountDisabled && (
+                  <Button 
+                    onClick={() => setIsEditingProfile(!isEditingProfile)}
+                    variant={isEditingProfile ? "destructive" : "default"}
+                    className={isEditingProfile ? "bg-red-600 hover:bg-red-700" : "bg-cyan-600 hover:bg-cyan-700"}
+                    data-testid="button-edit-profile"
+                  >
+                    {isEditingProfile ? "Cancel" : "Edit Profile"}
+                  </Button>
+                )}
               </div>
 
               {isEditingProfile ? (

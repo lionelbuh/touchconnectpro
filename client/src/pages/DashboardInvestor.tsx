@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, Zap, Briefcase, TrendingUp, Settings, DollarSign, Target, Save, Loader2, Building2, Link as LinkIcon, LogOut, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Zap, Briefcase, TrendingUp, Settings, DollarSign, Target, Save, Loader2, Building2, Link as LinkIcon, LogOut, MessageSquare, AlertCircle } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -19,6 +19,7 @@ interface InvestorProfile {
   investment_amount: string;
   country: string;
   state: string | null;
+  is_disabled?: boolean;
 }
 
 export default function DashboardInvestor() {
@@ -177,14 +178,16 @@ export default function DashboardInvestor() {
       <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
         <div className="p-6 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-6">
-            <Avatar className="h-10 w-10 border border-slate-200 bg-amber-500">
+            <Avatar className={`h-10 w-10 border border-slate-200 ${profile?.is_disabled ? "bg-red-500" : "bg-amber-500"}`}>
               <AvatarFallback className="text-white">
                 {profile?.full_name ? getInitials(profile.full_name) : "IN"}
               </AvatarFallback>
             </Avatar>
             <div>
               <div className="font-bold text-sm">{profile?.full_name || "Investor"}</div>
-              <div className="text-xs text-muted-foreground">{fundName || "Investment Fund"}</div>
+              <div className={`text-xs ${profile?.is_disabled ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
+                {profile?.is_disabled ? "Disabled" : (fundName || "Investment Fund")}
+              </div>
             </div>
           </div>
           <nav className="space-y-1 flex-1">
@@ -240,24 +243,41 @@ export default function DashboardInvestor() {
           {/* Overview Tab */}
           {activeTab === "overview" && (
             <>
+            {profile?.is_disabled && (
+              <Card className="mb-6 border-red-300 bg-red-50 dark:bg-red-950/20 dark:border-red-800">
+                <CardContent className="pt-6 pb-6">
+                  <div className="flex items-start gap-4">
+                    <AlertCircle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-1">Account Disabled</h3>
+                      <p className="text-red-700 dark:text-red-400">Your investor account has been disabled. Your profile is currently in view-only mode. Please use the Messages tab to contact the Admin team if you would like to reactivate your account.</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           <header className="mb-8 flex justify-between items-start">
             <div>
               <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
                 Welcome, {profile?.full_name?.split(" ")[0] || "Investor"}!
               </h1>
               <p className="text-muted-foreground mt-2">
-                Manage your investment profile and access pre-vetted startups.
+                {profile?.is_disabled
+                  ? "Your profile is currently in view-only mode."
+                  : "Manage your investment profile and access pre-vetted startups."}
               </p>
             </div>
-            <Button 
-              onClick={handleSave} 
-              disabled={saving}
-              className="bg-amber-600 hover:bg-amber-700"
-              data-testid="button-save-profile"
-            >
-              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              Save Changes
-            </Button>
+            {!profile?.is_disabled && (
+              <Button 
+                onClick={handleSave} 
+                disabled={saving}
+                className="bg-amber-600 hover:bg-amber-700"
+                data-testid="button-save-profile"
+              >
+                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                Save Changes
+              </Button>
+            )}
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -275,7 +295,8 @@ export default function DashboardInvestor() {
                   value={fundName}
                   onChange={(e) => setFundName(e.target.value)}
                   placeholder="Enter fund name..."
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20"
+                  disabled={profile?.is_disabled}
+                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
                   data-testid="input-fund-name"
                 />
               </CardContent>
@@ -293,7 +314,8 @@ export default function DashboardInvestor() {
                 <select 
                   value={investmentPreference}
                   onChange={(e) => setInvestmentPreference(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20" 
+                  disabled={profile?.is_disabled}
+                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
                   data-testid="select-investment-preference"
                 >
                   <option value="">Select investment type...</option>
@@ -316,7 +338,8 @@ export default function DashboardInvestor() {
                 <select 
                   value={investmentAmount}
                   onChange={(e) => setInvestmentAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20" 
+                  disabled={profile?.is_disabled}
+                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
                   data-testid="select-investment-amount"
                 >
                   <option value="">Select investment amount...</option>
@@ -344,7 +367,8 @@ export default function DashboardInvestor() {
                   value={linkedin}
                   onChange={(e) => setLinkedin(e.target.value)}
                   placeholder="https://linkedin.com/in/..."
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20"
+                  disabled={profile?.is_disabled}
+                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
                   data-testid="input-linkedin"
                 />
               </CardContent>
@@ -361,7 +385,8 @@ export default function DashboardInvestor() {
                   onChange={(e) => setInvestmentFocus(e.target.value)}
                   placeholder="e.g., SaaS, AI/ML, healthtech, fintech, climate tech..."
                   rows={4}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20"
+                  disabled={profile?.is_disabled}
+                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
                   data-testid="input-investment-focus"
                 />
               </CardContent>

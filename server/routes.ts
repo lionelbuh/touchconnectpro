@@ -1103,5 +1103,126 @@ export async function registerRoutes(
     }
   });
 
+  // Get coach profile by email
+  app.get("/api/coaches/profile/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { email } = req.params;
+      const decodedEmail = decodeURIComponent(email);
+      
+      const { data, error } = await (client
+        .from("coach_applications")
+        .select("*")
+        .eq("email", decodedEmail)
+        .eq("status", "approved")
+        .single() as any);
+
+      if (error || !data) {
+        return res.status(404).json({ error: "Profile not found" });
+      }
+
+      return res.json(data);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update coach profile by ID
+  app.put("/api/coaches/profile/:id", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      const { expertise, focusAreas, hourlyRate, linkedin } = req.body;
+
+      const { data, error } = await (client
+        .from("coach_applications")
+        .update({
+          expertise,
+          focus_areas: focusAreas,
+          hourly_rate: hourlyRate,
+          linkedin: linkedin || null
+        } as any)
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, coach: data?.[0] });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get investor profile by email
+  app.get("/api/investors/profile/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { email } = req.params;
+      const decodedEmail = decodeURIComponent(email);
+      
+      const { data, error } = await (client
+        .from("investor_applications")
+        .select("*")
+        .eq("email", decodedEmail)
+        .eq("status", "approved")
+        .single() as any);
+
+      if (error || !data) {
+        return res.status(404).json({ error: "Profile not found" });
+      }
+
+      return res.json(data);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update investor profile by ID
+  app.put("/api/investors/profile/:id", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      const { fundName, investmentFocus, investmentPreference, investmentAmount, linkedin } = req.body;
+
+      const { data, error } = await (client
+        .from("investor_applications")
+        .update({
+          fund_name: fundName,
+          investment_focus: investmentFocus,
+          investment_preference: investmentPreference,
+          investment_amount: investmentAmount,
+          linkedin: linkedin || null
+        } as any)
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, investor: data?.[0] });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }
