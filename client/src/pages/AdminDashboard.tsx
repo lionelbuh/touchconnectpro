@@ -649,6 +649,11 @@ export default function AdminDashboard() {
   const filterAndSort = (items: any[], nameField: string) => {
     const filtered = items.filter(item => item[nameField]?.toLowerCase().includes(searchTerm.toLowerCase()));
     const sorted = [...filtered].sort((a, b) => {
+      const aDisabled = a.is_disabled ? 1 : 0;
+      const bDisabled = b.is_disabled ? 1 : 0;
+      if (aDisabled !== bDisabled) {
+        return aDisabled - bDisabled;
+      }
       const nameA = (a[nameField] || "").toString().toLowerCase();
       const nameB = (b[nameField] || "").toString().toLowerCase();
       if (sortOrder === "asc") {
@@ -1358,6 +1363,9 @@ export default function AdminDashboard() {
                               </div>
                               <div className="flex gap-2">
                                 <Badge className="bg-emerald-600">Approved</Badge>
+                                {app.is_disabled && (
+                                  <Badge className="bg-red-600">Disabled</Badge>
+                                )}
                                 {mentorAssignments[app.id] ? (
                                   <Badge className="bg-cyan-600">
                                     {mentorAssignments[app.id].mentorName} (P{mentorAssignments[app.id].portfolioNumber})
@@ -1717,7 +1725,12 @@ export default function AdminDashboard() {
                                 <CardTitle>{app.fullName}</CardTitle>
                                 <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
-                              <Badge className="bg-blue-600">Approved</Badge>
+                              <div className="flex gap-2">
+                                <Badge className="bg-blue-600">Approved</Badge>
+                                {(app as any).is_disabled && (
+                                  <Badge className="bg-red-600">Disabled</Badge>
+                                )}
+                              </div>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
@@ -1873,7 +1886,12 @@ export default function AdminDashboard() {
                                 <CardTitle>{app.fullName}</CardTitle>
                                 <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
-                              <Badge className="bg-cyan-600">Approved</Badge>
+                              <div className="flex gap-2">
+                                <Badge className="bg-cyan-600">Approved</Badge>
+                                {(app as any).is_disabled && (
+                                  <Badge className="bg-red-600">Disabled</Badge>
+                                )}
+                              </div>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
@@ -2021,7 +2039,12 @@ export default function AdminDashboard() {
                                 <CardTitle>{app.fullName}</CardTitle>
                                 <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
-                              <Badge className="bg-amber-600">Approved</Badge>
+                              <div className="flex gap-2">
+                                <Badge className="bg-amber-600">Approved</Badge>
+                                {(app as any).is_disabled && (
+                                  <Badge className="bg-red-600">Disabled</Badge>
+                                )}
+                              </div>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
