@@ -171,17 +171,17 @@ export default function Login() {
         if (userEmail) {
           console.log("[LOGIN] Checking application tables for email:", userEmail);
           
-          // Check ideas table (entrepreneurs)
+          // Check ideas table (entrepreneurs) - include both approved and pre-approved
           const { data: entrepreneurApp } = await supabase
             .from("ideas")
             .select("status, entrepreneur_email")
             .ilike("entrepreneur_email", userEmail)
-            .eq("status", "approved")
+            .in("status", ["approved", "pre-approved"])
             .limit(1);
           
           if (entrepreneurApp && entrepreneurApp.length > 0) {
             applicationRole = "entrepreneur";
-            console.log("[LOGIN] Found approved entrepreneur application");
+            console.log("[LOGIN] Found approved/pre-approved entrepreneur application, status:", entrepreneurApp[0].status);
           }
           
           // Check mentor_applications
