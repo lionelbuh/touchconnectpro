@@ -30,6 +30,7 @@ export default function DashboardEntrepreneur() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [userEmail, setUserEmail] = useState<string>("");
   const [isAccountDisabled, setIsAccountDisabled] = useState(false);
+  const [isPreApproved, setIsPreApproved] = useState(false);
   const [businessPlanData, setBusinessPlanData] = useState<any>({
     executiveSummary: "",
     problemStatement: "",
@@ -155,6 +156,7 @@ export default function DashboardEntrepreneur() {
             
             // Check if account is disabled
             setIsAccountDisabled(data.is_disabled === true);
+            setIsPreApproved(data.status === "pre-approved");
             
             // Set form data from application
             if (data.data) {
@@ -632,13 +634,19 @@ export default function DashboardEntrepreneur() {
     const entrepreneurStatus = entrepreneurData?.status || "pending";
     const statusDisplay = isAccountDisabled 
       ? "Disabled" 
-      : (entrepreneurStatus === "approved" ? (hasActiveMentor ? "Active Member" : "Approved - Awaiting Mentor") : "On Waiting List");
+      : isPreApproved
+        ? "Pre-Approved"
+        : (entrepreneurStatus === "approved" ? (hasActiveMentor ? "Active Member" : "Approved - Awaiting Mentor") : "On Waiting List");
     const statusColor = isAccountDisabled 
       ? "text-red-600 dark:text-red-400" 
-      : (entrepreneurStatus === "approved" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400");
+      : isPreApproved
+        ? "text-amber-600 dark:text-amber-400"
+        : (entrepreneurStatus === "approved" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400");
     const avatarColor = isAccountDisabled 
       ? "bg-red-500" 
-      : (entrepreneurStatus === "approved" ? "bg-emerald-500" : "bg-amber-500");
+      : isPreApproved
+        ? "bg-amber-500"
+        : (entrepreneurStatus === "approved" ? "bg-emerald-500" : "bg-amber-500");
 
     return (
       <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
@@ -735,6 +743,20 @@ export default function DashboardEntrepreneur() {
             {/* Overview Tab */}
             {activeTab === "overview" && (
               <div>
+                {isPreApproved && (
+                  <Card className="mb-6 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+                    <CardContent className="pt-6 pb-6">
+                      <div className="flex items-start gap-4">
+                        <ClipboardList className="h-6 w-6 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-300 mb-1">Pre-Approved - Payment Required</h3>
+                          <p className="text-amber-700 dark:text-amber-400">Congratulations! Your application has been pre-approved. To activate your full membership and access all features including coaches, mentor assignment, and more, please complete your $49/month membership payment. Contact the Admin team via the Messages tab for payment instructions.</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 <div className="flex justify-between items-start mb-8">
                   <div>
                     <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Welcome, {profileData.fullName?.split(" ")[0] || "Entrepreneur"}!</h1>
@@ -751,16 +773,16 @@ export default function DashboardEntrepreneur() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <Card className={`border-l-4 ${isAccountDisabled ? "border-l-red-500" : "border-l-cyan-500"} shadow-sm`}>
+                  <Card className={`border-l-4 ${isAccountDisabled ? "border-l-red-500" : isPreApproved ? "border-l-amber-500" : "border-l-cyan-500"} shadow-sm`}>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Current Stage</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : ""}`}>
-                        {isAccountDisabled ? "Disabled Member" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
+                      <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : isPreApproved ? "text-amber-600" : ""}`}>
+                        {isAccountDisabled ? "Disabled Member" : isPreApproved ? "Pre-Approved" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {isAccountDisabled ? "Contact admin to reactivate" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
+                        {isAccountDisabled ? "Contact admin to reactivate" : isPreApproved ? "Awaiting membership payment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
                       </p>
                     </CardContent>
                   </Card>
@@ -1007,6 +1029,14 @@ export default function DashboardEntrepreneur() {
                       <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-2">Access Restricted</h3>
                       <p className="text-red-700 dark:text-red-400">Your account is currently disabled. Please contact the Admin team via the Messages tab to reactivate your membership and access the coaches list.</p>
+                    </CardContent>
+                  </Card>
+                ) : isPreApproved ? (
+                  <Card className="border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+                    <CardContent className="pt-6 pb-6 text-center">
+                      <ClipboardList className="h-12 w-12 text-amber-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-300 mb-2">Payment Required</h3>
+                      <p className="text-amber-700 dark:text-amber-400">You have been pre-approved! To access the coaches list and other premium features, please complete your membership payment. Contact the Admin team via the Messages tab for payment instructions.</p>
                     </CardContent>
                   </Card>
                 ) : approvedCoaches.length > 0 ? (

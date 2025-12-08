@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert } from "lucide-react";
+import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { API_BASE_URL } from "@/config";
@@ -66,7 +66,7 @@ interface EntrepreneurApplication {
   ideaName: string;
   problem: string;
   solution: string;
-  status: "pending" | "approved" | "rejected" | "submitted";
+  status: "pending" | "approved" | "rejected" | "submitted" | "pre-approved";
   submittedAt: string;
   id: string;
   ideaReview?: any;
@@ -583,6 +583,28 @@ export default function AdminDashboard() {
     }
   };
 
+  const handlePreApproveEntrepreneur = async (index: number) => {
+    const entrepreneur = entrepreneurApplications[index];
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/ideas/${entrepreneur.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "pre-approved" })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const updated = [...entrepreneurApplications];
+        updated[index].status = "pre-approved" as any;
+        setEntrepreneurApplications(updated);
+        toast.success(`${entrepreneur.fullName} has been pre-approved. Awaiting payment confirmation.`);
+        console.log("Entrepreneur pre-approved:", data);
+      }
+    } catch (err) {
+      console.error("Error pre-approving entrepreneur:", err);
+      toast.error("Failed to pre-approve entrepreneur");
+    }
+  };
+
   const handleAssignPortfolio = async () => {
     if (portfolioAssignment && selectedMember && selectedMentor) {
       try {
@@ -638,6 +660,7 @@ export default function AdminDashboard() {
   };
 
   const pendingEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "pending" || app.status === "submitted");
+  const preApprovedEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "pre-approved");
   const pendingMentorApplications = mentorApplications.filter(app => app.status === "pending");
   const pendingCoachApplications = coachApplications.filter(app => app.status === "pending");
   const pendingInvestorApplications = investorApplications.filter(app => app.status === "pending");
@@ -891,6 +914,14 @@ export default function AdminDashboard() {
                             </Button>
                             <Button 
                               type="button"
+                              className="flex-1 bg-amber-500 hover:bg-amber-600 cursor-pointer"
+                              onClick={() => handlePreApproveEntrepreneur(actualIdx)}
+                              data-testid={`button-admin-preapprove-entrepreneur-${actualIdx}`}
+                            >
+                              <ClipboardCheck className="mr-2 h-4 w-4" /> Pre-Approve
+                            </Button>
+                            <Button 
+                              type="button"
                               variant="outline"
                               className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
                               onClick={() => handleRejectEntrepreneur(actualIdx)}
@@ -903,6 +934,82 @@ export default function AdminDashboard() {
                       </Card>
                     );
                   })}
+                </div>
+              )}
+
+              {/* Pre-Approved Entrepreneurs - Awaiting Payment */}
+              {preApprovedEntrepreneurApplications.length > 0 && (
+                <div className="mt-8">
+                  <h2 className="text-2xl font-display font-bold text-amber-700 dark:text-amber-400 mb-4">
+                    Pre-Approved Entrepreneurs ({preApprovedEntrepreneurApplications.length})
+                  </h2>
+                  <p className="text-muted-foreground mb-4">These entrepreneurs have been pre-approved and are awaiting payment confirmation.</p>
+                  <div className="space-y-4">
+                    {preApprovedEntrepreneurApplications.map((app, idx) => {
+                      const actualIdx = entrepreneurApplications.findIndex(a => a === app);
+                      return (
+                        <Card key={actualIdx} className="border-l-4 border-l-amber-500">
+                          <CardHeader>
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <CardTitle>{app.fullName}</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                              </div>
+                              <Badge className="bg-amber-500">Pre-Approved</Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Idea Name</p>
+                                <p className="text-slate-900 dark:text-white">{app.ideaName || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                                <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Pre-Approved On</p>
+                                <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+                              <Button 
+                                type="button"
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
+                                onClick={() => handleApproveEntrepreneur(actualIdx)}
+                                data-testid={`button-admin-approve-preapproved-${actualIdx}`}
+                              >
+                                <Check className="mr-2 h-4 w-4" /> Approve (Payment Received)
+                              </Button>
+                              <Button 
+                                type="button"
+                                variant="outline"
+                                className="flex-1"
+                                onClick={() => {
+                                  setSelectedMember({
+                                    id: app.id,
+                                    name: app.fullName,
+                                    email: app.email,
+                                    type: "entrepreneur" as const,
+                                    status: "active" as const
+                                  });
+                                  setShowMessageModal(true);
+                                }}
+                                data-testid={`button-message-preapproved-${actualIdx}`}
+                              >
+                                <MessageSquare className="mr-2 h-4 w-4" /> Message
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
