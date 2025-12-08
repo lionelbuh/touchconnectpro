@@ -1451,17 +1451,17 @@ export default function AdminDashboard() {
               {/* Entrepreneurs - Full Details */}
               {activeMembersCategoryTab === "entrepreneurs" && (
                 <div>
-                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Approved Entrepreneurs</h2>
-                  {entrepreneurApplications.filter(app => app.status === "approved").length === 0 ? (
+                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Approved & Pre-Approved Entrepreneurs</h2>
+                  {entrepreneurApplications.filter(app => app.status === "approved" || app.status === "pre-approved").length === 0 ? (
                     <Card>
                       <CardContent className="pt-12 pb-12 text-center">
-                        <p className="text-muted-foreground">No approved entrepreneur applications</p>
+                        <p className="text-muted-foreground">No approved or pre-approved entrepreneur applications</p>
                       </CardContent>
                     </Card>
                   ) : (
                     <div className="space-y-6">
-                      {filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").map((app, idx) => (
-                        <Card key={idx} className="border-l-4 border-l-emerald-500">
+                      {filterAndSort(entrepreneurApplications.filter(app => app.status === "approved" || app.status === "pre-approved"), "fullName").map((app, idx) => (
+                        <Card key={idx} className={`border-l-4 ${app.status === "pre-approved" ? "border-l-amber-500" : "border-l-emerald-500"}`}>
                           <CardHeader>
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
@@ -1469,7 +1469,11 @@ export default function AdminDashboard() {
                                 <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
                               <div className="flex gap-2">
-                                <Badge className="bg-emerald-600">Approved</Badge>
+                                {app.status === "pre-approved" ? (
+                                  <Badge className="bg-amber-500">Pre-Approved</Badge>
+                                ) : (
+                                  <Badge className="bg-emerald-600">Approved</Badge>
+                                )}
                                 {app.is_disabled && (
                                   <Badge className="bg-red-600">Disabled</Badge>
                                 )}
@@ -2293,26 +2297,30 @@ export default function AdminDashboard() {
                   {/* Entrepreneurs - show only when selected */}
                   {activeMembersCategoryTab === "entrepreneurs" && (
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Approved Entrepreneurs</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Approved & Pre-Approved Entrepreneurs</h4>
                     <div className="space-y-3">
-                      {filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").length === 0 ? (
+                      {filterAndSort(entrepreneurApplications.filter(app => app.status === "approved" || app.status === "pre-approved"), "fullName").length === 0 ? (
                         <Card>
                           <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
-                            No approved entrepreneurs to message
+                            No approved or pre-approved entrepreneurs to message
                           </CardContent>
                         </Card>
                       ) : (
-                        filterAndSort(entrepreneurApplications.filter(app => app.status === "approved"), "fullName").map((entrepreneur, idx) => {
+                        filterAndSort(entrepreneurApplications.filter(app => app.status === "approved" || app.status === "pre-approved"), "fullName").map((entrepreneur, idx) => {
                           const unreadReplies = messageHistory.filter((m: any) => m.from_email === entrepreneur.email && m.to_email === "admin@touchconnectpro.com" && !m.is_read).length;
                           const hasUnreadReplies = unreadReplies > 0;
+                          const isPreApproved = entrepreneur.status === "pre-approved";
                           return (
-                          <Card key={`msg-${entrepreneur.id}`} className={hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""}>
+                          <Card key={`msg-${entrepreneur.id}`} className={`${hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""} ${isPreApproved && !hasUnreadReplies ? "border-l-4 border-l-amber-400" : ""}`}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-3">
                                   <div>
                                     <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                                       {entrepreneur.fullName}
+                                      {isPreApproved && (
+                                        <Badge className="bg-amber-500 text-xs">Pre-Approved</Badge>
+                                      )}
                                       {hasUnreadReplies && (
                                         <span className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 text-xs px-2 py-0.5 rounded-full animate-pulse">
                                           {unreadReplies} New
