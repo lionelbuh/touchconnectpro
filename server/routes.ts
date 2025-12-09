@@ -1321,17 +1321,18 @@ export async function registerRoutes(
         }
       }
 
-      // Send notification email to admin
+      // Send confirmation email to the user who signed up
       const resendData = await getResendClient();
       
       if (resendData) {
         const { client: resend, fromEmail } = resendData;
         
         try {
+          // Send confirmation to the person who signed up
           await resend.emails.send({
             from: fromEmail,
-            to: "hello@touchconnectpro.com",
-            subject: "New Early Access Signup - TouchConnectPro",
+            to: email,
+            subject: "You're on the TouchConnectPro Early Access List!",
             html: `
               <!DOCTYPE html>
               <html>
@@ -1341,43 +1342,64 @@ export async function registerRoutes(
                   .container { max-width: 600px; margin: 0 auto; padding: 20px; }
                   .header { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
                   .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                  .email-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #06b6d4; margin: 20px 0; text-align: center; }
+                  .highlight-box { background: linear-gradient(135deg, #06b6d4/10, #3b82f6/10); padding: 20px; border-radius: 8px; border-left: 4px solid #06b6d4; margin: 20px 0; }
                   .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
                 </style>
               </head>
               <body>
                 <div class="container">
                   <div class="header">
-                    <h1>New Early Access Request!</h1>
+                    <h1>You're In!</h1>
                   </div>
                   <div class="content">
-                    <p>Someone just signed up for early access to TouchConnectPro.</p>
+                    <p>Thank you for joining the TouchConnectPro early access list!</p>
                     
-                    <div class="email-box">
-                      <strong>Email Address:</strong><br>
-                      <span style="font-size: 18px; color: #06b6d4;">${email}</span>
+                    <div class="highlight-box">
+                      <p style="margin: 0;"><strong>What happens next?</strong></p>
+                      <p style="margin: 10px 0 0 0;">We're putting the finishing touches on our AI-powered platform that connects entrepreneurs with mentors, coaches, and investors. You'll be among the first to know when we launch!</p>
                     </div>
                     
-                    <p>They're interested in being notified when the AI tools are ready.</p>
+                    <p>In the meantime, here's what TouchConnectPro will help you do:</p>
+                    <ul>
+                      <li>Refine your business idea with AI guidance</li>
+                      <li>Generate a draft business plan</li>
+                      <li>Connect with experienced mentors</li>
+                      <li>Get investor-ready</li>
+                    </ul>
                     
-                    <p style="color: #64748b; font-size: 14px;">
-                      Received: ${new Date().toLocaleString()}
-                    </p>
+                    <p>We're excited to have you on this journey!</p>
+                    
+                    <p>Best regards,<br><strong>The TouchConnectPro Team</strong></p>
                   </div>
                   <div class="footer">
-                    <p>&copy; ${new Date().getFullYear()} TouchConnectPro</p>
+                    <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
                   </div>
                 </div>
               </body>
               </html>
             `
           });
-          console.log("[EARLY ACCESS] Notification email sent to hello@touchconnectpro.com");
+          console.log("[EARLY ACCESS] Confirmation email sent to:", email);
+
+          // Also send internal notification to admin
+          await resend.emails.send({
+            from: fromEmail,
+            to: "hello@touchconnectpro.com",
+            subject: "New Early Access Signup - TouchConnectPro",
+            html: `
+              <div style="font-family: Arial, sans-serif; padding: 20px;">
+                <h2 style="color: #06b6d4;">New Early Access Signup</h2>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+              </div>
+            `
+          });
+          console.log("[EARLY ACCESS] Admin notification sent to hello@touchconnectpro.com");
         } catch (emailError: any) {
           console.error("[EARLY ACCESS] Email send failed:", emailError.message);
         }
       } else {
-        console.log("[EARLY ACCESS] Resend not configured, skipping notification email");
+        console.log("[EARLY ACCESS] Resend not configured, skipping emails");
       }
 
       return res.json({ success: true, message: "Early access signup received" });
