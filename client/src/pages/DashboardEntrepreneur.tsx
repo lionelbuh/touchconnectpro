@@ -54,6 +54,8 @@ export default function DashboardEntrepreneur() {
   });
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingPlan, setIsEditingPlan] = useState(false);
+  const [showAllOverviewNotes, setShowAllOverviewNotes] = useState(false);
+  const [showAllOverviewMessages, setShowAllOverviewMessages] = useState(false);
   
   const [formData, setFormData] = useState({
     // Questions 1-4: Problem & Idea
@@ -808,30 +810,52 @@ export default function DashboardEntrepreneur() {
                   </Card>
                 </div>
 
-                {mentorNotes && mentorNotes.length > 0 && (
-                  <Card className="mb-6 border-l-4 border-l-emerald-500">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <BookOpen className="h-5 w-5 text-emerald-600" />
-                        Your Mentor's Guidance ({mentorNotes.length})
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {mentorNotes.map((note: any, idx: number) => {
-                          const noteText = typeof note === 'string' ? note : note.text;
-                          const noteTime = typeof note === 'string' ? null : note.timestamp;
-                          return (
-                            <div key={idx} className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
-                              <p className="text-emerald-900 dark:text-emerald-100 text-sm">{noteText}</p>
-                              {noteTime && <p className="text-emerald-700 dark:text-emerald-300 text-xs mt-2">{new Date(noteTime).toLocaleDateString()}</p>}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                {mentorNotes && mentorNotes.length > 0 && (() => {
+                  // Sort notes newest first
+                  const sortedNotes = [...mentorNotes].sort((a: any, b: any) => {
+                    const timeA = typeof a === 'string' ? 0 : new Date(a.timestamp || 0).getTime();
+                    const timeB = typeof b === 'string' ? 0 : new Date(b.timestamp || 0).getTime();
+                    return timeB - timeA;
+                  });
+                  const displayNotes = showAllOverviewNotes ? sortedNotes : sortedNotes.slice(0, 2);
+                  
+                  return (
+                    <Card className="mb-6 border-l-4 border-l-emerald-500">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <BookOpen className="h-5 w-5 text-emerald-600" />
+                          Your Mentor's Guidance ({mentorNotes.length})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {displayNotes.map((note: any, idx: number) => {
+                            const noteText = typeof note === 'string' ? note : note.text;
+                            const noteTime = typeof note === 'string' ? null : note.timestamp;
+                            return (
+                              <div key={idx} className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
+                                <p className="text-emerald-900 dark:text-emerald-100 text-sm">{noteText}</p>
+                                {noteTime && <p className="text-emerald-700 dark:text-emerald-300 text-xs mt-2">{new Date(noteTime).toLocaleDateString()}</p>}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {mentorNotes.length > 2 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full mt-3 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                            onClick={() => setShowAllOverviewNotes(!showAllOverviewNotes)}
+                            data-testid="button-toggle-overview-notes"
+                          >
+                            <ChevronDown className={`mr-2 h-4 w-4 transition-transform ${showAllOverviewNotes ? 'rotate-180' : ''}`} />
+                            {showAllOverviewNotes ? 'Show Less' : `Show ${mentorNotes.length - 2} More`}
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })()}
 
                 {/* My Mentor Section */}
                 <Card className="mb-6 border-l-4 border-l-cyan-500">
@@ -978,24 +1002,43 @@ export default function DashboardEntrepreneur() {
                         
                         <div className="border-t pt-4">
                           <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
-                          {overviewMentorMsgs.length > 0 ? (
-                            <div className="space-y-3 max-h-64 overflow-y-auto">
-                              {[...overviewMentorMsgs].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => {
-                                const isFromMe = msg.from_email === userEmail;
-                                return (
-                                  <div key={msg.id} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-emerald-50 dark:bg-emerald-950/30'}`}>
-                                    <div className="flex justify-between items-start mb-1">
-                                      <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-emerald-700 dark:text-emerald-400'}`}>
-                                        {isFromMe ? 'You' : mentorData.mentor?.full_name || 'Mentor'}
-                                      </span>
-                                      <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
-                                    </div>
-                                    <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ) : (
+                          {overviewMentorMsgs.length > 0 ? (() => {
+                            const sortedMsgs = [...overviewMentorMsgs].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                            const displayMsgs = showAllOverviewMessages ? sortedMsgs : sortedMsgs.slice(0, 2);
+                            
+                            return (
+                              <>
+                                <div className="space-y-3">
+                                  {displayMsgs.map((msg: any) => {
+                                    const isFromMe = msg.from_email === userEmail;
+                                    return (
+                                      <div key={msg.id} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-emerald-50 dark:bg-emerald-950/30'}`}>
+                                        <div className="flex justify-between items-start mb-1">
+                                          <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-emerald-700 dark:text-emerald-400'}`}>
+                                            {isFromMe ? 'You' : mentorData.mentor?.full_name || 'Mentor'}
+                                          </span>
+                                          <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                                        </div>
+                                        <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                {overviewMentorMsgs.length > 2 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full mt-3 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                    onClick={() => setShowAllOverviewMessages(!showAllOverviewMessages)}
+                                    data-testid="button-toggle-overview-messages"
+                                  >
+                                    <ChevronDown className={`mr-2 h-4 w-4 transition-transform ${showAllOverviewMessages ? 'rotate-180' : ''}`} />
+                                    {showAllOverviewMessages ? 'Show Less' : `Show ${overviewMentorMsgs.length - 2} More`}
+                                  </Button>
+                                )}
+                              </>
+                            );
+                          })() : (
                             <p className="text-sm text-muted-foreground text-center py-4">No messages yet. Start the conversation!</p>
                           )}
                         </div>
@@ -1511,29 +1554,38 @@ export default function DashboardEntrepreneur() {
             {activeTab === "notes" && (
               <div>
                 <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Notes</h1>
-                <p className="text-muted-foreground mb-8">Guidance and next steps from your mentor to help you succeed. All notes are kept for your reference.</p>
+                <p className="text-muted-foreground mb-8">Guidance and next steps from your mentor to help you succeed. Newest notes appear first.</p>
 
-                {mentorNotes && mentorNotes.length > 0 ? (
-                  <div className="space-y-4">
-                    {mentorNotes.map((note: any, idx: number) => {
-                      const noteText = typeof note === 'string' ? note : note.text;
-                      const noteTime = typeof note === 'string' ? null : note.timestamp;
-                      return (
-                        <Card key={idx} className="border-l-4 border-l-emerald-500 border-cyan-200 dark:border-cyan-900/30">
-                          <CardContent className="pt-6">
-                            <div className="flex gap-4">
-                              <div className="text-3xl font-bold text-emerald-500 min-w-12">{idx + 1}.</div>
-                              <div className="flex-1">
-                                <p className="text-slate-900 dark:text-white leading-relaxed">{noteText}</p>
-                                {noteTime && <p className="text-slate-500 dark:text-slate-400 text-xs mt-3">Added on {new Date(noteTime).toLocaleDateString()}</p>}
+                {mentorNotes && mentorNotes.length > 0 ? (() => {
+                  // Sort notes newest first
+                  const sortedNotes = [...mentorNotes].sort((a: any, b: any) => {
+                    const timeA = typeof a === 'string' ? 0 : new Date(a.timestamp || 0).getTime();
+                    const timeB = typeof b === 'string' ? 0 : new Date(b.timestamp || 0).getTime();
+                    return timeB - timeA;
+                  });
+                  
+                  return (
+                    <div className="space-y-4">
+                      {sortedNotes.map((note: any, idx: number) => {
+                        const noteText = typeof note === 'string' ? note : note.text;
+                        const noteTime = typeof note === 'string' ? null : note.timestamp;
+                        return (
+                          <Card key={idx} className="border-l-4 border-l-emerald-500 border-cyan-200 dark:border-cyan-900/30">
+                            <CardContent className="pt-6">
+                              <div className="flex gap-4">
+                                <div className="text-3xl font-bold text-emerald-500 min-w-12">{idx + 1}.</div>
+                                <div className="flex-1">
+                                  <p className="text-slate-900 dark:text-white leading-relaxed">{noteText}</p>
+                                  {noteTime && <p className="text-slate-500 dark:text-slate-400 text-xs mt-3">Added on {new Date(noteTime).toLocaleDateString()}</p>}
+                                </div>
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                ) : (
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  );
+                })() : (
                   <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
                     <CardContent className="pt-8 pb-8 text-center">
                       <BookOpen className="h-12 w-12 text-amber-600 mx-auto mb-4" />
