@@ -175,79 +175,81 @@ export default function DashboardMentor() {
     (m: any) => m.to_email === mentorProfile.email && !m.is_read
   ).length;
 
-  // Fetch assigned entrepreneurs when mentor email is available
-  useEffect(() => {
-    async function fetchAssignedEntrepreneurs() {
-      if (!mentorProfile.email) {
-        console.log("[DashboardMentor] Mentor email not set yet");
-        return;
-      }
-      
-      console.log("[DashboardMentor] Fetching entrepreneurs for mentor email:", mentorProfile.email);
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/mentor-email/${encodeURIComponent(mentorProfile.email)}`);
-        console.log("[DashboardMentor] Fetch response status:", response.status);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log("[DashboardMentor] Received data:", data);
-          
-          if (!data.entrepreneurs || data.entrepreneurs.length === 0) {
-            console.log("[DashboardMentor] No entrepreneurs found for this mentor");
-            setPortfolios([]);
-            return;
-          }
-          
-          // Group entrepreneurs by portfolio number (1-10)
-          const portfolioMap: { [key: number]: typeof data.entrepreneurs } = {};
-          
-          data.entrepreneurs?.forEach((item: any) => {
-            const portfolioNum = item.portfolio_number || 1;
-            if (!portfolioMap[portfolioNum]) {
-              portfolioMap[portfolioNum] = [];
-            }
-            portfolioMap[portfolioNum].push(item);
-          });
-          
-          // Create portfolios array
-          const portfoliosArray = Object.entries(portfolioMap).map(([num, members]) => ({
-            id: parseInt(num),
-            name: `Portfolio ${num}`,
-            memberCount: members.length,
-            members: members.map((m: any) => {
-              console.log("[DashboardMentor] Mapping member:", { assignment_id: m.assignment_id, notes: m.mentor_notes });
-              return {
-                id: m.entrepreneur?.id || "",
-                assignment_id: m.assignment_id,
-                name: m.entrepreneur?.full_name || "Unknown",
-                email: m.entrepreneur?.email || "",
-                linkedin: m.entrepreneur?.linkedin,
-                businessIdea: m.entrepreneur?.business_idea,
-                ideaName: m.entrepreneur?.idea_name,
-                country: m.entrepreneur?.country,
-                state: m.entrepreneur?.state,
-                photoUrl: m.entrepreneur?.photo_url,
-                ideaReview: m.entrepreneur?.ideaReview,
-                businessPlan: m.entrepreneur?.businessPlan,
-                mentorNotes: m.mentor_notes || []
-              };
-            }),
-            lastMeeting: ""
-          }));
-          
-          console.log("[DashboardMentor] Created portfolios array:", portfoliosArray);
-          setPortfolios(portfoliosArray.length > 0 ? portfoliosArray : []);
-        } else {
-          console.error("[DashboardMentor] Fetch failed with status:", response.status);
-          const error = await response.json();
-          console.error("[DashboardMentor] Error details:", error);
-        }
-      } catch (error) {
-        console.error("[DashboardMentor] Error fetching assigned entrepreneurs:", error);
-      }
+  // Function to refresh portfolio data
+  const refreshPortfolios = async (email?: string) => {
+    const mentorEmail = email || mentorProfile.email;
+    if (!mentorEmail) {
+      console.log("[DashboardMentor] Mentor email not set yet");
+      return;
     }
     
-    fetchAssignedEntrepreneurs();
+    console.log("[DashboardMentor] Fetching entrepreneurs for mentor email:", mentorEmail);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/mentor-email/${encodeURIComponent(mentorEmail)}`);
+      console.log("[DashboardMentor] Fetch response status:", response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("[DashboardMentor] Received data:", data);
+        
+        if (!data.entrepreneurs || data.entrepreneurs.length === 0) {
+          console.log("[DashboardMentor] No entrepreneurs found for this mentor");
+          setPortfolios([]);
+          return;
+        }
+        
+        // Group entrepreneurs by portfolio number (1-10)
+        const portfolioMap: { [key: number]: typeof data.entrepreneurs } = {};
+        
+        data.entrepreneurs?.forEach((item: any) => {
+          const portfolioNum = item.portfolio_number || 1;
+          if (!portfolioMap[portfolioNum]) {
+            portfolioMap[portfolioNum] = [];
+          }
+          portfolioMap[portfolioNum].push(item);
+        });
+        
+        // Create portfolios array
+        const portfoliosArray = Object.entries(portfolioMap).map(([num, members]) => ({
+          id: parseInt(num),
+          name: `Portfolio ${num}`,
+          memberCount: members.length,
+          members: members.map((m: any) => {
+            console.log("[DashboardMentor] Mapping member:", { assignment_id: m.assignment_id, notes: m.mentor_notes });
+            return {
+              id: m.entrepreneur?.id || "",
+              assignment_id: m.assignment_id,
+              name: m.entrepreneur?.full_name || "Unknown",
+              email: m.entrepreneur?.email || "",
+              linkedin: m.entrepreneur?.linkedin,
+              businessIdea: m.entrepreneur?.business_idea,
+              ideaName: m.entrepreneur?.idea_name,
+              country: m.entrepreneur?.country,
+              state: m.entrepreneur?.state,
+              photoUrl: m.entrepreneur?.photo_url,
+              ideaReview: m.entrepreneur?.ideaReview,
+              businessPlan: m.entrepreneur?.businessPlan,
+              mentorNotes: m.mentor_notes || []
+            };
+          }),
+          lastMeeting: ""
+        }));
+        
+        console.log("[DashboardMentor] Created portfolios array:", portfoliosArray);
+        setPortfolios(portfoliosArray.length > 0 ? portfoliosArray : []);
+      } else {
+        console.error("[DashboardMentor] Fetch failed with status:", response.status);
+        const error = await response.json();
+        console.error("[DashboardMentor] Error details:", error);
+      }
+    } catch (error) {
+      console.error("[DashboardMentor] Error fetching assigned entrepreneurs:", error);
+    }
+  };
+
+  // Fetch assigned entrepreneurs when mentor email is available
+  useEffect(() => {
+    refreshPortfolios();
   }, [mentorProfile.email]);
 
   const handleSaveProfile = async () => {
@@ -726,7 +728,8 @@ export default function DashboardMentor() {
                                                       body: JSON.stringify({ completed: !isCompleted })
                                                     });
                                                     if (response.ok) {
-                                                      window.location.reload();
+                                                      await refreshPortfolios();
+                                                      toast.success("Step updated!");
                                                     } else {
                                                       toast.error("Failed to update note");
                                                     }
@@ -783,8 +786,8 @@ export default function DashboardMentor() {
                                             console.log("[MentorNotes] Response:", data);
                                             if (response.ok && data.success) {
                                               textarea.value = "";
-                                              toast.success("Note saved!");
-                                              window.location.reload();
+                                              toast.success("Step added!");
+                                              await refreshPortfolios();
                                             } else {
                                               toast.error(data.error || "Failed to save note");
                                             }
