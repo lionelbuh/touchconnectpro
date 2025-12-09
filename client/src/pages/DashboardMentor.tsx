@@ -552,52 +552,52 @@ export default function DashboardMentor() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-8">
                 {portfolios.map((portfolio, idx) => (
-                  <Card key={portfolio.id} className="cursor-pointer hover:shadow-lg transition-shadow border-cyan-200 dark:border-cyan-900/30">
+                  <Card key={portfolio.id} className="hover:shadow-lg transition-shadow border-cyan-200 dark:border-cyan-900/30">
                     <CardHeader className="bg-cyan-50/50 dark:bg-cyan-950/20">
-                      <CardTitle>{portfolio.name}</CardTitle>
+                      <CardTitle className="text-xl">{portfolio.name}</CardTitle>
+                      <p className="text-sm text-muted-foreground">Members: {portfolio.memberCount}/10</p>
                     </CardHeader>
-                    <CardContent className="pt-6 space-y-4">
-                      <div>
-                        <p className="text-sm font-semibold text-muted-foreground mb-3">Members: {portfolio.memberCount}/10</p>
+                    <CardContent className="pt-6 space-y-6">
                         {portfolio.members.length > 0 ? (
-                          <div className="space-y-4">
+                          <div className="space-y-6">
                             {portfolio.members.map((member) => {
                               const isProposalExpanded = expandedProposal[`member-${member.id}`];
                               const isBusinessPlanExpanded = expandedBusinessPlan[`member-${member.id}`];
                               return (
-                              <Card key={member.id} className="border-l-4 border-l-emerald-500">
-                                <CardContent className="pt-4 space-y-4">
-                                  <div className="flex items-start gap-3">
-                                    <Avatar className="h-12 w-12 border border-cyan-200">
+                              <Card key={member.id} className="border-l-4 border-l-emerald-500 shadow-md">
+                                <CardContent className="pt-6 space-y-5">
+                                  <div className="flex items-start gap-4">
+                                    <Avatar className="h-16 w-16 border-2 border-cyan-200">
                                       {member.photoUrl ? (
                                         <AvatarImage src={member.photoUrl} alt={member.name} />
                                       ) : null}
-                                      <AvatarFallback className="bg-cyan-500 text-white">
+                                      <AvatarFallback className="bg-cyan-500 text-white text-lg">
                                         {member.name.substring(0, 2).toUpperCase()}
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
-                                      <h4 className="font-semibold text-slate-900 dark:text-white">{member.name}</h4>
-                                      <p className="text-xs text-muted-foreground">{member.email}</p>
+                                      <h4 className="text-lg font-semibold text-slate-900 dark:text-white">{member.name}</h4>
+                                      <p className="text-sm text-muted-foreground">{member.email}</p>
+                                      <p className="text-sm font-medium text-cyan-600 mt-1">{member.ideaName || member.businessIdea || "No idea name"}</p>
                                     </div>
                                     {!isAccountDisabled && (
                                       <Button 
                                         variant="outline" 
-                                        size="sm"
+                                        size="default"
                                         onClick={() => {
                                           setSelectedEntrepreneur(member);
                                           setShowEntrepreneurMessageModal(true);
                                         }}
                                         data-testid={`button-message-entrepreneur-${member.id}`}
                                       >
-                                        <MessageSquare className="h-3 w-3 mr-1" /> Message
+                                        <MessageSquare className="h-4 w-4 mr-2" /> Message
                                       </Button>
                                     )}
                                   </div>
                                   
-                                  <div className="grid grid-cols-2 gap-3 text-sm">
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-slate-50 dark:bg-slate-800/30 p-4 rounded-lg">
                                     <div>
                                       <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Idea/Company</p>
                                       <p className="text-slate-900 dark:text-white">{member.ideaName || member.businessIdea || "—"}</p>
@@ -724,39 +724,50 @@ export default function DashboardMentor() {
                                       placeholder="E.g., Next step suggested would be to choose a coach about Marketing..."
                                       className="w-full min-h-20 p-3 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                                       data-testid={`textarea-mentor-notes-${member.id}`}
-                                      onBlur={async (e) => {
-                                        const textarea = e.target as HTMLTextAreaElement;
-                                        const newNote = textarea.value.trim();
-                                        if (!newNote) return;
-                                        const assignmentId = member.assignment_id;
-                                        console.log("[MentorNotes] Saving note for assignment:", assignmentId);
-                                        if (!assignmentId) {
-                                          toast.error("No assignment ID found");
-                                          return;
-                                        }
-                                        try {
-                                          const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/${assignmentId}`, {
-                                            method: "PATCH",
-                                            headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({ mentorNotes: newNote })
-                                          });
-                                          const data = await response.json();
-                                          console.log("[MentorNotes] Response:", data);
-                                          if (response.ok && data.success) {
-                                            textarea.value = "";
-                                            toast.success("Note added!");
-                                            // Refresh the page to show updated notes
-                                            window.location.reload();
-                                          } else {
-                                            toast.error(data.error || "Failed to save note");
-                                          }
-                                        } catch (error) {
-                                          console.error("[MentorNotes] Error:", error);
-                                          toast.error("Failed to save note");
-                                        }
-                                      }}
                                     />
-                                    <p className="text-xs text-slate-500 mt-1">Add a new note - previous notes are stored above</p>
+                                    <div className="flex items-center justify-between mt-2">
+                                      <p className="text-xs text-slate-500">Add a new note - previous notes are stored above</p>
+                                      <Button
+                                        size="sm"
+                                        className="bg-emerald-600 hover:bg-emerald-700"
+                                        data-testid={`button-save-note-${member.id}`}
+                                        onClick={async () => {
+                                          const textarea = document.getElementById(`new-notes-${member.id}`) as HTMLTextAreaElement;
+                                          const newNote = textarea?.value.trim();
+                                          if (!newNote) {
+                                            toast.error("Please enter a note");
+                                            return;
+                                          }
+                                          const assignmentId = member.assignment_id;
+                                          console.log("[MentorNotes] Saving note for assignment:", assignmentId);
+                                          if (!assignmentId) {
+                                            toast.error("No assignment ID found");
+                                            return;
+                                          }
+                                          try {
+                                            const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/${assignmentId}`, {
+                                              method: "PATCH",
+                                              headers: { "Content-Type": "application/json" },
+                                              body: JSON.stringify({ mentorNotes: newNote })
+                                            });
+                                            const data = await response.json();
+                                            console.log("[MentorNotes] Response:", data);
+                                            if (response.ok && data.success) {
+                                              textarea.value = "";
+                                              toast.success("Note saved!");
+                                              window.location.reload();
+                                            } else {
+                                              toast.error(data.error || "Failed to save note");
+                                            }
+                                          } catch (error) {
+                                            console.error("[MentorNotes] Error:", error);
+                                            toast.error("Failed to save note");
+                                          }
+                                        }}
+                                      >
+                                        Save Note
+                                      </Button>
+                                    </div>
                                   </div>
                                 </CardContent>
                               </Card>
@@ -765,7 +776,6 @@ export default function DashboardMentor() {
                         ) : (
                           <p className="text-xs text-muted-foreground">No members added yet</p>
                         )}
-                      </div>
                       <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                         <p className="text-xs text-muted-foreground mb-3">Last meeting: {portfolio.lastMeeting || "No meetings yet"}</p>
                         <div className="space-y-2">
