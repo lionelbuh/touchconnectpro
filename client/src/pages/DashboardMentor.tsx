@@ -921,7 +921,7 @@ export default function DashboardMentor() {
                     <div className="border-t pt-4 mt-4">
                       <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
                       <div className="space-y-3 max-h-64 overflow-y-auto">
-                        {adminMsgs.map((msg: any) => {
+                        {[...adminMsgs].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => {
                           const isFromMe = msg.from_email === mentorProfile.email;
                           return (
                             <div key={msg.id} onClick={async () => {
@@ -1018,7 +1018,7 @@ export default function DashboardMentor() {
                         <div className="border-t pt-3 mt-2">
                           <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
                           <div className="space-y-2 max-h-48 overflow-y-auto">
-                            {entMsgs.map((msg: any) => {
+                            {[...entMsgs].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => {
                               const isFromMe = msg.from_email === mentorProfile.email;
                               return (
                                 <div key={msg.id} onClick={async () => {

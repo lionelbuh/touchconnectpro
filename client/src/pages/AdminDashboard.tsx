@@ -2830,7 +2830,7 @@ export default function AdminDashboard() {
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {messageHistory
                     .filter((m: any) => m.to_email === selectedMember.email || m.from_email === selectedMember.email)
-                    .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                    .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                     .map((msg: any) => (
                     <div key={msg.id} className={`text-xs p-2 rounded ${msg.from_email === "admin@touchconnectpro.com" ? "bg-white dark:bg-slate-700" : "bg-amber-50 dark:bg-amber-900/30 border-l-2 border-l-amber-500"}`}>
                       <p className={`font-semibold ${msg.from_email === "admin@touchconnectpro.com" ? "text-slate-700 dark:text-slate-200" : "text-amber-700 dark:text-amber-400"}`}>

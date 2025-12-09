@@ -980,7 +980,7 @@ export default function DashboardEntrepreneur() {
                           <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
                           {overviewMentorMsgs.length > 0 ? (
                             <div className="space-y-3 max-h-64 overflow-y-auto">
-                              {overviewMentorMsgs.map((msg: any) => {
+                              {[...overviewMentorMsgs].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => {
                                 const isFromMe = msg.from_email === userEmail;
                                 return (
                                   <div key={msg.id} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-emerald-50 dark:bg-emerald-950/30'}`}>
@@ -1254,7 +1254,7 @@ export default function DashboardEntrepreneur() {
                         <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
                         {mentorMsgs.length > 0 ? (
                           <div className="space-y-3 max-h-64 overflow-y-auto">
-                            {mentorMsgs.map((msg: any) => {
+                            {[...mentorMsgs].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => {
                               const isFromMe = msg.from_email === userEmail;
                               return (
                                 <div key={msg.id} onClick={async () => {
@@ -1374,7 +1374,7 @@ export default function DashboardEntrepreneur() {
                       <div className="border-t pt-4 mt-4">
                         <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
                         <div className="space-y-3 max-h-64 overflow-y-auto">
-                          {adminMsgs.map((msg: any) => {
+                          {[...adminMsgs].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => {
                             const isFromMe = msg.from_email === userEmail;
                             return (
                               <div key={msg.id} onClick={async () => {

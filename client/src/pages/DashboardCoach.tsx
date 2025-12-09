@@ -503,7 +503,7 @@ export default function DashboardCoach() {
                 <CardContent>
                   {adminMessages.length > 0 ? (
                     <div className="space-y-4 max-h-96 overflow-y-auto">
-                      {adminMessages.map((msg: any) => (
+                      {[...adminMessages].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => (
                           <div 
                             key={msg.id} 
                             className={`p-4 rounded-lg ${msg.from_email === "admin@touchconnectpro.com" ? "bg-cyan-50 dark:bg-cyan-950/30 border-l-4 border-l-cyan-500" : "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400"}`}
