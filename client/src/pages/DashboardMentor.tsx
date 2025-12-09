@@ -699,26 +699,45 @@ export default function DashboardMentor() {
 
                                   <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
                                     <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-2 block">Next Steps & Notes</label>
+                                    
+                                    {/* Notes History */}
+                                    {member.mentorNotes && member.mentorNotes.length > 0 && (
+                                      <div className="mb-4 space-y-2 max-h-32 overflow-y-auto">
+                                        {member.mentorNotes.map((note: any, idx: number) => {
+                                          const noteText = typeof note === 'string' ? note : note.text;
+                                          const noteTime = typeof note === 'string' ? null : note.timestamp;
+                                          return (
+                                            <div key={idx} className="p-2 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded text-xs">
+                                              <p className="text-emerald-900 dark:text-emerald-100">{noteText}</p>
+                                              {noteTime && <p className="text-emerald-700 dark:text-emerald-300 text-xs mt-1">{new Date(noteTime).toLocaleDateString()}</p>}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                    
                                     <textarea
-                                      defaultValue={member.mentorNotes || ""}
+                                      id={`new-notes-${member.id}`}
                                       placeholder="E.g., Next step suggested would be to choose a coach about Marketing..."
-                                      className="w-full min-h-24 p-3 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
+                                      className="w-full min-h-20 p-3 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                                       data-testid={`textarea-mentor-notes-${member.id}`}
                                       onBlur={async (e) => {
-                                        const notes = e.currentTarget.value;
+                                        const newNote = e.currentTarget.value.trim();
+                                        if (!newNote) return;
                                         try {
                                           await fetch(`${API_BASE_URL}/api/mentor-assignments/${member.assignment_id || member.id}`, {
                                             method: "PATCH",
                                             headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({ mentorNotes: notes })
+                                            body: JSON.stringify({ mentorNotes: newNote })
                                           });
-                                          toast.success("Notes saved!");
+                                          e.currentTarget.value = "";
+                                          toast.success("Note added!");
                                         } catch (error) {
-                                          toast.error("Failed to save notes");
+                                          toast.error("Failed to save note");
                                         }
                                       }}
                                     />
-                                    <p className="text-xs text-slate-500 mt-1">What are the next steps for this entrepreneur?</p>
+                                    <p className="text-xs text-slate-500 mt-1">Add a new note - previous notes are stored above</p>
                                   </div>
                                 </CardContent>
                               </Card>

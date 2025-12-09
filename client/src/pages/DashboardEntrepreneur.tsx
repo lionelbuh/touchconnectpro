@@ -813,16 +813,21 @@ export default function DashboardEntrepreneur() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <BookOpen className="h-5 w-5 text-emerald-600" />
-                        Your Mentor's Guidance
+                        Your Mentor's Guidance ({mentorNotes.length})
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {mentorNotes.map((note: any, idx: number) => (
-                          <div key={idx} className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
-                            <p className="text-emerald-900 dark:text-emerald-100 text-sm">{note}</p>
-                          </div>
-                        ))}
+                        {mentorNotes.map((note: any, idx: number) => {
+                          const noteText = typeof note === 'string' ? note : note.text;
+                          const noteTime = typeof note === 'string' ? null : note.timestamp;
+                          return (
+                            <div key={idx} className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
+                              <p className="text-emerald-900 dark:text-emerald-100 text-sm">{noteText}</p>
+                              {noteTime && <p className="text-emerald-700 dark:text-emerald-300 text-xs mt-2">{new Date(noteTime).toLocaleDateString()}</p>}
+                            </div>
+                          );
+                        })}
                       </div>
                     </CardContent>
                   </Card>
@@ -1551,22 +1556,27 @@ export default function DashboardEntrepreneur() {
             {activeTab === "notes" && (
               <div>
                 <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Notes</h1>
-                <p className="text-muted-foreground mb-8">Guidance and next steps from your mentor to help you succeed.</p>
+                <p className="text-muted-foreground mb-8">Guidance and next steps from your mentor to help you succeed. All notes are kept for your reference.</p>
 
                 {mentorNotes && mentorNotes.length > 0 ? (
                   <div className="space-y-4">
-                    {mentorNotes.map((note: any, idx: number) => (
-                      <Card key={idx} className="border-l-4 border-l-emerald-500 border-cyan-200 dark:border-cyan-900/30">
-                        <CardContent className="pt-6">
-                          <div className="flex gap-4">
-                            <div className="text-3xl font-bold text-emerald-500 min-w-12">{idx + 1}.</div>
-                            <div className="flex-1">
-                              <p className="text-slate-900 dark:text-white leading-relaxed">{note}</p>
+                    {mentorNotes.map((note: any, idx: number) => {
+                      const noteText = typeof note === 'string' ? note : note.text;
+                      const noteTime = typeof note === 'string' ? null : note.timestamp;
+                      return (
+                        <Card key={idx} className="border-l-4 border-l-emerald-500 border-cyan-200 dark:border-cyan-900/30">
+                          <CardContent className="pt-6">
+                            <div className="flex gap-4">
+                              <div className="text-3xl font-bold text-emerald-500 min-w-12">{idx + 1}.</div>
+                              <div className="flex-1">
+                                <p className="text-slate-900 dark:text-white leading-relaxed">{noteText}</p>
+                                {noteTime && <p className="text-slate-500 dark:text-slate-400 text-xs mt-3">Added on {new Date(noteTime).toLocaleDateString()}</p>}
+                              </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 ) : (
                   <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">

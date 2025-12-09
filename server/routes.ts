@@ -844,10 +844,39 @@ export async function registerRoutes(
       const { id } = req.params;
       const { meetingLink, status, mentorNotes } = req.body;
 
-      const updates: any = {};
+      // If mentorNotes is provided, append it to existing notes (keep history)
+      let updates: any = {};
       if (meetingLink !== undefined) updates.meeting_link = meetingLink;
       if (status !== undefined) updates.status = status;
-      if (mentorNotes !== undefined) updates.mentor_notes = mentorNotes;
+
+      if (mentorNotes !== undefined) {
+        // Get current assignment to check existing notes
+        const { data: currentAssignment } = await (client
+          .from("mentor_assignments")
+          .select("mentor_notes")
+          .eq("id", id)
+          .single() as any);
+
+        let existingNotes: any[] = [];
+        if (currentAssignment?.mentor_notes) {
+          try {
+            existingNotes = typeof currentAssignment.mentor_notes === 'string'
+              ? JSON.parse(currentAssignment.mentor_notes)
+              : (Array.isArray(currentAssignment.mentor_notes) ? currentAssignment.mentor_notes : []);
+          } catch (e) {
+            existingNotes = [currentAssignment.mentor_notes];
+          }
+        }
+
+        // Append new note with timestamp
+        const newNote = {
+          text: mentorNotes,
+          timestamp: new Date().toISOString()
+        };
+        
+        const updatedNotes = [...existingNotes, newNote];
+        updates.mentor_notes = JSON.stringify(updatedNotes);
+      }
 
       const { data, error } = await (client
         .from("mentor_assignments")
@@ -952,13 +981,16 @@ export async function registerRoutes(
           };
         }
 
-        // Get mentor notes
-        const { data: notesData } = await (client
-          .from("mentor_notes")
-          .select("*")
-          .eq("entrepreneur_id", ideaData.id)
-          .order("created_at", { ascending: true }) as any);
-        mentorNotes = notesData || [];
+        // Get mentor notes from mentor_assignments table (stored as JSON array)
+        if (assignmentData.mentor_notes) {
+          try {
+            mentorNotes = typeof assignmentData.mentor_notes === 'string' 
+              ? JSON.parse(assignmentData.mentor_notes) 
+              : (Array.isArray(assignmentData.mentor_notes) ? assignmentData.mentor_notes : [assignmentData.mentor_notes]);
+          } catch (e) {
+            mentorNotes = [assignmentData.mentor_notes];
+          }
+        }
       }
 
       return res.json({
