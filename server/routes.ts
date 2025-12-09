@@ -755,10 +755,24 @@ export async function registerRoutes(
       const portfolioData = assignments.map((assignment: any) => {
         const entrepreneur = entrepreneurs?.find((e: any) => e.id === assignment.entrepreneur_id);
         const entData = entrepreneur?.data || {};
+        
+        // Parse mentor_notes from JSON if needed
+        let parsedNotes: any[] = [];
+        if (assignment.mentor_notes) {
+          try {
+            parsedNotes = typeof assignment.mentor_notes === 'string'
+              ? JSON.parse(assignment.mentor_notes)
+              : (Array.isArray(assignment.mentor_notes) ? assignment.mentor_notes : [assignment.mentor_notes]);
+          } catch (e) {
+            parsedNotes = [assignment.mentor_notes];
+          }
+        }
+        
         return {
           assignment_id: assignment.id,
           portfolio_number: assignment.portfolio_number,
           meeting_link: assignment.meeting_link,
+          mentor_notes: parsedNotes,
           entrepreneur: entrepreneur ? {
             id: entrepreneur.id,
             full_name: entrepreneur.entrepreneur_name || entData.fullName || "",

@@ -214,21 +214,24 @@ export default function DashboardMentor() {
             id: parseInt(num),
             name: `Portfolio ${num}`,
             memberCount: members.length,
-            members: members.map((m: any) => ({
-              id: m.entrepreneur?.id || "",
-              assignment_id: m.assignment_id,
-              name: m.entrepreneur?.full_name || "Unknown",
-              email: m.entrepreneur?.email || "",
-              linkedin: m.entrepreneur?.linkedin,
-              businessIdea: m.entrepreneur?.business_idea,
-              ideaName: m.entrepreneur?.idea_name,
-              country: m.entrepreneur?.country,
-              state: m.entrepreneur?.state,
-              photoUrl: m.entrepreneur?.photo_url,
-              ideaReview: m.entrepreneur?.ideaReview,
-              businessPlan: m.entrepreneur?.businessPlan,
-              mentorNotes: m.mentor_notes
-            })),
+            members: members.map((m: any) => {
+              console.log("[DashboardMentor] Mapping member:", { assignment_id: m.assignment_id, notes: m.mentor_notes });
+              return {
+                id: m.entrepreneur?.id || "",
+                assignment_id: m.assignment_id,
+                name: m.entrepreneur?.full_name || "Unknown",
+                email: m.entrepreneur?.email || "",
+                linkedin: m.entrepreneur?.linkedin,
+                businessIdea: m.entrepreneur?.business_idea,
+                ideaName: m.entrepreneur?.idea_name,
+                country: m.entrepreneur?.country,
+                state: m.entrepreneur?.state,
+                photoUrl: m.entrepreneur?.photo_url,
+                ideaReview: m.entrepreneur?.ideaReview,
+                businessPlan: m.entrepreneur?.businessPlan,
+                mentorNotes: m.mentor_notes || []
+              };
+            }),
             lastMeeting: ""
           }));
           
