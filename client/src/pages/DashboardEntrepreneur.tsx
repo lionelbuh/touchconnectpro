@@ -808,6 +808,26 @@ export default function DashboardEntrepreneur() {
                   </Card>
                 </div>
 
+                {mentorNotes && mentorNotes.length > 0 && (
+                  <Card className="mb-6 border-l-4 border-l-emerald-500">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BookOpen className="h-5 w-5 text-emerald-600" />
+                        Your Mentor's Guidance
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {mentorNotes.map((note: any, idx: number) => (
+                          <div key={idx} className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
+                            <p className="text-emerald-900 dark:text-emerald-100 text-sm">{note}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* My Mentor Section */}
                 <Card className="mb-6 border-l-4 border-l-cyan-500">
                   <CardHeader>
@@ -1524,6 +1544,38 @@ export default function DashboardEntrepreneur() {
                     </Card>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Mentor Notes Tab */}
+            {activeTab === "notes" && (
+              <div>
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Notes</h1>
+                <p className="text-muted-foreground mb-8">Guidance and next steps from your mentor to help you succeed.</p>
+
+                {mentorNotes && mentorNotes.length > 0 ? (
+                  <div className="space-y-4">
+                    {mentorNotes.map((note: any, idx: number) => (
+                      <Card key={idx} className="border-l-4 border-l-emerald-500 border-cyan-200 dark:border-cyan-900/30">
+                        <CardContent className="pt-6">
+                          <div className="flex gap-4">
+                            <div className="text-3xl font-bold text-emerald-500 min-w-12">{idx + 1}.</div>
+                            <div className="flex-1">
+                              <p className="text-slate-900 dark:text-white leading-relaxed">{note}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
+                    <CardContent className="pt-8 pb-8 text-center">
+                      <BookOpen className="h-12 w-12 text-amber-600 mx-auto mb-4" />
+                      <p className="text-slate-600 dark:text-slate-400">No mentor notes yet. Check back soon for guidance from your mentor!</p>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
 

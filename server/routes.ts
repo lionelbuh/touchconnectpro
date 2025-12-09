@@ -833,7 +833,7 @@ export async function registerRoutes(
     }
   });
 
-  // Update mentor assignment (e.g., meeting link)
+  // Update mentor assignment (e.g., meeting link, notes)
   app.patch("/api/mentor-assignments/:id", async (req, res) => {
     try {
       const client = getSupabaseClient();
@@ -842,11 +842,12 @@ export async function registerRoutes(
       }
 
       const { id } = req.params;
-      const { meetingLink, status } = req.body;
+      const { meetingLink, status, mentorNotes } = req.body;
 
       const updates: any = {};
       if (meetingLink !== undefined) updates.meeting_link = meetingLink;
       if (status !== undefined) updates.status = status;
+      if (mentorNotes !== undefined) updates.mentor_notes = mentorNotes;
 
       const { data, error } = await (client
         .from("mentor_assignments")

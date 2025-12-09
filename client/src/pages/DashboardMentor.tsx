@@ -216,6 +216,7 @@ export default function DashboardMentor() {
             memberCount: members.length,
             members: members.map((m: any) => ({
               id: m.entrepreneur?.id || "",
+              assignment_id: m.assignment_id,
               name: m.entrepreneur?.full_name || "Unknown",
               email: m.entrepreneur?.email || "",
               linkedin: m.entrepreneur?.linkedin,
@@ -225,7 +226,8 @@ export default function DashboardMentor() {
               state: m.entrepreneur?.state,
               photoUrl: m.entrepreneur?.photo_url,
               ideaReview: m.entrepreneur?.ideaReview,
-              businessPlan: m.entrepreneur?.businessPlan
+              businessPlan: m.entrepreneur?.businessPlan,
+              mentorNotes: m.mentor_notes
             })),
             lastMeeting: ""
           }));
@@ -693,6 +695,30 @@ export default function DashboardMentor() {
                                         </div>
                                       </div>
                                     )}
+                                  </div>
+
+                                  <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+                                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-2 block">Next Steps & Notes</label>
+                                    <textarea
+                                      defaultValue={member.mentorNotes || ""}
+                                      placeholder="E.g., Next step suggested would be to choose a coach about Marketing..."
+                                      className="w-full min-h-24 p-3 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
+                                      data-testid={`textarea-mentor-notes-${member.id}`}
+                                      onBlur={async (e) => {
+                                        const notes = e.currentTarget.value;
+                                        try {
+                                          await fetch(`${API_BASE_URL}/api/mentor-assignments/${member.assignment_id || member.id}`, {
+                                            method: "PATCH",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({ mentorNotes: notes })
+                                          });
+                                          toast.success("Notes saved!");
+                                        } catch (error) {
+                                          toast.error("Failed to save notes");
+                                        }
+                                      }}
+                                    />
+                                    <p className="text-xs text-slate-500 mt-1">What are the next steps for this entrepreneur?</p>
                                   </div>
                                 </CardContent>
                               </Card>
