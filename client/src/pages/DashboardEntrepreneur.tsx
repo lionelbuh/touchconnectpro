@@ -836,6 +836,7 @@ export default function DashboardEntrepreneur() {
                             return (
                               <div key={idx} className={`p-3 rounded-lg ${isCompleted ? 'bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800' : 'bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800'}`}>
                                 <div className="flex items-start gap-3">
+                                  <div className={`text-lg font-bold min-w-fit ${isCompleted ? 'text-green-600' : 'text-emerald-600'}`}>{idx + 1}.</div>
                                   <div className="flex-1">
                                     <p className={`text-sm ${isCompleted ? 'text-green-900 dark:text-green-100 line-through' : 'text-emerald-900 dark:text-emerald-100'}`}>{noteText}</p>
                                     {noteTime && <p className={`text-xs mt-2 ${isCompleted ? 'text-green-700 dark:text-green-300' : 'text-emerald-700 dark:text-emerald-300'}`}>{new Date(noteTime).toLocaleDateString()}</p>}
