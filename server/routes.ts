@@ -849,9 +849,13 @@ export async function registerRoutes(
 
   // Update mentor assignment (e.g., meeting link, notes)
   app.patch("/api/mentor-assignments/:id", async (req, res) => {
+    console.log("[PATCH /api/mentor-assignments/:id] Request received for ID:", req.params.id);
+    console.log("[PATCH /api/mentor-assignments/:id] Body:", JSON.stringify(req.body));
+    
     try {
       const client = getSupabaseClient();
       if (!client) {
+        console.log("[PATCH /api/mentor-assignments/:id] Supabase not configured");
         return res.status(500).json({ error: "Supabase not configured" });
       }
 
@@ -864,12 +868,16 @@ export async function registerRoutes(
       if (status !== undefined) updates.status = status;
 
       if (mentorNotes !== undefined) {
+        console.log("[PATCH /api/mentor-assignments/:id] Processing mentorNotes:", mentorNotes);
+        
         // Get current assignment to check existing notes
-        const { data: currentAssignment } = await (client
+        const { data: currentAssignment, error: fetchError } = await (client
           .from("mentor_assignments")
           .select("mentor_notes")
           .eq("id", id)
           .single() as any);
+
+        console.log("[PATCH /api/mentor-assignments/:id] Current assignment:", currentAssignment, "Error:", fetchError?.message);
 
         let existingNotes: any[] = [];
         if (currentAssignment?.mentor_notes) {
@@ -890,13 +898,18 @@ export async function registerRoutes(
         
         const updatedNotes = [...existingNotes, newNote];
         updates.mentor_notes = JSON.stringify(updatedNotes);
+        console.log("[PATCH /api/mentor-assignments/:id] Updated notes:", updates.mentor_notes);
       }
 
+      console.log("[PATCH /api/mentor-assignments/:id] Sending update:", updates);
+      
       const { data, error } = await (client
         .from("mentor_assignments")
         .update(updates)
         .eq("id", id)
         .select() as any);
+
+      console.log("[PATCH /api/mentor-assignments/:id] Update result:", { data, error: error?.message });
 
       if (error) {
         return res.status(400).json({ error: error.message });
@@ -904,6 +917,7 @@ export async function registerRoutes(
 
       return res.json({ success: true, assignment: data?.[0] });
     } catch (error: any) {
+      console.error("[PATCH /api/mentor-assignments/:id] Exception:", error);
       return res.status(500).json({ error: error.message });
     }
   });
