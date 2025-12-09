@@ -1387,11 +1387,43 @@ export async function registerRoutes(
             to: "hello@touchconnectpro.com",
             subject: "New Early Access Signup - TouchConnectPro",
             html: `
-              <div style="font-family: Arial, sans-serif; padding: 20px;">
-                <h2 style="color: #06b6d4;">New Early Access Signup</h2>
-                <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
-              </div>
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                  .email-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #06b6d4; margin: 20px 0; text-align: center; }
+                  .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <h1>New Early Access Request!</h1>
+                  </div>
+                  <div class="content">
+                    <p>Someone just signed up for early access to TouchConnectPro.</p>
+                    
+                    <div class="email-box">
+                      <strong>Email Address:</strong><br>
+                      <span style="font-size: 18px; color: #06b6d4;">${email}</span>
+                    </div>
+                    
+                    <p>They're interested in being notified when the AI tools are ready.</p>
+                    
+                    <p style="color: #64748b; font-size: 14px;">
+                      Received: ${new Date().toLocaleString()}
+                    </p>
+                  </div>
+                  <div class="footer">
+                    <p>&copy; ${new Date().getFullYear()} TouchConnectPro</p>
+                  </div>
+                </div>
+              </body>
+              </html>
             `
           });
           console.log("[EARLY ACCESS] Admin notification sent to hello@touchconnectpro.com");
