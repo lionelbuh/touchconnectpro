@@ -818,6 +818,18 @@ export async function registerRoutes(
         return res.json({ mentor: null });
       }
 
+      // Parse mentor_notes from JSON if needed
+      let parsedNotes: any[] = [];
+      if (assignment.mentor_notes) {
+        try {
+          parsedNotes = typeof assignment.mentor_notes === 'string'
+            ? JSON.parse(assignment.mentor_notes)
+            : (Array.isArray(assignment.mentor_notes) ? assignment.mentor_notes : [assignment.mentor_notes]);
+        } catch (e) {
+          parsedNotes = [assignment.mentor_notes];
+        }
+      }
+
       // Fetch mentor profile
       const { data: mentor, error: mentorError } = await (client
         .from("mentor_applications")
@@ -826,7 +838,7 @@ export async function registerRoutes(
         .single() as any);
 
       if (mentorError || !mentor) {
-        return res.json({ mentor: null });
+        return res.json({ mentor: null, mentor_notes: parsedNotes });
       }
 
       return res.json({
@@ -841,7 +853,8 @@ export async function registerRoutes(
           photo_url: mentor.photo_url || mentor.photoUrl
         },
         portfolio_number: assignment.portfolio_number,
-        meeting_link: assignment.meeting_link
+        meeting_link: assignment.meeting_link,
+        mentor_notes: parsedNotes
       });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });

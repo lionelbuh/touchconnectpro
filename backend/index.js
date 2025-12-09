@@ -1461,13 +1461,16 @@ app.get("/api/entrepreneur/:email", async (req, res) => {
         };
       }
 
-      // Get mentor notes
-      const { data: notesData } = await supabase
-        .from("mentor_notes")
-        .select("*")
-        .eq("entrepreneur_id", ideaData.id)
-        .order("created_at", { ascending: true });
-      mentorNotes = notesData || [];
+      // Get mentor notes from assignment (stored as JSON in mentor_notes column)
+      if (assignmentData.mentor_notes) {
+        try {
+          mentorNotes = typeof assignmentData.mentor_notes === 'string'
+            ? JSON.parse(assignmentData.mentor_notes)
+            : (Array.isArray(assignmentData.mentor_notes) ? assignmentData.mentor_notes : [assignmentData.mentor_notes]);
+        } catch (e) {
+          mentorNotes = [assignmentData.mentor_notes];
+        }
+      }
     }
 
     return res.json({
@@ -1708,6 +1711,18 @@ app.get("/api/mentor-assignments/entrepreneur/:entrepreneurId", async (req, res)
       return res.json({ assignment: null });
     }
 
+    // Parse mentor_notes from JSON if needed
+    let parsedNotes = [];
+    if (assignment.mentor_notes) {
+      try {
+        parsedNotes = typeof assignment.mentor_notes === 'string'
+          ? JSON.parse(assignment.mentor_notes)
+          : (Array.isArray(assignment.mentor_notes) ? assignment.mentor_notes : [assignment.mentor_notes]);
+      } catch (e) {
+        parsedNotes = [assignment.mentor_notes];
+      }
+    }
+
     // Fetch mentor profile
     const { data: mentor, error: mentorError } = await supabase
       .from("mentor_applications")
@@ -1717,16 +1732,17 @@ app.get("/api/mentor-assignments/entrepreneur/:entrepreneurId", async (req, res)
 
     if (mentorError) {
       return res.json({ 
-        assignment,
+        assignment: { ...assignment, mentor_notes: parsedNotes },
         mentor: null 
       });
     }
 
     return res.json({ 
-      assignment,
+      assignment: { ...assignment, mentor_notes: parsedNotes },
       mentor: {
         id: mentor.id,
         full_name: mentor.full_name || mentor.fullName,
+        email: mentor.email,
         expertise: mentor.expertise,
         experience: mentor.experience,
         photo_url: mentor.photo_url || mentor.photoUrl
