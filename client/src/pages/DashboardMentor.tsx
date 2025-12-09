@@ -727,15 +727,30 @@ export default function DashboardMentor() {
                                       onBlur={async (e) => {
                                         const newNote = e.currentTarget.value.trim();
                                         if (!newNote) return;
+                                        const assignmentId = member.assignment_id;
+                                        console.log("[MentorNotes] Saving note for assignment:", assignmentId);
+                                        if (!assignmentId) {
+                                          toast.error("No assignment ID found");
+                                          return;
+                                        }
                                         try {
-                                          await fetch(`${API_BASE_URL}/api/mentor-assignments/${member.assignment_id || member.id}`, {
+                                          const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/${assignmentId}`, {
                                             method: "PATCH",
                                             headers: { "Content-Type": "application/json" },
                                             body: JSON.stringify({ mentorNotes: newNote })
                                           });
-                                          e.currentTarget.value = "";
-                                          toast.success("Note added!");
+                                          const data = await response.json();
+                                          console.log("[MentorNotes] Response:", data);
+                                          if (response.ok && data.success) {
+                                            e.currentTarget.value = "";
+                                            toast.success("Note added!");
+                                            // Refresh the page to show updated notes
+                                            window.location.reload();
+                                          } else {
+                                            toast.error(data.error || "Failed to save note");
+                                          }
                                         } catch (error) {
+                                          console.error("[MentorNotes] Error:", error);
                                           toast.error("Failed to save note");
                                         }
                                       }}
