@@ -1843,10 +1843,24 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
     const portfolioData = assignments.map(assignment => {
       const entrepreneur = entrepreneurs?.find(e => e.id === assignment.entrepreneur_id);
       const entData = entrepreneur?.data || {};
+      
+      // Parse mentor_notes from JSON if needed
+      let parsedNotes = [];
+      if (assignment.mentor_notes) {
+        try {
+          parsedNotes = typeof assignment.mentor_notes === 'string'
+            ? JSON.parse(assignment.mentor_notes)
+            : (Array.isArray(assignment.mentor_notes) ? assignment.mentor_notes : [assignment.mentor_notes]);
+        } catch (e) {
+          parsedNotes = [assignment.mentor_notes];
+        }
+      }
+      
       return {
         assignment_id: assignment.id,
         portfolio_number: assignment.portfolio_number,
         meeting_link: assignment.meeting_link,
+        mentor_notes: parsedNotes,
         entrepreneur: entrepreneur ? {
           id: entrepreneur.id,
           full_name: entrepreneur.entrepreneur_name || entData.fullName || "",
@@ -1870,15 +1884,55 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
   }
 });
 
-// Update mentor assignment (e.g., meeting link)
+// Update mentor assignment (e.g., meeting link, notes)
 app.patch("/api/mentor-assignments/:id", async (req, res) => {
+  console.log("[PATCH /api/mentor-assignments/:id] Request received for ID:", req.params.id);
+  console.log("[PATCH /api/mentor-assignments/:id] Body:", JSON.stringify(req.body));
+  
   try {
     const { id } = req.params;
-    const { meetingLink, status } = req.body;
+    const { meetingLink, status, mentorNotes } = req.body;
 
     const updates = {};
     if (meetingLink !== undefined) updates.meeting_link = meetingLink;
     if (status !== undefined) updates.status = status;
+
+    // If mentorNotes is provided, append it to existing notes (keep history)
+    if (mentorNotes !== undefined) {
+      console.log("[PATCH /api/mentor-assignments/:id] Processing mentorNotes:", mentorNotes);
+      
+      // Get current assignment to check existing notes
+      const { data: currentAssignment, error: fetchError } = await supabase
+        .from("mentor_assignments")
+        .select("mentor_notes")
+        .eq("id", id)
+        .single();
+
+      console.log("[PATCH /api/mentor-assignments/:id] Current assignment:", currentAssignment, "Error:", fetchError?.message);
+
+      let existingNotes = [];
+      if (currentAssignment?.mentor_notes) {
+        try {
+          existingNotes = typeof currentAssignment.mentor_notes === 'string'
+            ? JSON.parse(currentAssignment.mentor_notes)
+            : (Array.isArray(currentAssignment.mentor_notes) ? currentAssignment.mentor_notes : []);
+        } catch (e) {
+          existingNotes = [currentAssignment.mentor_notes];
+        }
+      }
+
+      // Append new note with timestamp
+      const newNote = {
+        text: mentorNotes,
+        timestamp: new Date().toISOString()
+      };
+      
+      const updatedNotes = [...existingNotes, newNote];
+      updates.mentor_notes = JSON.stringify(updatedNotes);
+      console.log("[PATCH /api/mentor-assignments/:id] Updated notes:", updates.mentor_notes);
+    }
+
+    console.log("[PATCH /api/mentor-assignments/:id] Sending update:", updates);
 
     const { data, error } = await supabase
       .from("mentor_assignments")
@@ -1886,12 +1940,15 @@ app.patch("/api/mentor-assignments/:id", async (req, res) => {
       .eq("id", id)
       .select();
 
+    console.log("[PATCH /api/mentor-assignments/:id] Update result:", { data, error: error?.message });
+
     if (error) {
       return res.status(400).json({ error: error.message });
     }
 
     return res.json({ success: true, assignment: data?.[0] });
   } catch (error) {
+    console.error("[PATCH /api/mentor-assignments/:id] Exception:", error);
     return res.status(500).json({ error: error.message });
   }
 });

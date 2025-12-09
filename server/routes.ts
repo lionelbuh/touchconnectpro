@@ -720,6 +720,7 @@ export async function registerRoutes(
         .eq("status", "active") as any);
 
       console.log("[GET /api/mentor-assignments/mentor-email/:email] Assignments found:", assignments?.length || 0);
+      console.log("[GET /api/mentor-assignments/mentor-email/:email] First assignment raw:", JSON.stringify(assignments?.[0]));
 
       if (assignmentError) {
         console.error("[GET /api/mentor-assignments/mentor-email/:email] Error:", assignmentError);
