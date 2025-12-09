@@ -811,11 +811,11 @@ export default function DashboardEntrepreneur() {
                 </div>
 
                 {mentorNotes && mentorNotes.length > 0 && (() => {
-                  // Sort notes newest first
+                  // Sort notes oldest first
                   const sortedNotes = [...mentorNotes].sort((a: any, b: any) => {
                     const timeA = typeof a === 'string' ? 0 : new Date(a.timestamp || 0).getTime();
                     const timeB = typeof b === 'string' ? 0 : new Date(b.timestamp || 0).getTime();
-                    return timeB - timeA;
+                    return timeA - timeB;
                   });
                   const displayNotes = showAllOverviewNotes ? sortedNotes : sortedNotes.slice(0, 2);
                   
@@ -832,10 +832,16 @@ export default function DashboardEntrepreneur() {
                           {displayNotes.map((note: any, idx: number) => {
                             const noteText = typeof note === 'string' ? note : note.text;
                             const noteTime = typeof note === 'string' ? null : note.timestamp;
+                            const isCompleted = typeof note === 'string' ? false : note.completed;
                             return (
-                              <div key={idx} className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
-                                <p className="text-emerald-900 dark:text-emerald-100 text-sm">{noteText}</p>
-                                {noteTime && <p className="text-emerald-700 dark:text-emerald-300 text-xs mt-2">{new Date(noteTime).toLocaleDateString()}</p>}
+                              <div key={idx} className={`p-3 rounded-lg ${isCompleted ? 'bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800' : 'bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800'}`}>
+                                <div className="flex items-start gap-3">
+                                  <div className="flex-1">
+                                    <p className={`text-sm ${isCompleted ? 'text-green-900 dark:text-green-100 line-through' : 'text-emerald-900 dark:text-emerald-100'}`}>{noteText}</p>
+                                    {noteTime && <p className={`text-xs mt-2 ${isCompleted ? 'text-green-700 dark:text-green-300' : 'text-emerald-700 dark:text-emerald-300'}`}>{new Date(noteTime).toLocaleDateString()}</p>}
+                                  </div>
+                                  {isCompleted && <div className="text-green-600 text-lg font-bold min-w-fit">✓ Well done</div>}
+                                </div>
                               </div>
                             );
                           })}
@@ -1554,14 +1560,14 @@ export default function DashboardEntrepreneur() {
             {activeTab === "notes" && (
               <div>
                 <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Notes</h1>
-                <p className="text-muted-foreground mb-8">Guidance and next steps from your mentor to help you succeed. Newest notes appear first.</p>
+                <p className="text-muted-foreground mb-8">Steps 1, 2, 3... from your mentor. Check them off as you complete them.</p>
 
                 {mentorNotes && mentorNotes.length > 0 ? (() => {
-                  // Sort notes newest first
+                  // Sort notes oldest first
                   const sortedNotes = [...mentorNotes].sort((a: any, b: any) => {
                     const timeA = typeof a === 'string' ? 0 : new Date(a.timestamp || 0).getTime();
                     const timeB = typeof b === 'string' ? 0 : new Date(b.timestamp || 0).getTime();
-                    return timeB - timeA;
+                    return timeA - timeB;
                   });
                   
                   return (
@@ -1569,15 +1575,17 @@ export default function DashboardEntrepreneur() {
                       {sortedNotes.map((note: any, idx: number) => {
                         const noteText = typeof note === 'string' ? note : note.text;
                         const noteTime = typeof note === 'string' ? null : note.timestamp;
+                        const isCompleted = typeof note === 'string' ? false : note.completed;
                         return (
-                          <Card key={idx} className="border-l-4 border-l-emerald-500 border-cyan-200 dark:border-cyan-900/30">
+                          <Card key={idx} className={`border-l-4 ${isCompleted ? 'border-l-green-500 bg-green-50 dark:bg-green-950/20' : 'border-l-emerald-500'} border-cyan-200 dark:border-cyan-900/30`}>
                             <CardContent className="pt-6">
                               <div className="flex gap-4">
-                                <div className="text-3xl font-bold text-emerald-500 min-w-12">{idx + 1}.</div>
+                                <div className={`text-3xl font-bold min-w-12 ${isCompleted ? 'text-green-500' : 'text-emerald-500'}`}>{idx + 1}.</div>
                                 <div className="flex-1">
-                                  <p className="text-slate-900 dark:text-white leading-relaxed">{noteText}</p>
-                                  {noteTime && <p className="text-slate-500 dark:text-slate-400 text-xs mt-3">Added on {new Date(noteTime).toLocaleDateString()}</p>}
+                                  <p className={`leading-relaxed ${isCompleted ? 'text-green-900 dark:text-green-100 line-through' : 'text-slate-900 dark:text-white'}`}>{noteText}</p>
+                                  {noteTime && <p className={`text-xs mt-3 ${isCompleted ? 'text-green-700 dark:text-green-300' : 'text-slate-500 dark:text-slate-400'}`}>Added on {new Date(noteTime).toLocaleDateString()}</p>}
                                 </div>
+                                {isCompleted && <div className="text-green-600 text-2xl font-bold min-w-fit">✓</div>}
                               </div>
                             </CardContent>
                           </Card>

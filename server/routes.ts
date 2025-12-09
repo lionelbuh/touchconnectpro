@@ -861,6 +861,63 @@ export async function registerRoutes(
     }
   });
 
+  // Toggle note completion status
+  app.patch("/api/mentor-assignments/:id/toggle-note/:noteIndex", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id, noteIndex } = req.params;
+      const { completed } = req.body;
+      const noteIdxNum = parseInt(noteIndex);
+
+      const { data: assignment, error: fetchError } = await (client
+        .from("mentor_assignments")
+        .select("*")
+        .eq("id", id)
+        .single() as any);
+
+      if (fetchError || !assignment) {
+        return res.status(404).json({ error: "Assignment not found" });
+      }
+
+      let notes: any[] = [];
+      if (assignment.mentor_notes) {
+        try {
+          notes = typeof assignment.mentor_notes === 'string'
+            ? JSON.parse(assignment.mentor_notes)
+            : (Array.isArray(assignment.mentor_notes) ? assignment.mentor_notes : [assignment.mentor_notes]);
+        } catch (e) {
+          notes = [assignment.mentor_notes];
+        }
+      }
+
+      if (noteIdxNum >= 0 && noteIdxNum < notes.length) {
+        const note = notes[noteIdxNum];
+        notes[noteIdxNum] = {
+          text: typeof note === 'string' ? note : note.text,
+          timestamp: typeof note === 'string' ? new Date().toISOString() : (note.timestamp || new Date().toISOString()),
+          completed: completed || false
+        };
+      }
+
+      const { error: updateError } = await (client
+        .from("mentor_assignments")
+        .update({ mentor_notes: JSON.stringify(notes) })
+        .eq("id", id) as any);
+
+      if (updateError) {
+        return res.status(500).json({ error: updateError.message });
+      }
+
+      return res.json({ success: true });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Update mentor assignment (e.g., meeting link, notes)
   app.patch("/api/mentor-assignments/:id", async (req, res) => {
     console.log("[PATCH /api/mentor-assignments/:id] Request received for ID:", req.params.id);

@@ -705,14 +705,43 @@ export default function DashboardMentor() {
                                     
                                     {/* Notes History */}
                                     {member.mentorNotes && member.mentorNotes.length > 0 && (
-                                      <div className="mb-4 space-y-2 max-h-32 overflow-y-auto">
+                                      <div className="mb-4 space-y-2 max-h-48 overflow-y-auto">
                                         {member.mentorNotes.map((note: any, idx: number) => {
                                           const noteText = typeof note === 'string' ? note : note.text;
                                           const noteTime = typeof note === 'string' ? null : note.timestamp;
+                                          const isCompleted = typeof note === 'string' ? false : note.completed;
                                           return (
-                                            <div key={idx} className="p-2 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded text-xs">
-                                              <p className="text-emerald-900 dark:text-emerald-100">{noteText}</p>
-                                              {noteTime && <p className="text-emerald-700 dark:text-emerald-300 text-xs mt-1">{new Date(noteTime).toLocaleDateString()}</p>}
+                                            <div key={idx} className={`p-2 rounded text-xs flex items-start gap-2 ${isCompleted ? 'bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800' : 'bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800'}`}>
+                                              <Button
+                                                size="xs"
+                                                variant="ghost"
+                                                className={`mt-0.5 min-w-fit px-1 py-0 ${isCompleted ? 'text-green-600 hover:text-green-700' : 'text-slate-400 hover:text-slate-600'}`}
+                                                onClick={async () => {
+                                                  const assignmentId = member.assignment_id;
+                                                  if (!assignmentId) return;
+                                                  try {
+                                                    const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/${assignmentId}/toggle-note/${idx}`, {
+                                                      method: "PATCH",
+                                                      headers: { "Content-Type": "application/json" },
+                                                      body: JSON.stringify({ completed: !isCompleted })
+                                                    });
+                                                    if (response.ok) {
+                                                      window.location.reload();
+                                                    } else {
+                                                      toast.error("Failed to update note");
+                                                    }
+                                                  } catch (error) {
+                                                    toast.error("Error updating note");
+                                                  }
+                                                }}
+                                                data-testid={`button-toggle-note-${member.id}-${idx}`}
+                                              >
+                                                {isCompleted ? '✓' : '○'}
+                                              </Button>
+                                              <div className="flex-1">
+                                                <p className={`${isCompleted ? 'text-green-900 dark:text-green-100 line-through' : 'text-emerald-900 dark:text-emerald-100'}`}>{noteText}</p>
+                                                {noteTime && <p className={`text-xs mt-1 ${isCompleted ? 'text-green-700 dark:text-green-300' : 'text-emerald-700 dark:text-emerald-300'}`}>{new Date(noteTime).toLocaleDateString()}</p>}
+                                              </div>
                                             </div>
                                           );
                                         })}
