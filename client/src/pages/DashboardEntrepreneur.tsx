@@ -1110,51 +1110,6 @@ export default function DashboardEntrepreneur() {
               </div>
             )}
 
-            {/* Mentor Notes Tab */}
-            {activeTab === "notes" && (
-              <div>
-                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Notes & Recommendations</h1>
-                <p className="text-muted-foreground mb-8">Your mentor's step-by-step guidance and recommendations for your startup journey.</p>
-
-                {mentorNotes.length > 0 ? (
-                  <div className="space-y-4">
-                    {mentorNotes.map((note, idx) => (
-                      <Card key={note.id || idx} className={`border-l-4 ${note.type === "milestone" ? "border-l-emerald-500" : note.type === "action" ? "border-l-amber-500" : "border-l-cyan-500"}`}>
-                        <CardHeader className="pb-2">
-                          <div className="flex items-start gap-4">
-                            <div className={`h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 ${note.type === "milestone" ? "bg-emerald-100 text-emerald-600" : note.type === "action" ? "bg-amber-100 text-amber-600" : "bg-cyan-100 text-cyan-600"} font-bold`}>
-                              {note.step_number || idx + 1}
-                            </div>
-                            <div className="flex-1">
-                              <CardTitle className="text-lg">{note.title}</CardTitle>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {note.type === "milestone" ? "Milestone" : note.type === "action" ? "Action Item" : "Recommendation"} • {new Date(note.created_at).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{note.content}</p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <Card className="text-center py-12">
-                    <CardContent>
-                      <ClipboardList className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No Notes Yet</h3>
-                      <p className="text-muted-foreground">
-                        {hasActiveMentor 
-                          ? "Your mentor hasn't added any notes yet. Check back soon for guidance and recommendations."
-                          : "Once you're assigned a mentor, their notes and recommendations will appear here."}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            )}
-
             {/* Messages Tab */}
             {activeTab === "messages" && (() => {
               const adminMsgs = messages.filter((m: any) => 
