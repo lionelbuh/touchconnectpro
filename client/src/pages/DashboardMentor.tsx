@@ -725,7 +725,8 @@ export default function DashboardMentor() {
                                       className="w-full min-h-20 p-3 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                                       data-testid={`textarea-mentor-notes-${member.id}`}
                                       onBlur={async (e) => {
-                                        const newNote = e.currentTarget.value.trim();
+                                        const textarea = e.target as HTMLTextAreaElement;
+                                        const newNote = textarea.value.trim();
                                         if (!newNote) return;
                                         const assignmentId = member.assignment_id;
                                         console.log("[MentorNotes] Saving note for assignment:", assignmentId);
@@ -742,7 +743,7 @@ export default function DashboardMentor() {
                                           const data = await response.json();
                                           console.log("[MentorNotes] Response:", data);
                                           if (response.ok && data.success) {
-                                            e.currentTarget.value = "";
+                                            textarea.value = "";
                                             toast.success("Note added!");
                                             // Refresh the page to show updated notes
                                             window.location.reload();
