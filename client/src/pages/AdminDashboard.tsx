@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck } from "lucide-react";
+import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { API_BASE_URL } from "@/config";
@@ -87,7 +87,7 @@ interface User {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"approvals" | "members">("approvals");
+  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings">("approvals");
   const [activeMembersSubTab, setActiveMembersSubTab] = useState<"portfolio" | "messaging" | "management">("portfolio");
   const [activeApprovalsSubTab, setActiveApprovalsSubTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
   const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled">("entrepreneurs");
@@ -119,7 +119,8 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [showRejected, setShowRejected] = useState<{[key: string]: boolean}>({});
-  const [mentorAssignments, setMentorAssignments] = useState<{[entrepreneurId: string]: {mentorId: string; mentorName: string; portfolioNumber: number}}>({})
+  const [mentorAssignments, setMentorAssignments] = useState<{[entrepreneurId: string]: {mentorId: string; mentorName: string; portfolioNumber: number}}>({});
+  const [allMeetings, setAllMeetings] = useState<any[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -296,6 +297,17 @@ export default function AdminDashboard() {
         }
       } catch (err) {
         console.error("Error fetching mentor assignments:", err);
+      }
+
+      // Load all meetings for admin
+      try {
+        const meetingsResponse = await fetch(`${API_BASE_URL}/api/admin/meetings`);
+        if (meetingsResponse.ok) {
+          const meetingsData = await meetingsResponse.json();
+          setAllMeetings(meetingsData.meetings || []);
+        }
+      } catch (err) {
+        console.error("Error fetching meetings:", err);
       }
     };
 
@@ -717,6 +729,14 @@ export default function AdminDashboard() {
             data-testid="button-members-tab"
           >
             <Users className="mr-2 h-4 w-4" /> Members & Portfolios
+          </Button>
+          <Button 
+            variant={activeTab === "meetings" ? "default" : "outline"}
+            onClick={() => setActiveTab("meetings")}
+            className={activeTab === "meetings" ? "bg-blue-600 hover:bg-blue-700" : ""}
+            data-testid="button-meetings-tab"
+          >
+            <Calendar className="mr-2 h-4 w-4" /> Meetings
           </Button>
         </div>
 
@@ -2813,6 +2833,43 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Meetings Tab */}
+      {activeTab === "meetings" && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">All Scheduled Meetings</h2>
+          <p className="text-muted-foreground mb-6">View all Zoom meetings for backup and OOO coverage</p>
+          {allMeetings.length > 0 ? (
+            <div className="grid gap-4">
+              {allMeetings.map((meeting) => (
+                <Card key={meeting.id} className="border-l-4 border-l-blue-500">
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex-1">
+                        <p className="font-semibold text-slate-900 dark:text-white mb-2">{meeting.topic}</p>
+                        <p className="text-sm text-muted-foreground mb-1">Status: <Badge>{meeting.status}</Badge></p>
+                        {meeting.start_time && <p className="text-sm text-muted-foreground">Date/Time: {new Date(meeting.start_time).toLocaleString()}</p>}
+                        <p className="text-sm text-muted-foreground">Duration: {meeting.duration} minutes</p>
+                        {meeting.participants && meeting.participants.length > 0 && <p className="text-sm text-muted-foreground mt-2">Participants: {meeting.participants.length} entrepreneurs</p>}
+                        <a href={meeting.join_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                          <ExternalLink className="h-3 w-3" /> View Meeting
+                        </a>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="text-center py-8">
+                <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                <p className="text-muted-foreground">No meetings scheduled yet</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 

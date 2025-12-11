@@ -1881,5 +1881,30 @@ export async function registerRoutes(
     }
   });
 
+  // Get all meetings (for admin)
+  app.get("/api/admin/meetings", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { data: meetings, error } = await (client
+        .from("meetings")
+        .select("*")
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[ADMIN MEETINGS] Query error:", error);
+        return res.json({ meetings: [] });
+      }
+
+      return res.json({ meetings: meetings || [] });
+    } catch (error: any) {
+      console.error("[ADMIN MEETINGS] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }
