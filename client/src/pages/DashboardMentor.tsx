@@ -72,13 +72,10 @@ export default function DashboardMentor() {
   const [messages, setMessages] = useState<any[]>([]);
   const [entrepreneurMessages, setEntrepreneurMessages] = useState<any[]>([]);
 
-  const [meetings, setMeetings] = useState([
-    { id: 1, portfolio: 1, date: "2024-12-01", time: "10:00 AM", attendees: 9, topic: "Q4 Planning & Strategy" },
-    { id: 2, portfolio: 1, date: "2024-11-24", time: "2:00 PM", attendees: 9, topic: "Product Roadmap Review" }
-  ]);
+  const [meetings, setMeetings] = useState<any[]>([]);
 
   const [newMessage, setNewMessage] = useState("");
-  const [newMeeting, setNewMeeting] = useState({ date: "", time: "", topic: "" });
+  const [newMeeting, setNewMeeting] = useState({ date: "", time: "", topic: "", duration: 60 });
   const [adminMessage, setAdminMessage] = useState("");
   const [adminMessages, setAdminMessages] = useState<any[]>([]);
   const [mentorReadMessageIds, setMentorReadMessageIds] = useState<string[]>([]);
@@ -142,6 +139,25 @@ export default function DashboardMentor() {
       setMentorReadMessageIds(JSON.parse(savedReadIds));
     }
   }, []);
+
+  // Load Zoom meetings for this mentor
+  useEffect(() => {
+    if (!profileId) return;
+    
+    async function loadMeetings() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/zoom/meetings/${encodeURIComponent(profileId)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setMeetings(data.meetings || []);
+        }
+      } catch (error) {
+        console.error("Error loading meetings:", error);
+      }
+    }
+
+    loadMeetings();
+  }, [profileId]);
 
   // Load admin messages from database
   useEffect(() => {
@@ -1114,20 +1130,31 @@ export default function DashboardMentor() {
                 </Button>
               </div>
               <div className="space-y-4">
-                {meetings.map((meeting) => (
-                  <Card key={meeting.id} className="border-l-4 border-l-purple-500">
+                {meetings.length > 0 ? meetings.map((meeting) => (
+                  <Card key={meeting.id} className="border-l-4 border-l-blue-500">
                     <CardContent className="pt-6">
                       <div className="flex justify-between items-start">
-                        <div>
+                        <div className="flex-1">
                           <p className="font-semibold text-slate-900 dark:text-white mb-2">{meeting.topic}</p>
-                          <p className="text-sm text-muted-foreground mb-1">Portfolio {meeting.portfolio}</p>
-                          <p className="text-sm text-muted-foreground">{meeting.date} at {meeting.time} • {meeting.attendees} attendees</p>
+                          <p className="text-sm text-muted-foreground mb-1">Status: {meeting.status}</p>
+                          {meeting.start_time && <p className="text-sm text-muted-foreground">{new Date(meeting.start_time).toLocaleString()}</p>}
+                          <p className="text-sm text-muted-foreground">Duration: {meeting.duration} minutes</p>
+                          <a href={meeting.join_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-blue-600 hover:underline flex items-center gap-1">
+                            Join Meeting <ExternalLink className="h-3 w-3" />
+                          </a>
                         </div>
                         <ChevronRight className="h-5 w-5 text-muted-foreground" />
                       </div>
                     </CardContent>
                   </Card>
-                ))}
+                )) : (
+                  <Card>
+                    <CardContent className="text-center py-8">
+                      <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                      <p className="text-muted-foreground">No meetings scheduled yet. Create one to get started!</p>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
           )}
@@ -1396,12 +1423,41 @@ export default function DashboardMentor() {
                       />
                     </div>
                   </div>
+                  <div>
+                    <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Duration *</label>
+                    <div className="flex gap-3">
+                      <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800" style={{flex: 1}}>
+                        <input
+                          type="radio"
+                          name="duration"
+                          value="30"
+                          checked={newMeeting.duration === 30}
+                          onChange={() => setNewMeeting({ ...newMeeting, duration: 30 })}
+                          className="w-4 h-4"
+                          data-testid="radio-duration-30"
+                        />
+                        <span className="font-medium">30 min</span>
+                      </label>
+                      <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800" style={{flex: 1}}>
+                        <input
+                          type="radio"
+                          name="duration"
+                          value="60"
+                          checked={newMeeting.duration === 60}
+                          onChange={() => setNewMeeting({ ...newMeeting, duration: 60 })}
+                          className="w-4 h-4"
+                          data-testid="radio-duration-60"
+                        />
+                        <span className="font-medium">1 hour</span>
+                      </label>
+                    </div>
+                  </div>
                   <p className="text-xs text-muted-foreground">Leave date/time empty to create an instant meeting.</p>
                   
                   <div className="flex gap-2 pt-2">
                     <Button variant="outline" className="flex-1" onClick={() => {
                       setShowMeetingModal(false);
-                      setNewMeeting({ date: "", time: "", topic: "" });
+                      setNewMeeting({ date: "", time: "", topic: "", duration: 60 });
                     }}>Cancel</Button>
                     <Button 
                       className="flex-1 bg-blue-600 hover:bg-blue-700" 
@@ -1421,7 +1477,7 @@ export default function DashboardMentor() {
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
                               topic: newMeeting.topic,
-                              duration: 60,
+                              duration: newMeeting.duration,
                               startTime,
                               mentorId: profileId,
                               portfolioNumber: selectedPortfolio !== null ? selectedPortfolio + 1 : 1
