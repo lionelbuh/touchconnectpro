@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -1082,6 +1083,37 @@ export default function DashboardEntrepreneur() {
                     </Card>
                   );
                 })()}
+
+                {/* Meetings Section */}
+                {hasActiveMentor && meetings.length > 0 && (
+                  <Card className="mb-6 border-l-4 border-l-blue-500">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-blue-600" />
+                        Scheduled Meetings
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {meetings.slice(0, 2).map((meeting) => (
+                          <div key={meeting.id} className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <div className="flex justify-between items-start mb-2">
+                              <p className="font-semibold text-blue-900 dark:text-blue-100">{meeting.topic}</p>
+                              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">{meeting.status}</Badge>
+                            </div>
+                            {meeting.start_time && <p className="text-sm text-blue-700 dark:text-blue-300">📅 {new Date(meeting.start_time).toLocaleString()}</p>}
+                            <p className="text-sm text-blue-700 dark:text-blue-300">⏱ {meeting.duration} minutes</p>
+                            {meeting.join_url && (
+                              <a href={meeting.join_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                                <ExternalLink className="h-3 w-3" /> Join Meeting
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Quick Links */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

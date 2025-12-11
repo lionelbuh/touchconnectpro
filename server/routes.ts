@@ -1795,12 +1795,18 @@ export async function registerRoutes(
         } as any) as any);
       }
 
-      await (client
+      const { error: updateError } = await (client
         .from("meetings")
         .update({ participants: entrepreneurIds } as any)
         .eq("id", meetingId) as any);
 
+      if (updateError) {
+        console.error("[ZOOM INVITE] Error updating meeting participants:", updateError);
+        return res.status(500).json({ error: "Failed to save invitations to meeting" });
+      }
+
       console.log("[ZOOM INVITE] Sent", emailsSent, "emails and", entrepreneurs.length, "in-app messages");
+      console.log("[ZOOM INVITE] Updated meeting", meetingId, "with participants:", entrepreneurIds);
 
       return res.json({ 
         success: true, 
@@ -1861,6 +1867,7 @@ export async function registerRoutes(
       }
 
       const entrepreneurId = ideas[0].id;
+      console.log("[ENTREPRENEUR MEETINGS] Finding meetings for entrepreneur", email, "with idea ID:", entrepreneurId);
 
       // Then get all meetings where this entrepreneur is in the participants array
       const { data: meetings, error } = await (client
@@ -1872,6 +1879,11 @@ export async function registerRoutes(
       if (error) {
         console.error("[ENTREPRENEUR MEETINGS] Query error:", error);
         return res.json({ meetings: [] });
+      }
+
+      console.log("[ENTREPRENEUR MEETINGS] Found", meetings?.length || 0, "meetings for", email);
+      if (meetings && meetings.length > 0) {
+        console.log("[ENTREPRENEUR MEETINGS] Meeting IDs:", meetings.map((m: any) => ({ id: m.id, participants: m.participants })));
       }
 
       return res.json({ meetings: meetings || [] });
