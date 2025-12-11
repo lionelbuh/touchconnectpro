@@ -1839,5 +1839,47 @@ export async function registerRoutes(
     }
   });
 
+  // Get meetings for an entrepreneur
+  app.get("/api/entrepreneur/meetings/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { email } = req.params;
+
+      // First get the entrepreneur's idea ID
+      const { data: ideas, error: ideasError } = await (client
+        .from("ideas")
+        .select("id")
+        .eq("entrepreneur_email", email)
+        .limit(1) as any);
+
+      if (ideasError || !ideas || ideas.length === 0) {
+        return res.json({ meetings: [] });
+      }
+
+      const entrepreneurId = ideas[0].id;
+
+      // Then get all meetings where this entrepreneur is in the participants array
+      const { data: meetings, error } = await (client
+        .from("meetings")
+        .select("*")
+        .contains("participants", [entrepreneurId])
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[ENTREPRENEUR MEETINGS] Query error:", error);
+        return res.json({ meetings: [] });
+      }
+
+      return res.json({ meetings: meetings || [] });
+    } catch (error: any) {
+      console.error("[ENTREPRENEUR MEETINGS] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }

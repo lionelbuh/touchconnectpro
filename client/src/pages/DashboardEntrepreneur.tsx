@@ -18,7 +18,7 @@ export default function DashboardEntrepreneur() {
   const [showSuccessPage, setShowSuccessPage] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile" | "notes" | "messages">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile" | "notes" | "messages" | "meetings">("overview");
   const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
   const [mentorData, setMentorData] = useState<any>(null);
   const [mentorNotes, setMentorNotes] = useState<any[]>([]);
@@ -26,6 +26,7 @@ export default function DashboardEntrepreneur() {
   const [newMessage, setNewMessage] = useState("");
   const [adminMessageText, setAdminMessageText] = useState("");
   const [entrepreneurReadMessageIds, setEntrepreneurReadMessageIds] = useState<number[]>([]);
+  const [meetings, setMeetings] = useState<any[]>([]);
   const [entrepreneurData, setEntrepreneurData] = useState<any>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [userEmail, setUserEmail] = useState<string>("");
@@ -227,6 +228,23 @@ export default function DashboardEntrepreneur() {
 
     fetchUserData();
   }, []);
+
+  // Load meetings for entrepreneur
+  useEffect(() => {
+    if (!userEmail) return;
+    async function loadMeetings() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/entrepreneur/meetings/${encodeURIComponent(userEmail)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setMeetings(data.meetings || []);
+        }
+      } catch (error) {
+        console.error("Error loading meetings:", error);
+      }
+    }
+    loadMeetings();
+  }, [userEmail]);
 
   useEffect(() => {
     localStorage.setItem("tcp_formData", JSON.stringify(formData));
@@ -716,6 +734,17 @@ export default function DashboardEntrepreneur() {
                 <MessageSquare className="mr-2 h-4 w-4" /> Messages
                 {messages.filter((m: any) => m.to_email === userEmail && !m.is_read).length > 0 && (
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{messages.filter((m: any) => m.to_email === userEmail && !m.is_read).length}</span>
+                )}
+              </Button>
+              <Button 
+                variant={activeTab === "meetings" ? "secondary" : "ghost"}
+                className="w-full justify-start font-medium text-slate-600"
+                onClick={() => setActiveTab("meetings")}
+                data-testid="button-meetings-tab"
+              >
+                <Calendar className="mr-2 h-4 w-4" /> Meetings
+                {meetings.length > 0 && (
+                  <span className="ml-auto bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 text-xs px-2 py-0.5 rounded-full">{meetings.length}</span>
                 )}
               </Button>
               <Button 
@@ -1602,6 +1631,41 @@ export default function DashboardEntrepreneur() {
                     </CardContent>
                   </Card>
                 )}
+              </div>
+            )}
+
+            {/* Meetings Tab */}
+            {activeTab === "meetings" && (
+              <div>
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Scheduled Meetings</h1>
+                <p className="text-muted-foreground mb-8">View all meetings scheduled by your mentor</p>
+                
+                <div className="space-y-4">
+                  {meetings.length > 0 ? meetings.map((meeting) => (
+                    <Card key={meeting.id} className="border-l-4 border-l-blue-500">
+                      <CardContent className="pt-6">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="font-semibold text-slate-900 dark:text-white mb-2">{meeting.topic}</p>
+                            <p className="text-sm text-muted-foreground mb-1">Status: {meeting.status}</p>
+                            {meeting.start_time && <p className="text-sm text-muted-foreground">{new Date(meeting.start_time).toLocaleString()}</p>}
+                            <p className="text-sm text-muted-foreground">Duration: {meeting.duration} minutes</p>
+                            <a href={meeting.join_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium flex items-center gap-2">
+                              <ExternalLink className="h-3 w-3" /> Join Meeting
+                            </a>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )) : (
+                    <Card>
+                      <CardContent className="text-center py-8">
+                        <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                        <p className="text-muted-foreground">No meetings scheduled yet. Your mentor will schedule one soon!</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
               </div>
             )}
 
