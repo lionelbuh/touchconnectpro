@@ -1231,18 +1231,24 @@ export default function DashboardEntrepreneur() {
 
             {/* Messages Tab */}
             {activeTab === "messages" && (() => {
+              // Include system messages in admin section if no mentor assigned
+              const hasNoMentor = !mentorData?.mentor?.email;
               const adminMsgs = messages.filter((m: any) => 
-                m.from_email === "admin@touchconnectpro.com" || m.to_email === "admin@touchconnectpro.com"
+                m.from_email === "admin@touchconnectpro.com" || 
+                m.to_email === "admin@touchconnectpro.com" ||
+                (hasNoMentor && m.from_email === "system@touchconnectpro.com")
               );
               const adminUnread = adminMsgs.filter((m: any) => 
                 m.to_email === userEmail && !m.is_read
               ).length;
               
               const mentorEmail = mentorData?.mentor?.email;
+              // Include system messages (meeting invites) in mentor section
               const mentorMsgs = mentorEmail ? messages.filter((m: any) => 
                 m.from_email?.toLowerCase() === mentorEmail.toLowerCase() || 
-                m.to_email?.toLowerCase() === mentorEmail.toLowerCase()
-              ) : [];
+                m.to_email?.toLowerCase() === mentorEmail.toLowerCase() ||
+                m.from_email === "system@touchconnectpro.com"
+              ) : messages.filter((m: any) => m.from_email === "system@touchconnectpro.com");
               const mentorUnread = mentorMsgs.filter((m: any) => 
                 m.to_email === userEmail && !m.is_read
               ).length;
