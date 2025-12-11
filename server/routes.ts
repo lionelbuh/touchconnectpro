@@ -1880,9 +1880,21 @@ export async function registerRoutes(
         return res.json({ meetings: [] });
       }
 
+      console.log("[ENTREPRENEUR MEETINGS] ALL meetings in database:", allMeetings?.length || 0);
+      if (allMeetings && allMeetings.length > 0) {
+        console.log("[ENTREPRENEUR MEETINGS] Meeting participants overview:", allMeetings.map((m: any) => ({
+          id: m.id,
+          topic: m.topic?.substring(0, 30),
+          participants: m.participants,
+          participantsType: typeof m.participants
+        })));
+      }
+
       // Filter meetings where entrepreneurId is in participants array
       const meetings = (allMeetings || []).filter((meeting: any) => {
-        return meeting.participants && Array.isArray(meeting.participants) && meeting.participants.includes(entrepreneurId);
+        const isIncluded = meeting.participants && Array.isArray(meeting.participants) && meeting.participants.includes(entrepreneurId);
+        console.log("[ENTREPRENEUR MEETINGS] Checking meeting", meeting.id, "participants:", meeting.participants, "looking for:", entrepreneurId, "found:", isIncluded);
+        return isIncluded;
       });
 
       console.log("[ENTREPRENEUR MEETINGS] Found", meetings.length, "meetings for", email, "with idea ID:", entrepreneurId);

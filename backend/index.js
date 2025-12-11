@@ -2522,6 +2522,84 @@ app.get("/api/zoom/meetings/:mentorId", async (req, res) => {
   }
 });
 
+// Get meetings for an entrepreneur
+app.get("/api/entrepreneur/meetings/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const decodedEmail = decodeURIComponent(email);
+
+    // First get the entrepreneur's idea ID
+    const { data: ideas, error: ideasError } = await supabase
+      .from("ideas")
+      .select("id")
+      .eq("entrepreneur_email", decodedEmail)
+      .limit(1);
+
+    if (ideasError || !ideas || ideas.length === 0) {
+      console.log("[ENTREPRENEUR MEETINGS] No idea found for email:", decodedEmail);
+      return res.json({ meetings: [] });
+    }
+
+    const entrepreneurId = ideas[0].id;
+    console.log("[ENTREPRENEUR MEETINGS] Finding meetings for entrepreneur", decodedEmail, "with idea ID:", entrepreneurId);
+
+    // Get all meetings and filter client-side (Supabase array containment is tricky)
+    const { data: allMeetings, error } = await supabase
+      .from("meetings")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[ENTREPRENEUR MEETINGS] Query error:", error);
+      return res.json({ meetings: [] });
+    }
+
+    console.log("[ENTREPRENEUR MEETINGS] ALL meetings in database:", allMeetings?.length || 0);
+    if (allMeetings && allMeetings.length > 0) {
+      console.log("[ENTREPRENEUR MEETINGS] Meeting participants overview:", allMeetings.map(m => ({
+        id: m.id,
+        topic: m.topic?.substring(0, 30),
+        participants: m.participants,
+        participantsType: typeof m.participants
+      })));
+    }
+
+    // Filter meetings where entrepreneurId is in participants array
+    const meetings = (allMeetings || []).filter(meeting => {
+      const isIncluded = meeting.participants && Array.isArray(meeting.participants) && meeting.participants.includes(entrepreneurId);
+      console.log("[ENTREPRENEUR MEETINGS] Checking meeting", meeting.id, "participants:", meeting.participants, "looking for:", entrepreneurId, "found:", isIncluded);
+      return isIncluded;
+    });
+
+    console.log("[ENTREPRENEUR MEETINGS] Found", meetings.length, "meetings for", decodedEmail, "with idea ID:", entrepreneurId);
+
+    return res.json({ meetings: meetings || [] });
+  } catch (error) {
+    console.error("[ENTREPRENEUR MEETINGS] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all meetings (for admin)
+app.get("/api/admin/meetings", async (req, res) => {
+  try {
+    const { data: meetings, error } = await supabase
+      .from("meetings")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[ADMIN MEETINGS] Query error:", error);
+      return res.json({ meetings: [] });
+    }
+
+    return res.json({ meetings: meetings || [] });
+  } catch (error) {
+    console.error("[ADMIN MEETINGS] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/", (req, res) => {
   return res.json({ 
     message: "TouchConnectPro Backend API",

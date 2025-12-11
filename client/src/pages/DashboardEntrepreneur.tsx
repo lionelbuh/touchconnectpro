@@ -232,13 +232,21 @@ export default function DashboardEntrepreneur() {
 
   // Load meetings for entrepreneur
   useEffect(() => {
-    if (!userEmail) return;
+    if (!userEmail) {
+      console.log("[DashboardEntrepreneur] No userEmail yet, skipping meetings load");
+      return;
+    }
     async function loadMeetings() {
+      console.log("[DashboardEntrepreneur] Loading meetings for:", userEmail);
       try {
         const response = await fetch(`${API_BASE_URL}/api/entrepreneur/meetings/${encodeURIComponent(userEmail)}`);
+        console.log("[DashboardEntrepreneur] Meetings API response status:", response.status);
         if (response.ok) {
           const data = await response.json();
+          console.log("[DashboardEntrepreneur] Meetings data received:", data);
           setMeetings(data.meetings || []);
+        } else {
+          console.error("[DashboardEntrepreneur] Meetings API failed:", response.status);
         }
       } catch (error) {
         console.error("Error loading meetings:", error);
