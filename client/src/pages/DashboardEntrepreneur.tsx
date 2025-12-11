@@ -946,6 +946,14 @@ export default function DashboardEntrepreneur() {
                           >
                             <ClipboardList className="mr-2 h-4 w-4" /> View Mentor Notes ({mentorNotes.length})
                           </Button>
+                          <Button 
+                            variant="outline" 
+                            className="w-full border-blue-200 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                            onClick={() => setActiveTab("meetings")}
+                            data-testid="button-view-meetings"
+                          >
+                            <Calendar className="mr-2 h-4 w-4" /> View Meetings with my Mentor ({meetings.length})
+                          </Button>
                         </div>
                       </div>
                     ) : (
@@ -963,10 +971,12 @@ export default function DashboardEntrepreneur() {
                 {/* Messages with Mentor Section (only show if mentor assigned and account not disabled) */}
                 {hasActiveMentor && mentorData && mentorData.mentor && !isAccountDisabled && (() => {
                   const mentorEmail = mentorData?.mentor?.email;
+                  // Include system messages (meeting invites) in the overview
                   const overviewMentorMsgs = mentorEmail ? messages.filter((m: any) => 
                     m.from_email?.toLowerCase() === mentorEmail.toLowerCase() || 
-                    m.to_email?.toLowerCase() === mentorEmail.toLowerCase()
-                  ) : [];
+                    m.to_email?.toLowerCase() === mentorEmail.toLowerCase() ||
+                    m.from_email === "system@touchconnectpro.com"
+                  ) : messages.filter((m: any) => m.from_email === "system@touchconnectpro.com");
                   
                   return (
                     <Card className="mb-6 border-l-4 border-l-emerald-500">
