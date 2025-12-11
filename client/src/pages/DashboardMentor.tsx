@@ -1130,7 +1130,14 @@ export default function DashboardMentor() {
                 </Button>
               </div>
               <div className="space-y-4">
-                {meetings.length > 0 ? meetings.map((meeting) => (
+                {meetings.length > 0 ? meetings.map((meeting) => {
+                  // Look up participant names from portfolios
+                  const allMembers = portfolios.flatMap(p => p.members);
+                  const participantNames = (meeting.participants || [])
+                    .map((id: string) => allMembers.find(m => m.id === id)?.name)
+                    .filter(Boolean);
+                  
+                  return (
                   <Card key={meeting.id} className="border-l-4 border-l-blue-500">
                     <CardContent className="pt-6">
                       <div className="flex justify-between items-start">
@@ -1139,6 +1146,14 @@ export default function DashboardMentor() {
                           <p className="text-sm text-muted-foreground mb-1">Status: {meeting.status}</p>
                           {meeting.start_time && <p className="text-sm text-muted-foreground">{new Date(meeting.start_time).toLocaleString()}</p>}
                           <p className="text-sm text-muted-foreground">Duration: {meeting.duration} minutes</p>
+                          {participantNames.length > 0 && (
+                            <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                              <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                                <Users className="inline h-4 w-4 mr-1" />
+                                Invited: {participantNames.join(", ")}
+                              </p>
+                            </div>
+                          )}
                           <a href={meeting.join_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-blue-600 hover:underline flex items-center gap-1">
                             Join Meeting <ExternalLink className="h-3 w-3" />
                           </a>
@@ -1147,7 +1162,8 @@ export default function DashboardMentor() {
                       </div>
                     </CardContent>
                   </Card>
-                )) : (
+                  );
+                }) : (
                   <Card>
                     <CardContent className="text-center py-8">
                       <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
