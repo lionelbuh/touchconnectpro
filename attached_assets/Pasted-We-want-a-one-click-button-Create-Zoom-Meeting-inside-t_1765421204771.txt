@@ -1,0 +1,146 @@
+We want a one-click button (“Create Zoom Meeting”) inside the mentor dashboard that does the following:
+
+🔧 1. Flow Summary
+
+Mentor clicks “Create Zoom Meeting”
+
+Front-end calls a Supabase Edge Function
+
+The Edge Function uses the Zoom API to create a meeting
+
+The function returns:
+
+join_url (for entrepreneurs)
+
+start_url (for mentor)
+
+Front-end displays the link and allows the mentor to select 1–10 entrepreneurs
+
+When mentor confirms, we send the Zoom link to those entrepreneurs (email / notification)
+
+No Calendly needed.
+Just a simple Zoom API integration.
+
+🔐 2. Requirements
+Zoom OAuth App
+
+We need a Zoom Server-to-Server OAuth app:
+
+Get the account credentials:
+
+ZOOM_CLIENT_ID
+
+ZOOM_CLIENT_SECRET
+
+ZOOM_ACCOUNT_ID
+
+Store them in Supabase environment variables for the Edge Function.
+
+Database Requirements
+
+Table: meetings
+
+Fields:
+
+id
+
+mentor_id
+
+meeting_url
+
+start_url
+
+created_at
+
+participants (optional JSON array)
+
+scheduled_for (optional if mentor picks time)
+
+📡 3. Edge Function: /create-zoom-meeting
+
+This Edge Function:
+
+Gets OAuth access token from Zoom
+
+Creates a scheduled or instant meeting
+
+Returns both URLs
+
+Pseudocode structure:
+// 1. Fetch OAuth token
+const token = await getZoomAccessToken();
+
+// 2. Create meeting using Zoom API
+const meeting = await fetch("https://api.zoom.us/v2/users/me/meetings", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    topic: "Mentor Meeting",
+    type: 1, // instant meeting (or 2 for scheduled)
+  })
+});
+
+// 3. Return join + start URLs
+return {
+  join_url: meeting.join_url,
+  start_url: meeting.start_url
+};
+
+
+You already know how to wrap this cleanly in a Supabase function.
+
+🖥️ 4. Front-End Flow
+
+On button click:
+
+const { data, error } = await supabase.functions.invoke('create-zoom-meeting');
+
+
+If data.join_url exists:
+
+Store the meeting in meetings table
+
+Open a modal with:
+
+Zoom link
+
+List of entrepreneurs (checkboxes)
+
+“Send Invitation” button
+
+User selects entrepreneurs → call /send-invitation (can be another Edge Function).
+
+📨 5. Sending Invitations (second Edge Function)
+
+We create /send-meeting-invite:
+
+Input:
+
+{
+  "meetingId": "...",
+  "entrepreneurIds": [id1, id2, id3]
+}
+
+
+Backend:
+
+Fetch emails from DB
+
+Send email using your existing email provider (Resend / Supabase Email)
+
+🎯 Result
+
+Mentor generates Zoom meeting in 1 click
+
+No manual copy/paste
+
+Can invite 1 to 10 entrepreneurs immediately
+
+Meetings are stored in your DB
+
+Fully inside your UX
+
+Zero dependency on Calendly

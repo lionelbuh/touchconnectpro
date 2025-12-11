@@ -1573,5 +1573,271 @@ export async function registerRoutes(
     }
   });
 
+  // ===== ZOOM MEETING INTEGRATION =====
+
+  // Helper function to get Zoom access token
+  async function getZoomAccessToken(): Promise<string> {
+    const clientId = process.env.ZOOM_CLIENT_ID;
+    const clientSecret = process.env.ZOOM_CLIENT_SECRET;
+    const accountId = process.env.ZOOM_ACCOUNT_ID;
+
+    if (!clientId || !clientSecret || !accountId) {
+      throw new Error("Zoom credentials not configured");
+    }
+
+    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+    
+    const response = await fetch(
+      `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${accountId}`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Basic ${credentials}`,
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error("[ZOOM] Token error:", error);
+      throw new Error("Failed to get Zoom access token");
+    }
+
+    const data = await response.json();
+    return data.access_token;
+  }
+
+  // Create Zoom meeting
+  app.post("/api/zoom/create-meeting", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { topic, duration, startTime, mentorId, portfolioNumber } = req.body;
+
+      if (!topic) {
+        return res.status(400).json({ error: "Meeting topic is required" });
+      }
+
+      console.log("[ZOOM] Creating meeting:", { topic, duration, startTime });
+
+      const accessToken = await getZoomAccessToken();
+
+      const meetingPayload = {
+        topic: topic || "Mentor Meeting",
+        type: startTime ? 2 : 1,
+        start_time: startTime || undefined,
+        duration: duration || 60,
+        settings: {
+          host_video: true,
+          participant_video: true,
+          join_before_host: false,
+          mute_upon_entry: true,
+          waiting_room: true
+        }
+      };
+
+      const meetingResponse = await fetch("https://api.zoom.us/v2/users/me/meetings", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(meetingPayload)
+      });
+
+      if (!meetingResponse.ok) {
+        const error = await meetingResponse.text();
+        console.error("[ZOOM] Create meeting error:", error);
+        return res.status(500).json({ error: "Failed to create Zoom meeting" });
+      }
+
+      const meeting = await meetingResponse.json();
+      console.log("[ZOOM] Meeting created:", meeting.id);
+
+      const { data: savedMeeting, error: dbError } = await (client
+        .from("meetings")
+        .insert({
+          zoom_meeting_id: meeting.id.toString(),
+          mentor_id: mentorId,
+          portfolio_number: portfolioNumber,
+          topic: meeting.topic,
+          join_url: meeting.join_url,
+          start_url: meeting.start_url,
+          password: meeting.password,
+          start_time: meeting.start_time,
+          duration: meeting.duration,
+          status: "scheduled"
+        } as any)
+        .select() as any);
+
+      if (dbError) {
+        console.error("[ZOOM] DB save error:", dbError);
+      }
+
+      return res.json({
+        success: true,
+        meeting: {
+          id: savedMeeting?.[0]?.id || meeting.id,
+          zoom_id: meeting.id,
+          topic: meeting.topic,
+          join_url: meeting.join_url,
+          start_url: meeting.start_url,
+          password: meeting.password,
+          start_time: meeting.start_time,
+          duration: meeting.duration
+        }
+      });
+    } catch (error: any) {
+      console.error("[ZOOM] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Send meeting invitations to entrepreneurs
+  app.post("/api/zoom/send-invitations", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { meetingId, entrepreneurIds, mentorName } = req.body;
+
+      if (!meetingId || !entrepreneurIds || entrepreneurIds.length === 0) {
+        return res.status(400).json({ error: "Meeting ID and entrepreneur IDs required" });
+      }
+
+      console.log("[ZOOM INVITE] Sending invitations for meeting:", meetingId, "to:", entrepreneurIds);
+
+      const { data: meeting, error: meetingError } = await (client
+        .from("meetings")
+        .select("*")
+        .eq("id", meetingId)
+        .single() as any);
+
+      if (meetingError || !meeting) {
+        return res.status(404).json({ error: "Meeting not found" });
+      }
+
+      const { data: entrepreneurs, error: entError } = await (client
+        .from("ideas")
+        .select("id, entrepreneur_email, entrepreneur_name")
+        .in("id", entrepreneurIds) as any);
+
+      if (entError) {
+        return res.status(400).json({ error: entError.message });
+      }
+
+      const resendData = await getResendClient();
+      let emailsSent = 0;
+
+      for (const entrepreneur of entrepreneurs) {
+        if (resendData) {
+          try {
+            await resendData.client.emails.send({
+              from: resendData.fromEmail,
+              to: entrepreneur.entrepreneur_email,
+              subject: `Meeting Invitation: ${meeting.topic}`,
+              html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <style>
+                    body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                    .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                    .meeting-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #06b6d4; margin: 20px 0; }
+                    .join-button { display: inline-block; background: #06b6d4; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 10px 0; }
+                  </style>
+                </head>
+                <body>
+                  <div class="container">
+                    <div class="header">
+                      <h1>You're Invited to a Meeting!</h1>
+                    </div>
+                    <div class="content">
+                      <p>Hi ${entrepreneur.entrepreneur_name || "there"},</p>
+                      <p>Your mentor ${mentorName || ""} has scheduled a meeting with you.</p>
+                      
+                      <div class="meeting-box">
+                        <h3 style="margin-top: 0;">${meeting.topic}</h3>
+                        ${meeting.start_time ? `<p><strong>Date & Time:</strong> ${new Date(meeting.start_time).toLocaleString()}</p>` : ''}
+                        <p><strong>Duration:</strong> ${meeting.duration} minutes</p>
+                        ${meeting.password ? `<p><strong>Password:</strong> ${meeting.password}</p>` : ''}
+                        <a href="${meeting.join_url}" class="join-button">Join Meeting</a>
+                      </div>
+                      
+                      <p>Best regards,<br><strong>The TouchConnectPro Team</strong></p>
+                    </div>
+                  </div>
+                </body>
+                </html>
+              `
+            });
+            emailsSent++;
+          } catch (emailErr: any) {
+            console.error("[ZOOM INVITE] Email error for", entrepreneur.entrepreneur_email, emailErr.message);
+          }
+        }
+
+        await (client.from("messages").insert({
+          from_name: mentorName || "Your Mentor",
+          from_email: "system@touchconnectpro.com",
+          to_name: entrepreneur.entrepreneur_name,
+          to_email: entrepreneur.entrepreneur_email,
+          message: `You have been invited to a Zoom meeting: "${meeting.topic}". Join here: ${meeting.join_url}${meeting.password ? ` (Password: ${meeting.password})` : ''}`,
+          is_read: false
+        } as any) as any);
+      }
+
+      await (client
+        .from("meetings")
+        .update({ participants: entrepreneurIds } as any)
+        .eq("id", meetingId) as any);
+
+      console.log("[ZOOM INVITE] Sent", emailsSent, "emails and", entrepreneurs.length, "in-app messages");
+
+      return res.json({ 
+        success: true, 
+        emailsSent,
+        messagesCreated: entrepreneurs.length
+      });
+    } catch (error: any) {
+      console.error("[ZOOM INVITE] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get meetings for a mentor
+  app.get("/api/zoom/meetings/:mentorId", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { mentorId } = req.params;
+
+      const { data: meetings, error } = await (client
+        .from("meetings")
+        .select("*")
+        .eq("mentor_id", mentorId)
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ meetings: meetings || [] });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }

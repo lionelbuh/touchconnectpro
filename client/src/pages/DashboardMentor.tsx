@@ -85,6 +85,11 @@ export default function DashboardMentor() {
   const [selectedEntrepreneur, setSelectedEntrepreneur] = useState<any>(null);
   const [showEntrepreneurMessageModal, setShowEntrepreneurMessageModal] = useState(false);
   const [entrepreneurMessage, setEntrepreneurMessage] = useState("");
+  const [creatingZoomMeeting, setCreatingZoomMeeting] = useState(false);
+  const [zoomMeetingResult, setZoomMeetingResult] = useState<any>(null);
+  const [selectedEntrepreneurIds, setSelectedEntrepreneurIds] = useState<string[]>([]);
+  const [sendingInvites, setSendingInvites] = useState(false);
+  const [zoomMeetings, setZoomMeetings] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadProfile() {
@@ -1346,48 +1351,217 @@ export default function DashboardMentor() {
         </div>
       )}
 
-      {/* Meeting Modal */}
+      {/* Zoom Meeting Modal */}
       {showMeetingModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-96 max-w-md">
-            <CardHeader>
-              <CardTitle>Schedule Monthly Meeting</CardTitle>
+          <Card className="w-[500px] max-w-lg max-h-[90vh] overflow-y-auto">
+            <CardHeader className="bg-blue-50 dark:bg-blue-950/20">
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-blue-600" />
+                {zoomMeetingResult ? "Meeting Created!" : "Create Zoom Meeting"}
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Date</label>
-                <Input
-                  type="date"
-                  value={newMeeting.date}
-                  onChange={(e) => setNewMeeting({ ...newMeeting, date: e.target.value })}
-                  className="bg-slate-50 dark:bg-slate-800/50"
-                  data-testid="input-meeting-date"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Time</label>
-                <Input
-                  type="time"
-                  value={newMeeting.time}
-                  onChange={(e) => setNewMeeting({ ...newMeeting, time: e.target.value })}
-                  className="bg-slate-50 dark:bg-slate-800/50"
-                  data-testid="input-meeting-time"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Topic</label>
-                <Input
-                  placeholder="e.g., Monthly Check-in"
-                  value={newMeeting.topic}
-                  onChange={(e) => setNewMeeting({ ...newMeeting, topic: e.target.value })}
-                  className="bg-slate-50 dark:bg-slate-800/50"
-                  data-testid="input-meeting-topic"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setShowMeetingModal(false)}>Cancel</Button>
-                <Button className="flex-1 bg-cyan-600 hover:bg-cyan-700" onClick={handleScheduleMeeting} data-testid="button-schedule">Schedule</Button>
-              </div>
+            <CardContent className="space-y-4 pt-4">
+              {!zoomMeetingResult ? (
+                <>
+                  <div>
+                    <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Meeting Topic *</label>
+                    <Input
+                      placeholder="e.g., Portfolio Monthly Check-in"
+                      value={newMeeting.topic}
+                      onChange={(e) => setNewMeeting({ ...newMeeting, topic: e.target.value })}
+                      className="bg-slate-50 dark:bg-slate-800/50"
+                      data-testid="input-meeting-topic"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Date (optional)</label>
+                      <Input
+                        type="date"
+                        value={newMeeting.date}
+                        onChange={(e) => setNewMeeting({ ...newMeeting, date: e.target.value })}
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-meeting-date"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Time (optional)</label>
+                      <Input
+                        type="time"
+                        value={newMeeting.time}
+                        onChange={(e) => setNewMeeting({ ...newMeeting, time: e.target.value })}
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-meeting-time"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Leave date/time empty to create an instant meeting.</p>
+                  
+                  <div className="flex gap-2 pt-2">
+                    <Button variant="outline" className="flex-1" onClick={() => {
+                      setShowMeetingModal(false);
+                      setNewMeeting({ date: "", time: "", topic: "" });
+                    }}>Cancel</Button>
+                    <Button 
+                      className="flex-1 bg-blue-600 hover:bg-blue-700" 
+                      onClick={async () => {
+                        if (!newMeeting.topic.trim()) {
+                          toast.error("Please enter a meeting topic");
+                          return;
+                        }
+                        setCreatingZoomMeeting(true);
+                        try {
+                          let startTime = undefined;
+                          if (newMeeting.date && newMeeting.time) {
+                            startTime = new Date(`${newMeeting.date}T${newMeeting.time}`).toISOString();
+                          }
+                          const response = await fetch(`${API_BASE_URL}/api/zoom/create-meeting`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              topic: newMeeting.topic,
+                              duration: 60,
+                              startTime,
+                              mentorId: profileId,
+                              portfolioNumber: selectedPortfolio !== null ? selectedPortfolio + 1 : 1
+                            })
+                          });
+                          const data = await response.json();
+                          if (response.ok && data.success) {
+                            setZoomMeetingResult(data.meeting);
+                            toast.success("Zoom meeting created!");
+                          } else {
+                            toast.error(data.error || "Failed to create Zoom meeting");
+                          }
+                        } catch (error) {
+                          toast.error("Error creating Zoom meeting");
+                        } finally {
+                          setCreatingZoomMeeting(false);
+                        }
+                      }}
+                      disabled={creatingZoomMeeting}
+                      data-testid="button-create-zoom"
+                    >
+                      {creatingZoomMeeting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      Create Zoom Meeting
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                    <p className="font-semibold text-green-800 dark:text-green-200 mb-2">Meeting Created Successfully!</p>
+                    <p className="text-sm text-green-700 dark:text-green-300 mb-3">{zoomMeetingResult.topic}</p>
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <span className="font-medium">Host Link (for you):</span>
+                        <a href={zoomMeetingResult.start_url} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-600 hover:underline flex items-center gap-1 inline">
+                          Start Meeting <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                      <div>
+                        <span className="font-medium">Join Link (for attendees):</span>
+                        <div className="mt-1 p-2 bg-white dark:bg-slate-800 rounded border text-xs break-all">
+                          {zoomMeetingResult.join_url}
+                        </div>
+                      </div>
+                      {zoomMeetingResult.password && (
+                        <div>
+                          <span className="font-medium">Password:</span> {zoomMeetingResult.password}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {portfolios.length > 0 && (
+                    <div className="border-t pt-4">
+                      <p className="font-semibold text-slate-900 dark:text-white mb-3">Invite Entrepreneurs</p>
+                      <p className="text-sm text-muted-foreground mb-3">Select who should receive the meeting invitation:</p>
+                      <div className="max-h-48 overflow-y-auto space-y-2">
+                        {portfolios.flatMap(p => p.members).map(member => (
+                          <label key={member.id} className="flex items-center gap-3 p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedEntrepreneurIds.includes(member.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedEntrepreneurIds([...selectedEntrepreneurIds, member.id]);
+                                } else {
+                                  setSelectedEntrepreneurIds(selectedEntrepreneurIds.filter(id => id !== member.id));
+                                }
+                              }}
+                              className="w-4 h-4 rounded border-slate-300"
+                            />
+                            <div>
+                              <p className="font-medium text-sm">{member.name}</p>
+                              <p className="text-xs text-muted-foreground">{member.email}</p>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                      {selectedEntrepreneurIds.length > 0 && (
+                        <Button 
+                          className="w-full mt-3 bg-cyan-600 hover:bg-cyan-700"
+                          onClick={async () => {
+                            setSendingInvites(true);
+                            try {
+                              const response = await fetch(`${API_BASE_URL}/api/zoom/send-invitations`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  meetingId: zoomMeetingResult.id,
+                                  entrepreneurIds: selectedEntrepreneurIds,
+                                  mentorName: mentorProfile.fullName
+                                })
+                              });
+                              const data = await response.json();
+                              if (response.ok && data.success) {
+                                toast.success(`Invitations sent to ${data.messagesCreated} entrepreneur(s)!`);
+                                setSelectedEntrepreneurIds([]);
+                              } else {
+                                toast.error(data.error || "Failed to send invitations");
+                              }
+                            } catch (error) {
+                              toast.error("Error sending invitations");
+                            } finally {
+                              setSendingInvites(false);
+                            }
+                          }}
+                          disabled={sendingInvites}
+                          data-testid="button-send-invites"
+                        >
+                          {sendingInvites ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                          Send Invitations ({selectedEntrepreneurIds.length})
+                        </Button>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 pt-2">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1" 
+                      onClick={() => {
+                        setShowMeetingModal(false);
+                        setZoomMeetingResult(null);
+                        setNewMeeting({ date: "", time: "", topic: "" });
+                        setSelectedEntrepreneurIds([]);
+                      }}
+                    >
+                      Close
+                    </Button>
+                    <Button 
+                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      onClick={() => window.open(zoomMeetingResult.start_url, "_blank")}
+                      data-testid="button-start-meeting"
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Start Meeting
+                    </Button>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
