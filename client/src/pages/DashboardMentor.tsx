@@ -1568,7 +1568,8 @@ export default function DashboardMentor() {
                                 body: JSON.stringify({
                                   meetingId: zoomMeetingResult.id,
                                   entrepreneurIds: selectedEntrepreneurIds,
-                                  mentorName: mentorProfile.fullName
+                                  mentorName: mentorProfile.fullName,
+                                  mentorEmail: mentorProfile.email
                                 })
                               });
                               const data = await response.json();

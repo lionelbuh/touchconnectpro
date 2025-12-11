@@ -2388,7 +2388,7 @@ app.post("/api/zoom/create-meeting", async (req, res) => {
 // Send meeting invitations to entrepreneurs
 app.post("/api/zoom/send-invitations", async (req, res) => {
   try {
-    const { meetingId, entrepreneurIds, mentorName } = req.body;
+    const { meetingId, entrepreneurIds, mentorName, mentorEmail } = req.body;
 
     if (!meetingId || !entrepreneurIds || entrepreneurIds.length === 0) {
       return res.status(400).json({ error: "Meeting ID and entrepreneur IDs required" });
@@ -2474,7 +2474,7 @@ app.post("/api/zoom/send-invitations", async (req, res) => {
       // Also send in-app message
       await supabase.from("messages").insert({
         from_name: mentorName || "Your Mentor",
-        from_email: "system@touchconnectpro.com",
+        from_email: mentorEmail || "system@touchconnectpro.com",
         to_name: entrepreneur.entrepreneur_name,
         to_email: entrepreneur.entrepreneur_email,
         message: `You have been invited to a Zoom meeting: "${meeting.topic}". Join here: ${meeting.join_url}${meeting.password ? ` (Password: ${meeting.password})` : ''}`,

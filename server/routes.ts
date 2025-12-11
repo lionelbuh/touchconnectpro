@@ -1705,7 +1705,7 @@ export async function registerRoutes(
         return res.status(500).json({ error: "Database not configured" });
       }
 
-      const { meetingId, entrepreneurIds, mentorName } = req.body;
+      const { meetingId, entrepreneurIds, mentorName, mentorEmail } = req.body;
 
       if (!meetingId || !entrepreneurIds || entrepreneurIds.length === 0) {
         return res.status(400).json({ error: "Meeting ID and entrepreneur IDs required" });
@@ -1787,7 +1787,7 @@ export async function registerRoutes(
 
         await (client.from("messages").insert({
           from_name: mentorName || "Your Mentor",
-          from_email: "system@touchconnectpro.com",
+          from_email: mentorEmail || "system@touchconnectpro.com",
           to_name: entrepreneur.entrepreneur_name,
           to_email: entrepreneur.entrepreneur_email,
           message: `You have been invited to a Zoom meeting: "${meeting.topic}". Join here: ${meeting.join_url}${meeting.password ? ` (Password: ${meeting.password})` : ''}`,
