@@ -1869,11 +1869,10 @@ export async function registerRoutes(
       const entrepreneurId = ideas[0].id;
       console.log("[ENTREPRENEUR MEETINGS] Finding meetings for entrepreneur", email, "with idea ID:", entrepreneurId);
 
-      // Then get all meetings where this entrepreneur is in the participants array
-      const { data: meetings, error } = await (client
+      // Get all meetings and filter client-side (Supabase array containment is tricky)
+      const { data: allMeetings, error } = await (client
         .from("meetings")
         .select("*")
-        .contains("participants", [entrepreneurId])
         .order("created_at", { ascending: false }) as any);
 
       if (error) {
@@ -1881,9 +1880,14 @@ export async function registerRoutes(
         return res.json({ meetings: [] });
       }
 
-      console.log("[ENTREPRENEUR MEETINGS] Found", meetings?.length || 0, "meetings for", email);
+      // Filter meetings where entrepreneurId is in participants array
+      const meetings = (allMeetings || []).filter((meeting: any) => {
+        return meeting.participants && Array.isArray(meeting.participants) && meeting.participants.includes(entrepreneurId);
+      });
+
+      console.log("[ENTREPRENEUR MEETINGS] Found", meetings.length, "meetings for", email, "with idea ID:", entrepreneurId);
       if (meetings && meetings.length > 0) {
-        console.log("[ENTREPRENEUR MEETINGS] Meeting IDs:", meetings.map((m: any) => ({ id: m.id, participants: m.participants })));
+        console.log("[ENTREPRENEUR MEETINGS] Meeting details:", meetings.map((m: any) => ({ id: m.id, topic: m.topic, participants: m.participants })));
       }
 
       return res.json({ meetings: meetings || [] });
