@@ -1280,11 +1280,11 @@ export async function registerRoutes(
       const { email } = req.params;
       const decodedEmail = decodeURIComponent(email);
 
-      // Get entrepreneur's idea/application
+      // Get entrepreneur's idea/application (use ilike for case-insensitive match)
       const { data: ideaData, error: ideaError } = await (client
         .from("ideas")
         .select("*")
-        .eq("entrepreneur_email", decodedEmail)
+        .ilike("entrepreneur_email", decodedEmail)
         .single() as any);
 
       if (ideaError || !ideaData) {
