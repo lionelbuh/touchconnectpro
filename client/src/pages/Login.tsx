@@ -76,12 +76,12 @@ export default function Login() {
           // Check application tables to find user role
           let role: string | null = null;
           
-          // Check ideas table (entrepreneurs)
+          // Check ideas table (entrepreneurs) - include both approved and pre-approved
           const { data: entrepreneurApp } = await supabase
             .from("ideas")
             .select("status")
             .ilike("entrepreneur_email", email)
-            .eq("status", "approved")
+            .in("status", ["approved", "pre-approved"])
             .limit(1);
           
           if (entrepreneurApp && entrepreneurApp.length > 0) {
