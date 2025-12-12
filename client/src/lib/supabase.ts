@@ -37,11 +37,14 @@ async function initSupabase(): Promise<SupabaseClient | null> {
   }
   
   // Auth options for session persistence
+  // Use a consistent storage key across all sessions
   const authOptions = {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      storageKey: 'tcp-supabase-auth',
+      storage: typeof window !== 'undefined' ? window.localStorage : undefined
     }
   }
   
