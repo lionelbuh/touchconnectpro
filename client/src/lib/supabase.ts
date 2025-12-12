@@ -1,28 +1,74 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { API_BASE_URL } from '@/config'
 
-let supabase: SupabaseClient | null = null
-let initPromise: Promise<void> | null = null
+// Use window object to ensure true singleton across module reloads (HMR)
+declare global {
+  interface Window {
+    __SUPABASE_CLIENT__?: SupabaseClient;
+    __SUPABASE_INIT_PROMISE__?: Promise<SupabaseClient | null>;
+    __SUPABASE_INITIALIZING__?: boolean;
+  }
+}
 
-async function initSupabase(): Promise<void> {
-  // Only initialize once
-  if (supabase) return
+function getExistingClient(): SupabaseClient | null {
+  if (typeof window !== 'undefined' && window.__SUPABASE_CLIENT__) {
+    return window.__SUPABASE_CLIENT__;
+  }
+  return null;
+}
+
+async function initSupabase(): Promise<SupabaseClient | null> {
+  // Check for existing client in window (survives HMR)
+  const existing = getExistingClient();
+  if (existing) {
+    return existing;
+  }
+  
+  // Prevent multiple concurrent initializations
+  if (typeof window !== 'undefined' && window.__SUPABASE_INITIALIZING__) {
+    // Wait for existing initialization
+    if (window.__SUPABASE_INIT_PROMISE__) {
+      return window.__SUPABASE_INIT_PROMISE__;
+    }
+  }
+  
+  if (typeof window !== 'undefined') {
+    window.__SUPABASE_INITIALIZING__ = true;
+  }
+  
+  // Auth options for session persistence
+  const authOptions = {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  }
+  
+  let client: SupabaseClient | null = null;
   
   try {
     // Try to get config from backend endpoint first
-    console.log('Fetching Supabase config from backend...', `${API_BASE_URL}/api/config`)
     const response = await fetch(`${API_BASE_URL}/api/config`)
     
     if (response.ok) {
       const { supabaseUrl, supabaseAnonKey } = await response.json()
-      console.log('Got Supabase config from backend')
-      console.log('URL exists:', !!supabaseUrl)
-      console.log('Key exists:', !!supabaseAnonKey)
       
       if (supabaseUrl && supabaseAnonKey) {
-        supabase = createClient(supabaseUrl, supabaseAnonKey)
-        console.log('Supabase client created successfully')
-        return
+        // Double-check no client was created while we were fetching
+        const existingAfterFetch = getExistingClient();
+        if (existingAfterFetch) {
+          if (typeof window !== 'undefined') {
+            window.__SUPABASE_INITIALIZING__ = false;
+          }
+          return existingAfterFetch;
+        }
+        
+        client = createClient(supabaseUrl, supabaseAnonKey, authOptions)
+        if (typeof window !== 'undefined') {
+          window.__SUPABASE_CLIENT__ = client;
+        }
+        console.log('Supabase client created with session persistence')
       }
     }
   } catch (error) {
@@ -30,30 +76,69 @@ async function initSupabase(): Promise<void> {
   }
   
   // Fallback to environment variables (for development)
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-  
-  console.log('Using environment variables - URL exists:', !!supabaseUrl, 'Key exists:', !!supabaseAnonKey)
-  
-  if (supabaseUrl && supabaseAnonKey) {
-    try {
-      supabase = createClient(supabaseUrl, supabaseAnonKey)
-      console.log('Supabase client created from env vars')
-    } catch (error) {
-      console.error('Failed to create Supabase client:', error)
+  if (!client) {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    
+    if (supabaseUrl && supabaseAnonKey) {
+      try {
+        // Double-check no client was created
+        const existingFinal = getExistingClient();
+        if (existingFinal) {
+          if (typeof window !== 'undefined') {
+            window.__SUPABASE_INITIALIZING__ = false;
+          }
+          return existingFinal;
+        }
+        
+        client = createClient(supabaseUrl, supabaseAnonKey, authOptions)
+        if (typeof window !== 'undefined') {
+          window.__SUPABASE_CLIENT__ = client;
+        }
+        console.log('Supabase client created from env vars')
+      } catch (error) {
+        console.error('Failed to create Supabase client:', error)
+      }
     }
-  } else {
-    console.error('Missing Supabase credentials in both backend and env vars')
   }
+  
+  if (typeof window !== 'undefined') {
+    window.__SUPABASE_INITIALIZING__ = false;
+  }
+  
+  return client;
+}
+
+// Get or create init promise
+function getInitPromise(): Promise<SupabaseClient | null> {
+  if (typeof window !== 'undefined') {
+    // Return existing client immediately if available
+    const existing = getExistingClient();
+    if (existing) {
+      return Promise.resolve(existing);
+    }
+    
+    // Return existing promise if initialization is in progress
+    if (window.__SUPABASE_INIT_PROMISE__) {
+      return window.__SUPABASE_INIT_PROMISE__;
+    }
+    
+    // Start new initialization
+    window.__SUPABASE_INIT_PROMISE__ = initSupabase();
+    return window.__SUPABASE_INIT_PROMISE__;
+  }
+  return initSupabase();
 }
 
 // Start initialization immediately
-initPromise = initSupabase()
+const initPromise = getInitPromise();
 
 // Async getter to ensure supabase is initialized before use
 async function getSupabase(): Promise<SupabaseClient | null> {
-  await initPromise
-  return supabase
+  return await getInitPromise();
 }
+
+// Sync getter for backwards compatibility (may return null if not initialized)
+const supabase = getExistingClient();
 
 export { supabase, getSupabase }

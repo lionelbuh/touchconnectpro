@@ -59,7 +59,16 @@ export default function DashboardInvestor() {
         const supabase = await getSupabase();
         if (!supabase) return;
 
-        const { data: { user } } = await supabase.auth.getUser();
+        // First try to get session from localStorage (faster, more reliable)
+        const { data: { session } } = await supabase.auth.getSession();
+        let user = session?.user;
+        
+        // If no session, try getUser() as fallback
+        if (!user) {
+          const { data: userData } = await supabase.auth.getUser();
+          user = userData.user;
+        }
+        
         if (!user?.email) {
           setLoading(false);
           return;

@@ -12,6 +12,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Session)
 
+**Session Persistence Fix (December 12, 2025):**
+- ✅ Fixed Supabase client singleton pattern using window-based storage to survive HMR
+- ✅ Added `__SUPABASE_CLIENT__`, `__SUPABASE_INIT_PROMISE__`, and `__SUPABASE_INITIALIZING__` flags
+- ✅ All dashboards (Entrepreneur, Mentor, Coach, Investor) now use `getSession()` first before `getUser()`
+- ✅ Login page updated to use `getSession()` for faster, more reliable session detection
+- ✅ Double-check pattern prevents duplicate client creation during async initialization
+- ✅ Auth options set: `persistSession: true`, `autoRefreshToken: true`, `detectSessionInUrl: true`
+
 **Pre-Approval Status for Entrepreneurs:**
 - ✅ Admin can "Pre-Approve" entrepreneurs who are awaiting payment confirmation
 - ✅ Pre-approved entrepreneurs appear in dedicated section with amber styling
