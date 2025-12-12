@@ -21,6 +21,7 @@ async function initSupabase(): Promise<SupabaseClient | null> {
   // Check for existing client in window (survives HMR)
   const existing = getExistingClient();
   if (existing) {
+    console.log('[SUPABASE] Returning existing client from window');
     return existing;
   }
   
@@ -28,23 +29,49 @@ async function initSupabase(): Promise<SupabaseClient | null> {
   if (typeof window !== 'undefined' && window.__SUPABASE_INITIALIZING__) {
     // Wait for existing initialization
     if (window.__SUPABASE_INIT_PROMISE__) {
+      console.log('[SUPABASE] Already initializing, waiting for promise');
       return window.__SUPABASE_INIT_PROMISE__;
     }
   }
   
   if (typeof window !== 'undefined') {
     window.__SUPABASE_INITIALIZING__ = true;
+    
+    // Debug: Check what's in localStorage before client creation
+    const allKeys = Object.keys(localStorage);
+    console.log('[SUPABASE] ALL localStorage keys:', allKeys);
+    const authKeys = allKeys.filter(k => k.includes('sb-') || k.includes('supabase') || k.includes('tcp-') || k.includes('auth'));
+    console.log('[SUPABASE] Auth-related keys BEFORE client creation:', authKeys);
+    if (authKeys.length > 0) {
+      authKeys.forEach(key => {
+        const val = localStorage.getItem(key);
+        console.log(`[SUPABASE] Key "${key}": length=${val?.length}`);
+      });
+    }
   }
   
   // Auth options for session persistence
-  // Use a consistent storage key across all sessions
+  // Explicitly configure localStorage to ensure session persistence works
   const authOptions = {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      storageKey: 'tcp-supabase-auth',
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined
+      storage: typeof window !== 'undefined' ? {
+        getItem: (key: string) => {
+          const value = window.localStorage.getItem(key);
+          console.log(`[SUPABASE STORAGE] getItem("${key}"): ${value ? 'found (' + value.length + ' chars)' : 'null'}`);
+          return value;
+        },
+        setItem: (key: string, value: string) => {
+          console.log(`[SUPABASE STORAGE] setItem("${key}"): ${value.length} chars`);
+          window.localStorage.setItem(key, value);
+        },
+        removeItem: (key: string) => {
+          console.log(`[SUPABASE STORAGE] removeItem("${key}")`);
+          window.localStorage.removeItem(key);
+        }
+      } : undefined
     }
   }
   
