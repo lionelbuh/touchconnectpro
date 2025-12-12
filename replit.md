@@ -14,14 +14,12 @@ Preferred communication style: Simple, everyday language.
 
 **Session Persistence Fix (December 12, 2025):**
 - ✅ Fixed Supabase client singleton pattern using window-based storage to survive HMR
-- ✅ Added `__SUPABASE_CLIENT__`, `__SUPABASE_INIT_PROMISE__`, and `__SUPABASE_INITIALIZING__` flags
 - ✅ All dashboards (Entrepreneur, Mentor, Coach, Investor) now use `getSession()` first before `getUser()`
 - ✅ Login page updated to use `getSession()` for faster, more reliable session detection
-- ✅ Double-check pattern prevents duplicate client creation during async initialization
 - ✅ Auth options set: `persistSession: true`, `autoRefreshToken: true`, `detectSessionInUrl: true`
-- ✅ **Critical fix for new users**: Added explicit `setSession()` call after `signInWithPassword` to force-persist session to localStorage before navigation
-- ✅ Added "Having trouble logging in? Clear session" link on login page to clear stale session data
-- ✅ Added `clearSupabaseSession()` helper function to clear all Supabase auth tokens from localStorage
+- ✅ **Critical fix**: Login page role detection now includes "pre-approved" status (not just "approved")
+- ✅ **Root cause**: New users with "pre-approved" status were being treated as logged out because role check only looked for "approved"
+- ✅ Fixed SUPABASE_SERVICE_ROLE_KEY (was incorrectly set to anon key, now properly set to bypass RLS)
 
 **Pre-Approval Status for Entrepreneurs:**
 - ✅ Admin can "Pre-Approve" entrepreneurs who are awaiting payment confirmation
