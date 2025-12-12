@@ -19,6 +19,9 @@ Preferred communication style: Simple, everyday language.
 - ✅ Login page updated to use `getSession()` for faster, more reliable session detection
 - ✅ Double-check pattern prevents duplicate client creation during async initialization
 - ✅ Auth options set: `persistSession: true`, `autoRefreshToken: true`, `detectSessionInUrl: true`
+- ✅ **Critical fix for new users**: Added explicit `setSession()` call after `signInWithPassword` to force-persist session to localStorage before navigation
+- ✅ Added "Having trouble logging in? Clear session" link on login page to clear stale session data
+- ✅ Added `clearSupabaseSession()` helper function to clear all Supabase auth tokens from localStorage
 
 **Pre-Approval Status for Entrepreneurs:**
 - ✅ Admin can "Pre-Approve" entrepreneurs who are awaiting payment confirmation

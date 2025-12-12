@@ -170,6 +170,16 @@ export default function Login() {
       
       if (error) throw error;
       
+      // Explicitly persist the session to localStorage before navigating
+      // This ensures new users' sessions are saved before page change
+      if (data.session) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+        console.log("[LOGIN] Session explicitly persisted to localStorage");
+      }
+      
       if (data.user) {
         const userEmail = data.user.email?.toLowerCase();
         console.log("[LOGIN] User email:", userEmail);
