@@ -1667,6 +1667,161 @@ export async function registerRoutes(
     }
   });
 
+  // Validate password token
+  app.get("/api/password-token/:token", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { token } = req.params;
+
+      const { data, error } = await (client
+        .from("password_tokens")
+        .select("*")
+        .eq("token", token)
+        .eq("status", "pending")
+        .single() as any);
+
+      if (error || !data) {
+        return res.status(404).json({ error: "Invalid or expired token" });
+      }
+
+      if (new Date(data.expires_at) < new Date()) {
+        return res.status(400).json({ error: "Token has expired" });
+      }
+
+      return res.json({
+        valid: true,
+        email: data.email,
+        userType: data.user_type
+      });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Set password with token (creates Supabase auth user)
+  app.post("/api/set-password", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { token, password } = req.body;
+
+      if (!token || !password) {
+        return res.status(400).json({ error: "Token and password required" });
+      }
+
+      if (password.length < 8) {
+        return res.status(400).json({ error: "Password must be at least 8 characters" });
+      }
+
+      const { data: tokenData, error: tokenError } = await (client
+        .from("password_tokens")
+        .select("*")
+        .eq("token", token)
+        .eq("status", "pending")
+        .single() as any);
+
+      if (tokenError || !tokenData) {
+        return res.status(404).json({ error: "Invalid or expired token" });
+      }
+
+      if (new Date(tokenData.expires_at) < new Date()) {
+        return res.status(400).json({ error: "Token has expired" });
+      }
+
+      let userId = null;
+      const { data: authData, error: authError } = await (client.auth.admin.createUser({
+        email: tokenData.email,
+        password: password,
+        email_confirm: true,
+        user_metadata: {
+          user_type: tokenData.user_type,
+          application_id: tokenData.application_id
+        }
+      }) as any);
+
+      if (authError) {
+        if (authError.message.includes("already been registered")) {
+          console.log("[AUTH] User already exists, fetching existing user ID");
+          const { data: { users }, error: listError } = await (client.auth.admin.listUsers() as any);
+          const existingUser = users?.find((u: any) => u.email === tokenData.email);
+          if (existingUser) {
+            userId = existingUser.id;
+            console.log("[AUTH] Found existing user:", userId);
+            const { error: updateError } = await (client.auth.admin.updateUserById(
+              userId,
+              { password: password }
+            ) as any);
+            if (updateError) {
+              console.error("[AUTH UPDATE ERROR]:", updateError);
+            }
+          }
+        } else {
+          console.error("[AUTH ERROR]:", authError);
+          return res.status(400).json({ error: authError.message });
+        }
+      } else if (authData?.user?.id) {
+        userId = authData.user.id;
+      }
+
+      if (userId) {
+        console.log("[PROFILE] Creating/updating profile for user:", userId, "with role:", tokenData.user_type);
+        
+        const { data: existingProfile } = await (client
+          .from("users")
+          .select("id")
+          .eq("id", userId)
+          .single() as any);
+        
+        if (existingProfile) {
+          const { error: updateError } = await (client
+            .from("users")
+            .update({ role: tokenData.user_type })
+            .eq("id", userId) as any);
+          
+          if (updateError) {
+            console.error("[PROFILE UPDATE ERROR]:", updateError);
+          } else {
+            console.log("[PROFILE] Updated existing profile with role:", tokenData.user_type);
+          }
+        } else {
+          const { error: insertError } = await (client
+            .from("users")
+            .insert({
+              id: userId,
+              email: tokenData.email,
+              role: tokenData.user_type,
+              full_name: tokenData.email
+            }) as any);
+          
+          if (insertError) {
+            console.error("[PROFILE INSERT ERROR]:", insertError);
+          } else {
+            console.log("[PROFILE] Created new profile with role:", tokenData.user_type);
+          }
+        }
+      } else {
+        console.error("[PROFILE] No user ID available to create profile");
+      }
+
+      await (client
+        .from("password_tokens")
+        .update({ status: "used", used_at: new Date().toISOString() })
+        .eq("token", token) as any);
+
+      return res.json({ success: true, message: "Password set successfully" });
+    } catch (error: any) {
+      console.error("[SET PASSWORD ERROR]:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Early Access Signup - sends notification to hello@touchconnectpro.com
   app.post("/api/early-access", async (req, res) => {
     console.log("[POST /api/early-access] Called");
