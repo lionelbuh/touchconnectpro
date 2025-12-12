@@ -156,15 +156,26 @@ export default function DashboardEntrepreneur() {
         
         // First try to get session from localStorage (faster, more reliable)
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        console.log("[DASHBOARD] getSession result:", { hasSession: !!session, hasUser: !!session?.user, error: sessionError?.message });
+        console.log("[DASHBOARD] getSession result:", { 
+          hasSession: !!session, 
+          hasUser: !!session?.user,
+          userEmail: session?.user?.email,
+          accessTokenLength: session?.access_token?.length,
+          expiresAt: session?.expires_at,
+          error: sessionError?.message 
+        });
         
         let user = session?.user || null;
         
-        // If no session, try getUser() as fallback
+        // If no session, try getUser() as fallback (network call to validate)
         if (!user) {
-          console.log("[DASHBOARD] No session, trying getUser()...");
+          console.log("[DASHBOARD] No user from session, trying getUser()...");
           const { data: userData, error: userError } = await supabase.auth.getUser();
-          console.log("[DASHBOARD] getUser result:", { hasUser: !!userData.user, error: userError?.message });
+          console.log("[DASHBOARD] getUser result:", { 
+            hasUser: !!userData.user, 
+            userEmail: userData.user?.email,
+            error: userError?.message 
+          });
           user = userData.user || null;
         }
         
