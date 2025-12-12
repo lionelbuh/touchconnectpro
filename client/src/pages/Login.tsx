@@ -173,11 +173,25 @@ export default function Login() {
       // Explicitly persist the session to localStorage before navigating
       // This ensures new users' sessions are saved before page change
       if (data.session) {
+        console.log("[LOGIN] Session received, access_token length:", data.session.access_token?.length);
+        console.log("[LOGIN] Session received, refresh_token length:", data.session.refresh_token?.length);
+        
         await supabase.auth.setSession({
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token,
         });
+        
+        // Verify session was stored
+        const authKeys = Object.keys(localStorage).filter(k => k.includes('sb-') || k.includes('supabase') || k.includes('tcp-'));
+        console.log("[LOGIN] Auth keys in localStorage after setSession:", authKeys);
+        authKeys.forEach(key => {
+          const value = localStorage.getItem(key);
+          console.log(`[LOGIN] Key ${key}: length=${value?.length}, preview=${value?.substring(0, 50)}...`);
+        });
+        
         console.log("[LOGIN] Session explicitly persisted to localStorage");
+      } else {
+        console.log("[LOGIN] WARNING: No session received from signInWithPassword!");
       }
       
       if (data.user) {
