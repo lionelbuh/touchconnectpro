@@ -305,7 +305,15 @@ function getSupabaseClient() {
     
     console.log("[Supabase] URL:", supabaseUrl ? "✓" : "✗");
     console.log("[Supabase] Key present:", supabaseServiceKey ? "✓" : "✗");
+    console.log("[Supabase] Key length:", supabaseServiceKey?.length);
     console.log("[Supabase] Key starts with:", supabaseServiceKey?.substring(0, 10));
+    console.log("[Supabase] Key ends with:", supabaseServiceKey?.substring(-20));
+    
+    // Check if it's the anon key (shorter) vs service role key (longer)
+    // Service role keys are typically ~200+ chars, anon keys are shorter
+    if (supabaseServiceKey && supabaseServiceKey.length < 200) {
+      console.error("[Supabase] WARNING: Key seems too short for service role key!");
+    }
     
     if (!supabaseServiceKey) {
       console.error("[Supabase] MISSING SERVICE ROLE KEY!");
@@ -1279,6 +1287,8 @@ export async function registerRoutes(
 
       const { email } = req.params;
       const decodedEmail = decodeURIComponent(email);
+      
+      console.log("[API] Looking for entrepreneur with email:", decodedEmail);
 
       // Get entrepreneur's idea/application (use ilike for case-insensitive match)
       const { data: ideaData, error: ideaError } = await (client
@@ -1287,7 +1297,15 @@ export async function registerRoutes(
         .ilike("entrepreneur_email", decodedEmail)
         .single() as any);
 
+      console.log("[API] Query result - data:", !!ideaData, "error:", ideaError?.message);
+
       if (ideaError || !ideaData) {
+        // Debug: list all entrepreneur emails to see what's in the database
+        const { data: allIdeas } = await (client
+          .from("ideas")
+          .select("entrepreneur_email, status")
+          .limit(20) as any);
+        console.log("[API] Available entrepreneur emails:", allIdeas?.map((i: any) => i.entrepreneur_email));
         return res.status(404).json({ error: "Entrepreneur not found" });
       }
 
