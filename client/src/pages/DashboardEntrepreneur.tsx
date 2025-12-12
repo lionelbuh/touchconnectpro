@@ -137,28 +137,39 @@ export default function DashboardEntrepreneur() {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 
-    // Get user email from Supabase auth or localStorage
+    // Get user email from Supabase auth
     const fetchUserData = async () => {
       setIsLoadingData(true);
       try {
+        // Debug: Check if auth tokens exist in localStorage
+        const authKeys = Object.keys(localStorage).filter(k => k.includes('sb-') || k.includes('supabase'));
+        console.log("[DASHBOARD] Auth keys in localStorage:", authKeys);
+        
         const supabase = await getSupabase();
         if (!supabase) {
-          console.error("Supabase client not available");
+          console.error("[DASHBOARD] Supabase client not available");
           setIsLoadingData(false);
           return;
         }
         
+        console.log("[DASHBOARD] Supabase client ready, checking session...");
+        
         // First try to get session from localStorage (faster, more reliable)
-        const { data: { session } } = await supabase.auth.getSession();
-        let user = session?.user;
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        console.log("[DASHBOARD] getSession result:", { hasSession: !!session, hasUser: !!session?.user, error: sessionError?.message });
+        
+        let user = session?.user || null;
         
         // If no session, try getUser() as fallback
         if (!user) {
-          const { data: userData } = await supabase.auth.getUser();
-          user = userData.user;
+          console.log("[DASHBOARD] No session, trying getUser()...");
+          const { data: userData, error: userError } = await supabase.auth.getUser();
+          console.log("[DASHBOARD] getUser result:", { hasUser: !!userData.user, error: userError?.message });
+          user = userData.user || null;
         }
         
         if (user?.email) {
+          console.log("[DASHBOARD] User found:", user.email);
           setUserEmail(user.email);
           
           // Fetch entrepreneur data from API
@@ -215,6 +226,7 @@ export default function DashboardEntrepreneur() {
             }
           }
         } else {
+          console.log("[DASHBOARD] No user found, checking localStorage fallback");
           // Fallback to localStorage for profile data
           const storedProfile = localStorage.getItem("tcp_profileData");
           if (storedProfile) {
