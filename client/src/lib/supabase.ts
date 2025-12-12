@@ -141,4 +141,26 @@ async function getSupabase(): Promise<SupabaseClient | null> {
 // Sync getter for backwards compatibility (may return null if not initialized)
 const supabase = getExistingClient();
 
-export { supabase, getSupabase }
+// Helper to clear all Supabase auth data from localStorage
+function clearSupabaseSession(): void {
+  if (typeof window === 'undefined') return;
+  
+  // Clear all Supabase auth tokens from localStorage
+  const keysToRemove: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && (key.includes('supabase') || key.includes('sb-'))) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach(key => localStorage.removeItem(key));
+  
+  // Clear window client to force re-initialization on next getSupabase call
+  delete window.__SUPABASE_CLIENT__;
+  delete window.__SUPABASE_INIT_PROMISE__;
+  delete window.__SUPABASE_INITIALIZING__;
+  
+  console.log('Cleared Supabase session data');
+}
+
+export { supabase, getSupabase, clearSupabaseSession }

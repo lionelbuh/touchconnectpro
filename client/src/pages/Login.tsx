@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Globe, Lightbulb, Star, Briefcase, TrendingUp, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { getSupabase } from "@/lib/supabase";
+import { getSupabase, clearSupabaseSession } from "@/lib/supabase";
 import { toast } from "sonner";
 
 const COUNTRIES = [
@@ -500,6 +500,21 @@ export default function Login() {
                     Create one now
                   </button>
                 </p>
+              </div>
+
+              {/* Having Trouble Link */}
+              <div className="text-center">
+                <button
+                  onClick={() => {
+                    clearSupabaseSession();
+                    toast.success("Session cleared. Please log in again.");
+                    window.location.reload();
+                  }}
+                  className="text-sm text-slate-500 hover:text-slate-400 transition-colors underline"
+                  data-testid="button-clear-session"
+                >
+                  Having trouble logging in? Clear session
+                </button>
               </div>
 
               {/* Back to Home */}
