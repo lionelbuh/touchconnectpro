@@ -2369,8 +2369,8 @@ export async function registerRoutes(
       const { url, customerId } = await stripeService.createCheckoutSession(
         entrepreneurEmail,
         entrepreneurName || "Entrepreneur",
-        `${baseUrl}/dashboard/entrepreneur?payment=success`,
-        `${baseUrl}/dashboard/entrepreneur?payment=cancelled`
+        `${baseUrl}/dashboard-entrepreneur?payment=success`,
+        `${baseUrl}/dashboard-entrepreneur?payment=cancelled`
       );
 
       console.log("[STRIPE] Checkout session created, customer:", customerId);
@@ -2412,6 +2412,77 @@ export async function registerRoutes(
       });
     } catch (error: any) {
       console.error("[PAYMENT STATUS] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Confirm payment after successful Stripe checkout
+  app.post("/api/stripe/confirm-payment", async (req, res) => {
+    try {
+      const { entrepreneurEmail } = req.body;
+      
+      if (!entrepreneurEmail) {
+        return res.status(400).json({ error: "Email required" });
+      }
+
+      console.log("[STRIPE CONFIRM] Confirming payment for:", entrepreneurEmail);
+      
+      const { getUncachableStripeClient } = await import('./stripeClient');
+      const stripe = await getUncachableStripeClient();
+      
+      const customers = await stripe.customers.list({
+        email: entrepreneurEmail,
+        limit: 1
+      });
+
+      if (customers.data.length === 0) {
+        console.log("[STRIPE CONFIRM] No customer found for:", entrepreneurEmail);
+        return res.json({ success: false, reason: "No customer found" });
+      }
+
+      const customer = customers.data[0];
+      console.log("[STRIPE CONFIRM] Found customer:", customer.id);
+      
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: 'active',
+        limit: 1
+      });
+
+      if (subscriptions.data.length === 0) {
+        console.log("[STRIPE CONFIRM] No active subscription for:", entrepreneurEmail);
+        return res.json({ success: false, reason: "No active subscription" });
+      }
+
+      const subscription = subscriptions.data[0];
+      console.log("[STRIPE CONFIRM] Found active subscription:", subscription.id);
+
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { data, error } = await (client
+        .from("ideas")
+        .update({
+          payment_status: "paid",
+          stripe_customer_id: customer.id,
+          stripe_subscription_id: subscription.id,
+          payment_date: new Date().toISOString(),
+          status: "approved"
+        })
+        .ilike("entrepreneur_email", entrepreneurEmail)
+        .select() as any);
+
+      if (error) {
+        console.error("[STRIPE CONFIRM] Error updating idea:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      console.log("[STRIPE CONFIRM] Updated payment status for:", entrepreneurEmail, data);
+      return res.json({ success: true, paymentStatus: "paid", applicationStatus: "approved" });
+    } catch (error: any) {
+      console.error("[STRIPE CONFIRM] Error:", error.message);
       return res.status(500).json({ error: error.message });
     }
   });

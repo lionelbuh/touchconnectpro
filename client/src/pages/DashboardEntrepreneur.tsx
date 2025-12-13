@@ -137,6 +137,13 @@ export default function DashboardEntrepreneur() {
       localStorage.setItem("tcp_submitted", "true");
       window.history.replaceState({}, document.title, window.location.pathname);
     }
+    
+    if (params.get("payment") === "success") {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (params.get("payment") === "cancelled") {
+      toast.info("Payment was cancelled. You can try again anytime.");
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
 
     // Get user email from Supabase auth
     const fetchUserData = async () => {
@@ -183,6 +190,26 @@ export default function DashboardEntrepreneur() {
         if (user?.email) {
           console.log("[DASHBOARD] User found:", user.email);
           setUserEmail(user.email);
+          
+          // Check if returning from successful payment
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get("payment") === "success") {
+            console.log("[DASHBOARD] Payment success detected, confirming payment...");
+            try {
+              const confirmResponse = await fetch(`${API_BASE_URL}/api/stripe/confirm-payment`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ entrepreneurEmail: user.email })
+              });
+              const confirmData = await confirmResponse.json();
+              console.log("[DASHBOARD] Payment confirmation result:", confirmData);
+              if (confirmData.success) {
+                toast.success("Payment successful! Your membership is now active.");
+              }
+            } catch (error) {
+              console.error("[DASHBOARD] Error confirming payment:", error);
+            }
+          }
           
           // Fetch entrepreneur data from API
           const response = await fetch(`${API_BASE_URL}/api/entrepreneur/${encodeURIComponent(user.email)}`);

@@ -25,73 +25,69 @@ export class WebhookHandlers {
     }
 
     const sync = await getStripeSync();
-    const event = await sync.processWebhook(payload, signature, uuid);
     
-    console.log("[STRIPE WEBHOOK] Event type:", event.type);
-    
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-      const entrepreneurEmail = session.metadata?.entrepreneurEmail;
-      const customerId = session.customer;
-      const subscriptionId = session.subscription;
-      
-      console.log("[STRIPE WEBHOOK] Checkout completed for:", entrepreneurEmail);
-      console.log("[STRIPE WEBHOOK] Customer ID:", customerId);
-      console.log("[STRIPE WEBHOOK] Subscription ID:", subscriptionId);
-      
-      if (entrepreneurEmail) {
-        const supabase = getSupabaseClient();
-        if (supabase) {
-          const { data, error } = await supabase
-            .from("ideas")
-            .update({
-              payment_status: "paid",
-              stripe_customer_id: customerId,
-              stripe_subscription_id: subscriptionId,
-              payment_date: new Date().toISOString()
-            })
-            .ilike("entrepreneur_email", entrepreneurEmail);
-          
-          if (error) {
-            console.error("[STRIPE WEBHOOK] Error updating idea:", error);
-          } else {
-            console.log("[STRIPE WEBHOOK] Updated idea payment status to paid for:", entrepreneurEmail);
-          }
-        }
-      }
+    try {
+      await sync.processWebhook(payload, signature, uuid);
+      console.log("[STRIPE WEBHOOK] Webhook processed successfully by Replit connector");
+    } catch (error: any) {
+      console.error("[STRIPE WEBHOOK] Error processing webhook:", error.message);
+      throw error;
     }
+  }
+
+  static async handleCheckoutCompleted(customerEmail: string, customerId: string, subscriptionId: string): Promise<void> {
+    console.log("[STRIPE WEBHOOK] Processing checkout completion for:", customerEmail);
+    console.log("[STRIPE WEBHOOK] Customer ID:", customerId);
+    console.log("[STRIPE WEBHOOK] Subscription ID:", subscriptionId);
     
-    if (event.type === 'invoice.payment_failed') {
-      const invoice = event.data.object;
-      const customerId = invoice.customer;
-      
-      console.log("[STRIPE WEBHOOK] Payment failed for customer:", customerId);
-      
-      const supabase = getSupabaseClient();
-      if (supabase) {
-        await supabase
-          .from("ideas")
-          .update({ payment_status: "payment_failed" })
-          .eq("stripe_customer_id", customerId);
-      }
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      console.error("[STRIPE WEBHOOK] Supabase client not available");
+      return;
     }
+
+    const { data, error } = await supabase
+      .from("ideas")
+      .update({
+        payment_status: "paid",
+        stripe_customer_id: customerId,
+        stripe_subscription_id: subscriptionId,
+        payment_date: new Date().toISOString(),
+        status: "approved"
+      })
+      .ilike("entrepreneur_email", customerEmail);
     
-    if (event.type === 'customer.subscription.deleted') {
-      const subscription = event.data.object;
-      const customerId = subscription.customer;
-      
-      console.log("[STRIPE WEBHOOK] Subscription cancelled for customer:", customerId);
-      
-      const supabase = getSupabaseClient();
-      if (supabase) {
-        await supabase
-          .from("ideas")
-          .update({ 
-            payment_status: "cancelled",
-            status: "pre-approved"
-          })
-          .eq("stripe_customer_id", customerId);
-      }
+    if (error) {
+      console.error("[STRIPE WEBHOOK] Error updating idea:", error);
+    } else {
+      console.log("[STRIPE WEBHOOK] Updated idea payment status to paid for:", customerEmail);
     }
+  }
+
+  static async handlePaymentFailed(customerId: string): Promise<void> {
+    console.log("[STRIPE WEBHOOK] Payment failed for customer:", customerId);
+    
+    const supabase = getSupabaseClient();
+    if (!supabase) return;
+
+    await supabase
+      .from("ideas")
+      .update({ payment_status: "payment_failed" })
+      .eq("stripe_customer_id", customerId);
+  }
+
+  static async handleSubscriptionCancelled(customerId: string): Promise<void> {
+    console.log("[STRIPE WEBHOOK] Subscription cancelled for customer:", customerId);
+    
+    const supabase = getSupabaseClient();
+    if (!supabase) return;
+
+    await supabase
+      .from("ideas")
+      .update({ 
+        payment_status: "cancelled",
+        status: "pre-approved"
+      })
+      .eq("stripe_customer_id", customerId);
   }
 }
