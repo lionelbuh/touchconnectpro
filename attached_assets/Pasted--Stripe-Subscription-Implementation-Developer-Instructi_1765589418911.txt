@@ -1,0 +1,156 @@
+ Stripe Subscription Implementation – Developer Instructions
+Context (Already Done)
+•	Stripe account created
+•	Stripe secret & publishable keys stored in Render environment variables
+•	Stripe $49/month recurring price created
+•	Current test checkout command exists (curl example)
+________________________________________
+⚠️ Important Clarification
+The current curl command:
+curl https://api.stripe.com/v1/checkout/sessions \
+  -u "{{SECRET_KEY}}" \
+  --data-urlencode success_url="https://dashboard.stripe.com/billing/starter-guide/checkout-success" \
+  -d "payment_method_types[0]"=card \
+  -d "line_items[0][price]"=price_1SdZpuIzajgsohRkDXQlR7xZ \
+  -d "line_items[0][quantity]"=1 \
+  -d mode=subscription
+⚠️ This is ONLY a test example and CANNOT be used in production because:
+•	No authenticated user context
+•	No database linkage
+•	No Stripe Customer reuse
+•	No webhook handling
+•	No admin notification
+•	No secure backend endpoint
+________________________________________
+✅ What Must Be Implemented (Required)
+1️⃣ Backend Endpoint (Render)
+Create a secure backend endpoint:
+POST /api/stripe/create-checkout-session
+This endpoint must:
+•	Be called only by authenticated users
+•	Create or reuse a Stripe Customer
+•	Attach the internal userId as metadata
+•	Create a Stripe Checkout Session (subscription mode)
+•	Return the checkout URL to the frontend
+________________________________________
+2️⃣ Backend Code (Node.js Example)
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+export async function createCheckoutSession(req, res) {
+  const { userId } = req.body;
+
+  // 1. Fetch user from DB
+  const user = await db.users.findById(userId);
+
+  // 2. Create or reuse Stripe customer
+  let customerId = user.stripeCustomerId;
+
+  if (!customerId) {
+    const customer = await stripe.customers.create({
+      email: user.email,
+      metadata: { userId }
+    });
+
+    customerId = customer.id;
+    await db.users.update(userId, { stripeCustomerId: customerId });
+  }
+
+  // 3. Create checkout session
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    mode: "subscription",
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price: process.env.STRIPE_PRICE_ID,
+        quantity: 1
+      }
+    ],
+    success_url: "https://touchconnectpro.com/dashboard?payment=success",
+    cancel_url: "https://touchconnectpro.com/dashboard?payment=cancelled",
+    metadata: { userId }
+  });
+
+  res.json({ url: session.url });
+}
+________________________________________
+3️⃣ Frontend Flow
+In the entrepreneur dashboard:
+•	Show “Subscribe $49/month” button
+•	Button calls /create-checkout-session
+•	Redirect user to Stripe Checkout URL
+•	DO NOT mark user as paid on frontend
+________________________________________
+🚨 CRITICAL: Webhooks (Required)
+Payments must be validated ONLY via Stripe webhooks.
+Endpoint:
+POST /api/stripe/webhook
+Events to handle:
+•	checkout.session.completed
+•	invoice.payment_succeeded
+•	invoice.payment_failed
+•	customer.subscription.deleted
+________________________________________
+Webhook Handler (Simplified Example)
+export async function stripeWebhook(req, res) {
+  const sig = req.headers["stripe-signature"];
+
+  const event = stripe.webhooks.constructEvent(
+    req.rawBody,
+    sig,
+    process.env.STRIPE_WEBHOOK_SECRET
+  );
+
+  switch (event.type) {
+    case "checkout.session.completed": {
+      const session = event.data.object;
+      const userId = session.metadata.userId;
+
+      await db.users.update(userId, {
+        subscriptionStatus: "paid",
+        subscriptionActive: true,
+        paymentDate: new Date()
+      });
+
+      notifyAdmin(userId);
+      break;
+    }
+
+    case "invoice.payment_failed":
+      // mark payment_failed
+      break;
+
+    case "customer.subscription.deleted":
+      // revoke access
+      break;
+  }
+
+  res.json({ received: true });
+}
+________________________________________
+4️⃣ Database Fields Required
+User table must contain:
+stripeCustomerId TEXT
+subscriptionStatus ENUM('preapproved','paid','payment_failed','cancelled')
+subscriptionActive BOOLEAN
+paymentDate TIMESTAMP
+________________________________________
+5️⃣ Admin Dashboard Logic
+Admin should see:
+•	User email
+•	Payment status
+•	Payment date
+•	Button: “Assign Mentor”
+Admin actions unlocked only after webhook confirms payment.
+________________________________________
+🚫 Explicit DO NOTs
+❌ Do NOT rely on success_url to confirm payment
+❌ Do NOT mark users as paid on frontend
+❌ Do NOT use Stripe Payment Links
+❌ Do NOT expose secret keys
+❌ Do NOT skip webhook signature verification
+________________________________________
+🧠 One-Line Summary for Developer
+“Use Stripe Checkout Sessions in subscription mode with backend-created customers, confirm payment only via webhooks, update DB on webhook events.
