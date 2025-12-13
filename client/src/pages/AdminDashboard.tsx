@@ -2312,6 +2312,77 @@ export default function AdminDashboard() {
               {/* Messaging Sub-tab */}
               {activeMembersSubTab === "messaging" && (
               <div>
+                {/* Admin Inbox - System Notifications */}
+                {(() => {
+                  const systemMessages = messageHistory.filter((m: any) => 
+                    m.to_email === "admin@touchconnectpro.com" && 
+                    (m.from_email === "system@touchconnectpro.com" || m.from_name === "System")
+                  );
+                  const unreadSystemMessages = systemMessages.filter((m: any) => !m.is_read);
+                  
+                  if (systemMessages.length === 0) return null;
+                  
+                  return (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                        <Mail className="h-5 w-5 text-cyan-600" />
+                        Admin Inbox - System Notifications
+                        {unreadSystemMessages.length > 0 && (
+                          <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">
+                            {unreadSystemMessages.length} New
+                          </span>
+                        )}
+                      </h3>
+                      <div className="space-y-3">
+                        {systemMessages.map((msg: any, idx: number) => (
+                          <Card key={`system-msg-${idx}`} className={`border-l-4 ${msg.is_read ? "border-l-slate-300" : "border-l-cyan-500"}`}>
+                            <CardContent className="pt-4 pb-4">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-xs font-semibold text-cyan-600 uppercase">System Notification</span>
+                                    {!msg.is_read && (
+                                      <Badge className="bg-cyan-500 text-xs">Unread</Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-slate-900 dark:text-white">{msg.message}</p>
+                                  <p className="text-xs text-muted-foreground mt-2">
+                                    {new Date(msg.created_at).toLocaleString()}
+                                  </p>
+                                </div>
+                                {!msg.is_read && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={async () => {
+                                      try {
+                                        const response = await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, {
+                                          method: 'PATCH',
+                                          credentials: 'include'
+                                        });
+                                        if (response.ok) {
+                                          setMessageHistory(prev => prev.map((m: any) => 
+                                            m.id === msg.id ? {...m, is_read: true} : m
+                                          ));
+                                        }
+                                      } catch (error) {
+                                        console.error("Failed to mark as read:", error);
+                                      }
+                                    }}
+                                    data-testid={`button-mark-read-${idx}`}
+                                  >
+                                    Mark as Read
+                                  </Button>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Send Messages to {activeMembersCategoryTab.charAt(0).toUpperCase() + activeMembersCategoryTab.slice(1)}</h3>
                 <div className="space-y-6">
                   {/* Entrepreneurs - show only when selected */}
