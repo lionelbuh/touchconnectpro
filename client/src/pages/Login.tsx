@@ -841,7 +841,9 @@ export default function Login() {
                   try {
                     const supabase = await getSupabase();
                     if (!supabase) throw new Error("Unable to connect");
-                    await supabase.auth.resetPasswordForEmail(recoveryEmail);
+                    await supabase.auth.resetPasswordForEmail(recoveryEmail, {
+                      redirectTo: `${window.location.origin}/reset-password`
+                    });
                     toast.success("Recovery email sent! Check your inbox.");
                     setRecoveryEmail("");
                   } catch (error: any) {
