@@ -21,31 +21,55 @@ export default function ResetPassword() {
 
   useEffect(() => {
     const handleRecovery = async () => {
+      if (!supabase) {
+        setError("Unable to connect to authentication service.");
+        setIsLoading(false);
+        return;
+      }
+
       const hash = window.location.hash;
+      console.log("[RESET] Hash:", hash);
       
-      if (hash && hash.includes("access_token") && hash.includes("type=recovery")) {
+      if (hash) {
         const params = new URLSearchParams(hash.substring(1));
-        const accessToken = params.get("access_token");
-        const refreshToken = params.get("refresh_token");
+        const tokenHash = params.get("access_token");
+        const type = params.get("type");
         
-        if (accessToken && refreshToken && supabase) {
-          const { error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken
-          });
-          
-          if (error) {
-            setError("Invalid or expired recovery link. Please request a new one.");
+        console.log("[RESET] Token hash:", tokenHash?.substring(0, 10) + "...");
+        console.log("[RESET] Type:", type);
+        
+        if (tokenHash && type === "recovery") {
+          try {
+            const { data, error: verifyError } = await supabase.auth.verifyOtp({
+              token_hash: tokenHash,
+              type: "recovery"
+            });
+            
+            console.log("[RESET] verifyOtp result:", { data, error: verifyError });
+            
+            if (verifyError) {
+              console.error("[RESET] Verify error:", verifyError);
+              setError("Invalid or expired recovery link. Please request a new one.");
+              setSessionValid(false);
+            } else if (data?.session) {
+              console.log("[RESET] Session established!");
+              setSessionValid(true);
+              window.history.replaceState(null, "", window.location.pathname);
+            } else {
+              setError("Could not establish session. Please try again.");
+              setSessionValid(false);
+            }
+          } catch (err: any) {
+            console.error("[RESET] Exception:", err);
+            setError("An error occurred. Please request a new reset link.");
             setSessionValid(false);
-          } else {
-            setSessionValid(true);
           }
         } else {
           setError("Invalid recovery link format.");
           setSessionValid(false);
         }
       } else {
-        const { data: { session } } = await supabase!.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           setSessionValid(true);
         } else {
@@ -86,7 +110,6 @@ export default function ResetPassword() {
         setError(error.message);
       } else {
         setSuccess(true);
-        window.location.hash = "";
       }
     } catch (err: any) {
       setError("An error occurred. Please try again.");
