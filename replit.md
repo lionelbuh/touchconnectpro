@@ -12,6 +12,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Session)
 
+**Post-Payment Notifications (December 13, 2025):**
+- ✅ Added `sendPaymentWelcomeEmail` function for welcome emails after payment
+- ✅ After successful Stripe payment, system now sends:
+  1. Welcome email to entrepreneur with membership confirmation
+  2. Internal message to user about mentor assignment coming soon
+  3. Internal message to admin notifying about new paid member
+- ✅ Updated `/api/stripe/confirm-payment` endpoint with all notification logic
+- ✅ All notifications wrapped in try-catch to prevent payment flow failures
+
 **Session Persistence Fix (December 12, 2025):**
 - ✅ Fixed Supabase client singleton pattern using window-based storage to survive HMR
 - ✅ All dashboards (Entrepreneur, Mentor, Coach, Investor) now use `getSession()` first before `getUser()`

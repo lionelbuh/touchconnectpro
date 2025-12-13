@@ -101,6 +101,86 @@ async function createPasswordToken(email: string, userType: string, applicationI
   return token;
 }
 
+async function sendPaymentWelcomeEmail(email: string, fullName: string) {
+  console.log("[PAYMENT EMAIL] Sending welcome email to:", email);
+  
+  const resendData = await getResendClient();
+  
+  if (!resendData) {
+    console.log("[PAYMENT EMAIL] Resend not configured, skipping email for:", email);
+    return { success: false, reason: "Email not configured" };
+  }
+
+  const { client, fromEmail } = resendData;
+  const FRONTEND_URL = process.env.FRONTEND_URL || (process.env.NODE_ENV === "development" ? "http://localhost:5000" : "https://touchconnectpro.com");
+  
+  const subject = "Welcome to TouchConnectPro - Your Membership is Active!";
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+        .highlight-box { background: #d1fae5; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .button { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Welcome, ${fullName}!</h1>
+        </div>
+        <div class="content">
+          <p>Congratulations! Your payment has been confirmed and your TouchConnectPro membership is now <strong style="color: #10b981;">active</strong>!</p>
+          
+          <div class="highlight-box">
+            <p style="margin: 0;"><strong>What's Next:</strong> A mentor will be assigned to you shortly. You'll receive a notification once your mentor is ready to connect with you.</p>
+          </div>
+          
+          <p>You now have full access to your entrepreneur dashboard where you can:</p>
+          <ul>
+            <li>View and refine your business plan</li>
+            <li>Connect with your assigned mentor</li>
+            <li>Access exclusive resources and tools</li>
+            <li>Track your progress on your entrepreneurial journey</li>
+          </ul>
+          
+          <p style="text-align: center;">
+            <a href="${FRONTEND_URL}/login" class="button">Go to Your Dashboard</a>
+          </p>
+          
+          <p>We're excited to support you on your journey to building a fundable business!</p>
+          
+          <p>Best regards,<br>The TouchConnectPro Team</p>
+        </div>
+        <div class="footer">
+          <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: email,
+      subject,
+      html: htmlContent
+    });
+    
+    console.log("[PAYMENT EMAIL] Success! To:", email, "MessageID:", result.id);
+    return { success: true, id: result.id };
+  } catch (error: any) {
+    console.error("[PAYMENT EMAIL] Failed to send:", error.message);
+    return { success: false, error: error.message };
+  }
+}
+
 async function sendStatusEmail(email: string, fullName: string, userType: string, status: string, applicationId: string) {
   console.log("[EMAIL] Starting email send process for:", email, "userType:", userType, "status:", status);
   
@@ -2481,7 +2561,49 @@ export async function registerRoutes(
       }
 
       console.log("[STRIPE CONFIRM] Updated payment status for:", entrepreneurEmail, data);
-      return res.json({ success: true, paymentStatus: "paid", applicationStatus: "approved" });
+
+      // Get entrepreneur name from the updated record
+      const entrepreneurName = data?.[0]?.entrepreneur_name || "Entrepreneur";
+
+      // Send welcome email
+      const emailResult = await sendPaymentWelcomeEmail(entrepreneurEmail, entrepreneurName);
+      console.log("[STRIPE CONFIRM] Welcome email result:", emailResult);
+
+      // Create internal message to user about mentor assignment
+      try {
+        await (client
+          .from("messages")
+          .insert({
+            from_name: "TouchConnectPro",
+            from_email: "admin@touchconnectpro.com",
+            to_name: entrepreneurName,
+            to_email: entrepreneurEmail,
+            message: "Welcome! Your payment has been confirmed and your membership is now active. A mentor will be assigned to you shortly. You'll receive a notification once your mentor is ready to connect with you.",
+            is_read: false
+          } as any));
+        console.log("[STRIPE CONFIRM] Internal message sent to user:", entrepreneurEmail);
+      } catch (msgError: any) {
+        console.error("[STRIPE CONFIRM] Failed to send internal message to user:", msgError.message);
+      }
+
+      // Create internal message to admin about payment
+      try {
+        await (client
+          .from("messages")
+          .insert({
+            from_name: "System",
+            from_email: "system@touchconnectpro.com",
+            to_name: "Admin",
+            to_email: "admin@touchconnectpro.com",
+            message: `${entrepreneurName} (${entrepreneurEmail}) has completed their $49/month subscription payment and is now a paid member. Please assign a mentor.`,
+            is_read: false
+          } as any));
+        console.log("[STRIPE CONFIRM] Admin notification sent about payment from:", entrepreneurEmail);
+      } catch (msgError: any) {
+        console.error("[STRIPE CONFIRM] Failed to send admin notification:", msgError.message);
+      }
+
+      return res.json({ success: true, paymentStatus: "paid", applicationStatus: "approved", emailSent: emailResult.success });
     } catch (error: any) {
       console.error("[STRIPE CONFIRM] Error:", error.message);
       return res.status(500).json({ error: error.message });
