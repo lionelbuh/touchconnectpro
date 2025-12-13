@@ -139,8 +139,28 @@ export default function DashboardEntrepreneur() {
     }
     
     if (params.get("payment") === "success") {
+      const pendingEmail = localStorage.getItem("tcp_pendingPaymentEmail");
+      if (pendingEmail) {
+        console.log("[DASHBOARD] Payment success with pending email:", pendingEmail);
+        fetch(`${API_BASE_URL}/api/stripe/confirm-payment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ entrepreneurEmail: pendingEmail })
+        })
+          .then(res => res.json())
+          .then(data => {
+            console.log("[DASHBOARD] Payment confirmation result:", data);
+            if (data.success) {
+              toast.success("Payment successful! Your membership is now active.");
+              localStorage.removeItem("tcp_pendingPaymentEmail");
+              window.location.reload();
+            }
+          })
+          .catch(err => console.error("[DASHBOARD] Payment confirmation error:", err));
+      }
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (params.get("payment") === "cancelled") {
+      localStorage.removeItem("tcp_pendingPaymentEmail");
       toast.info("Payment was cancelled. You can try again anytime.");
       window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -645,6 +665,9 @@ export default function DashboardEntrepreneur() {
   const handleSubscribe = async () => {
     setIsSubscribing(true);
     try {
+      // Save email to localStorage before redirecting (session may be lost after Stripe)
+      localStorage.setItem("tcp_pendingPaymentEmail", userEmail);
+      
       const response = await fetch(`${API_BASE_URL}/api/stripe/create-checkout-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -660,11 +683,13 @@ export default function DashboardEntrepreneur() {
         window.location.href = data.url;
       } else {
         toast.error("Could not create payment session. Please try again.");
+        localStorage.removeItem("tcp_pendingPaymentEmail");
         setIsSubscribing(false);
       }
     } catch (error) {
       console.error("Subscribe error:", error);
       toast.error("Payment error. Please try again later.");
+      localStorage.removeItem("tcp_pendingPaymentEmail");
       setIsSubscribing(false);
     }
   };
