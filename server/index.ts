@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -8,6 +9,19 @@ import { getStripeSync } from './stripeClient';
 import { WebhookHandlers } from './webhookHandlers';
 
 const app = express();
+
+// CORS configuration for production
+app.use(cors({
+  origin: [
+    'http://localhost:5000',
+    'http://localhost:3000',
+    'https://touchconnectpro.com',
+    'https://www.touchconnectpro.com',
+    /\.replit\.dev$/,
+    /\.replit\.app$/
+  ],
+  credentials: true
+}));
 const httpServer = createServer(app);
 
 declare module "http" {
