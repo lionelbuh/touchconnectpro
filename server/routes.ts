@@ -2363,8 +2363,9 @@ export async function registerRoutes(
 
       const { stripeService } = await import('./stripeService');
       
+      const replitDomain = process.env.REPLIT_DOMAINS?.split(',')[0];
       const baseUrl = process.env.FRONTEND_URL || 
-        (process.env.NODE_ENV === "development" ? "http://localhost:5000" : "https://touchconnectpro.com");
+        (replitDomain ? `https://${replitDomain}` : "http://localhost:5000");
       
       const { url, customerId } = await stripeService.createCheckoutSession(
         entrepreneurEmail,
