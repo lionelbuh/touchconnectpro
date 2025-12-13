@@ -1,0 +1,131 @@
+What this means (important)
+
+This error is thrown by Supabase Auth, not Render.
+
+It means the frontend loaded, but Supabase could not validate or consume the recovery token.
+
+This happens when ONE of the following is wrong (very common):
+
+🚨 Root causes (ordered by likelihood)
+1️⃣ Supabase client is NOT initialized correctly on /reset-password
+
+On the reset page, Supabase must be initialized with the public ANON key, not the service key, and must match the project that sent the email.
+
+✅ Required
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+
+❌ Common mistakes:
+
+Using the wrong Supabase project
+
+Missing env vars on Render
+
+Using SUPABASE_SERVICE_ROLE_KEY in frontend
+
+Env vars not exposed (NEXT_PUBLIC_ missing)
+
+👉 If Supabase cannot initialize → “Unable to connect to authentication service”
+
+2️⃣ The recovery token is NOT being consumed correctly
+
+Supabase recovery links MUST be handled from the URL hash.
+
+✅ Correct handling (simple + safe)
+useEffect(() => {
+  supabase.auth.getSessionFromUrl({ storeSession: true })
+}, [])
+
+
+❌ Wrong:
+
+Manually parsing token but never setting session
+
+Expecting query params instead of hash
+
+Calling updateUser before session exists
+
+If the session is not created → Supabase says Invalid Link
+
+3️⃣ Password update is attempted BEFORE session exists
+
+This will always fail.
+
+❌ Wrong
+supabase.auth.updateUser({ password })
+
+
+(before session)
+
+✅ Correct
+const { data } = await supabase.auth.getSession()
+
+if (!data.session) {
+  // show error
+  return
+}
+
+await supabase.auth.updateUser({ password })
+
+4️⃣ Site URL / Redirect URLs misconfigured in Supabase
+
+In Supabase Dashboard → Authentication → URL Configuration:
+
+✅ Must include:
+Site URL:
+https://www.touchconnectpro.com
+
+✅ Redirect URLs must include:
+https://www.touchconnectpro.com/reset-password
+
+
+❌ Missing this causes:
+
+Invalid link
+
+5️⃣ Mixed environment (prod vs dev)
+
+Very common mistake:
+
+Reset email sent from prod Supabase
+
+Frontend pointing to dev Supabase
+
+Or Render env vars still pointing to old project
+
+👉 Tokens are project-specific
+Wrong project = Invalid Link
+
+Quick debug steps for the dev (2 minutes)
+
+On /reset-password, log:
+
+console.log('hash', window.location.hash)
+console.log('supabase url', process.env.NEXT_PUBLIC_SUPABASE_URL)
+
+
+Then test:
+
+const { data, error } = await supabase.auth.getSessionFromUrl()
+console.log(data, error)
+
+
+If error exists → config problem, not email.
+
+One-line diagnosis for the dev
+
+The page now loads correctly, but Supabase cannot validate the recovery token because the auth client is misconfigured or the session is not being created from the URL hash.
+
+Final checklist (must ALL be true)
+
+✔ Correct Supabase project
+✔ Correct public anon key on Render
+✔ /reset-password route exists
+✔ getSessionFromUrl() is called
+✔ Session exists before password update
+✔ Redirect URL registered in Supabase
