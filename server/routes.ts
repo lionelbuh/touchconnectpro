@@ -2350,5 +2350,71 @@ export async function registerRoutes(
     }
   });
 
+  // Stripe: Create checkout session for entrepreneur subscription
+  app.post("/api/stripe/create-checkout-session", async (req, res) => {
+    try {
+      const { entrepreneurEmail, entrepreneurName } = req.body;
+      
+      if (!entrepreneurEmail) {
+        return res.status(400).json({ error: "Entrepreneur email required" });
+      }
+
+      console.log("[STRIPE] Creating checkout session for:", entrepreneurEmail);
+
+      const { stripeService } = await import('./stripeService');
+      
+      const baseUrl = process.env.FRONTEND_URL || 
+        (process.env.NODE_ENV === "development" ? "http://localhost:5000" : "https://touchconnectpro.com");
+      
+      const { url, customerId } = await stripeService.createCheckoutSession(
+        entrepreneurEmail,
+        entrepreneurName || "Entrepreneur",
+        `${baseUrl}/dashboard/entrepreneur?payment=success`,
+        `${baseUrl}/dashboard/entrepreneur?payment=cancelled`
+      );
+
+      console.log("[STRIPE] Checkout session created, customer:", customerId);
+      
+      return res.json({ url, customerId });
+    } catch (error: any) {
+      console.error("[STRIPE] Checkout error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get entrepreneur payment status
+  app.get("/api/entrepreneur/payment-status/:email", async (req, res) => {
+    try {
+      const email = decodeURIComponent(req.params.email);
+      const client = getSupabaseClient();
+      
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { data, error } = await (client
+        .from("ideas")
+        .select("payment_status, stripe_customer_id, payment_date, status")
+        .ilike("entrepreneur_email", email)
+        .limit(1) as any);
+
+      if (error) {
+        console.error("[PAYMENT STATUS] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      const idea = data?.[0];
+      return res.json({
+        paymentStatus: idea?.payment_status || null,
+        stripeCustomerId: idea?.stripe_customer_id || null,
+        paymentDate: idea?.payment_date || null,
+        applicationStatus: idea?.status || null
+      });
+    } catch (error: any) {
+      console.error("[PAYMENT STATUS] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }
