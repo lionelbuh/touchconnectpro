@@ -33,6 +33,7 @@ export default function DashboardEntrepreneur() {
   const [userEmail, setUserEmail] = useState<string>("");
   const [isAccountDisabled, setIsAccountDisabled] = useState(false);
   const [isPreApproved, setIsPreApproved] = useState(false);
+  const [isSubscribing, setIsSubscribing] = useState(false);
   const [businessPlanData, setBusinessPlanData] = useState<any>({
     executiveSummary: "",
     problemStatement: "",
@@ -614,6 +615,33 @@ export default function DashboardEntrepreneur() {
     window.location.href = "/";
   };
 
+  const handleSubscribe = async () => {
+    setIsSubscribing(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/stripe/create-checkout-session`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          entrepreneurEmail: userEmail,
+          entrepreneurName: profileData.fullName || entrepreneurData?.data?.fullName || "Entrepreneur"
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error("Could not create payment session. Please try again.");
+        setIsSubscribing(false);
+      }
+    } catch (error) {
+      console.error("Subscribe error:", error);
+      toast.error("Payment error. Please try again later.");
+      setIsSubscribing(false);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !entrepreneurData?.id) return;
     
@@ -820,9 +848,26 @@ export default function DashboardEntrepreneur() {
                     <CardContent className="pt-6 pb-6">
                       <div className="flex items-start gap-4">
                         <ClipboardList className="h-6 w-6 text-amber-500 flex-shrink-0 mt-0.5" />
-                        <div>
+                        <div className="flex-1">
                           <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-300 mb-1">Pre-Approved - Payment Required</h3>
-                          <p className="text-amber-700 dark:text-amber-400">Congratulations! Your application has been pre-approved. To activate your full membership and access all features including coaches, mentor assignment, and more, please complete your $49/month membership payment. Contact the Admin team via the Messages tab for payment instructions.</p>
+                          <p className="text-amber-700 dark:text-amber-400 mb-4">Congratulations! Your application has been pre-approved. To activate your full membership and access all features including coaches, mentor assignment, and more, please complete your $49/month membership payment.</p>
+                          <Button 
+                            className="bg-amber-600 hover:bg-amber-700 text-white"
+                            onClick={handleSubscribe}
+                            disabled={isSubscribing}
+                            data-testid="button-subscribe"
+                          >
+                            {isSubscribing ? (
+                              <>
+                                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                                Redirecting to payment...
+                              </>
+                            ) : (
+                              <>
+                                Subscribe $49/month
+                              </>
+                            )}
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
