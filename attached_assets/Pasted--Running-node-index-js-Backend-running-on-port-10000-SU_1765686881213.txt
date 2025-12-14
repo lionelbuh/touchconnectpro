@@ -1,0 +1,39 @@
+==> Running 'node index.js'
+Backend running on port 10000
+SUPABASE_URL: Loaded
+SUPABASE_SERVICE_ROLE_KEY: Set
+[GET /api/config] Serving Supabase config
+[ENTREPRENEUR MEETINGS] Finding meetings for entrepreneur hello@zeroexcuseclub.com with idea ID: 48cad12b-3f07-4aeb-9f91-b92f062fb5eb
+[ENTREPRENEUR MEETINGS] ALL meetings in database: 4
+[ENTREPRENEUR MEETINGS] Meeting participants overview: [
+  {
+    id: '34cc67d1-bef8-4d77-827d-573a74a0aefb',
+    topic: 'test 4 meeting',
+    participants: [ '922b1794-60d9-44ee-b27a-90c5fb09536e' ],
+    participantsType: 'object'
+  },
+  {
+    id: 'a0e495c6-b247-452f-97bf-01d322aa4834',
+    topic: 'Test Meeting 3',
+    participants: [ '922b1794-60d9-44ee-b27a-90c5fb09536e' ],
+    participantsType: 'object'
+  },
+  {
+    id: '6e7ca818-fc39-4cc9-95bd-54eec23431f5',
+    topic: 'Test meeting 2',
+    participants: [ '922b1794-60d9-44ee-b27a-90c5fb09536e' ],
+    participantsType: 'object'
+  },
+  {
+    id: '2f54e4c3-3f00-437b-be92-af9680c3c36d',
+    topic: 'Test Meeting',
+    participants: [ '922b1794-60d9-44ee-b27a-90c5fb09536e' ],
+    participantsType: 'object'
+  }
+]
+[ENTREPRENEUR MEETINGS] Checking meeting 34cc67d1-bef8-4d77-827d-573a74a0aefb participants: [ '922b1794-60d9-44ee-b27a-90c5fb09536e' ] looking for: 48cad12b-3f07-4aeb-9f91-b92f062fb5eb found: false
+[ENTREPRENEUR MEETINGS] Checking meeting a0e495c6-b247-452f-97bf-01d322aa4834 participants: [ '922b1794-60d9-44ee-b27a-90c5fb09536e' ] looking for: 48cad12b-3f07-4aeb-9f91-b92f062fb5eb found: false
+[ENTREPRENEUR MEETINGS] Checking meeting 6e7ca818-fc39-4cc9-95bd-54eec23431f5 participants: [ '922b1794-60d9-44ee-b27a-90c5fb09536e' ] looking for: 48cad12b-3f07-4aeb-9f91-b92f062fb5eb found: false
+[ENTREPRENEUR MEETINGS] Checking meeting 2f54e4c3-3f00-437b-be92-af9680c3c36d participants: [ '922b1794-60d9-44ee-b27a-90c5fb09536e' ] looking for: 48cad12b-3f07-4aeb-9f91-b92f062fb5eb found: false
+[ENTREPRENEUR MEETINGS] Found 0 meetings for hello@zeroexcuseclub.com with idea ID: 48cad12b-3f07-4aeb-9f91-b92f062fb5eb
+Need better ways to work with logs? Try theRender CLI, Render MCP Server, or set up 
