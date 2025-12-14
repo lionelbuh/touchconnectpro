@@ -676,7 +676,8 @@ export default function DashboardEntrepreneur() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: userEmail,
-          entrepreneurId: entrepreneurData?.id
+          entrepreneurId: entrepreneurData?.id,
+          cancelUrl: window.location.origin + "/entrepreneur-dashboard"
         })
       });
       
