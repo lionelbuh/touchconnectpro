@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink } from "lucide-react";
+import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { API_BASE_URL } from "@/config";
@@ -123,6 +123,10 @@ export default function AdminDashboard() {
   const [showRejected, setShowRejected] = useState<{[key: string]: boolean}>({});
   const [mentorAssignments, setMentorAssignments] = useState<{[entrepreneurId: string]: {mentorId: string; mentorName: string; portfolioNumber: number}}>({});
   const [allMeetings, setAllMeetings] = useState<any[]>([]);
+  const [coachRatings, setCoachRatings] = useState<Record<string, { averageRating: number; totalRatings: number }>>({});
+  const [showRatingLinkModal, setShowRatingLinkModal] = useState(false);
+  const [selectedCoachForRating, setSelectedCoachForRating] = useState<any>(null);
+  const [ratingLinkEmail, setRatingLinkEmail] = useState("");
 
   useEffect(() => {
     const loadData = async () => {
@@ -185,6 +189,13 @@ export default function AdminDashboard() {
             setCoachApplications(mappedCoaches);
             setApprovedCoaches(mappedCoaches.filter((app: any) => app.status === "approved"));
           }
+        }
+        
+        // Fetch coach ratings
+        const ratingsResponse = await fetch(`${API_BASE_URL}/api/coach-ratings`);
+        if (ratingsResponse.ok) {
+          const ratingsData = await ratingsResponse.json();
+          setCoachRatings(ratingsData);
         }
       } catch (err) {
         console.error("Error fetching coaches:", err);
@@ -2123,10 +2134,6 @@ export default function AdminDashboard() {
                                 <p className="text-slate-900 dark:text-white">{app.email}</p>
                               </div>
                               <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
-                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
-                              </div>
-                              <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
                                 <p className="text-slate-900 dark:text-white">{app.expertise}</p>
                               </div>
@@ -2151,7 +2158,46 @@ export default function AdminDashboard() {
                                 <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
                               </div>
                             </div>
+                            {app.bio && (
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
+                                <p className="text-sm text-slate-700 dark:text-slate-300">{app.bio}</p>
+                              </div>
+                            )}
+                            {app.specializations && app.specializations.length > 0 && (
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Specializations</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {app.specializations.map((tag: string) => (
+                                    <Badge key={tag} variant="secondary" className="text-xs bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {coachRatings[app.id] && (
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Ratings</p>
+                                <div className="flex items-center gap-2">
+                                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                  <span className="font-semibold">{coachRatings[app.id].averageRating.toFixed(1)}</span>
+                                  <span className="text-xs text-muted-foreground">({coachRatings[app.id].totalRatings} reviews)</span>
+                                </div>
+                              </div>
+                            )}
                             <div className="flex gap-2 pt-2">
+                              <Button 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedCoachForRating(app);
+                                  setShowRatingLinkModal(true);
+                                }}
+                                data-testid={`button-send-rating-link-${idx}`}
+                                variant="outline"
+                              >
+                                <Mail className="mr-2 h-4 w-4" /> Send Rating Link
+                              </Button>
                               <Button 
                                 size="sm"
                                 onClick={() => {
@@ -3028,6 +3074,66 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           )}
+        </div>
+      )}
+
+      {/* Rating Link Modal */}
+      {showRatingLinkModal && selectedCoachForRating && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Send Rating Link to Entrepreneur</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">Send a personalized link to an entrepreneur so they can rate {selectedCoachForRating.fullName}.</p>
+              <div>
+                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Entrepreneur Email</label>
+                <input 
+                  type="email" 
+                  value={ratingLinkEmail}
+                  onChange={(e) => setRatingLinkEmail(e.target.value)}
+                  placeholder="entrepreneur@example.com"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  data-testid="input-rating-email"
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" className="flex-1" onClick={() => {setShowRatingLinkModal(false); setRatingLinkEmail("");}} data-testid="button-cancel-rating">Cancel</Button>
+                <Button 
+                  className="flex-1 bg-cyan-600 hover:bg-cyan-700" 
+                  onClick={async () => {
+                    if (ratingLinkEmail.trim()) {
+                      try {
+                        const response = await fetch(`${API_BASE_URL}/api/send-rating-link`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            coachId: selectedCoachForRating.id,
+                            coachName: selectedCoachForRating.fullName,
+                            entrepreneurEmail: ratingLinkEmail
+                          })
+                        });
+                        if (response.ok) {
+                          toast.success(`Rating link sent to ${ratingLinkEmail}`);
+                          setShowRatingLinkModal(false);
+                          setRatingLinkEmail("");
+                        } else {
+                          toast.error("Failed to send rating link");
+                        }
+                      } catch (err) {
+                        console.error("Error sending rating link:", err);
+                        toast.error("Error sending rating link");
+                      }
+                    }
+                  }}
+                  disabled={!ratingLinkEmail.trim()}
+                  data-testid="button-send-rating"
+                >
+                  Send Link
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 

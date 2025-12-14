@@ -1365,6 +1365,37 @@ app.get("/api/coach-ratings", async (req, res) => {
   }
 });
 
+// Send rating link to entrepreneur
+app.post("/api/send-rating-link", async (req, res) => {
+  try {
+    const { coachId, coachName, entrepreneurEmail } = req.body;
+    if (!coachId || !entrepreneurEmail) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+    
+    // Create a unique rating link
+    const token = crypto.randomBytes(16).toString('hex');
+    const ratingLink = `${FRONTEND_URL}/rate-coach?coachId=${coachId}&token=${token}&email=${encodeURIComponent(entrepreneurEmail)}`;
+    
+    // Send email with rating link
+    const resendData = await getResendClient();
+    if (resendData) {
+      const { client, fromEmail } = resendData;
+      await client.emails.send({
+        from: fromEmail,
+        to: entrepreneurEmail,
+        subject: `Rate ${coachName} on TouchConnectPro`,
+        html: `<p>You're invited to rate your coach <strong>${coachName}</strong>.</p><p><a href="${ratingLink}" style="background-color: #06b6d4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Click here to rate</a></p><p>This link will help us improve our coaching services.</p>`
+      });
+    }
+    
+    return res.json({ success: true, message: "Rating link sent successfully" });
+  } catch (error) {
+    console.error("[POST /api/send-rating-link] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/api/coaches", async (req, res) => {
   try {
     const { data, error } = await supabase

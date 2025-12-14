@@ -1455,7 +1455,7 @@ export default function DashboardEntrepreneur() {
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Specializations</p>
                               <div className="flex flex-wrap gap-1">
                                 {coach.specializations.map((tag: string) => (
-                                  <Badge key={tag} variant="secondary" className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                                  <Badge key={tag} variant="secondary" className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300" onClick={() => setSelectedSpecializations([tag])} style={{cursor: 'pointer'}}>
                                     {tag}
                                   </Badge>
                                 ))}
@@ -1466,13 +1466,8 @@ export default function DashboardEntrepreneur() {
                             <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
                             <p className="text-sm text-slate-700 dark:text-slate-300">{coach.focus_areas}</p>
                           </div>
-                          <div className="flex justify-between items-center pt-2">
+                          <div className="pt-2">
                             <span className="text-lg font-bold text-purple-600">${coach.hourly_rate}/hr</span>
-                            {coach.linkedin && (
-                              <a href={coach.linkedin} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700 flex items-center gap-1 text-sm">
-                                <ExternalLink className="h-3 w-3" /> LinkedIn
-                              </a>
-                            )}
                           </div>
                         </CardContent>
                       </Card>
