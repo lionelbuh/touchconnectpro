@@ -2405,10 +2405,10 @@ app.patch("/api/mentor-assignments/:id", async (req, res) => {
     if (mentorNotes !== undefined) {
       console.log("[PATCH /api/mentor-assignments/:id] Processing mentorNotes:", mentorNotes);
       
-      // Get current assignment to check existing notes
+      // Get current assignment to check existing notes and get entrepreneur/mentor IDs
       const { data: currentAssignment, error: fetchError } = await supabase
         .from("mentor_assignments")
-        .select("mentor_notes")
+        .select("mentor_notes, entrepreneur_id, mentor_id")
         .eq("id", id)
         .single();
 
@@ -2434,6 +2434,37 @@ app.patch("/api/mentor-assignments/:id", async (req, res) => {
       const updatedNotes = [...existingNotes, newNote];
       updates.mentor_notes = JSON.stringify(updatedNotes);
       console.log("[PATCH /api/mentor-assignments/:id] Updated notes:", updates.mentor_notes);
+      
+      // Send email notification to entrepreneur about new note
+      if (currentAssignment?.entrepreneur_id && currentAssignment?.mentor_id) {
+        const { data: entrepreneur } = await supabase
+          .from("ideas")
+          .select("entrepreneur_email, entrepreneur_name")
+          .eq("id", currentAssignment.entrepreneur_id)
+          .single();
+        
+        const { data: mentor } = await supabase
+          .from("mentor_applications")
+          .select("full_name")
+          .eq("id", currentAssignment.mentor_id)
+          .single();
+        
+        if (entrepreneur?.entrepreneur_email) {
+          const mentorName = mentor?.full_name || "Your Mentor";
+          const entrepreneurName = entrepreneur.entrepreneur_name || "Entrepreneur";
+          const notePreview = mentorNotes.length > 100 ? mentorNotes.substring(0, 100) + "..." : mentorNotes;
+          
+          sendMessageNotificationEmail(
+            entrepreneur.entrepreneur_email,
+            entrepreneurName,
+            mentorName,
+            "mentor@touchconnectpro.com",
+            `New note from your mentor: "${notePreview}"`
+          ).catch(err => console.error("[EMAIL] Mentor note email failed:", err));
+          
+          console.log("[PATCH /api/mentor-assignments/:id] Email notification sent to entrepreneur:", entrepreneur.entrepreneur_email);
+        }
+      }
     }
 
     console.log("[PATCH /api/mentor-assignments/:id] Sending update:", updates);
