@@ -704,9 +704,9 @@ app.post("/api/ideas", async (req, res) => {
     console.log("[SUCCESS] Idea saved with id:", data?.[0]?.id);
     
     // Send confirmation email to applicant and notify admin
-    const ideaName = formData?.ideaName || "their business idea";
-    sendApplicationSubmittedEmail(email, fullName, "entrepreneur", ideaName).catch(err => console.error("[EMAIL] Failed:", err));
-    sendAdminNewApplicationEmail(email, fullName, "entrepreneur", data?.[0]?.id, `Idea: ${ideaName}`).catch(err => console.error("[EMAIL] Admin notify failed:", err));
+    const emailIdeaName = ideaName || formData?.ideaName || "their business idea";
+    sendApplicationSubmittedEmail(email, fullName, "entrepreneur", emailIdeaName).catch(err => console.error("[EMAIL] Failed:", err));
+    sendAdminNewApplicationEmail(email, fullName, "entrepreneur", data?.[0]?.id, `Idea: ${emailIdeaName}`).catch(err => console.error("[EMAIL] Admin notify failed:", err));
     
     return res.json({ success: true, id: data?.[0]?.id });
   } catch (error) {
