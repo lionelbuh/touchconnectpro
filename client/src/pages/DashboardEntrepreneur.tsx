@@ -1344,33 +1344,36 @@ export default function DashboardEntrepreneur() {
                 <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Available Coaches</h1>
                 <p className="text-muted-foreground mb-4">Browse our approved coaches who can help accelerate your startup journey with specialized expertise.</p>
 
-                {/* Specialization Filter */}
+                {/* Areas of Expertise Filter */}
                 {approvedCoaches.length > 0 && !isAccountDisabled && !isPreApproved && (() => {
-                  const allSpecializations = Array.from(new Set(approvedCoaches.flatMap(c => c.specializations || [])));
-                  if (allSpecializations.length === 0) return null;
+                  const allExpertiseAreas = Array.from(new Set(approvedCoaches.flatMap(c => {
+                    const areas = c.focus_areas || "";
+                    return areas.split(",").map((a: string) => a.trim()).filter((a: string) => a);
+                  })));
+                  if (allExpertiseAreas.length === 0) return null;
                   return (
                     <div className="mb-6">
-                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Filter by Specialization:</p>
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Filter by Areas of Expertise:</p>
                       <div className="flex flex-wrap gap-2">
-                        {allSpecializations.map((spec: string) => (
+                        {allExpertiseAreas.map((area: string) => (
                           <Badge
-                            key={spec}
-                            variant={selectedSpecializations.includes(spec) ? "default" : "outline"}
+                            key={area}
+                            variant={selectedSpecializations.includes(area) ? "default" : "outline"}
                             className={`cursor-pointer transition-colors ${
-                              selectedSpecializations.includes(spec) 
+                              selectedSpecializations.includes(area) 
                                 ? "bg-purple-600 text-white hover:bg-purple-700" 
                                 : "hover:bg-purple-100 dark:hover:bg-purple-900/30"
                             }`}
                             onClick={() => {
-                              if (selectedSpecializations.includes(spec)) {
-                                setSelectedSpecializations(selectedSpecializations.filter(s => s !== spec));
+                              if (selectedSpecializations.includes(area)) {
+                                setSelectedSpecializations(selectedSpecializations.filter(s => s !== area));
                               } else {
-                                setSelectedSpecializations([...selectedSpecializations, spec]);
+                                setSelectedSpecializations([...selectedSpecializations, area]);
                               }
                             }}
-                            data-testid={`filter-specialization-${spec}`}
+                            data-testid={`filter-expertise-${area}`}
                           >
-                            {spec}
+                            {area}
                           </Badge>
                         ))}
                         {selectedSpecializations.length > 0 && (
@@ -1410,8 +1413,8 @@ export default function DashboardEntrepreneur() {
                     {approvedCoaches
                       .filter((coach) => {
                         if (selectedSpecializations.length === 0) return true;
-                        const coachSpecs = coach.specializations || [];
-                        return selectedSpecializations.some(spec => coachSpecs.includes(spec));
+                        const coachAreas = (coach.focus_areas || "").split(",").map((a: string) => a.trim()).filter((a: string) => a);
+                        return selectedSpecializations.some(area => coachAreas.includes(area));
                       })
                       .map((coach) => {
                       const rating = coachRatings[coach.id];
@@ -1450,20 +1453,8 @@ export default function DashboardEntrepreneur() {
                               <p className="text-sm text-slate-700 dark:text-slate-300 line-clamp-3">{coach.bio}</p>
                             </div>
                           )}
-                          {coach.specializations && coach.specializations.length > 0 && (
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Specializations</p>
-                              <div className="flex flex-wrap gap-1">
-                                {coach.specializations.map((tag: string) => (
-                                  <Badge key={tag} variant="secondary" className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300" onClick={() => setSelectedSpecializations([tag])} style={{cursor: 'pointer'}}>
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
                           <div>
-                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
+                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Areas of Expertise</p>
                             <p className="text-sm text-slate-700 dark:text-slate-300">{coach.focus_areas}</p>
                           </div>
                           <div className="pt-2">

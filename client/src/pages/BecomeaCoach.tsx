@@ -67,7 +67,6 @@ export default function BecomeaCoach() {
     hourlyRate: string;
     country: string;
     state: string;
-    specializations: string[];
   }>({
     fullName: "",
     email: "",
@@ -77,10 +76,8 @@ export default function BecomeaCoach() {
     focusAreas: "",
     hourlyRate: "",
     country: "",
-    state: "",
-    specializations: []
+    state: ""
   });
-  const [specializationInput, setSpecializationInput] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -110,8 +107,7 @@ export default function BecomeaCoach() {
     try {
       const submitData = {
         ...formData,
-        expertise: formData.expertise.join(", "),
-        specializations: formData.specializations
+        expertise: formData.expertise.join(", ")
       };
       console.log("Submitting to:", `${API_BASE_URL}/api/coaches`);
       console.log("Submit data:", submitData);
@@ -140,20 +136,7 @@ export default function BecomeaCoach() {
   const handleCloseModal = () => {
     setSubmitted(false);
     setShowForm(false);
-    setFormData({ fullName: "", email: "", linkedin: "", bio: "", expertise: [], focusAreas: "", hourlyRate: "", country: "", state: "", specializations: [] });
-    setSpecializationInput("");
-  };
-
-  const addSpecialization = () => {
-    const trimmed = specializationInput.trim();
-    if (trimmed && !formData.specializations.includes(trimmed)) {
-      setFormData(prev => ({ ...prev, specializations: [...prev.specializations, trimmed] }));
-      setSpecializationInput("");
-    }
-  };
-
-  const removeSpecialization = (tag: string) => {
-    setFormData(prev => ({ ...prev, specializations: prev.specializations.filter(s => s !== tag) }));
+    setFormData({ fullName: "", email: "", linkedin: "", bio: "", expertise: [], focusAreas: "", hourlyRate: "", country: "", state: "" });
   };
 
   return (
@@ -415,41 +398,6 @@ export default function BecomeaCoach() {
                         data-testid="input-coach-bio"
                       />
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">This bio will be visible to entrepreneurs browsing coaches</p>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Specialization Tags</label>
-                      <div className="flex gap-2 mb-2">
-                        <Input
-                          value={specializationInput}
-                          onChange={(e) => setSpecializationInput(e.target.value)}
-                          placeholder="e.g., eCommerce, Marketing, Supply Chain"
-                          className="bg-slate-50 dark:bg-slate-800/50"
-                          data-testid="input-coach-specialization"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              addSpecialization();
-                            }
-                          }}
-                        />
-                        <Button type="button" onClick={addSpecialization} variant="outline" data-testid="button-add-specialization">
-                          Add
-                        </Button>
-                      </div>
-                      {formData.specializations.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          {formData.specializations.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="px-3 py-1 text-sm bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 flex items-center gap-1">
-                              {tag}
-                              <button type="button" onClick={() => removeSpecialization(tag)} className="ml-1 hover:text-red-500" data-testid={`button-remove-tag-${tag}`}>
-                                <X className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Add tags that describe your specializations. Press Enter or click Add after each tag.</p>
                     </div>
 
                     <div>

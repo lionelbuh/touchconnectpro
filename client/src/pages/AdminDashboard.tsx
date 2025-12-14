@@ -2164,18 +2164,6 @@ export default function AdminDashboard() {
                                 <p className="text-sm text-slate-700 dark:text-slate-300">{app.bio}</p>
                               </div>
                             )}
-                            {app.specializations && app.specializations.length > 0 && (
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Specializations</p>
-                                <div className="flex flex-wrap gap-1">
-                                  {app.specializations.map((tag: string) => (
-                                    <Badge key={tag} variant="secondary" className="text-xs bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300">
-                                      {tag}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
                             {coachRatings[app.id] && (
                               <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Ratings</p>
