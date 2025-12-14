@@ -299,6 +299,294 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId)
   }
 }
 
+// Admin email for notifications
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@touchconnectpro.com";
+
+// Send email when application is submitted (confirmation to applicant)
+async function sendApplicationSubmittedEmail(email, fullName, userType, ideaName = null) {
+  console.log("[EMAIL] Sending application submitted email to:", email, "type:", userType);
+  
+  const resendData = await getResendClient();
+  if (!resendData) {
+    console.log("[EMAIL] Resend not configured, skipping submission confirmation");
+    return { success: false, reason: "Email not configured" };
+  }
+
+  const { client, fromEmail } = resendData;
+  const userTypeCapitalized = userType.charAt(0).toUpperCase() + userType.slice(1);
+  
+  const ideaText = ideaName ? ` for "${ideaName}"` : "";
+  
+  const subject = `Application Received - TouchConnectPro ${userTypeCapitalized}`;
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+        .highlight-box { background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Application Received!</h1>
+        </div>
+        <div class="content">
+          <p>Dear ${fullName},</p>
+          
+          <p>Thank you for submitting your application to join TouchConnectPro as a <strong>${userType}</strong>${ideaText}.</p>
+          
+          <div class="highlight-box">
+            <p style="margin: 0;"><strong>What happens next?</strong></p>
+            <p style="margin: 10px 0 0 0;">Our team will review your application within 2-3 business days. You'll receive an email notification once a decision has been made.</p>
+          </div>
+          
+          <p>In the meantime, feel free to explore our platform and learn more about how TouchConnectPro helps ${userType}s succeed.</p>
+          
+          <p>Best regards,<br>The TouchConnectPro Team</p>
+        </div>
+        <div class="footer">
+          <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: email,
+      subject,
+      html: htmlContent
+    });
+    console.log("[EMAIL] Application submitted email sent to:", email);
+    return { success: true, id: result.id };
+  } catch (error) {
+    console.error("[EMAIL] Error sending submission email:", error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// Send email to admin when new application is received
+async function sendAdminNewApplicationEmail(applicantEmail, applicantName, userType, applicationId, additionalInfo = "") {
+  console.log("[EMAIL] Notifying admin of new application from:", applicantEmail, "type:", userType);
+  
+  const resendData = await getResendClient();
+  if (!resendData) {
+    console.log("[EMAIL] Resend not configured, skipping admin notification");
+    return { success: false, reason: "Email not configured" };
+  }
+
+  const { client, fromEmail } = resendData;
+  const userTypeCapitalized = userType.charAt(0).toUpperCase() + userType.slice(1);
+  
+  const subject = `New ${userTypeCapitalized} Application - ${applicantName}`;
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+        .info-box { background: #fef3c7; border: 1px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 8px; }
+        .button { display: inline-block; background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 10px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>New ${userTypeCapitalized} Application</h1>
+        </div>
+        <div class="content">
+          <p>A new ${userType} application has been submitted and requires your review.</p>
+          
+          <div class="info-box">
+            <p><strong>Applicant Name:</strong> ${applicantName}</p>
+            <p><strong>Email:</strong> ${applicantEmail}</p>
+            <p><strong>Application Type:</strong> ${userTypeCapitalized}</p>
+            <p><strong>Application ID:</strong> ${applicationId}</p>
+            ${additionalInfo ? `<p><strong>Additional Info:</strong> ${additionalInfo}</p>` : ""}
+          </div>
+          
+          <p style="text-align: center;">
+            <a href="${FRONTEND_URL}/admin-dashboard" class="button">Review in Admin Dashboard</a>
+          </p>
+          
+          <p>Please review this application at your earliest convenience.</p>
+        </div>
+        <div class="footer">
+          <p>&copy; ${new Date().getFullYear()} TouchConnectPro Admin Notification</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: ADMIN_EMAIL,
+      subject,
+      html: htmlContent
+    });
+    console.log("[EMAIL] Admin notification sent for new application");
+    return { success: true, id: result.id };
+  } catch (error) {
+    console.error("[EMAIL] Error sending admin notification:", error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// Send email notification when a message is received
+async function sendMessageNotificationEmail(recipientEmail, recipientName, senderName, senderEmail, messagePreview, messageType = "direct") {
+  console.log("[EMAIL] Sending message notification to:", recipientEmail, "from:", senderEmail);
+  
+  const resendData = await getResendClient();
+  if (!resendData) {
+    console.log("[EMAIL] Resend not configured, skipping message notification");
+    return { success: false, reason: "Email not configured" };
+  }
+
+  const { client, fromEmail } = resendData;
+  
+  // Truncate message preview
+  const preview = messagePreview.length > 200 ? messagePreview.substring(0, 200) + "..." : messagePreview;
+  
+  const subject = `New Message from ${senderName} - TouchConnectPro`;
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+        .message-box { background: white; border: 1px solid #e2e8f0; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #10b981; }
+        .button { display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 10px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>New Message</h1>
+        </div>
+        <div class="content">
+          <p>Hi ${recipientName || "there"},</p>
+          
+          <p>You have received a new message from <strong>${senderName}</strong> on TouchConnectPro.</p>
+          
+          <div class="message-box">
+            <p style="margin: 0; color: #64748b; font-size: 14px;"><strong>From:</strong> ${senderName} (${senderEmail})</p>
+            <p style="margin: 15px 0 0 0;">${preview}</p>
+          </div>
+          
+          <p style="text-align: center;">
+            <a href="${FRONTEND_URL}/login" class="button">View Full Message</a>
+          </p>
+          
+          <p style="font-size: 14px; color: #64748b;">Log in to your dashboard to read the full message and reply.</p>
+        </div>
+        <div class="footer">
+          <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: recipientEmail,
+      subject,
+      html: htmlContent
+    });
+    console.log("[EMAIL] Message notification sent to:", recipientEmail);
+    return { success: true, id: result.id };
+  } catch (error) {
+    console.error("[EMAIL] Error sending message notification:", error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// Send email to admin when a new internal message is sent
+async function sendAdminMessageNotificationEmail(senderName, senderEmail, recipientName, recipientEmail, messagePreview) {
+  console.log("[EMAIL] Notifying admin of new internal message");
+  
+  const resendData = await getResendClient();
+  if (!resendData) {
+    console.log("[EMAIL] Resend not configured, skipping admin message notification");
+    return { success: false, reason: "Email not configured" };
+  }
+
+  const { client, fromEmail } = resendData;
+  
+  const preview = messagePreview.length > 150 ? messagePreview.substring(0, 150) + "..." : messagePreview;
+  
+  const subject = `Internal Message: ${senderName} → ${recipientName}`;
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f8fafc; padding: 20px; border-radius: 0 0 10px 10px; }
+        .info-row { display: flex; margin: 10px 0; }
+        .message-preview { background: #e0e7ff; padding: 15px; border-radius: 8px; margin: 15px 0; font-style: italic; }
+        .footer { text-align: center; margin-top: 15px; color: #64748b; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h2 style="margin: 0;">New Internal Message</h2>
+        </div>
+        <div class="content">
+          <p><strong>From:</strong> ${senderName} (${senderEmail})</p>
+          <p><strong>To:</strong> ${recipientName} (${recipientEmail})</p>
+          
+          <div class="message-preview">
+            "${preview}"
+          </div>
+          
+          <p style="font-size: 14px; color: #64748b;">This is an automated notification. View full details in the admin dashboard.</p>
+        </div>
+        <div class="footer">
+          <p>TouchConnectPro Admin Notification</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: ADMIN_EMAIL,
+      subject,
+      html: htmlContent
+    });
+    console.log("[EMAIL] Admin message notification sent");
+    return { success: true, id: result.id };
+  } catch (error) {
+    console.error("[EMAIL] Error sending admin message notification:", error.message);
+    return { success: false, error: error.message };
+  }
+}
+
 // Helper function to check if email exists in any other category
 async function checkEmailInOtherCategories(email, currentCategory) {
   const categories = {
@@ -414,6 +702,12 @@ app.post("/api/ideas", async (req, res) => {
     }
 
     console.log("[SUCCESS] Idea saved with id:", data?.[0]?.id);
+    
+    // Send confirmation email to applicant and notify admin
+    const ideaName = formData?.ideaName || "their business idea";
+    sendApplicationSubmittedEmail(email, fullName, "entrepreneur", ideaName).catch(err => console.error("[EMAIL] Failed:", err));
+    sendAdminNewApplicationEmail(email, fullName, "entrepreneur", data?.[0]?.id, `Idea: ${ideaName}`).catch(err => console.error("[EMAIL] Admin notify failed:", err));
+    
     return res.json({ success: true, id: data?.[0]?.id });
   } catch (error) {
     console.error("[EXCEPTION]:", error);
@@ -589,6 +883,11 @@ app.post("/api/mentors", async (req, res) => {
     }
 
     console.log("[SUCCESS] Mentor application saved");
+    
+    // Send confirmation email to applicant and notify admin
+    sendApplicationSubmittedEmail(email, fullName, "mentor").catch(err => console.error("[EMAIL] Failed:", err));
+    sendAdminNewApplicationEmail(email, fullName, "mentor", data?.[0]?.id, `Expertise: ${expertise}`).catch(err => console.error("[EMAIL] Admin notify failed:", err));
+    
     return res.json({ success: true, id: data?.[0]?.id });
   } catch (error) {
     console.error("[EXCEPTION]:", error);
@@ -792,6 +1091,11 @@ app.post("/api/coaches", async (req, res) => {
     }
 
     console.log("[SUCCESS] Coach application saved");
+    
+    // Send confirmation email to applicant and notify admin
+    sendApplicationSubmittedEmail(email, fullName, "coach").catch(err => console.error("[EMAIL] Failed:", err));
+    sendAdminNewApplicationEmail(email, fullName, "coach", data?.[0]?.id, `Expertise: ${expertise}, Rate: $${hourlyRate}/hr`).catch(err => console.error("[EMAIL] Admin notify failed:", err));
+    
     return res.json({ success: true, id: data?.[0]?.id });
   } catch (error) {
     console.error("[EXCEPTION]:", error);
@@ -997,6 +1301,11 @@ app.post("/api/investors", async (req, res) => {
     }
 
     console.log("[SUCCESS] Investor application saved");
+    
+    // Send confirmation email to applicant and notify admin
+    sendApplicationSubmittedEmail(email, fullName, "investor").catch(err => console.error("[EMAIL] Failed:", err));
+    sendAdminNewApplicationEmail(email, fullName, "investor", data?.[0]?.id, `Fund: ${fundName}, Focus: ${investmentFocus}`).catch(err => console.error("[EMAIL] Admin notify failed:", err));
+    
     return res.json({ success: true, id: data?.[0]?.id });
   } catch (error) {
     console.error("[EXCEPTION]:", error);
@@ -2051,6 +2360,17 @@ app.post("/api/messages", async (req, res) => {
     }
 
     console.log(`[POST /api/messages] Message sent from ${fromEmail} to ${toEmail}`);
+    
+    // Send email notification to recipient (skip if sending to admin or from system)
+    if (toEmail && toEmail !== ADMIN_EMAIL && fromEmail !== "admin@touchconnectpro.com" && fromEmail !== "system@touchconnectpro.com") {
+      sendMessageNotificationEmail(toEmail, toName, fromName, fromEmail, message).catch(err => console.error("[EMAIL] Message notify failed:", err));
+    }
+    
+    // Always notify admin of internal messages (except system messages and messages TO admin)
+    if (fromEmail !== "admin@touchconnectpro.com" && fromEmail !== "system@touchconnectpro.com" && toEmail !== ADMIN_EMAIL) {
+      sendAdminMessageNotificationEmail(fromName, fromEmail, toName, toEmail, message).catch(err => console.error("[EMAIL] Admin message notify failed:", err));
+    }
+    
     return res.json({ success: true, message: data?.[0] });
   } catch (error) {
     console.error("[POST /api/messages] Error:", error);
