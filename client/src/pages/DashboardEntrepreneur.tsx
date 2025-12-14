@@ -675,8 +675,8 @@ export default function DashboardEntrepreneur() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          entrepreneurEmail: userEmail,
-          entrepreneurName: profileData.fullName || entrepreneurData?.data?.fullName || "Entrepreneur"
+          email: userEmail,
+          entrepreneurId: entrepreneurData?.id
         })
       });
       
