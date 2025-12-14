@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export default function ResetPassword() {
   const [, navigate] = useLocation();
@@ -21,41 +21,60 @@ export default function ResetPassword() {
 
   useEffect(() => {
     const handleRecovery = async () => {
+      console.log("[RESET] Starting recovery flow...");
+      console.log("[RESET] URL hash:", window.location.hash);
+      
+      // Wait for Supabase client to be ready
+      const supabase = await getSupabase();
+      
       if (!supabase) {
+        console.error("[RESET] Supabase client not available");
         setError("Unable to connect to authentication service.");
         setIsLoading(false);
         return;
       }
-
-      const hash = window.location.hash;
-      console.log("[RESET] Hash:", hash);
       
-      if (hash) {
+      console.log("[RESET] Supabase client ready");
+
+      // Check if we have a hash with recovery token
+      const hash = window.location.hash;
+      
+      if (hash && hash.includes("access_token") && hash.includes("type=recovery")) {
+        console.log("[RESET] Found recovery token in URL hash");
+        
         const params = new URLSearchParams(hash.substring(1));
         const tokenHash = params.get("access_token");
         const type = params.get("type");
         
-        console.log("[RESET] Token hash:", tokenHash?.substring(0, 10) + "...");
+        console.log("[RESET] Token hash (first 10 chars):", tokenHash?.substring(0, 10) + "...");
         console.log("[RESET] Type:", type);
         
         if (tokenHash && type === "recovery") {
           try {
+            // Use verifyOtp with token_hash for recovery flow
+            console.log("[RESET] Calling verifyOtp...");
             const { data, error: verifyError } = await supabase.auth.verifyOtp({
               token_hash: tokenHash,
               type: "recovery"
             });
             
-            console.log("[RESET] verifyOtp result:", { data, error: verifyError });
+            console.log("[RESET] verifyOtp result:", { 
+              hasData: !!data, 
+              hasSession: !!data?.session,
+              error: verifyError?.message 
+            });
             
             if (verifyError) {
               console.error("[RESET] Verify error:", verifyError);
               setError("Invalid or expired recovery link. Please request a new one.");
               setSessionValid(false);
             } else if (data?.session) {
-              console.log("[RESET] Session established!");
+              console.log("[RESET] Session established successfully!");
               setSessionValid(true);
+              // Clear hash from URL for cleaner display
               window.history.replaceState(null, "", window.location.pathname);
             } else {
+              console.error("[RESET] No session in response");
               setError("Could not establish session. Please try again.");
               setSessionValid(false);
             }
@@ -65,18 +84,25 @@ export default function ResetPassword() {
             setSessionValid(false);
           }
         } else {
+          console.error("[RESET] Invalid token format");
           setError("Invalid recovery link format.");
           setSessionValid(false);
         }
       } else {
+        // No hash - check if we already have a session
+        console.log("[RESET] No recovery token in hash, checking existing session");
         const { data: { session } } = await supabase.auth.getSession();
+        
         if (session) {
+          console.log("[RESET] Found existing session");
           setSessionValid(true);
         } else {
+          console.log("[RESET] No session found");
           setError("No recovery session found. Please use the link from your email.");
           setSessionValid(false);
         }
       }
+      
       setIsLoading(false);
     };
 
@@ -104,7 +130,24 @@ export default function ResetPassword() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase!.auth.updateUser({ password });
+      const supabase = await getSupabase();
+      
+      if (!supabase) {
+        setError("Unable to connect to authentication service.");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Verify we still have a session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        setError("Session expired. Please request a new reset link.");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      const { error } = await supabase.auth.updateUser({ password });
       
       if (error) {
         setError(error.message);
