@@ -587,6 +587,128 @@ async function sendAdminMessageNotificationEmail(senderName, senderEmail, recipi
   }
 }
 
+// Send email notification when mentor is assigned to entrepreneur
+async function sendMentorAssignmentEmail(recipientEmail, recipientName, recipientRole, otherPartyName, portfolioNumber) {
+  console.log("[EMAIL] Sending mentor assignment email to:", recipientEmail, "role:", recipientRole);
+  
+  const resendData = await getResendClient();
+  if (!resendData) {
+    console.log("[EMAIL] Resend not configured, skipping mentor assignment email");
+    return { success: false, reason: "Email not configured" };
+  }
+
+  const { client, fromEmail } = resendData;
+  
+  let subject, htmlContent;
+  
+  if (recipientRole === "entrepreneur") {
+    subject = `You've Been Assigned a Mentor - TouchConnectPro`;
+    htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+          .highlight-box { background: #d1fae5; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 4px; }
+          .button { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Great News, ${recipientName}!</h1>
+          </div>
+          <div class="content">
+            <p>You have been assigned to a mentor on TouchConnectPro!</p>
+            
+            <div class="highlight-box">
+              <p style="margin: 0;"><strong>Your Mentor:</strong> ${otherPartyName}</p>
+              <p style="margin: 10px 0 0 0;"><strong>Portfolio:</strong> ${portfolioNumber}</p>
+            </div>
+            
+            <p>Your mentor will guide you through refining your business idea and preparing for investor meetings. Log in to your dashboard to view their profile and start connecting.</p>
+            
+            <p style="text-align: center;">
+              <a href="${FRONTEND_URL}/login" class="button">Go to Dashboard</a>
+            </p>
+            
+            <p>Best regards,<br>The TouchConnectPro Team</p>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  } else {
+    // mentor
+    subject = `New Entrepreneur Added to Your Portfolio - TouchConnectPro`;
+    htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+          .highlight-box { background: #e0e7ff; border-left: 4px solid #6366f1; padding: 15px; margin: 20px 0; border-radius: 4px; }
+          .button { display: inline-block; background: #6366f1; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>New Entrepreneur Assigned</h1>
+          </div>
+          <div class="content">
+            <p>Hello ${recipientName},</p>
+            
+            <p>A new entrepreneur has been added to your portfolio on TouchConnectPro!</p>
+            
+            <div class="highlight-box">
+              <p style="margin: 0;"><strong>Entrepreneur:</strong> ${otherPartyName}</p>
+              <p style="margin: 10px 0 0 0;"><strong>Portfolio:</strong> ${portfolioNumber}</p>
+            </div>
+            
+            <p>Log in to your dashboard to view their profile, business idea, and business plan. You can start guiding them through the mentorship process.</p>
+            
+            <p style="text-align: center;">
+              <a href="${FRONTEND_URL}/login" class="button">View Portfolio</a>
+            </p>
+            
+            <p>Best regards,<br>The TouchConnectPro Team</p>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  try {
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: recipientEmail,
+      subject,
+      html: htmlContent
+    });
+    console.log("[EMAIL] Mentor assignment email sent to:", recipientEmail);
+    return { success: true, id: result.id };
+  } catch (error) {
+    console.error("[EMAIL] Error sending mentor assignment email:", error.message);
+    return { success: false, error: error.message };
+  }
+}
+
 // Helper function to check if email exists in any other category
 async function checkEmailInOtherCategories(email, currentCategory) {
   const categories = {
@@ -1997,6 +2119,10 @@ app.post("/api/mentor-assignments", async (req, res) => {
         message: `${entrepreneurName} has been added to your Portfolio ${portfolioNumber}. Visit your dashboard to view their profile and business idea.`,
         is_read: false
       });
+      
+      // Send email notifications to both parties
+      sendMentorAssignmentEmail(entrepreneurEmail, entrepreneurName, "entrepreneur", mentorName, portfolioNumber).catch(err => console.error("[EMAIL] Entrepreneur assignment email failed:", err));
+      sendMentorAssignmentEmail(mentorEmail, mentorName, "mentor", entrepreneurName, portfolioNumber).catch(err => console.error("[EMAIL] Mentor assignment email failed:", err));
     }
 
     return res.json({ success: true, assignment: data?.[0] });
