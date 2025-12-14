@@ -7,6 +7,7 @@ import { rm, readFile } from "fs/promises";
 const allowlist = [
   "@google/generative-ai",
   "@neondatabase/serverless",
+  "@supabase/supabase-js",
   "axios",
   "connect-pg-simple",
   "cors",
@@ -24,7 +25,9 @@ const allowlist = [
   "openai",
   "passport",
   "passport-local",
+  "resend",
   "stripe",
+  "stripe-replit-sync",
   "uuid",
   "ws",
   "xlsx",
