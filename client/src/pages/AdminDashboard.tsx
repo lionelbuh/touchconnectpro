@@ -30,9 +30,11 @@ interface CoachApplication {
   fullName: string;
   email: string;
   linkedin: string;
+  bio: string;
   expertise: string;
   focusAreas: string;
   hourlyRate: string;
+  specializations?: string[];
   status: "pending" | "approved" | "rejected";
   submittedAt: string;
   country?: string;
@@ -168,9 +170,11 @@ export default function AdminDashboard() {
               fullName: c.full_name,
               email: c.email,
               linkedin: c.linkedin,
+              bio: c.bio,
               expertise: c.expertise,
               focusAreas: c.focus_areas,
               hourlyRate: c.hourly_rate,
+              specializations: c.specializations || [],
               country: c.country,
               state: c.state,
               status: c.status === "submitted" ? "pending" : c.status,
@@ -1249,6 +1253,22 @@ export default function AdminDashboard() {
                               <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
                             </div>
                           </div>
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
+                            <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.bio || "—"}</p>
+                          </div>
+                          {app.specializations && app.specializations.length > 0 && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Specializations</p>
+                              <div className="flex flex-wrap gap-2">
+                                {app.specializations.map((tag: string) => (
+                                  <Badge key={tag} variant="secondary" className="bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                           <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
                             <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.focusAreas}</p>
