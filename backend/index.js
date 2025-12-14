@@ -2083,8 +2083,8 @@ app.post("/api/mentor-assignments", async (req, res) => {
 
     // Fetch entrepreneur and mentor details for system messages
     const { data: entrepreneur } = await supabase
-      .from("entrepreneur_applications")
-      .select("email, full_name")
+      .from("ideas")
+      .select("entrepreneur_email, entrepreneur_name")
       .eq("id", entrepreneurId)
       .single();
     
@@ -2095,8 +2095,8 @@ app.post("/api/mentor-assignments", async (req, res) => {
       .single();
 
     if (entrepreneur && mentor) {
-      const entrepreneurEmail = entrepreneur.email;
-      const entrepreneurName = entrepreneur.full_name || "Entrepreneur";
+      const entrepreneurEmail = entrepreneur.entrepreneur_email;
+      const entrepreneurName = entrepreneur.entrepreneur_name || "Entrepreneur";
       const mentorEmail = mentor.email;
       const mentorName = mentor.full_name || "Mentor";
 
