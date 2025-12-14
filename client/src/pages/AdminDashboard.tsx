@@ -671,6 +671,62 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleUnassignMentor = async (entrepreneurId: string, entrepreneurName: string) => {
+    if (!confirm(`Are you sure you want to unassign ${entrepreneurName} from their mentor?`)) {
+      return;
+    }
+    
+    try {
+      // Find the assignment ID for this entrepreneur
+      const assignmentsResponse = await fetch(`${API_BASE_URL}/api/mentor-assignments`);
+      if (!assignmentsResponse.ok) {
+        toast.error("Failed to fetch assignments");
+        return;
+      }
+      
+      const assignmentsData = await assignmentsResponse.json();
+      const assignment = assignmentsData.assignments?.find((a: any) => a.entrepreneur_id === entrepreneurId);
+      
+      if (!assignment) {
+        toast.error("No active assignment found for this entrepreneur");
+        return;
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/${assignment.id}`, {
+        method: "DELETE"
+      });
+      
+      if (response.ok) {
+        toast.success(`${entrepreneurName} has been unassigned from their mentor`);
+        
+        // Refresh mentor assignments to update the UI
+        const refreshResponse = await fetch(`${API_BASE_URL}/api/mentor-assignments`);
+        if (refreshResponse.ok) {
+          const refreshData = await refreshResponse.json();
+          if (Array.isArray(refreshData.assignments)) {
+            const assignmentMap: {[entrepreneurId: string]: {mentorId: string; mentorName: string; portfolioNumber: number}} = {};
+            refreshData.assignments.forEach((a: any) => {
+              if (a.entrepreneur_id && a.mentor_id) {
+                assignmentMap[a.entrepreneur_id] = {
+                  mentorId: a.mentor_id,
+                  mentorName: a.mentor_name || "Mentor",
+                  portfolioNumber: a.portfolio_number || 1
+                };
+              }
+            });
+            setMentorAssignments(assignmentMap);
+          }
+        }
+      } else {
+        const error = await response.json();
+        toast.error("Failed to unassign: " + (error.error || "Unknown error"));
+      }
+    } catch (err) {
+      console.error("Error unassigning mentor:", err);
+      toast.error("Failed to unassign mentor. Please try again.");
+    }
+  };
+
   const pendingEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "pending" || app.status === "submitted");
   const preApprovedEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "pre-approved");
   const pendingMentorApplications = mentorApplications.filter(app => app.status === "pending");
@@ -1498,9 +1554,20 @@ export default function AdminDashboard() {
                                   <Badge className="bg-red-600">Disabled</Badge>
                                 )}
                                 {mentorAssignments[app.id] ? (
-                                  <Badge className="bg-cyan-600">
-                                    {mentorAssignments[app.id].mentorName} (P{mentorAssignments[app.id].portfolioNumber})
-                                  </Badge>
+                                  <div className="flex items-center gap-1">
+                                    <Badge className="bg-cyan-600">
+                                      {mentorAssignments[app.id].mentorName} (P{mentorAssignments[app.id].portfolioNumber})
+                                    </Badge>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                                      onClick={() => handleUnassignMentor(app.id, app.fullName)}
+                                      data-testid={`button-unassign-mentor-${app.id}`}
+                                    >
+                                      Unassign
+                                    </Button>
+                                  </div>
                                 ) : (
                                   <Badge variant="outline" className="text-amber-600 border-amber-600">
                                     No Mentor Assigned

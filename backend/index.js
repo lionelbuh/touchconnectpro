@@ -2457,6 +2457,93 @@ app.patch("/api/mentor-assignments/:id", async (req, res) => {
   }
 });
 
+// Unassign entrepreneur from mentor
+app.delete("/api/mentor-assignments/:id", async (req, res) => {
+  console.log("[DELETE /api/mentor-assignments/:id] Request received for ID:", req.params.id);
+  
+  try {
+    const { id } = req.params;
+
+    // First fetch the assignment details for notifications
+    const { data: assignment, error: fetchError } = await supabase
+      .from("mentor_assignments")
+      .select("entrepreneur_id, mentor_id, portfolio_number")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !assignment) {
+      return res.status(404).json({ error: "Assignment not found" });
+    }
+
+    // Delete the assignment (or set status to inactive)
+    const { error: deleteError } = await supabase
+      .from("mentor_assignments")
+      .update({ status: "inactive" })
+      .eq("id", id);
+
+    if (deleteError) {
+      console.error("[DELETE /api/mentor-assignments/:id] Error:", deleteError);
+      return res.status(500).json({ error: deleteError.message });
+    }
+
+    console.log("[DELETE /api/mentor-assignments/:id] Assignment deactivated successfully");
+
+    // Fetch entrepreneur and mentor details for notifications
+    const { data: entrepreneur } = await supabase
+      .from("ideas")
+      .select("entrepreneur_email, entrepreneur_name")
+      .eq("id", assignment.entrepreneur_id)
+      .single();
+    
+    const { data: mentor } = await supabase
+      .from("mentor_applications")
+      .select("email, full_name")
+      .eq("id", assignment.mentor_id)
+      .single();
+
+    if (entrepreneur && mentor) {
+      const entrepreneurEmail = entrepreneur.entrepreneur_email;
+      const entrepreneurName = entrepreneur.entrepreneur_name || "Entrepreneur";
+      const mentorEmail = mentor.email;
+      const mentorName = mentor.full_name || "Mentor";
+
+      // Send system message to entrepreneur
+      await supabase.from("messages").insert({
+        from_name: "System",
+        from_email: "admin@touchconnectpro.com",
+        to_name: entrepreneurName,
+        to_email: entrepreneurEmail,
+        message: `Your mentor assignment has been updated. You have been unassigned from ${mentorName}'s portfolio. An admin will assign you to a new mentor soon.`,
+        is_read: false
+      });
+
+      // Send system message to mentor
+      await supabase.from("messages").insert({
+        from_name: "System",
+        from_email: "admin@touchconnectpro.com",
+        to_name: mentorName,
+        to_email: mentorEmail,
+        message: `${entrepreneurName} has been removed from your Portfolio ${assignment.portfolio_number}.`,
+        is_read: false
+      });
+
+      // Send email notifications
+      sendMessageNotificationEmail(entrepreneurEmail, entrepreneurName, "TouchConnectPro", "admin@touchconnectpro.com", 
+        `Your mentor assignment has been updated. You have been unassigned from ${mentorName}'s portfolio. An admin will assign you to a new mentor soon.`
+      ).catch(err => console.error("[EMAIL] Entrepreneur unassign email failed:", err));
+      
+      sendMessageNotificationEmail(mentorEmail, mentorName, "TouchConnectPro", "admin@touchconnectpro.com",
+        `${entrepreneurName} has been removed from your Portfolio ${assignment.portfolio_number}.`
+      ).catch(err => console.error("[EMAIL] Mentor unassign email failed:", err));
+    }
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("[DELETE /api/mentor-assignments/:id] Exception:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // ===== MESSAGES API ENDPOINTS =====
 
 // Send a new message
