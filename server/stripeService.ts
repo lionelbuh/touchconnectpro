@@ -20,7 +20,7 @@ export class StripeService {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID || 'price_1Sdl6fADMBQSv0n5A2ZiKGVv',
+          price: process.env.STRIPE_PRICE_ID || 'price_1SdZpuIzajgsohRkDXQlR7xZ',
           quantity: 1
         }
       ],
