@@ -2365,13 +2365,19 @@ app.post("/api/messages", async (req, res) => {
     const isSystemMessage = fromEmail === "system@touchconnectpro.com";
     
     if (!isSystemMessage && toEmail) {
-      // Send email notification to recipient (works for all: mentor→entrepreneur, admin→anyone, anyone→admin)
-      sendMessageNotificationEmail(toEmail, toName, fromName, fromEmail, message).catch(err => console.error("[EMAIL] Message notify failed:", err));
+      // List of emails that should redirect to the actual ADMIN_EMAIL
+      const adminAliases = ["admin@touchconnectpro.com", "admin"];
+      const isMessageToAdmin = adminAliases.includes(toEmail) || toEmail === ADMIN_EMAIL;
+      
+      // Determine actual recipient email
+      const actualRecipientEmail = isMessageToAdmin ? ADMIN_EMAIL : toEmail;
+      
+      // Send email notification to recipient
+      sendMessageNotificationEmail(actualRecipientEmail, toName, fromName, fromEmail, message).catch(err => console.error("[EMAIL] Message notify failed:", err));
       
       // Also notify admin of messages between other users (not if admin is sender or recipient)
-      const adminEmails = [ADMIN_EMAIL, "admin@touchconnectpro.com"];
-      const isAdminInvolved = adminEmails.includes(fromEmail) || adminEmails.includes(toEmail);
-      if (!isAdminInvolved) {
+      const isAdminSender = adminAliases.includes(fromEmail) || fromEmail === ADMIN_EMAIL;
+      if (!isMessageToAdmin && !isAdminSender) {
         sendAdminMessageNotificationEmail(fromName, fromEmail, toName, toEmail, message).catch(err => console.error("[EMAIL] Admin message notify failed:", err));
       }
     }
