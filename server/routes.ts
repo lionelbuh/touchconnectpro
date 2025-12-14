@@ -1704,6 +1704,128 @@ export async function registerRoutes(
     }
   });
 
+  // ===== COACH RATINGS ENDPOINTS =====
+
+  // Submit a coach rating
+  app.post("/api/coach-ratings", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { coachId, raterEmail, rating, review } = req.body;
+
+      if (!coachId || !raterEmail || !rating) {
+        return res.status(400).json({ error: "Coach ID, rater email, and rating are required" });
+      }
+
+      if (rating < 1 || rating > 5) {
+        return res.status(400).json({ error: "Rating must be between 1 and 5" });
+      }
+
+      const { data, error } = await (client
+        .from("coach_ratings")
+        .insert({
+          coach_id: coachId,
+          rater_email: raterEmail,
+          rating: rating,
+          review: review || null
+        })
+        .select() as any);
+
+      if (error) {
+        console.error("[POST /api/coach-ratings] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      console.log("[POST /api/coach-ratings] Rating submitted for coach:", coachId);
+      return res.json({ success: true, rating: data?.[0] });
+    } catch (error: any) {
+      console.error("[POST /api/coach-ratings] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get all coach ratings (aggregated by coach) - privacy-safe, no emails returned
+  app.get("/api/coach-ratings", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      // Only select coach_id and rating - no email or review data for privacy
+      const { data, error } = await (client
+        .from("coach_ratings")
+        .select("coach_id, rating") as any);
+
+      if (error) {
+        console.error("[GET /api/coach-ratings] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      // Aggregate ratings by coach_id - only return averageRating and totalRatings
+      const aggregated: { [coachId: string]: { averageRating: number; totalRatings: number } } = {};
+      
+      for (const r of (data || [])) {
+        if (!aggregated[r.coach_id]) {
+          aggregated[r.coach_id] = { averageRating: 0, totalRatings: 0 };
+        }
+        aggregated[r.coach_id].totalRatings++;
+      }
+
+      // Calculate averages using a second pass
+      const ratingsByCoach: { [coachId: string]: number[] } = {};
+      for (const r of (data || [])) {
+        if (!ratingsByCoach[r.coach_id]) {
+          ratingsByCoach[r.coach_id] = [];
+        }
+        ratingsByCoach[r.coach_id].push(r.rating);
+      }
+
+      for (const coachId in aggregated) {
+        const ratings = ratingsByCoach[coachId];
+        const sum = ratings.reduce((acc: number, r: number) => acc + r, 0);
+        aggregated[coachId].averageRating = Math.round((sum / ratings.length) * 10) / 10;
+      }
+
+      return res.json(aggregated);
+    } catch (error: any) {
+      console.error("[GET /api/coach-ratings] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get reviews for a specific coach (emails hidden for privacy)
+  app.get("/api/coach-ratings/:coachId/reviews", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { coachId } = req.params;
+
+      const { data, error } = await (client
+        .from("coach_ratings")
+        .select("id, rating, review, created_at")
+        .eq("coach_id", coachId)
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[GET /api/coach-ratings/:coachId/reviews] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      // Return reviews without email addresses for privacy
+      return res.json({ reviews: data || [] });
+    } catch (error: any) {
+      console.error("[GET /api/coach-ratings/:coachId/reviews] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Get investor profile by email
   app.get("/api/investors/profile/:email", async (req, res) => {
     try {

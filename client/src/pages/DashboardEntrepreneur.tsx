@@ -23,6 +23,9 @@ export default function DashboardEntrepreneur() {
   const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
   const [coachRatings, setCoachRatings] = useState<Record<string, { averageRating: number; totalRatings: number }>>({});
   const [selectedSpecializations, setSelectedSpecializations] = useState<string[]>([]);
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [selectedCoachForReviews, setSelectedCoachForReviews] = useState<any>(null);
+  const [coachReviews, setCoachReviews] = useState<any[]>([]);
   const [mentorData, setMentorData] = useState<any>(null);
   const [mentorNotes, setMentorNotes] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
@@ -1430,17 +1433,35 @@ export default function DashboardEntrepreneur() {
                             <div className="flex-1">
                               <div className="flex items-center justify-between">
                                 <CardTitle className="text-lg">{coach.full_name}</CardTitle>
-                                <div className="flex items-center gap-1" data-testid={`rating-coach-${coach.id}`}>
+                                <button
+                                  className={`flex items-center gap-1 ${rating ? 'hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-2 py-1 rounded-md cursor-pointer transition-colors' : ''}`}
+                                  onClick={async () => {
+                                    if (rating && rating.totalRatings > 0) {
+                                      setSelectedCoachForReviews(coach);
+                                      try {
+                                        const response = await fetch(`${API_BASE_URL}/api/coach-ratings/${coach.id}/reviews`);
+                                        if (response.ok) {
+                                          const data = await response.json();
+                                          setCoachReviews(data.reviews || []);
+                                        }
+                                      } catch (error) {
+                                        console.error("Error fetching reviews:", error);
+                                      }
+                                      setShowReviewsModal(true);
+                                    }
+                                  }}
+                                  data-testid={`rating-coach-${coach.id}`}
+                                >
                                   {rating ? (
                                     <>
                                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                                       <span className="text-sm font-semibold">{rating.averageRating}</span>
-                                      <span className="text-xs text-muted-foreground">({rating.totalRatings})</span>
+                                      <span className="text-xs text-muted-foreground underline">({rating.totalRatings} reviews)</span>
                                     </>
                                   ) : (
                                     <span className="text-xs text-muted-foreground">No ratings yet</span>
                                   )}
-                                </div>
+                                </button>
                               </div>
                               <p className="text-sm text-muted-foreground">{coach.expertise}</p>
                             </div>
@@ -2432,6 +2453,64 @@ export default function DashboardEntrepreneur() {
           </Card>
         </div>
       </main>
+
+      {/* Reviews Modal */}
+      {showReviewsModal && selectedCoachForReviews && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-lg max-h-[80vh] overflow-hidden">
+            <CardHeader className="border-b">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Reviews for {selectedCoachForReviews.full_name}</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {coachRatings[selectedCoachForReviews.id]?.averageRating} avg rating • {coachRatings[selectedCoachForReviews.id]?.totalRatings} reviews
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowReviewsModal(false);
+                    setSelectedCoachForReviews(null);
+                    setCoachReviews([]);
+                  }}
+                  data-testid="button-close-reviews"
+                >
+                  ✕
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="overflow-y-auto max-h-[60vh] p-4 space-y-4">
+              {coachReviews.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No reviews yet</p>
+              ) : (
+                coachReviews.map((review: any) => (
+                  <div key={review.id} className="border-b pb-4 last:border-b-0 last:pb-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`h-4 w-4 ${star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'}`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(review.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {review.review ? (
+                      <p className="text-sm text-slate-700 dark:text-slate-300">{review.review}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No written review</p>
+                    )}
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
