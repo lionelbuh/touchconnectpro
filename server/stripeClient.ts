@@ -45,10 +45,21 @@ async function getCredentials() {
 }
 
 export async function getUncachableStripeClient() {
+  // Prefer user's STRIPE_SECRET_KEY if set, otherwise use Replit connector
+  const userSecretKey = process.env.STRIPE_SECRET_KEY;
+  
+  if (userSecretKey) {
+    console.log("[STRIPE] Using user's STRIPE_SECRET_KEY");
+    return new Stripe(userSecretKey, {
+      apiVersion: '2025-11-17.clover',
+    });
+  }
+  
+  console.log("[STRIPE] Using Replit connector credentials");
   const { secretKey } = await getCredentials();
 
   return new Stripe(secretKey, {
-    apiVersion: '2025-08-27.basil',
+    apiVersion: '2025-11-17.clover',
   });
 }
 
