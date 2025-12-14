@@ -3,6 +3,7 @@ import cors from "cors";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import crypto from "crypto";
+import Stripe from "stripe";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -2603,12 +2604,268 @@ app.get("/api/admin/meetings", async (req, res) => {
 app.get("/", (req, res) => {
   return res.json({ 
     message: "TouchConnectPro Backend API",
-    endpoints: ["/api/submit", "/api/ideas", "/api/mentors", "/api/coaches", "/api/investors", "/api/test", "/api/password-token/:token", "/api/set-password", "/api/coaches/approved", "/api/entrepreneur/:email", "/api/mentor-notes", "/api/messages", "/api/mentor-assignments", "/api/early-access", "/api/zoom/create-meeting", "/api/zoom/send-invitations"]
+    endpoints: ["/api/submit", "/api/ideas", "/api/mentors", "/api/coaches", "/api/investors", "/api/test", "/api/password-token/:token", "/api/set-password", "/api/coaches/approved", "/api/entrepreneur/:email", "/api/mentor-notes", "/api/messages", "/api/mentor-assignments", "/api/early-access", "/api/zoom/create-meeting", "/api/zoom/send-invitations", "/api/stripe/create-checkout-session", "/api/stripe/confirm-payment"]
   });
 });
+
+// ============ STRIPE PAYMENT ROUTES ============
+
+// Initialize Stripe
+function getStripeClient() {
+  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeSecretKey) {
+    console.log("[STRIPE] No STRIPE_SECRET_KEY found");
+    return null;
+  }
+  return new Stripe(stripeSecretKey, { apiVersion: "2024-12-18.acacia" });
+}
+
+// Create Stripe Checkout Session
+app.post("/api/stripe/create-checkout-session", async (req, res) => {
+  console.log("[STRIPE] create-checkout-session called");
+  
+  const stripe = getStripeClient();
+  if (!stripe) {
+    return res.status(500).json({ error: "Stripe not configured" });
+  }
+
+  const { email, entrepreneurId, successUrl, cancelUrl } = req.body;
+  
+  if (!email || !entrepreneurId) {
+    return res.status(400).json({ error: "Missing email or entrepreneurId" });
+  }
+
+  try {
+    const baseUrl = process.env.FRONTEND_URL || "https://touchconnectpro.com";
+    const finalSuccessUrl = successUrl || `${baseUrl}/entrepreneur-dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`;
+    const finalCancelUrl = cancelUrl || `${baseUrl}/entrepreneur-dashboard?payment=cancelled`;
+
+    console.log("[STRIPE] Creating session for:", email, "entrepreneur:", entrepreneurId);
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      payment_method_types: ["card"],
+      customer_email: email,
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "TouchConnectPro Membership",
+              description: "Monthly membership with mentor access, AI business planning tools, and investor connections"
+            },
+            unit_amount: 4900,
+            recurring: { interval: "month" }
+          },
+          quantity: 1
+        }
+      ],
+      success_url: finalSuccessUrl,
+      cancel_url: finalCancelUrl,
+      metadata: {
+        entrepreneurId,
+        email,
+        source: "touchconnectpro"
+      }
+    });
+
+    console.log("[STRIPE] Session created:", session.id);
+    return res.json({ sessionId: session.id, url: session.url });
+  } catch (error) {
+    console.error("[STRIPE] Error creating session:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Confirm payment and update entrepreneur status
+app.post("/api/stripe/confirm-payment", async (req, res) => {
+  console.log("[STRIPE] confirm-payment called");
+  
+  const stripe = getStripeClient();
+  if (!stripe) {
+    return res.status(500).json({ error: "Stripe not configured" });
+  }
+
+  const { sessionId } = req.body;
+  
+  if (!sessionId) {
+    return res.status(400).json({ error: "Missing sessionId" });
+  }
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    console.log("[STRIPE] Session retrieved:", session.id, "status:", session.payment_status);
+
+    if (session.payment_status !== "paid") {
+      return res.status(400).json({ error: "Payment not completed", status: session.payment_status });
+    }
+
+    const entrepreneurId = session.metadata?.entrepreneurId;
+    const email = session.metadata?.email || session.customer_email;
+
+    if (entrepreneurId) {
+      // Update entrepreneur status to approved
+      const { error: updateError } = await supabase
+        .from("ideas")
+        .update({ status: "approved" })
+        .eq("id", entrepreneurId);
+
+      if (updateError) {
+        console.error("[STRIPE] Error updating entrepreneur status:", updateError);
+      } else {
+        console.log("[STRIPE] Entrepreneur", entrepreneurId, "status updated to approved");
+      }
+
+      // Send welcome email
+      try {
+        const { data: entrepreneur } = await supabase
+          .from("ideas")
+          .select("entrepreneur_name, entrepreneur_email")
+          .eq("id", entrepreneurId)
+          .single();
+
+        if (entrepreneur) {
+          const resendData = await getResendClient();
+          if (resendData) {
+            const { client, fromEmail } = resendData;
+            await client.emails.send({
+              from: fromEmail,
+              to: entrepreneur.entrepreneur_email,
+              subject: "Welcome to TouchConnectPro - Payment Confirmed!",
+              html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <style>
+                    body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                    .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                    .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                  </style>
+                </head>
+                <body>
+                  <div class="container">
+                    <div class="header">
+                      <h1>Welcome, ${entrepreneur.entrepreneur_name}!</h1>
+                    </div>
+                    <div class="content">
+                      <p>Your payment has been confirmed and your TouchConnectPro membership is now active!</p>
+                      <p>You now have full access to:</p>
+                      <ul>
+                        <li>Your personal dashboard</li>
+                        <li>AI-powered business planning tools</li>
+                        <li>Mentor connections (coming soon)</li>
+                        <li>Investor network access</li>
+                      </ul>
+                      <p>A mentor will be assigned to you shortly. You'll receive a notification when this happens.</p>
+                      <p>Best regards,<br>The TouchConnectPro Team</p>
+                    </div>
+                    <div class="footer">
+                      <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                    </div>
+                  </div>
+                </body>
+                </html>
+              `
+            });
+            console.log("[STRIPE] Welcome email sent to:", entrepreneur.entrepreneur_email);
+          }
+        }
+      } catch (emailError) {
+        console.error("[STRIPE] Error sending welcome email:", emailError.message);
+      }
+
+      // Send internal message to user
+      try {
+        await supabase.from("messages").insert({
+          sender_type: "system",
+          recipient_email: email,
+          recipient_type: "entrepreneur",
+          subject: "Payment Confirmed - Welcome to TouchConnectPro!",
+          content: "Your payment has been received and your membership is now active. A mentor will be assigned to you soon. You now have full access to all dashboard features.",
+          is_read: false
+        });
+        console.log("[STRIPE] Internal message sent to entrepreneur");
+      } catch (msgError) {
+        console.error("[STRIPE] Error sending internal message:", msgError.message);
+      }
+
+      // Notify admin
+      try {
+        await supabase.from("messages").insert({
+          sender_type: "system",
+          recipient_email: "admin@touchconnectpro.com",
+          recipient_type: "admin",
+          subject: `New Paid Member: ${email}`,
+          content: `Entrepreneur ${email} (ID: ${entrepreneurId}) has completed payment and is now a full member. Please assign a mentor.`,
+          is_read: false
+        });
+        console.log("[STRIPE] Admin notification sent");
+      } catch (adminError) {
+        console.error("[STRIPE] Error notifying admin:", adminError.message);
+      }
+    }
+
+    return res.json({ 
+      success: true, 
+      status: session.payment_status,
+      entrepreneurId,
+      email
+    });
+  } catch (error) {
+    console.error("[STRIPE] Error confirming payment:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Stripe webhook for automated payment events
+app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  console.log("[STRIPE WEBHOOK] Received");
+  
+  const stripe = getStripeClient();
+  if (!stripe) {
+    return res.status(500).json({ error: "Stripe not configured" });
+  }
+
+  const sig = req.headers["stripe-signature"];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!webhookSecret) {
+    console.log("[STRIPE WEBHOOK] No webhook secret configured, skipping signature verification");
+    return res.status(200).json({ received: true });
+  }
+
+  try {
+    const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    console.log("[STRIPE WEBHOOK] Event type:", event.type);
+
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      const entrepreneurId = session.metadata?.entrepreneurId;
+      
+      if (entrepreneurId && session.payment_status === "paid") {
+        console.log("[STRIPE WEBHOOK] Updating entrepreneur", entrepreneurId, "to approved");
+        await supabase
+          .from("ideas")
+          .update({ status: "approved" })
+          .eq("id", entrepreneurId);
+      }
+    }
+
+    return res.status(200).json({ received: true });
+  } catch (error) {
+    console.error("[STRIPE WEBHOOK] Error:", error.message);
+    return res.status(400).json({ error: error.message });
+  }
+});
+
+// ============ END STRIPE ROUTES ============
 
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
   console.log("SUPABASE_URL:", process.env.SUPABASE_URL ? "Loaded" : "MISSING");
   console.log("SUPABASE_SERVICE_ROLE_KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "Set" : "MISSING");
+  console.log("STRIPE_SECRET_KEY:", process.env.STRIPE_SECRET_KEY ? "Set" : "MISSING");
+  console.log("Stripe routes: /api/stripe/create-checkout-session, /api/stripe/confirm-payment, /api/stripe/webhook");
 });
