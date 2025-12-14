@@ -55,6 +55,18 @@ const EXPERTISE_OPTIONS = [
   "Data Analysis"
 ];
 
+const FOCUS_AREAS_OPTIONS = [
+  "Business Strategy",
+  "Pitching & Fundraising",
+  "Product & Technology",
+  "Marketing & Brand",
+  "Sales & Growth",
+  "Finance & Analytics",
+  "People & Operations",
+  "Legal & Compliance",
+  "Customer Experience"
+];
+
 export default function BecomeaCoach() {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<{
@@ -419,14 +431,18 @@ export default function BecomeaCoach() {
 
                     <div>
                       <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Focus Areas / Specialization *</label>
-                      <Input
+                      <select
                         name="focusAreas"
                         value={formData.focusAreas}
                         onChange={handleInputChange}
-                        placeholder="e.g., Early-stage founders, SaaS companies, B2B businesses"
-                        className="bg-slate-50 dark:bg-slate-800/50"
-                        data-testid="input-coach-focusareas"
-                      />
+                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        data-testid="select-coach-focusareas"
+                      >
+                        <option value="">Select your focus area</option>
+                        {FOCUS_AREAS_OPTIONS.map((area) => (
+                          <option key={area} value={area}>{area}</option>
+                        ))}
+                      </select>
                     </div>
 
                     <div>
