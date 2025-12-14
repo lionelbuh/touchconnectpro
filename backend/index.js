@@ -2342,13 +2342,18 @@ app.post("/api/messages", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
+    // Redirect admin aliases to actual admin email
+    const adminAliases = ["admin@touchconnectpro.com", "admin"];
+    const actualToEmail = adminAliases.includes(toEmail) ? ADMIN_EMAIL : toEmail;
+    const actualToName = adminAliases.includes(toEmail) ? "Admin" : (toName || "Unknown");
+
     const { data, error } = await supabase
       .from("messages")
       .insert({
         from_name: fromName || "Unknown",
         from_email: fromEmail,
-        to_name: toName || "Unknown",
-        to_email: toEmail,
+        to_name: actualToName,
+        to_email: actualToEmail,
         message: message,
         is_read: false
       })
@@ -2359,26 +2364,20 @@ app.post("/api/messages", async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    console.log(`[POST /api/messages] Message sent from ${fromEmail} to ${toEmail}`);
+    console.log(`[POST /api/messages] Message sent from ${fromEmail} to ${actualToEmail}`);
     
     // Skip email notifications only for system-generated messages
     const isSystemMessage = fromEmail === "system@touchconnectpro.com";
     
-    if (!isSystemMessage && toEmail) {
-      // List of emails that should redirect to the actual ADMIN_EMAIL
-      const adminAliases = ["admin@touchconnectpro.com", "admin"];
-      const isMessageToAdmin = adminAliases.includes(toEmail) || toEmail === ADMIN_EMAIL;
-      
-      // Determine actual recipient email
-      const actualRecipientEmail = isMessageToAdmin ? ADMIN_EMAIL : toEmail;
-      
+    if (!isSystemMessage && actualToEmail) {
       // Send email notification to recipient
-      sendMessageNotificationEmail(actualRecipientEmail, toName, fromName, fromEmail, message).catch(err => console.error("[EMAIL] Message notify failed:", err));
+      sendMessageNotificationEmail(actualToEmail, actualToName, fromName, fromEmail, message).catch(err => console.error("[EMAIL] Message notify failed:", err));
       
       // Also notify admin of messages between other users (not if admin is sender or recipient)
+      const isMessageToAdmin = actualToEmail === ADMIN_EMAIL;
       const isAdminSender = adminAliases.includes(fromEmail) || fromEmail === ADMIN_EMAIL;
       if (!isMessageToAdmin && !isAdminSender) {
-        sendAdminMessageNotificationEmail(fromName, fromEmail, toName, toEmail, message).catch(err => console.error("[EMAIL] Admin message notify failed:", err));
+        sendAdminMessageNotificationEmail(fromName, fromEmail, actualToName, actualToEmail, message).catch(err => console.error("[EMAIL] Admin message notify failed:", err));
       }
     }
     
