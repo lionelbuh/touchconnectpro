@@ -128,6 +128,15 @@ app.get("/api/config", (_req, res) => {
   });
 });
 
+// Version check endpoint to verify which code is deployed
+app.get("/api/version", (_req, res) => {
+  return res.json({
+    version: "2025-12-14-v2",
+    buildTime: "Dec 14 2025 with Stripe routes",
+    stripeRoutesIncluded: true
+  });
+});
+
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
