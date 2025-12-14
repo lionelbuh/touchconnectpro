@@ -1128,10 +1128,10 @@ app.patch("/api/mentors/:id", async (req, res) => {
 app.post("/api/coaches", async (req, res) => {
   console.log("[POST /api/coaches] Called");
   try {
-    const { fullName, email, linkedin, expertise, focusAreas, hourlyRate, country, state } = req.body;
+    const { fullName, email, linkedin, bio, expertise, focusAreas, hourlyRate, country, state, specializations } = req.body;
 
-    if (!email || !fullName || !expertise || !focusAreas || !hourlyRate || !country) {
-      return res.status(400).json({ error: "Missing required fields" });
+    if (!email || !fullName || !expertise || !focusAreas || !hourlyRate || !country || !bio) {
+      return res.status(400).json({ error: "Missing required fields (including bio)" });
     }
 
     // Check if email exists in another category
@@ -1170,11 +1170,13 @@ app.post("/api/coaches", async (req, res) => {
           .update({
             full_name: fullName,
             linkedin: linkedin || null,
+            bio: bio || null,
             expertise,
             focus_areas: focusAreas,
             hourly_rate: hourlyRate,
             country,
             state: state || null,
+            specializations: specializations || [],
             status: "pending",
             is_resubmitted: true
           })
@@ -1198,11 +1200,13 @@ app.post("/api/coaches", async (req, res) => {
         full_name: fullName,
         email,
         linkedin: linkedin || null,
+        bio: bio || null,
         expertise,
         focus_areas: focusAreas,
         hourly_rate: hourlyRate,
         country,
         state: state || null,
+        specializations: specializations || [],
         status: "submitted"
       })
       .select();
@@ -1222,6 +1226,142 @@ app.post("/api/coaches", async (req, res) => {
   } catch (error) {
     console.error("[EXCEPTION]:", error);
     return res.status(500).json({ error: error.message || "Server error" });
+  }
+});
+
+// =====================
+// Coach Ratings API
+// =====================
+
+// Submit a rating for a coach
+app.post("/api/coach-ratings", async (req, res) => {
+  console.log("[POST /api/coach-ratings] Called");
+  try {
+    const { coachId, raterEmail, rating, review } = req.body;
+
+    if (!coachId || !raterEmail || !rating) {
+      return res.status(400).json({ error: "Missing required fields: coachId, raterEmail, rating" });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ error: "Rating must be between 1 and 5" });
+    }
+
+    // Check if this rater already rated this coach
+    const { data: existingRating } = await supabase
+      .from("coach_ratings")
+      .select("id")
+      .eq("coach_id", coachId)
+      .eq("rater_email", raterEmail)
+      .single();
+
+    if (existingRating) {
+      // Update existing rating
+      const { data, error } = await supabase
+        .from("coach_ratings")
+        .update({ rating, review: review || null, updated_at: new Date().toISOString() })
+        .eq("id", existingRating.id)
+        .select();
+
+      if (error) {
+        console.error("[DB ERROR]:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      console.log("[SUCCESS] Coach rating updated");
+      return res.json({ success: true, rating: data?.[0], updated: true });
+    }
+
+    // Insert new rating
+    const { data, error } = await supabase
+      .from("coach_ratings")
+      .insert({
+        coach_id: coachId,
+        rater_email: raterEmail,
+        rating,
+        review: review || null
+      })
+      .select();
+
+    if (error) {
+      console.error("[DB ERROR]:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log("[SUCCESS] Coach rating saved");
+    return res.json({ success: true, rating: data?.[0] });
+  } catch (error) {
+    console.error("[EXCEPTION]:", error);
+    return res.status(500).json({ error: error.message || "Server error" });
+  }
+});
+
+// Get average rating for a coach
+app.get("/api/coach-ratings/:coachId", async (req, res) => {
+  try {
+    const { coachId } = req.params;
+
+    const { data, error } = await supabase
+      .from("coach_ratings")
+      .select("rating, review, rater_email, created_at")
+      .eq("coach_id", coachId);
+
+    if (error) {
+      console.error("[DB ERROR]:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    const ratings = data || [];
+    const totalRatings = ratings.length;
+    const averageRating = totalRatings > 0 
+      ? ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings 
+      : 0;
+
+    return res.json({
+      coachId,
+      averageRating: Math.round(averageRating * 10) / 10,
+      totalRatings,
+      ratings
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all ratings for all coaches (for displaying on coach cards)
+app.get("/api/coach-ratings", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("coach_ratings")
+      .select("coach_id, rating");
+
+    if (error) {
+      console.error("[DB ERROR]:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    // Group ratings by coach_id and calculate averages
+    const ratingsByCoach = {};
+    (data || []).forEach(r => {
+      if (!ratingsByCoach[r.coach_id]) {
+        ratingsByCoach[r.coach_id] = { total: 0, count: 0 };
+      }
+      ratingsByCoach[r.coach_id].total += r.rating;
+      ratingsByCoach[r.coach_id].count += 1;
+    });
+
+    const result = {};
+    Object.keys(ratingsByCoach).forEach(coachId => {
+      const { total, count } = ratingsByCoach[coachId];
+      result[coachId] = {
+        averageRating: Math.round((total / count) * 10) / 10,
+        totalRatings: count
+      };
+    });
+
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 });
 

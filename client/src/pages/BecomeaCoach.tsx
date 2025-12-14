@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, TrendingUp, Mail, ArrowRight, CheckCircle } from "lucide-react";
+import { Check, Star, TrendingUp, Mail, ArrowRight, CheckCircle, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -60,21 +61,26 @@ export default function BecomeaCoach() {
     fullName: string;
     email: string;
     linkedin: string;
+    bio: string;
     expertise: string[];
     focusAreas: string;
     hourlyRate: string;
     country: string;
     state: string;
+    specializations: string[];
   }>({
     fullName: "",
     email: "",
     linkedin: "",
+    bio: "",
     expertise: [] as string[],
     focusAreas: "",
     hourlyRate: "",
     country: "",
-    state: ""
+    state: "",
+    specializations: []
   });
+  const [specializationInput, setSpecializationInput] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -91,9 +97,9 @@ export default function BecomeaCoach() {
     e.preventDefault();
     console.log("Coach form submitted, validating...", formData);
     
-    if (!formData.fullName || !formData.email || !Array.isArray(formData.expertise) || formData.expertise.length === 0 || !formData.focusAreas || !formData.hourlyRate || !formData.country) {
-      alert("Please fill in all required fields and select at least one area of expertise");
-      console.log("Validation failed", { fullName: formData.fullName, email: formData.email, expertise: formData.expertise, focusAreas: formData.focusAreas, hourlyRate: formData.hourlyRate, country: formData.country });
+    if (!formData.fullName || !formData.email || !formData.bio || !Array.isArray(formData.expertise) || formData.expertise.length === 0 || !formData.focusAreas || !formData.hourlyRate || !formData.country) {
+      alert("Please fill in all required fields including your bio and select at least one area of expertise");
+      console.log("Validation failed", { fullName: formData.fullName, email: formData.email, bio: formData.bio, expertise: formData.expertise, focusAreas: formData.focusAreas, hourlyRate: formData.hourlyRate, country: formData.country });
       return;
     }
     if (formData.country === "United States" && !formData.state) {
@@ -104,7 +110,8 @@ export default function BecomeaCoach() {
     try {
       const submitData = {
         ...formData,
-        expertise: formData.expertise.join(", ")
+        expertise: formData.expertise.join(", "),
+        specializations: formData.specializations
       };
       console.log("Submitting to:", `${API_BASE_URL}/api/coaches`);
       console.log("Submit data:", submitData);
@@ -133,7 +140,20 @@ export default function BecomeaCoach() {
   const handleCloseModal = () => {
     setSubmitted(false);
     setShowForm(false);
-    setFormData({ fullName: "", email: "", linkedin: "", expertise: [], focusAreas: "", hourlyRate: "", country: "", state: "" });
+    setFormData({ fullName: "", email: "", linkedin: "", bio: "", expertise: [], focusAreas: "", hourlyRate: "", country: "", state: "", specializations: [] });
+    setSpecializationInput("");
+  };
+
+  const addSpecialization = () => {
+    const trimmed = specializationInput.trim();
+    if (trimmed && !formData.specializations.includes(trimmed)) {
+      setFormData(prev => ({ ...prev, specializations: [...prev.specializations, trimmed] }));
+      setSpecializationInput("");
+    }
+  };
+
+  const removeSpecialization = (tag: string) => {
+    setFormData(prev => ({ ...prev, specializations: prev.specializations.filter(s => s !== tag) }));
   };
 
   return (
@@ -382,6 +402,54 @@ export default function BecomeaCoach() {
                         className="bg-slate-50 dark:bg-slate-800/50"
                         data-testid="input-coach-linkedin"
                       />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Bio - Introduce Yourself *</label>
+                      <Textarea
+                        name="bio"
+                        value={formData.bio}
+                        onChange={handleInputChange}
+                        placeholder="Tell entrepreneurs about yourself, your background, and what makes you a great coach. This will be displayed on your public profile."
+                        className="bg-slate-50 dark:bg-slate-800/50 min-h-[120px]"
+                        data-testid="input-coach-bio"
+                      />
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">This bio will be visible to entrepreneurs browsing coaches</p>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Specialization Tags</label>
+                      <div className="flex gap-2 mb-2">
+                        <Input
+                          value={specializationInput}
+                          onChange={(e) => setSpecializationInput(e.target.value)}
+                          placeholder="e.g., eCommerce, Marketing, Supply Chain"
+                          className="bg-slate-50 dark:bg-slate-800/50"
+                          data-testid="input-coach-specialization"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addSpecialization();
+                            }
+                          }}
+                        />
+                        <Button type="button" onClick={addSpecialization} variant="outline" data-testid="button-add-specialization">
+                          Add
+                        </Button>
+                      </div>
+                      {formData.specializations.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {formData.specializations.map((tag) => (
+                            <Badge key={tag} variant="secondary" className="px-3 py-1 text-sm bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 flex items-center gap-1">
+                              {tag}
+                              <button type="button" onClick={() => removeSpecialization(tag)} className="ml-1 hover:text-red-500" data-testid={`button-remove-tag-${tag}`}>
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Add tags that describe your specializations. Press Enter or click Add after each tag.</p>
                     </div>
 
                     <div>

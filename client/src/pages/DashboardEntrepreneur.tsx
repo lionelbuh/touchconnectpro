@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
@@ -21,6 +21,8 @@ export default function DashboardEntrepreneur() {
   const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile" | "notes" | "messages" | "meetings">("overview");
   const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
+  const [coachRatings, setCoachRatings] = useState<Record<string, { averageRating: number; totalRatings: number }>>({});
+  const [selectedSpecializations, setSelectedSpecializations] = useState<string[]>([]);
   const [mentorData, setMentorData] = useState<any>(null);
   const [mentorNotes, setMentorNotes] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
@@ -299,6 +301,13 @@ export default function DashboardEntrepreneur() {
         if (coachesResponse.ok) {
           const coachesData = await coachesResponse.json();
           setApprovedCoaches(coachesData);
+        }
+        
+        // Fetch coach ratings
+        const ratingsResponse = await fetch(`${API_BASE_URL}/api/coach-ratings`);
+        if (ratingsResponse.ok) {
+          const ratingsData = await ratingsResponse.json();
+          setCoachRatings(ratingsData);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -1333,7 +1342,52 @@ export default function DashboardEntrepreneur() {
             {activeTab === "coaches" && (
               <div>
                 <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Available Coaches</h1>
-                <p className="text-muted-foreground mb-8">Browse our approved coaches who can help accelerate your startup journey with specialized expertise.</p>
+                <p className="text-muted-foreground mb-4">Browse our approved coaches who can help accelerate your startup journey with specialized expertise.</p>
+
+                {/* Specialization Filter */}
+                {approvedCoaches.length > 0 && !isAccountDisabled && !isPreApproved && (() => {
+                  const allSpecializations = Array.from(new Set(approvedCoaches.flatMap(c => c.specializations || [])));
+                  if (allSpecializations.length === 0) return null;
+                  return (
+                    <div className="mb-6">
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Filter by Specialization:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {allSpecializations.map((spec: string) => (
+                          <Badge
+                            key={spec}
+                            variant={selectedSpecializations.includes(spec) ? "default" : "outline"}
+                            className={`cursor-pointer transition-colors ${
+                              selectedSpecializations.includes(spec) 
+                                ? "bg-purple-600 text-white hover:bg-purple-700" 
+                                : "hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                            }`}
+                            onClick={() => {
+                              if (selectedSpecializations.includes(spec)) {
+                                setSelectedSpecializations(selectedSpecializations.filter(s => s !== spec));
+                              } else {
+                                setSelectedSpecializations([...selectedSpecializations, spec]);
+                              }
+                            }}
+                            data-testid={`filter-specialization-${spec}`}
+                          >
+                            {spec}
+                          </Badge>
+                        ))}
+                        {selectedSpecializations.length > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs h-6"
+                            onClick={() => setSelectedSpecializations([])}
+                            data-testid="button-clear-filters"
+                          >
+                            Clear filters
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {isAccountDisabled ? (
                   <Card className="border-red-300 bg-red-50 dark:bg-red-950/20 dark:border-red-800">
@@ -1353,22 +1407,61 @@ export default function DashboardEntrepreneur() {
                   </Card>
                 ) : approvedCoaches.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {approvedCoaches.map((coach) => (
-                      <Card key={coach.id} className="border-l-4 border-l-purple-500">
+                    {approvedCoaches
+                      .filter((coach) => {
+                        if (selectedSpecializations.length === 0) return true;
+                        const coachSpecs = coach.specializations || [];
+                        return selectedSpecializations.some(spec => coachSpecs.includes(spec));
+                      })
+                      .map((coach) => {
+                      const rating = coachRatings[coach.id];
+                      return (
+                      <Card key={coach.id} className="border-l-4 border-l-purple-500" data-testid={`card-coach-${coach.id}`}>
                         <CardHeader>
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-start gap-4">
                             <Avatar className="h-12 w-12 border-2 border-purple-200">
                               <AvatarFallback className="bg-purple-500 text-white">
                                 {coach.full_name?.substring(0, 2).toUpperCase() || "CO"}
                               </AvatarFallback>
                             </Avatar>
-                            <div>
-                              <CardTitle className="text-lg">{coach.full_name}</CardTitle>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg">{coach.full_name}</CardTitle>
+                                <div className="flex items-center gap-1" data-testid={`rating-coach-${coach.id}`}>
+                                  {rating ? (
+                                    <>
+                                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                      <span className="text-sm font-semibold">{rating.averageRating}</span>
+                                      <span className="text-xs text-muted-foreground">({rating.totalRatings})</span>
+                                    </>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">No ratings yet</span>
+                                  )}
+                                </div>
+                              </div>
                               <p className="text-sm text-muted-foreground">{coach.expertise}</p>
                             </div>
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-3">
+                          {coach.bio && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">About</p>
+                              <p className="text-sm text-slate-700 dark:text-slate-300 line-clamp-3">{coach.bio}</p>
+                            </div>
+                          )}
+                          {coach.specializations && coach.specializations.length > 0 && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Specializations</p>
+                              <div className="flex flex-wrap gap-1">
+                                {coach.specializations.map((tag: string) => (
+                                  <Badge key={tag} variant="secondary" className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                           <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
                             <p className="text-sm text-slate-700 dark:text-slate-300">{coach.focus_areas}</p>
@@ -1383,7 +1476,7 @@ export default function DashboardEntrepreneur() {
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                    )})}
                   </div>
                 ) : (
                   <Card className="text-center py-12">
