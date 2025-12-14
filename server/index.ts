@@ -44,6 +44,18 @@ async function initStripe() {
     return;
   }
 
+  // Check if user has their own STRIPE_SECRET_KEY set
+  const userStripeKey = process.env.STRIPE_SECRET_KEY;
+  console.log('[STRIPE] STRIPE_SECRET_KEY status:', userStripeKey ? `set (${userStripeKey.substring(0, 7)}...)` : 'NOT SET');
+  
+  // Skip StripeSync if user's key isn't a valid Stripe key format
+  // StripeSync uses the Replit connector which may have invalid/mock keys
+  if (!userStripeKey || (!userStripeKey.startsWith('sk_live_') && !userStripeKey.startsWith('sk_test_'))) {
+    console.log('[STRIPE] Skipping StripeSync - no valid user STRIPE_SECRET_KEY');
+    console.log('[STRIPE] Checkout will still work via /api/stripe/create-checkout-session');
+    return;
+  }
+
   try {
     console.log('[STRIPE] Initializing schema...');
     await runMigrations({ databaseUrl, schema: 'stripe' });
