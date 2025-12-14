@@ -300,7 +300,7 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId)
 }
 
 // Admin email for notifications
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@touchconnectpro.com";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
 
 // Send email when application is submitted (confirmation to applicant)
 async function sendApplicationSubmittedEmail(email, fullName, userType, ideaName = null) {
