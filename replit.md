@@ -12,6 +12,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Session)
 
+**Coach Enhancements (December 14, 2025):**
+- ✅ Added mandatory Bio field to coach application form (textarea for self-introduction)
+- ✅ Added Specialization Tags with tag-style input (add/remove tags like "eCommerce", "Marketing")
+- ✅ Created Coach Ratings API endpoints:
+  - POST /api/coach-ratings - Submit a 1-5 star rating for a coach
+  - GET /api/coach-ratings/:coachId - Get ratings for specific coach
+  - GET /api/coach-ratings - Get all ratings aggregated by coach
+- ✅ Updated coach cards on entrepreneur dashboard to display:
+  - Bio section with coach introduction
+  - Star ratings with average and review count
+  - Specialization tags as purple badges
+- ✅ Added specialization filter on entrepreneur dashboard - clickable tags to filter coaches
+- ⚠️ **Supabase Migration Required**: Add `bio` (text) and `specializations` (text[]) columns to `coach_applications` table, and create `coach_ratings` table (id, coach_id, rater_email, rating, review, created_at, updated_at)
+
 **Post-Payment Notifications (December 13, 2025):**
 - ✅ Added `sendPaymentWelcomeEmail` function for welcome emails after payment
 - ✅ After successful Stripe payment, system now sends:
