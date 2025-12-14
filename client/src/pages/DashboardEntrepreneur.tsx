@@ -668,6 +668,8 @@ export default function DashboardEntrepreneur() {
       // Save email to localStorage before redirecting (session may be lost after Stripe)
       localStorage.setItem("tcp_pendingPaymentEmail", userEmail);
       
+      console.log("[SUBSCRIBE] Creating checkout session for:", userEmail);
+      
       const response = await fetch(`${API_BASE_URL}/api/stripe/create-checkout-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -678,17 +680,28 @@ export default function DashboardEntrepreneur() {
       });
       
       const data = await response.json();
+      console.log("[SUBSCRIBE] Response:", response.status, data);
+      
+      if (!response.ok) {
+        const errorMsg = data.error || "Could not create payment session";
+        console.error("[SUBSCRIBE] Server error:", errorMsg);
+        toast.error(errorMsg);
+        localStorage.removeItem("tcp_pendingPaymentEmail");
+        setIsSubscribing(false);
+        return;
+      }
       
       if (data.url) {
+        console.log("[SUBSCRIBE] Redirecting to Stripe checkout...");
         window.location.href = data.url;
       } else {
         toast.error("Could not create payment session. Please try again.");
         localStorage.removeItem("tcp_pendingPaymentEmail");
         setIsSubscribing(false);
       }
-    } catch (error) {
-      console.error("Subscribe error:", error);
-      toast.error("Payment error. Please try again later.");
+    } catch (error: any) {
+      console.error("[SUBSCRIBE] Error:", error);
+      toast.error(error.message || "Payment error. Please try again later.");
       localStorage.removeItem("tcp_pendingPaymentEmail");
       setIsSubscribing(false);
     }
