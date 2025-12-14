@@ -125,6 +125,8 @@ app.get("/api/config", (_req, res) => {
   return res.json({
     supabaseUrl,
     supabaseAnonKey,
+    deployVersion: "2025-12-14-v3",
+    stripeRoutesEnabled: true
   });
 });
 
