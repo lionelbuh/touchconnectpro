@@ -669,6 +669,7 @@ export default function DashboardEntrepreneur() {
       localStorage.setItem("tcp_pendingPaymentEmail", userEmail);
       
       console.log("[SUBSCRIBE] Creating checkout session for:", userEmail);
+      console.log("[SUBSCRIBE] API_BASE_URL:", API_BASE_URL);
       
       const response = await fetch(`${API_BASE_URL}/api/stripe/create-checkout-session`, {
         method: "POST",
@@ -679,17 +680,31 @@ export default function DashboardEntrepreneur() {
         })
       });
       
-      const data = await response.json();
-      console.log("[SUBSCRIBE] Response:", response.status, data);
+      console.log("[SUBSCRIBE] Response status:", response.status);
       
+      // Check response.ok BEFORE parsing JSON to handle HTML error pages
       if (!response.ok) {
-        const errorMsg = data.error || "Could not create payment session";
-        console.error("[SUBSCRIBE] Server error:", errorMsg);
-        toast.error(errorMsg);
+        const text = await response.text();
+        console.error("[SUBSCRIBE] Server error (raw):", text.substring(0, 200));
+        // Check if HTML was returned (wrong endpoint hit)
+        if (text.startsWith("<!DOCTYPE") || text.startsWith("<html")) {
+          toast.error("Payment service unavailable. Please try again later.");
+        } else {
+          // Try to parse as JSON error
+          try {
+            const errorData = JSON.parse(text);
+            toast.error(errorData.error || "Could not create payment session");
+          } catch {
+            toast.error("Could not create payment session");
+          }
+        }
         localStorage.removeItem("tcp_pendingPaymentEmail");
         setIsSubscribing(false);
         return;
       }
+      
+      const data = await response.json();
+      console.log("[SUBSCRIBE] Response data:", data);
       
       if (data.url) {
         console.log("[SUBSCRIBE] Redirecting to Stripe checkout...");
