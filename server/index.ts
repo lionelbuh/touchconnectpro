@@ -37,6 +37,13 @@ async function initStripe() {
     return;
   }
 
+  // Skip Replit-specific Stripe sync on production (Render)
+  const isReplit = !!process.env.REPLIT_DOMAINS;
+  if (!isReplit) {
+    console.log('[STRIPE] Not on Replit, skipping managed webhook setup');
+    return;
+  }
+
   try {
     console.log('[STRIPE] Initializing schema...');
     await runMigrations({ databaseUrl, schema: 'stripe' });

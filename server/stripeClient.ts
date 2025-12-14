@@ -69,6 +69,11 @@ export async function getStripePublishableKey() {
 }
 
 export async function getStripeSecretKey() {
+  // Prefer user's STRIPE_SECRET_KEY if set, otherwise use Replit connector
+  const userSecretKey = process.env.STRIPE_SECRET_KEY;
+  if (userSecretKey) {
+    return userSecretKey;
+  }
   const { secretKey } = await getCredentials();
   return secretKey;
 }
