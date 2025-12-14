@@ -677,7 +677,7 @@ export default function DashboardEntrepreneur() {
         body: JSON.stringify({
           email: userEmail,
           entrepreneurId: entrepreneurData?.id,
-          cancelUrl: "https://touchconnectpro.com/entrepreneur-dashboard"
+          cancelUrl: "https://touchconnectpro.com/login"
         })
       });
       
