@@ -2361,14 +2361,19 @@ app.post("/api/messages", async (req, res) => {
 
     console.log(`[POST /api/messages] Message sent from ${fromEmail} to ${toEmail}`);
     
-    // Send email notification to recipient (skip if sending to admin or from system)
-    if (toEmail && toEmail !== ADMIN_EMAIL && fromEmail !== "admin@touchconnectpro.com" && fromEmail !== "system@touchconnectpro.com") {
-      sendMessageNotificationEmail(toEmail, toName, fromName, fromEmail, message).catch(err => console.error("[EMAIL] Message notify failed:", err));
-    }
+    // Skip email notifications only for system-generated messages
+    const isSystemMessage = fromEmail === "system@touchconnectpro.com";
     
-    // Always notify admin of internal messages (except system messages and messages TO admin)
-    if (fromEmail !== "admin@touchconnectpro.com" && fromEmail !== "system@touchconnectpro.com" && toEmail !== ADMIN_EMAIL) {
-      sendAdminMessageNotificationEmail(fromName, fromEmail, toName, toEmail, message).catch(err => console.error("[EMAIL] Admin message notify failed:", err));
+    if (!isSystemMessage && toEmail) {
+      // Send email notification to recipient (works for all: mentor→entrepreneur, admin→anyone, anyone→admin)
+      sendMessageNotificationEmail(toEmail, toName, fromName, fromEmail, message).catch(err => console.error("[EMAIL] Message notify failed:", err));
+      
+      // Also notify admin of messages between other users (not if admin is sender or recipient)
+      const adminEmails = [ADMIN_EMAIL, "admin@touchconnectpro.com"];
+      const isAdminInvolved = adminEmails.includes(fromEmail) || adminEmails.includes(toEmail);
+      if (!isAdminInvolved) {
+        sendAdminMessageNotificationEmail(fromName, fromEmail, toName, toEmail, message).catch(err => console.error("[EMAIL] Admin message notify failed:", err));
+      }
     }
     
     return res.json({ success: true, message: data?.[0] });
