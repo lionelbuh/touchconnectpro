@@ -808,6 +808,11 @@ export default function AdminDashboard() {
             data-testid="button-members-tab"
           >
             <Users className="mr-2 h-4 w-4" /> Members & Portfolios
+            {messageHistory.filter((m: any) => m.to_email === "admin@touchconnectpro.com" && !m.is_read).length > 0 && (
+              <Badge className="ml-2 bg-red-500 text-white animate-pulse">
+                {messageHistory.filter((m: any) => m.to_email === "admin@touchconnectpro.com" && !m.is_read).length} Unread
+              </Badge>
+            )}
           </Button>
           <Button 
             variant={activeTab === "meetings" ? "default" : "outline"}
