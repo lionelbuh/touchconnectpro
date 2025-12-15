@@ -2551,9 +2551,12 @@ export default function AdminDashboard() {
                                                 credentials: 'include'
                                               });
                                               if (response.ok) {
-                                                setMessageHistory(prev => prev.map((m: any) => 
-                                                  m.id === msg.id ? {...m, is_read: true} : m
-                                                ));
+                                                // Refetch all messages to ensure counts are accurate
+                                                const messagesResponse = await fetch(`${API_BASE_URL}/api/messages`);
+                                                if (messagesResponse.ok) {
+                                                  const messagesData = await messagesResponse.json();
+                                                  setMessageHistory(messagesData.messages || []);
+                                                }
                                                 toast.success("Message marked as read");
                                               }
                                             } catch (error) {
