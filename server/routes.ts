@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import crypto from "crypto";
+import { rephraseAnswers, generateBusinessPlan } from "./aiService";
 
 let supabase: ReturnType<typeof createClient> | null = null;
 let resendClient: Resend | null = null;
@@ -432,6 +433,44 @@ export async function registerRoutes(
   app.get("/api/bypass-test", (_req, res) => {
     console.log("[BYPASS TEST] Endpoint hit, sending response...");
     return res.json({ test: "bypass", timestamp: Date.now() });
+  });
+
+  // AI: Rephrase entrepreneur answers
+  app.post("/api/ai/rephrase", async (req, res) => {
+    console.log("[AI REPHRASE] Processing request...");
+    try {
+      const { answers } = req.body;
+      
+      if (!answers || typeof answers !== "object") {
+        return res.status(400).json({ error: "Invalid answers format" });
+      }
+
+      const result = await rephraseAnswers({ answers });
+      console.log("[AI REPHRASE] Success - processed", Object.keys(result.answers).length, "answers");
+      return res.json(result);
+    } catch (error: any) {
+      console.error("[AI REPHRASE ERROR]:", error.message);
+      return res.status(500).json({ error: "Failed to process answers with AI" });
+    }
+  });
+
+  // AI: Generate business plan from answers
+  app.post("/api/ai/generate-plan", async (req, res) => {
+    console.log("[AI GENERATE PLAN] Processing request...");
+    try {
+      const { answers } = req.body;
+      
+      if (!answers || typeof answers !== "object") {
+        return res.status(400).json({ error: "Invalid answers format" });
+      }
+
+      const result = await generateBusinessPlan({ answers });
+      console.log("[AI GENERATE PLAN] Success - generated business plan");
+      return res.json(result);
+    } catch (error: any) {
+      console.error("[AI GENERATE PLAN ERROR]:", error.message);
+      return res.status(500).json({ error: "Failed to generate business plan with AI" });
+    }
   });
 
   // Save entrepreneur idea submission

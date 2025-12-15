@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, Lightbulb, Target, Check, ChevronLeft, AlertCircle } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Check, ChevronLeft, AlertCircle, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+import { API_BASE_URL } from "@/config";
 
 export default function BusinessPlan() {
   const [location] = useLocation();
@@ -11,21 +13,73 @@ export default function BusinessPlan() {
   const ideaName = searchParams.get("ideaName") || "My Idea";
   
   const [businessPlan, setBusinessPlan] = useState({
-    executiveSummary: "Your company solves a critical problem in the market with an innovative, user-centric solution. With strong market validation and a clear path to profitability, you're positioned for rapid growth.",
-    problemStatement: "Many entrepreneurs struggle with developing a comprehensive business plan. Our platform bridges this gap through AI-powered insights and expert guidance.",
-    solution: "TouchConnectPro provides an intelligent platform that guides entrepreneurs through structured business planning, leveraging AI to enhance clarity and investor appeal.",
-    targetMarket: "Early-stage entrepreneurs (founders, co-founders) across diverse industries seeking professional business planning and mentor guidance.",
-    marketSize: "$50B+ TAM in the startup advisory and business planning space, with 25M+ entrepreneurs globally seeking structured guidance.",
-    revenue: "Multi-tiered revenue model: Freemium ($0-49/month), Premium ($49-99/month), and Enterprise ($250+/month) for advisor partnerships.",
-    competitiveAdvantage: "Unique combination of AI-powered business plan generation, expert mentor network, and investor connections creates a defensible moat.",
-    roadmap: "Q1: MVP launch, Q2: Mentor marketplace expansion, Q3: Investor integration, Q4: Achieving 10K+ active users.",
-    fundingNeeds: "Seeking $500K seed funding for product development, mentor acquisition, and marketing expansion.",
-    risks: "Market adoption, maintaining mentor quality, competitive pressure from larger platforms.",
-    success: "Success metrics: 10K active users, 500+ mentors, $100K+ ARR by end of Year 1."
+    executiveSummary: "",
+    problemStatement: "",
+    solution: "",
+    targetMarket: "",
+    marketSize: "",
+    revenue: "",
+    competitiveAdvantage: "",
+    roadmap: "",
+    fundingNeeds: "",
+    risks: "",
+    success: ""
   });
 
+  const [isGenerating, setIsGenerating] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [generationError, setGenerationError] = useState("");
+
+  useEffect(() => {
+    generateBusinessPlan();
+  }, []);
+
+  const generateBusinessPlan = async () => {
+    setIsGenerating(true);
+    setGenerationError("");
+    
+    try {
+      const savedFormData = localStorage.getItem("tcp_formData");
+      if (!savedFormData) {
+        throw new Error("No form data found. Please complete the idea questionnaire first.");
+      }
+
+      const answers = JSON.parse(savedFormData);
+      
+      const response = await fetch(`${API_BASE_URL}/api/ai/generate-plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate business plan");
+      }
+
+      const data = await response.json();
+      
+      setBusinessPlan({
+        executiveSummary: data.executiveSummary || "",
+        problemStatement: data.problemStatement || "",
+        solution: data.solution || "",
+        targetMarket: data.targetMarket || "",
+        marketSize: data.marketSize || "",
+        revenue: data.revenue || "",
+        competitiveAdvantage: data.competitiveAdvantage || "",
+        roadmap: data.roadmap || "",
+        fundingNeeds: data.fundingNeeds || "",
+        risks: data.risks || "",
+        success: data.success || ""
+      });
+    } catch (error: any) {
+      console.error("Business plan generation error:", error);
+      setGenerationError(error.message || "Failed to generate business plan");
+      toast.error("Failed to generate business plan. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handlePlanChange = (key: string, value: string) => {
     setBusinessPlan(prev => ({ ...prev, [key]: value }));
@@ -91,6 +145,80 @@ export default function BusinessPlan() {
     );
   }
 
+  if (isGenerating) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
+        <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
+          <div className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <Avatar className="h-10 w-10 border border-slate-200 bg-cyan-500">
+                <AvatarFallback className="text-white">EN</AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="font-bold text-sm">Entrepreneur</div>
+                <div className="text-xs text-muted-foreground">Creating Business Plan</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <main className="flex-1 p-8 overflow-y-auto flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <div className="h-16 w-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+            <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-3">Generating Your Business Plan</h2>
+            <p className="text-slate-600 dark:text-slate-400">Our AI is analyzing your answers and creating a comprehensive business plan tailored to your idea...</p>
+            <p className="text-sm text-slate-500 dark:text-slate-500 mt-4">This may take 30-60 seconds</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (generationError) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
+        <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
+          <div className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <Avatar className="h-10 w-10 border border-slate-200 bg-red-500">
+                <AvatarFallback className="text-white">EN</AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="font-bold text-sm">Entrepreneur</div>
+                <div className="text-xs text-red-600 dark:text-red-400 font-semibold">Error</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <main className="flex-1 p-8 overflow-y-auto flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <div className="h-16 w-16 bg-red-100 dark:bg-red-950 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+            </div>
+            <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-3">Generation Failed</h2>
+            <p className="text-slate-600 dark:text-slate-400 mb-6">{generationError}</p>
+            <div className="flex gap-4">
+              <Button 
+                variant="outline"
+                className="flex-1"
+                onClick={() => window.history.back()}
+              >
+                Go Back
+              </Button>
+              <Button 
+                className="flex-1 bg-cyan-600 hover:bg-cyan-700"
+                onClick={generateBusinessPlan}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" /> Try Again
+              </Button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   const sections = [
     { key: "executiveSummary", label: "Executive Summary", description: "2-3 sentence overview of your business" },
     { key: "problemStatement", label: "Problem Statement", description: "What problem are you solving?" },
@@ -99,7 +227,7 @@ export default function BusinessPlan() {
     { key: "marketSize", label: "Market Size & Opportunity", description: "TAM, SAM, SOM estimates" },
     { key: "revenue", label: "Revenue Model & Pricing", description: "How will you make money?" },
     { key: "competitiveAdvantage", label: "Competitive Advantage", description: "What makes you different?" },
-    { key: "roadmap", label: "12-Month Roadmap", description: "Key milestones and timeline" },
+    { key: "roadmap", label: "90-Day Roadmap", description: "Key milestones and timeline" },
     { key: "fundingNeeds", label: "Funding Requirements", description: "How much do you need and why?" },
     { key: "risks", label: "Risks & Mitigation", description: "Key challenges and solutions" },
     { key: "success", label: "Success Metrics", description: "How will you measure success?" }
@@ -142,8 +270,19 @@ export default function BusinessPlan() {
             <ChevronLeft className="h-4 w-4" /> Back
           </button>
 
-          <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">AI Draft Business Plan</h1>
-          <p className="text-muted-foreground mb-8">Review and edit the AI-generated business plan. When ready, submit it to our mentors for review.</p>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">AI Draft Business Plan</h1>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={generateBusinessPlan}
+              className="text-cyan-600 border-cyan-200 hover:bg-cyan-50"
+              data-testid="button-regenerate-plan"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" /> Regenerate
+            </Button>
+          </div>
+          <p className="text-muted-foreground mb-8">Review and edit the AI-generated business plan for <span className="font-semibold text-foreground">{ideaName}</span>. When ready, submit it to our mentors for review.</p>
 
           <div className="space-y-6">
             {sections.map((section) => (

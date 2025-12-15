@@ -39,6 +39,7 @@ export default function DashboardEntrepreneur() {
   const [isAccountDisabled, setIsAccountDisabled] = useState(false);
   const [isPreApproved, setIsPreApproved] = useState(false);
   const [isSubscribing, setIsSubscribing] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [businessPlanData, setBusinessPlanData] = useState<any>({
     executiveSummary: "",
     problemStatement: "",
@@ -575,51 +576,49 @@ export default function DashboardEntrepreneur() {
     setShowReview(false);
   };
 
-  const generateAIEnhancedAnswers = () => {
-    const enhanced: any = {};
-    steps.forEach((sec) => {
-      sec.fields.forEach((field: any) => {
-        const originalAnswer = formData[field.key as keyof typeof formData];
-        if (originalAnswer) {
-          enhanced[field.key] = {
-            original: originalAnswer,
-            aiEnhanced: enhanceAnswer(field.label, originalAnswer),
-            isEdited: false
-          };
-        }
+  const generateAIEnhancedAnswers = async () => {
+    setIsGeneratingAI(true);
+    try {
+      const answers: Record<string, string> = {};
+      steps.forEach((sec) => {
+        sec.fields.forEach((field: any) => {
+          const answer = formData[field.key as keyof typeof formData];
+          if (answer && answer.trim()) {
+            answers[field.key] = answer;
+          }
+        });
       });
-    });
-    setAiEnhancedData(enhanced);
-    setShowAIReview(true);
-    window.scrollTo(0, 0);
-  };
 
-  const enhanceAnswer = (question: string, answer: string): string => {
-    const enhancements: { [key: string]: string } = {
-      "problem": "This is a critical pain point affecting thousands of professionals daily. The urgency is clear due to market gaps in current solutions.",
-      "solution": "Our innovative approach directly addresses the core issue with a streamlined, user-centric platform that significantly improves efficiency.",
-      "ideaName": "Clear, memorable brand name that reflects the core value proposition and target market.",
-      "ideal": "High-value customer segment with significant purchasing power and demonstrated willingness to adopt innovative solutions.",
-      "market": "Substantial TAM in a high-growth sector with proven demand signals and expanding market opportunities.",
-      "customers": "Already validated product-market fit with early adopters showing strong engagement and retention.",
-      "revenue": "Demonstrated revenue traction validates business model viability and customer willingness to pay.",
-      "monetization": "Diversified revenue streams with clear path to profitability and strong unit economics.",
-      "competition": "Differentiated positioning with unique value drivers that create defensible competitive advantages.",
-      "stage": "Clear development roadmap with achievable milestones and realistic go-to-market timeline.",
-      "startup": "Relevant founder experience and proven track record in building and scaling ventures.",
-      "team": "Balanced team composition with complementary skills and demonstrated execution ability.",
-      "funding": "Well-defined capital efficiency strategy with clear allocation of resources toward growth initiatives.",
-      "steps": "Concrete action plan with measurable milestones and realistic execution timeline.",
-      "obstacle": "Identified potential challenges with clear mitigation strategies and contingency planning."
-    };
+      const response = await fetch(`${API_BASE_URL}/api/ai/rephrase`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers })
+      });
 
-    for (const key in enhancements) {
-      if (question.toLowerCase().includes(key)) {
-        return enhancements[key];
+      if (!response.ok) {
+        throw new Error("Failed to enhance answers");
       }
+
+      const data = await response.json();
+      
+      const enhanced: any = {};
+      Object.keys(data.answers).forEach((key) => {
+        enhanced[key] = {
+          original: data.answers[key].original,
+          aiEnhanced: data.answers[key].aiEnhanced,
+          isEdited: false
+        };
+      });
+
+      setAiEnhancedData(enhanced);
+      setShowAIReview(true);
+      window.scrollTo(0, 0);
+    } catch (error: any) {
+      console.error("AI enhancement error:", error);
+      toast.error("Failed to enhance answers with AI. Please try again.");
+    } finally {
+      setIsGeneratingAI(false);
     }
-    
-    return answer;
   };
 
   const handleSubmit = () => {
@@ -2372,9 +2371,17 @@ export default function DashboardEntrepreneur() {
               <Button 
                 className="flex-1 bg-cyan-600 hover:bg-cyan-700"
                 onClick={generateAIEnhancedAnswers}
+                disabled={isGeneratingAI}
                 data-testid="button-submit-to-ai"
               >
-                Submit to AI for Enhancement
+                {isGeneratingAI ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    AI is enhancing your answers...
+                  </>
+                ) : (
+                  "Submit to AI for Enhancement"
+                )}
               </Button>
             </div>
           </div>
