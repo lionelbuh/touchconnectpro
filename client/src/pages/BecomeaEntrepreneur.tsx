@@ -918,7 +918,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                             <textarea
                               value={(editedBusinessPlan[section.key] || "").replace(/}/g, "")}
                               onChange={(e) => handleEditPlanField(section.key, e.target.value)}
-                              className="w-full min-h-24 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                              className="w-full min-h-64 p-4 rounded-lg border border-cyan-300 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-y"
                               data-testid={`textarea-plan-${section.key}`}
                             />
                           </CardContent>
