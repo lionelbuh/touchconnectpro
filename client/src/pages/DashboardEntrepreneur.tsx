@@ -1434,21 +1434,19 @@ export default function DashboardEntrepreneur() {
                               <div className="flex items-center justify-between">
                                 <CardTitle className="text-lg">{coach.full_name}</CardTitle>
                                 <button
-                                  className={`flex items-center gap-1 ${rating ? 'hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-2 py-1 rounded-md cursor-pointer transition-colors' : ''}`}
+                                  className="flex items-center gap-1 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-2 py-1 rounded-md cursor-pointer transition-colors"
                                   onClick={async () => {
-                                    if (rating && rating.totalRatings > 0) {
-                                      setSelectedCoachForReviews(coach);
-                                      try {
-                                        const response = await fetch(`${API_BASE_URL}/api/coach-ratings/${coach.id}/reviews`);
-                                        if (response.ok) {
-                                          const data = await response.json();
-                                          setCoachReviews(data.reviews || []);
-                                        }
-                                      } catch (error) {
-                                        console.error("Error fetching reviews:", error);
+                                    setSelectedCoachForReviews(coach);
+                                    try {
+                                      const response = await fetch(`${API_BASE_URL}/api/coach-ratings/${coach.id}/reviews`);
+                                      if (response.ok) {
+                                        const data = await response.json();
+                                        setCoachReviews(data.reviews || []);
                                       }
-                                      setShowReviewsModal(true);
+                                    } catch (error) {
+                                      console.error("Error fetching reviews:", error);
                                     }
+                                    setShowReviewsModal(true);
                                   }}
                                   data-testid={`rating-coach-${coach.id}`}
                                 >
