@@ -25,13 +25,24 @@ app.get("/api/config", (req, res) => {
   });
 });
 
-// OpenAI client for AI features
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// OpenAI client for AI features (lazy initialization)
+let openaiClient = null;
+function getOpenAI() {
+  if (!openaiClient && process.env.OPENAI_API_KEY) {
+    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openaiClient;
+}
 
 // AI: Rephrase entrepreneur answers
 app.post("/api/ai/rephrase", async (req, res) => {
   console.log("[AI REPHRASE] Processing request...");
   try {
+    const openai = getOpenAI();
+    if (!openai) {
+      return res.status(503).json({ error: "AI service not configured. Please add OPENAI_API_KEY." });
+    }
+    
     const { answers } = req.body;
     if (!answers || typeof answers !== "object") {
       return res.status(400).json({ error: "Invalid answers format" });
@@ -72,6 +83,11 @@ app.post("/api/ai/rephrase", async (req, res) => {
 app.post("/api/ai/generate-plan", async (req, res) => {
   console.log("[AI GENERATE PLAN] Processing request...");
   try {
+    const openai = getOpenAI();
+    if (!openai) {
+      return res.status(503).json({ error: "AI service not configured. Please add OPENAI_API_KEY." });
+    }
+    
     const { answers } = req.body;
     if (!answers || typeof answers !== "object") {
       return res.status(400).json({ error: "Invalid answers format" });
