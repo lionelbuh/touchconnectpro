@@ -89,7 +89,7 @@ interface User {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings" | "messages">("approvals");
+  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings">("approvals");
   const [activeMembersSubTab, setActiveMembersSubTab] = useState<"portfolio" | "messaging" | "management">("portfolio");
   const [activeApprovalsSubTab, setActiveApprovalsSubTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
   const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled">("entrepreneurs");
@@ -811,25 +811,6 @@ export default function AdminDashboard() {
             data-testid="button-meetings-tab"
           >
             <Calendar className="mr-2 h-4 w-4" /> Meetings
-          </Button>
-          <Button 
-            variant={activeTab === "messages" ? "default" : "outline"}
-            onClick={() => setActiveTab("messages")}
-            className={activeTab === "messages" ? "bg-purple-600 hover:bg-purple-700" : ""}
-            data-testid="button-messages-tab"
-          >
-            <Mail className="mr-2 h-4 w-4" /> Messages
-            {(() => {
-              const preApprovedEmails = entrepreneurApplications.filter(e => e.status === "pre-approved").map(e => e.email);
-              const unreadFromPreApproved = messageHistory.filter((m: any) => 
-                preApprovedEmails.includes(m.from_email) && 
-                m.to_email === "admin@touchconnectpro.com" && 
-                !m.is_read
-              );
-              return unreadFromPreApproved.length > 0 ? (
-                <Badge className="ml-2 bg-red-500">{unreadFromPreApproved.length}</Badge>
-              ) : null;
-            })()}
           </Button>
         </div>
 
@@ -2471,73 +2452,149 @@ export default function AdminDashboard() {
               {/* Messaging Sub-tab */}
               {activeMembersSubTab === "messaging" && (
               <div>
-                {/* Admin Inbox - System Notifications */}
+                {/* Admin Inbox - ALL Messages to Admin */}
                 {(() => {
-                  const systemMessages = messageHistory.filter((m: any) => 
+                  const allMessagesToAdmin = messageHistory.filter((m: any) => 
                     m.to_email === "admin@touchconnectpro.com" && 
-                    (m.from_email === "system@touchconnectpro.com" || m.from_name === "System")
-                  );
-                  const unreadSystemMessages = systemMessages.filter((m: any) => !m.is_read);
+                    m.from_email !== "admin@touchconnectpro.com"
+                  ).sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
                   
-                  if (systemMessages.length === 0) return null;
+                  const unreadMessages = allMessagesToAdmin.filter((m: any) => !m.is_read);
+                  
+                  const getSenderType = (email: string): string => {
+                    if (email === "system@touchconnectpro.com") return "System";
+                    const entrepreneur = entrepreneurApplications.find(e => e.email === email);
+                    if (entrepreneur) {
+                      if (entrepreneur.status === "pre-approved") return "Pre-Approved";
+                      return "Entrepreneur";
+                    }
+                    if (mentorApplications.find(m => m.email === email)) return "Mentor";
+                    if (coachApplications.find(c => c.email === email)) return "Coach";
+                    if (investorApplications.find(i => i.email === email)) return "Investor";
+                    return "Member";
+                  };
+                  
+                  const getBadgeColor = (type: string): string => {
+                    switch(type) {
+                      case "System": return "bg-cyan-500";
+                      case "Pre-Approved": return "bg-amber-500";
+                      case "Entrepreneur": return "bg-emerald-500";
+                      case "Mentor": return "bg-blue-500";
+                      case "Coach": return "bg-purple-500";
+                      case "Investor": return "bg-orange-500";
+                      default: return "bg-slate-500";
+                    }
+                  };
                   
                   return (
-                    <div className="mb-6">
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                        <Mail className="h-5 w-5 text-cyan-600" />
-                        Admin Inbox - System Notifications
-                        {unreadSystemMessages.length > 0 && (
+                    <div className="mb-8">
+                      <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                        <Mail className="h-5 w-5 text-purple-600" />
+                        Inbox - All Messages
+                        {unreadMessages.length > 0 && (
                           <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">
-                            {unreadSystemMessages.length} New
+                            {unreadMessages.length} Unread
                           </span>
                         )}
                       </h3>
-                      <div className="space-y-3">
-                        {systemMessages.map((msg: any, idx: number) => (
-                          <Card key={`system-msg-${idx}`} className={`border-l-4 ${msg.is_read ? "border-l-slate-300" : "border-l-cyan-500"}`}>
-                            <CardContent className="pt-4 pb-4">
-                              <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-xs font-semibold text-cyan-600 uppercase">System Notification</span>
-                                    {!msg.is_read && (
-                                      <Badge className="bg-cyan-500 text-xs">Unread</Badge>
-                                    )}
+                      <p className="text-sm text-muted-foreground mb-4">View and respond to all messages sent to admin</p>
+                      
+                      {allMessagesToAdmin.length === 0 ? (
+                        <Card>
+                          <CardContent className="text-center py-8">
+                            <Mail className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                            <p className="text-muted-foreground">No messages received yet</p>
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="space-y-3">
+                          {allMessagesToAdmin.map((msg: any, idx: number) => {
+                            const senderType = getSenderType(msg.from_email);
+                            const entrepreneur = entrepreneurApplications.find(e => e.email === msg.from_email);
+                            const mentor = mentorApplications.find(m => m.email === msg.from_email);
+                            const coach = coachApplications.find(c => c.email === msg.from_email);
+                            const investor = investorApplications.find(i => i.email === msg.from_email);
+                            const senderName = msg.from_name || entrepreneur?.fullName || mentor?.fullName || coach?.fullName || investor?.fullName || msg.from_email;
+                            
+                            return (
+                              <Card key={`inbox-msg-${msg.id}`} className={`border-l-4 ${msg.is_read ? "border-l-slate-300" : "border-l-purple-500"}`}>
+                                <CardContent className="pt-4 pb-4">
+                                  <div className="flex justify-between items-start gap-4">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                        <p className="font-semibold text-slate-900 dark:text-white">{senderName}</p>
+                                        <Badge className={getBadgeColor(senderType)}>{senderType}</Badge>
+                                        {!msg.is_read && (
+                                          <Badge className="bg-purple-600">Unread</Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-sm text-muted-foreground mb-2">{msg.from_email}</p>
+                                      {entrepreneur?.ideaName && (
+                                        <p className="text-sm text-cyan-600 dark:text-cyan-400 mb-2">Idea: {entrepreneur.ideaName}</p>
+                                      )}
+                                      <div className="mt-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                                        <p className="text-slate-700 dark:text-slate-300">{msg.message}</p>
+                                      </div>
+                                      <p className="text-xs text-muted-foreground mt-2">
+                                        {new Date(msg.created_at).toLocaleString()}
+                                      </p>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                      {!msg.is_read && (
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          onClick={async () => {
+                                            try {
+                                              const response = await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, {
+                                                method: 'PATCH',
+                                                credentials: 'include'
+                                              });
+                                              if (response.ok) {
+                                                setMessageHistory(prev => prev.map((m: any) => 
+                                                  m.id === msg.id ? {...m, is_read: true} : m
+                                                ));
+                                                toast.success("Message marked as read");
+                                              }
+                                            } catch (error) {
+                                              console.error("Failed to mark as read:", error);
+                                            }
+                                          }}
+                                          data-testid={`button-inbox-mark-read-${msg.id}`}
+                                        >
+                                          Mark as Read
+                                        </Button>
+                                      )}
+                                      {senderType !== "System" && (
+                                        <Button
+                                          size="sm"
+                                          className="bg-purple-600 hover:bg-purple-700"
+                                          onClick={() => {
+                                            const member = entrepreneur || mentor || coach || investor;
+                                            if (member) {
+                                              setSelectedMember({
+                                                id: member.id,
+                                                name: member.fullName,
+                                                email: member.email,
+                                                type: entrepreneur ? "entrepreneur" : mentor ? "mentor" : coach ? "coach" : "investor",
+                                                status: "active"
+                                              });
+                                              setShowMessageModal(true);
+                                            }
+                                          }}
+                                          data-testid={`button-inbox-reply-${msg.id}`}
+                                        >
+                                          <MessageSquare className="h-4 w-4 mr-1" /> Reply
+                                        </Button>
+                                      )}
+                                    </div>
                                   </div>
-                                  <p className="text-slate-900 dark:text-white">{msg.message}</p>
-                                  <p className="text-xs text-muted-foreground mt-2">
-                                    {new Date(msg.created_at).toLocaleString()}
-                                  </p>
-                                </div>
-                                {!msg.is_read && (
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={async () => {
-                                      try {
-                                        const response = await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, {
-                                          method: 'PATCH',
-                                          credentials: 'include'
-                                        });
-                                        if (response.ok) {
-                                          setMessageHistory(prev => prev.map((m: any) => 
-                                            m.id === msg.id ? {...m, is_read: true} : m
-                                          ));
-                                        }
-                                      } catch (error) {
-                                        console.error("Failed to mark as read:", error);
-                                      }
-                                    }}
-                                    data-testid={`button-mark-read-${idx}`}
-                                  >
-                                    Mark as Read
-                                  </Button>
-                                )}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })()}
@@ -3103,108 +3160,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Messages Tab */}
-      {activeTab === "messages" && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Messages from Pre-Approved Entrepreneurs</h2>
-          <p className="text-muted-foreground mb-6">View and respond to messages from entrepreneurs awaiting payment confirmation</p>
-          {(() => {
-            const preApprovedEntrepreneurs = entrepreneurApplications.filter(e => e.status === "pre-approved");
-            const preApprovedEmails = preApprovedEntrepreneurs.map(e => e.email);
-            const messagesFromPreApproved = messageHistory.filter((m: any) => 
-              preApprovedEmails.includes(m.from_email) && 
-              m.to_email === "admin@touchconnectpro.com"
-            ).sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-            
-            if (messagesFromPreApproved.length === 0) {
-              return (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <Mail className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                    <p className="text-muted-foreground">No messages from pre-approved entrepreneurs</p>
-                  </CardContent>
-                </Card>
-              );
-            }
-            
-            return (
-              <div className="grid gap-4">
-                {messagesFromPreApproved.map((msg: any) => {
-                  const entrepreneur = preApprovedEntrepreneurs.find(e => e.email === msg.from_email);
-                  return (
-                    <Card key={msg.id} className={`border-l-4 ${msg.is_read ? 'border-l-slate-300' : 'border-l-purple-500'}`}>
-                      <CardContent className="pt-6">
-                        <div className="flex justify-between items-start gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <p className="font-semibold text-slate-900 dark:text-white">{msg.from_name || entrepreneur?.fullName || 'Unknown'}</p>
-                              <Badge className={msg.is_read ? 'bg-slate-400' : 'bg-purple-600'}>
-                                {msg.is_read ? 'Read' : 'Unread'}
-                              </Badge>
-                              <Badge className="bg-amber-500">Pre-Approved</Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-2">{msg.from_email}</p>
-                            {entrepreneur?.ideaName && (
-                              <p className="text-sm text-cyan-600 dark:text-cyan-400 mb-2">Idea: {entrepreneur.ideaName}</p>
-                            )}
-                            <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                              <p className="text-slate-700 dark:text-slate-300">{msg.message}</p>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-2">{new Date(msg.created_at).toLocaleString()}</p>
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            {!msg.is_read && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={async () => {
-                                  try {
-                                    await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PATCH" });
-                                    const messagesResponse = await fetch(`${API_BASE_URL}/api/messages`);
-                                    if (messagesResponse.ok) {
-                                      const messagesData = await messagesResponse.json();
-                                      setMessageHistory(messagesData.messages || []);
-                                    }
-                                    toast.success("Message marked as read");
-                                  } catch (err) {
-                                    console.error("Error marking message as read:", err);
-                                  }
-                                }}
-                                data-testid={`button-mark-read-${msg.id}`}
-                              >
-                                Mark as Read
-                              </Button>
-                            )}
-                            <Button
-                              size="sm"
-                              className="bg-purple-600 hover:bg-purple-700"
-                              onClick={() => {
-                                if (entrepreneur) {
-                                  setSelectedMember({
-                                    id: entrepreneur.id,
-                                    name: entrepreneur.fullName,
-                                    email: entrepreneur.email,
-                                    type: "entrepreneur",
-                                    status: "active"
-                                  });
-                                  setShowMessageModal(true);
-                                }
-                              }}
-                              data-testid={`button-reply-${msg.id}`}
-                            >
-                              <MessageSquare className="h-4 w-4 mr-1" /> Reply
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            );
-          })()}
-        </div>
-      )}
 
       {/* Rating Link Modal */}
       {showRatingLinkModal && selectedCoachForRating && (
