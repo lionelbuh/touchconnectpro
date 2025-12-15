@@ -2017,12 +2017,68 @@ export default function DashboardEntrepreneur() {
                       <div>
                         <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Profile Picture</label>
                         <div className="flex items-center gap-4">
-                          <div className="w-20 h-20 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-2xl">
-                            {profileData.profileImage ? "📷" : "👤"}
+                          <div className="w-20 h-20 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-2xl overflow-hidden">
+                            {profileData.profileImage ? (
+                              <img src={profileData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                            ) : "👤"}
                           </div>
-                          <Button variant="outline" className="border-slate-300" data-testid="button-upload-photo">
-                            Upload Photo
-                          </Button>
+                          <div className="flex flex-col gap-2">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              id="profile-upload"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const supabase = getSupabase();
+                                  if (!supabase) {
+                                    toast.error("Storage not available");
+                                    return;
+                                  }
+                                  const fileName = `profile_${Date.now()}_${file.name}`;
+                                  const { data, error } = await supabase.storage
+                                    .from("profile-images")
+                                    .upload(fileName, file, { upsert: true });
+                                  if (error) {
+                                    console.error("Upload error:", error);
+                                    toast.error("Failed to upload image. Using local preview.");
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => {
+                                      setProfileData({ ...profileData, profileImage: reader.result as string });
+                                    };
+                                    reader.readAsDataURL(file);
+                                  } else {
+                                    const { data: urlData } = supabase.storage
+                                      .from("profile-images")
+                                      .getPublicUrl(fileName);
+                                    setProfileData({ ...profileData, profileImage: urlData.publicUrl });
+                                    toast.success("Image uploaded!");
+                                  }
+                                }
+                              }}
+                              data-testid="input-profile-image"
+                            />
+                            <Button 
+                              variant="outline" 
+                              className="border-slate-300"
+                              onClick={() => document.getElementById("profile-upload")?.click()}
+                              data-testid="button-upload-photo"
+                            >
+                              Upload Photo
+                            </Button>
+                            {profileData.profileImage && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                className="text-red-500 hover:text-red-600"
+                                onClick={() => setProfileData({ ...profileData, profileImage: null })}
+                                data-testid="button-remove-photo"
+                              >
+                                Remove
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -2037,14 +2093,15 @@ export default function DashboardEntrepreneur() {
                       </div>
 
                       <div>
-                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Email Address *</label>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Email Address</label>
                         <Input
                           type="email"
                           value={profileData.email}
-                          onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                          className="bg-slate-50 dark:bg-slate-800/50"
+                          disabled
+                          className="bg-slate-100 dark:bg-slate-800/70 text-slate-500 cursor-not-allowed"
                           data-testid="input-profile-email"
                         />
+                        <p className="text-xs text-muted-foreground mt-1">Email cannot be changed</p>
                       </div>
 
                       <div>
@@ -2091,7 +2148,31 @@ export default function DashboardEntrepreneur() {
                         </Button>
                         <Button 
                           className="flex-1 bg-cyan-600 hover:bg-cyan-700"
-                          onClick={() => setIsEditingProfile(false)}
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(`${API_BASE_URL}/api/entrepreneurs/profile/${encodeURIComponent(profileData.email)}`, {
+                                method: "PUT",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  fullName: profileData.fullName,
+                                  country: profileData.country,
+                                  bio: profileData.bio,
+                                  linkedIn: profileData.linkedIn,
+                                  profileImage: profileData.profileImage
+                                })
+                              });
+                              if (response.ok) {
+                                toast.success("Profile updated successfully!");
+                                setIsEditingProfile(false);
+                              } else {
+                                const errorData = await response.json();
+                                toast.error(errorData.error || "Failed to update profile");
+                              }
+                            } catch (err) {
+                              console.error("Error updating profile:", err);
+                              toast.error("Failed to update profile");
+                            }
+                          }}
                           data-testid="button-save-profile"
                         >
                           Save Changes
@@ -2104,8 +2185,10 @@ export default function DashboardEntrepreneur() {
                     <Card className="border-cyan-200 dark:border-cyan-900/30">
                       <CardContent className="pt-6">
                         <div className="flex gap-6">
-                          <div className="w-24 h-24 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-5xl flex-shrink-0">
-                            {profileData.profileImage ? "📷" : "👤"}
+                          <div className="w-24 h-24 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-5xl flex-shrink-0 overflow-hidden">
+                            {profileData.profileImage ? (
+                              <img src={profileData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                            ) : "👤"}
                           </div>
                           <div className="flex-1 space-y-3">
                             <div>

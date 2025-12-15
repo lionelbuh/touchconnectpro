@@ -681,6 +681,65 @@ export async function registerRoutes(
     }
   });
 
+  // Update entrepreneur profile by email
+  app.put("/api/entrepreneurs/profile/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { email } = req.params;
+      const decodedEmail = decodeURIComponent(email);
+      const { fullName, country, bio, linkedIn, profileImage } = req.body;
+
+      console.log("[PUT /api/entrepreneurs/profile/:email] Updating profile for:", decodedEmail);
+
+      // First fetch the current data to merge with updates
+      const { data: currentData, error: fetchError } = await (client
+        .from("ideas")
+        .select("data")
+        .eq("entrepreneur_email", decodedEmail)
+        .single() as any);
+
+      if (fetchError) {
+        console.error("[PUT /api/entrepreneurs/profile/:email] Fetch error:", fetchError);
+        return res.status(400).json({ error: fetchError.message });
+      }
+
+      // Merge the profile updates into the existing data object
+      const updatedData = {
+        ...currentData?.data,
+        fullName: fullName,
+        country: country,
+        bio: bio || "",
+        linkedinWebsite: linkedIn || ""
+      };
+
+      // Update the ideas table with merged data
+      const { data, error } = await (client
+        .from("ideas")
+        .update({
+          entrepreneur_name: fullName,
+          linkedin_profile: linkedIn,
+          profile_image: profileImage,
+          data: updatedData
+        } as any)
+        .eq("entrepreneur_email", decodedEmail)
+        .select() as any);
+
+      if (error) {
+        console.error("[PUT /api/entrepreneurs/profile/:email] Update error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, entrepreneur: data?.[0] });
+    } catch (error: any) {
+      console.error("[PUT /api/entrepreneurs/profile/:email] Exception:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Save mentor application
   app.post("/api/mentors", async (req, res) => {
     console.log("[POST /api/mentors] Called");

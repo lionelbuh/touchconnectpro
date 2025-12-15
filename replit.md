@@ -12,6 +12,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Session)
 
+**Entrepreneur Edit Profile (December 15, 2025):**
+- ✅ Made email field read-only with "Email cannot be changed" helper text
+- ✅ Added profile picture upload using Supabase Storage
+- ✅ Base64 fallback if storage upload fails
+- ✅ Save button now persists changes to database via API
+- ✅ Profile image displays in both edit and view modes
+- ✅ API endpoint: PUT /api/entrepreneurs/profile/:email
+- ✅ Updates ideas.data JSONB with merged profile fields
+- ⚠️ **Supabase Requirement**: Add `profile_image` (text) column to `ideas` table. Create "profile-images" bucket in Supabase Storage with public access.
+
 **Admin Dashboard - Messages Tab (December 15, 2025):**
 - ✅ Added new "Messages" tab to admin dashboard
 - ✅ Shows messages specifically from pre-approved entrepreneurs awaiting payment
