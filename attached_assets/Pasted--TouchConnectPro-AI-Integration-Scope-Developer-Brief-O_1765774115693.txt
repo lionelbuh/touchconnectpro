@@ -1,0 +1,184 @@
+📄 TouchConnectPro — AI Integration Scope (Developer Brief)
+🎯 Objective
+
+All forms and pages already exist.
+The only missing piece is to connect AI services at two specific steps:
+
+AI Review of the 43 answers (rephrasing / clarity / spelling)
+
+AI-generated Business Plan draft based on the finalized answers
+
+No UI redesign, no new forms, no new screens are required.
+
+✅ WHAT IS ALREADY DONE (DO NOT CHANGE)
+Step 1 — Entrepreneur Information
+
+Basic entrepreneur profile form
+
+❌ No AI involved
+
+User clicks Next
+
+Step 2 — “Tell Us About Your Idea”
+
+43 predefined questions
+
+User answers in free text
+
+Data is already captured
+
+User clicks Next: AI Review
+
+Step 3 — “AI Review” (UI already exists)
+
+Page already designed
+
+Inputs already editable
+
+❌ AI logic NOT connected yet
+
+Step 4 — “Business Plan” (UI already exists)
+
+Final screen
+
+❌ AI logic NOT connected yet
+
+🧠 WHAT NEEDS TO BE DONE (AI ONLY)
+🔹 AI Use Case #1 — Rephrase & Clarify Answers (Step 3)
+Trigger:
+
+User clicks “Next: AI Review” at the end of Step 2.
+
+AI responsibilities:
+
+Read all 43 answers
+
+Correct spelling & grammar
+
+Rephrase for clarity
+
+Keep the original meaning
+
+Professional / neutral tone
+
+One output per question
+
+Output:
+
+Same 43 questions
+
+Rewritten answers
+
+Returned as JSON
+
+Displayed in the AI Review screen
+
+User can manually edit AI answers before continuing
+
+Technical implementation:
+
+Supabase Edge Function:
+
+POST /functions/v1/rephrase-answers
+
+🔹 AI Use Case #2 — Business Plan Draft (Step 4)
+Trigger:
+
+User clicks Next / Generate Business Plan from the AI Review screen.
+
+Input:
+
+Final version of the 43 answers
+
+(including any user edits to the AI output)
+
+AI responsibilities:
+
+Generate a simple, structured business plan draft:
+
+Sections:
+
+Executive Summary
+
+Problem
+
+Solution
+
+Target Market
+
+Value Proposition
+
+Business Model
+
+Competition
+
+Go-To-Market Strategy
+
+High-level Financial Projection
+
+Next Steps (90-day roadmap)
+
+Output:
+
+Plain text or formatted text
+
+Displayed in the Business Plan screen
+
+Technical implementation:
+
+Supabase Edge Function:
+
+POST /functions/v1/generate-plan
+
+🏗 TECHNICAL CONSTRAINTS (IMPORTANT)
+✔ Use Supabase Edge Functions
+
+JavaScript / TypeScript (Deno)
+
+NOT PostgreSQL Functions
+
+NOT plpgsql
+
+✔ Store OpenAI key in:
+Supabase → Project Settings → Configuration → Secrets
+OPENAI_API_KEY
+
+✔ Frontend (Render) only calls backend functions
+
+No OpenAI key in frontend
+
+No AI logic in UI
+
+🔄 DATA FLOW SUMMARY
+Step 2 (43 answers)
+        ↓
+POST /rephrase-answers
+        ↓
+Step 3 (AI Review + user edits)
+        ↓
+POST /generate-plan
+        ↓
+Step 4 (AI Business Plan draft)
+
+✅ WHAT THE DEVELOPER DOES NOT NEED TO BUILD
+
+❌ No forms
+❌ No UI
+❌ No database schema changes (unless saving results later)
+❌ No auth changes
+
+Only:
+✔️ 2 Edge Functions
+✔️ 2 frontend POST calls
+
+🟢 Definition of “Done”
+
+AI Review screen automatically shows rewritten answers
+
+User can edit AI answers
+
+Business Plan page displays AI-generated plan
+
+OpenAI API key securely stored
+
+No AI logic in frontend
