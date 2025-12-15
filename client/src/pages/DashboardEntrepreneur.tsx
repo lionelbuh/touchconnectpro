@@ -577,6 +577,7 @@ export default function DashboardEntrepreneur() {
   };
 
   const generateAIEnhancedAnswers = async () => {
+    console.log("[AI ENHANCE] Button clicked, starting AI enhancement...");
     setIsGeneratingAI(true);
     try {
       const answers: Record<string, string> = {};
@@ -589,17 +590,25 @@ export default function DashboardEntrepreneur() {
         });
       });
 
+      console.log("[AI ENHANCE] Sending", Object.keys(answers).length, "answers to API");
+      console.log("[AI ENHANCE] API URL:", `${API_BASE_URL}/api/ai/rephrase`);
+      
       const response = await fetch(`${API_BASE_URL}/api/ai/rephrase`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answers })
       });
 
+      console.log("[AI ENHANCE] Response status:", response.status);
+
       if (!response.ok) {
+        const errorData = await response.text();
+        console.error("[AI ENHANCE] Error response:", errorData);
         throw new Error("Failed to enhance answers");
       }
 
       const data = await response.json();
+      console.log("[AI ENHANCE] Received enhanced data for", Object.keys(data.answers || {}).length, "answers");
       
       const enhanced: any = {};
       Object.keys(data.answers).forEach((key) => {
@@ -613,8 +622,9 @@ export default function DashboardEntrepreneur() {
       setAiEnhancedData(enhanced);
       setShowAIReview(true);
       window.scrollTo(0, 0);
+      console.log("[AI ENHANCE] Success! Showing AI review page");
     } catch (error: any) {
-      console.error("AI enhancement error:", error);
+      console.error("[AI ENHANCE] Error:", error);
       toast.error("Failed to enhance answers with AI. Please try again.");
     } finally {
       setIsGeneratingAI(false);
