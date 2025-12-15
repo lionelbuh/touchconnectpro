@@ -121,6 +121,7 @@ export default function BecomeaEntrepreneur() {
     successMetrics: ""
   });
   const [showingBusinessPlan, setShowingBusinessPlan] = useState(false);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
 
   const [formData, setFormData] = useState({
     // Step 0: Basic Info
@@ -232,11 +233,50 @@ export default function BecomeaEntrepreneur() {
     }
   };
 
-  const handleGenerateAiReview = () => {
-    const review = generateAIReview(formData);
-    setAiReview(review);
-    setEditedReview(review);
-    setShowingAiReview(true);
+  const handleGenerateAiReview = async () => {
+    setIsLoadingAI(true);
+    try {
+      console.log("[AI REPHRASE] Calling API...");
+      const answers: Record<string, string> = {};
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value && typeof value === 'string' && value.trim() && 
+            !['fullName', 'email', 'linkedin', 'country', 'state'].includes(key)) {
+          answers[key] = value;
+        }
+      });
+
+      const response = await fetch(`${API_BASE_URL}/api/ai/rephrase`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers })
+      });
+
+      if (!response.ok) {
+        throw new Error("AI service unavailable");
+      }
+
+      const data = await response.json();
+      console.log("[AI REPHRASE] Success - received", Object.keys(data.answers || {}).length, "enhanced answers");
+      
+      const review: Record<string, string> = {};
+      Object.keys(data.answers).forEach((key) => {
+        review[key] = data.answers[key].aiEnhanced;
+      });
+
+      setAiReview(review);
+      setEditedReview(review);
+      setShowingAiReview(true);
+      toast.success("AI has enhanced your answers!");
+    } catch (error: any) {
+      console.error("[AI REPHRASE] Error:", error);
+      toast.error("AI enhancement failed. Using your original answers.");
+      const review = generateAIReview(formData);
+      setAiReview(review);
+      setEditedReview(review);
+      setShowingAiReview(true);
+    } finally {
+      setIsLoadingAI(false);
+    }
   };
 
   const handleEditReviewField = (field: string, value: string) => {
@@ -320,11 +360,64 @@ export default function BecomeaEntrepreneur() {
     }
   };
 
-  const handleGenerateBusinessPlan = () => {
-    const plan = generateBusinessPlan(formData);
-    setBusinessPlanDraft(plan);
-    setEditedBusinessPlan(plan);
-    setShowingBusinessPlan(true);
+  const handleGenerateBusinessPlan = async () => {
+    setIsLoadingAI(true);
+    try {
+      console.log("[AI BUSINESS PLAN] Calling API...");
+      const answers: Record<string, string> = {};
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value && typeof value === 'string' && value.trim()) {
+          answers[key] = value;
+        }
+      });
+      Object.entries(editedReview).forEach(([key, value]) => {
+        if (value && typeof value === 'string') {
+          answers[key] = value;
+        }
+      });
+
+      const response = await fetch(`${API_BASE_URL}/api/ai/generate-plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers })
+      });
+
+      if (!response.ok) {
+        throw new Error("AI service unavailable");
+      }
+
+      const aiPlan = await response.json();
+      console.log("[AI BUSINESS PLAN] Success - generated plan");
+      
+      // Map AI response keys to expected frontend keys
+      const plan = {
+        executiveSummary: aiPlan.executiveSummary || "",
+        problemStatement: aiPlan.problemStatement || "",
+        solution: aiPlan.solution || "",
+        targetMarket: aiPlan.targetMarket || "",
+        marketSize: aiPlan.marketSize || "",
+        revenueModel: aiPlan.revenue || aiPlan.revenueModel || "",
+        competitiveAdvantage: aiPlan.competitiveAdvantage || "",
+        roadmap12Month: aiPlan.roadmap || aiPlan.roadmap12Month || "",
+        fundingRequirements: aiPlan.fundingNeeds || aiPlan.fundingRequirements || "",
+        risksAndMitigation: aiPlan.risks || aiPlan.risksAndMitigation || "",
+        successMetrics: aiPlan.success || aiPlan.successMetrics || ""
+      };
+      
+      setBusinessPlanDraft(plan);
+      setEditedBusinessPlan(plan);
+      setShowingBusinessPlan(true);
+      toast.success("AI has generated your business plan!");
+    } catch (error: any) {
+      console.error("[AI BUSINESS PLAN] Error:", error);
+      toast.error("Business plan generation failed. Using template.");
+      const plan = generateBusinessPlan(formData);
+      setBusinessPlanDraft(plan);
+      setEditedBusinessPlan(plan);
+      setShowingBusinessPlan(true);
+    } finally {
+      setIsLoadingAI(false);
+    }
   };
 
   const handleEditBusinessPlan = () => {
