@@ -287,15 +287,73 @@ export default function BecomeaEntrepreneur() {
     setEditedBusinessPlan((prev: any) => ({ ...prev, [field]: value }));
   };
 
-  const handleApproveIdeaAndContinue = () => {
+  const handleApproveIdeaAndContinue = async () => {
     setShowingAiReview(false);
-    const plan = generateBusinessPlan(formData);
-    setBusinessPlanDraft(plan);
-    setEditedBusinessPlan(plan);
-    setShowingBusinessPlan(true);
-    setTimeout(() => {
-      window.scrollTo({ top: 1150, behavior: 'smooth' });
-    }, 250);
+    setIsLoadingAI(true);
+    
+    try {
+      console.log("[AI BUSINESS PLAN] Calling API with AI-enhanced answers...");
+      // Use the AI-enhanced answers (editedReview) for the business plan
+      const answers: Record<string, string> = {};
+      // Include basic info from formData
+      ['fullName', 'email', 'linkedin', 'country', 'state'].forEach(key => {
+        if (formData[key as keyof typeof formData]) {
+          answers[key] = formData[key as keyof typeof formData];
+        }
+      });
+      // Use AI-enhanced answers from editedReview
+      Object.entries(editedReview).forEach(([key, value]) => {
+        if (value && typeof value === 'string') {
+          answers[key] = value;
+        }
+      });
+
+      const response = await fetch(`${API_BASE_URL}/api/ai/generate-plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers })
+      });
+
+      if (!response.ok) {
+        throw new Error("AI service unavailable");
+      }
+
+      const aiPlan = await response.json();
+      console.log("[AI BUSINESS PLAN] Success - generated plan from AI-enhanced answers");
+      
+      // Map AI response keys to expected frontend keys
+      const plan = {
+        executiveSummary: aiPlan.executiveSummary || "",
+        problemStatement: aiPlan.problemStatement || "",
+        solution: aiPlan.solution || "",
+        targetMarket: aiPlan.targetMarket || "",
+        marketSize: aiPlan.marketSize || "",
+        revenueModel: aiPlan.revenue || aiPlan.revenueModel || "",
+        competitiveAdvantage: aiPlan.competitiveAdvantage || "",
+        roadmap12Month: aiPlan.roadmap || aiPlan.roadmap12Month || "",
+        fundingRequirements: aiPlan.fundingNeeds || aiPlan.fundingRequirements || "",
+        risksAndMitigation: aiPlan.risks || aiPlan.risksAndMitigation || "",
+        successMetrics: aiPlan.success || aiPlan.successMetrics || ""
+      };
+      
+      setBusinessPlanDraft(plan);
+      setEditedBusinessPlan(plan);
+      setShowingBusinessPlan(true);
+      toast.success("AI has generated your business plan!");
+    } catch (error: any) {
+      console.error("[AI BUSINESS PLAN] Error:", error);
+      toast.error("Business plan generation failed. Using template.");
+      // Fallback: use AI-enhanced answers with template
+      const plan = generateBusinessPlan(editedReview);
+      setBusinessPlanDraft(plan);
+      setEditedBusinessPlan(plan);
+      setShowingBusinessPlan(true);
+    } finally {
+      setIsLoadingAI(false);
+      setTimeout(() => {
+        window.scrollTo({ top: 1150, behavior: 'smooth' });
+      }, 250);
+    }
   };
 
   const handleSubmitApplication = async () => {
@@ -716,12 +774,12 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                         <Sparkles className="h-5 w-5 text-cyan-500 absolute -top-1 -right-1 animate-pulse" />
                       </div>
                       <div className="text-center space-y-2">
-                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">AI is reviewing your answers</h3>
-                        <p className="text-slate-600 dark:text-slate-400">This usually takes 15-30 seconds. Please be patient while our AI enhances your responses.</p>
+                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">AI is working on your content</h3>
+                        <p className="text-slate-600 dark:text-slate-400">This usually takes 15-30 seconds. Please be patient while our AI processes your information.</p>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-slate-500">
                         <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                        <span>Processing your 43 answers...</span>
+                        <span>Generating professional content...</span>
                       </div>
                     </div>
                   </DialogContent>
