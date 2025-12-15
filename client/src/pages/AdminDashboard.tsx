@@ -2577,8 +2577,7 @@ export default function AdminDashboard() {
                                           onClick={async () => {
                                             try {
                                               const response = await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, {
-                                                method: 'PATCH',
-                                                credentials: 'include'
+                                                method: 'PATCH'
                                               });
                                               if (response.ok) {
                                                 const messagesResponse = await fetch(`${API_BASE_URL}/api/messages`);
