@@ -1568,6 +1568,59 @@ export async function registerRoutes(
     }
   });
 
+  // Get all coaches (for admin)
+  app.get("/api/coaches", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { data, error } = await (client
+        .from("coach_applications")
+        .select("*")
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[GET /api/coaches] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json(data || []);
+    } catch (error: any) {
+      console.error("[GET /api/coaches] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get approved coaches only (for entrepreneur dashboard)
+  app.get("/api/coaches/approved", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { data, error } = await (client
+        .from("coach_applications")
+        .select("*")
+        .eq("status", "approved")
+        .eq("is_disabled", false)
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[GET /api/coaches/approved] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      console.log("[GET /api/coaches/approved] Returning", data?.length || 0, "coaches");
+      return res.json(data || []);
+    } catch (error: any) {
+      console.error("[GET /api/coaches/approved] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Toggle coach disabled status
   app.patch("/api/coaches/:id/toggle-disabled", async (req, res) => {
     try {
@@ -1806,6 +1859,7 @@ export async function registerRoutes(
       }
 
       const { coachId } = req.params;
+      console.log("[GET /api/coach-ratings/:coachId/reviews] Fetching reviews for coach ID:", coachId);
 
       const { data, error } = await (client
         .from("coach_ratings")
@@ -1818,6 +1872,7 @@ export async function registerRoutes(
         return res.status(400).json({ error: error.message });
       }
 
+      console.log("[GET /api/coach-ratings/:coachId/reviews] Found", data?.length || 0, "reviews for coach ID:", coachId);
       // Return reviews without email addresses for privacy
       return res.json({ reviews: data || [] });
     } catch (error: any) {
