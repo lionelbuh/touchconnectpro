@@ -1328,6 +1328,31 @@ app.get("/api/coach-ratings/:coachId", async (req, res) => {
   }
 });
 
+// Get reviews for a specific coach
+app.get("/api/coach-ratings/:coachId/reviews", async (req, res) => {
+  try {
+    const { coachId } = req.params;
+    console.log("[GET /api/coach-ratings/:coachId/reviews] Fetching reviews for coach ID:", coachId);
+
+    const { data, error } = await supabase
+      .from("coach_ratings")
+      .select("id, rating, review, rater_email, created_at")
+      .eq("coach_id", coachId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[GET /api/coach-ratings/:coachId/reviews] Error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log("[GET /api/coach-ratings/:coachId/reviews] Found", data?.length || 0, "reviews for coach ID:", coachId);
+    return res.json({ reviews: data || [] });
+  } catch (error) {
+    console.error("[GET /api/coach-ratings/:coachId/reviews] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // Get all ratings for all coaches (for displaying on coach cards)
 app.get("/api/coach-ratings", async (req, res) => {
   try {
