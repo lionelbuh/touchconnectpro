@@ -3220,18 +3220,25 @@ export default function AdminDashboard() {
               ) : (
                 coachReviews.map((review: any) => (
                   <div key={review.id} className="border-b pb-4 last:border-b-0 last:pb-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`h-4 w-4 ${star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'}`}
-                          />
-                        ))}
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`h-4 w-4 ${star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'}`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(review.created_at).toLocaleDateString()}
+                        </span>
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(review.created_at).toLocaleDateString()}
-                      </span>
+                      {review.rater_email && (
+                        <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
+                          {review.rater_email}
+                        </span>
+                      )}
                     </div>
                     {review.review ? (
                       <p className="text-sm text-slate-700 dark:text-slate-300">{review.review}</p>

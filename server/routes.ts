@@ -1863,7 +1863,7 @@ export async function registerRoutes(
 
       const { data, error } = await (client
         .from("coach_ratings")
-        .select("id, rating, review, created_at")
+        .select("id, rating, review, rater_email, created_at")
         .eq("coach_id", coachId)
         .order("created_at", { ascending: false }) as any);
 
