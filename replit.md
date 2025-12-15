@@ -12,6 +12,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Session)
 
+**Admin Dashboard - Messages Tab (December 15, 2025):**
+- ✅ Added new "Messages" tab to admin dashboard
+- ✅ Shows messages specifically from pre-approved entrepreneurs awaiting payment
+- ✅ Displays unread message count badge on tab button
+- ✅ Each message shows sender name, email, idea name, read/unread status
+- ✅ "Mark as Read" button to update message status
+- ✅ "Reply" button opens existing conversation modal
+- ✅ Messages sorted by date (newest first)
+- ⚠️ **Supabase Requirement**: The `messages` table must have an `is_read` (boolean, default false) column for read status tracking
+
 **Coach Enhancements (December 14, 2025):**
 - ✅ Added mandatory Bio field to coach application form (textarea for self-introduction)
 - ✅ Added Specialization Tags with tag-style input (add/remove tags like "eCommerce", "Marketing")

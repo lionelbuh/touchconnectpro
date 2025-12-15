@@ -89,7 +89,7 @@ interface User {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings">("approvals");
+  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings" | "messages">("approvals");
   const [activeMembersSubTab, setActiveMembersSubTab] = useState<"portfolio" | "messaging" | "management">("portfolio");
   const [activeApprovalsSubTab, setActiveApprovalsSubTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
   const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled">("entrepreneurs");
@@ -811,6 +811,25 @@ export default function AdminDashboard() {
             data-testid="button-meetings-tab"
           >
             <Calendar className="mr-2 h-4 w-4" /> Meetings
+          </Button>
+          <Button 
+            variant={activeTab === "messages" ? "default" : "outline"}
+            onClick={() => setActiveTab("messages")}
+            className={activeTab === "messages" ? "bg-purple-600 hover:bg-purple-700" : ""}
+            data-testid="button-messages-tab"
+          >
+            <Mail className="mr-2 h-4 w-4" /> Messages
+            {(() => {
+              const preApprovedEmails = entrepreneurApplications.filter(e => e.status === "pre-approved").map(e => e.email);
+              const unreadFromPreApproved = messageHistory.filter((m: any) => 
+                preApprovedEmails.includes(m.from_email) && 
+                m.to_email === "admin@touchconnectpro.com" && 
+                !m.is_read
+              );
+              return unreadFromPreApproved.length > 0 ? (
+                <Badge className="ml-2 bg-red-500">{unreadFromPreApproved.length}</Badge>
+              ) : null;
+            })()}
           </Button>
         </div>
 
@@ -3081,6 +3100,109 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           )}
+        </div>
+      )}
+
+      {/* Messages Tab */}
+      {activeTab === "messages" && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Messages from Pre-Approved Entrepreneurs</h2>
+          <p className="text-muted-foreground mb-6">View and respond to messages from entrepreneurs awaiting payment confirmation</p>
+          {(() => {
+            const preApprovedEntrepreneurs = entrepreneurApplications.filter(e => e.status === "pre-approved");
+            const preApprovedEmails = preApprovedEntrepreneurs.map(e => e.email);
+            const messagesFromPreApproved = messageHistory.filter((m: any) => 
+              preApprovedEmails.includes(m.from_email) && 
+              m.to_email === "admin@touchconnectpro.com"
+            ).sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            
+            if (messagesFromPreApproved.length === 0) {
+              return (
+                <Card>
+                  <CardContent className="text-center py-8">
+                    <Mail className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                    <p className="text-muted-foreground">No messages from pre-approved entrepreneurs</p>
+                  </CardContent>
+                </Card>
+              );
+            }
+            
+            return (
+              <div className="grid gap-4">
+                {messagesFromPreApproved.map((msg: any) => {
+                  const entrepreneur = preApprovedEntrepreneurs.find(e => e.email === msg.from_email);
+                  return (
+                    <Card key={msg.id} className={`border-l-4 ${msg.is_read ? 'border-l-slate-300' : 'border-l-purple-500'}`}>
+                      <CardContent className="pt-6">
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <p className="font-semibold text-slate-900 dark:text-white">{msg.from_name || entrepreneur?.fullName || 'Unknown'}</p>
+                              <Badge className={msg.is_read ? 'bg-slate-400' : 'bg-purple-600'}>
+                                {msg.is_read ? 'Read' : 'Unread'}
+                              </Badge>
+                              <Badge className="bg-amber-500">Pre-Approved</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-2">{msg.from_email}</p>
+                            {entrepreneur?.ideaName && (
+                              <p className="text-sm text-cyan-600 dark:text-cyan-400 mb-2">Idea: {entrepreneur.ideaName}</p>
+                            )}
+                            <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                              <p className="text-slate-700 dark:text-slate-300">{msg.message}</p>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2">{new Date(msg.created_at).toLocaleString()}</p>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            {!msg.is_read && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={async () => {
+                                  try {
+                                    await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PATCH" });
+                                    const messagesResponse = await fetch(`${API_BASE_URL}/api/messages`);
+                                    if (messagesResponse.ok) {
+                                      const messagesData = await messagesResponse.json();
+                                      setMessageHistory(messagesData.messages || []);
+                                    }
+                                    toast.success("Message marked as read");
+                                  } catch (err) {
+                                    console.error("Error marking message as read:", err);
+                                  }
+                                }}
+                                data-testid={`button-mark-read-${msg.id}`}
+                              >
+                                Mark as Read
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              className="bg-purple-600 hover:bg-purple-700"
+                              onClick={() => {
+                                if (entrepreneur) {
+                                  setSelectedMember({
+                                    id: entrepreneur.id,
+                                    name: entrepreneur.fullName,
+                                    email: entrepreneur.email,
+                                    type: "entrepreneur",
+                                    status: "active"
+                                  });
+                                  setShowMessageModal(true);
+                                }
+                              }}
+                              data-testid={`button-reply-${msg.id}`}
+                            >
+                              <MessageSquare className="h-4 w-4 mr-1" /> Reply
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
       )}
 
