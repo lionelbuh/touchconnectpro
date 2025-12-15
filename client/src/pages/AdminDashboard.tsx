@@ -487,7 +487,7 @@ export default function AdminDashboard() {
 
   const markMessagesAsReadByAdmin = async (memberEmail: string) => {
     const messagesToMark = messageHistory
-      .filter((m: any) => m.from_email === memberEmail && m.to_email === "admin@touchconnectpro.com" && !m.is_read);
+      .filter((m: any) => m.from_email === memberEmail && (m.to_email === "admin@touchconnectpro.com" || m.to_name === "Admin" || m.to_email?.includes("+admin")) && !m.is_read);
     
     if (messagesToMark.length > 0) {
       try {
@@ -808,9 +808,9 @@ export default function AdminDashboard() {
             data-testid="button-members-tab"
           >
             <Users className="mr-2 h-4 w-4" /> Members & Portfolios
-            {messageHistory.filter((m: any) => m.to_email === "admin@touchconnectpro.com" && !m.is_read).length > 0 && (
+            {messageHistory.filter((m: any) => (m.to_email === "admin@touchconnectpro.com" || m.to_name === "Admin" || m.to_email?.includes("+admin")) && !m.is_read).length > 0 && (
               <Badge className="ml-2 bg-red-500 text-white animate-pulse">
-                {messageHistory.filter((m: any) => m.to_email === "admin@touchconnectpro.com" && !m.is_read).length} Unread
+                {messageHistory.filter((m: any) => (m.to_email === "admin@touchconnectpro.com" || m.to_name === "Admin" || m.to_email?.includes("+admin")) && !m.is_read).length} Unread
               </Badge>
             )}
           </Button>
@@ -1531,9 +1531,9 @@ export default function AdminDashboard() {
                   data-testid="button-members-subtab-messaging"
                 >
                   <MessageSquare className="mr-2 h-4 w-4" /> Messages
-                  {messageHistory.filter((m: any) => m.to_email === "admin@touchconnectpro.com" && !m.is_read).length > 0 && (
+                  {messageHistory.filter((m: any) => (m.to_email === "admin@touchconnectpro.com" || m.to_name === "Admin" || m.to_email?.includes("+admin")) && !m.is_read).length > 0 && (
                     <span className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full animate-pulse">
-                      {messageHistory.filter((m: any) => m.to_email === "admin@touchconnectpro.com" && !m.is_read).length}
+                      {messageHistory.filter((m: any) => (m.to_email === "admin@touchconnectpro.com" || m.to_name === "Admin" || m.to_email?.includes("+admin")) && !m.is_read).length}
                     </span>
                   )}
                 </Button>
@@ -2485,8 +2485,8 @@ export default function AdminDashboard() {
                 {/* Admin Inbox - ALL Messages to Admin */}
                 {(() => {
                   const allMessagesToAdmin = messageHistory.filter((m: any) => 
-                    m.to_email === "admin@touchconnectpro.com" && 
-                    m.from_email !== "admin@touchconnectpro.com"
+                    (m.to_email === "admin@touchconnectpro.com" || m.to_name === "Admin" || m.to_email?.includes("+admin")) && 
+                    m.from_email !== "admin@touchconnectpro.com" && !m.from_email?.includes("+admin")
                   ).sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
                   
                   const unreadMessages = allMessagesToAdmin.filter((m: any) => !m.is_read);
@@ -2647,7 +2647,7 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(entrepreneurApplications.filter(app => app.status === "approved" || app.status === "pre-approved"), "fullName").map((entrepreneur, idx) => {
-                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === entrepreneur.email && m.to_email === "admin@touchconnectpro.com" && !m.is_read).length;
+                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === entrepreneur.email && (m.to_email === "admin@touchconnectpro.com" || m.to_name === "Admin" || m.to_email?.includes("+admin")) && !m.is_read).length;
                           const hasUnreadReplies = unreadReplies > 0;
                           const isPreApproved = entrepreneur.status === "pre-approved";
                           return (
@@ -2695,7 +2695,7 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(mentorApplications.filter(app => app.status === "approved"), "fullName").map((mentor, idx) => {
-                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === mentor.email && m.to_email === "admin@touchconnectpro.com" && !m.is_read).length;
+                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === mentor.email && (m.to_email === "admin@touchconnectpro.com" || m.to_name === "Admin" || m.to_email?.includes("+admin")) && !m.is_read).length;
                           const hasUnreadReplies = unreadReplies > 0;
                           return (
                           <Card key={idx} className={hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""}>
@@ -2737,7 +2737,7 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(coachApplications.filter(app => app.status === "approved"), "fullName").map((coach, idx) => {
-                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === coach.email && m.to_email === "admin@touchconnectpro.com" && !m.is_read).length;
+                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === coach.email && (m.to_email === "admin@touchconnectpro.com" || m.to_name === "Admin" || m.to_email?.includes("+admin")) && !m.is_read).length;
                           const hasUnreadReplies = unreadReplies > 0;
                           return (
                           <Card key={idx} className={hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""}>
@@ -2779,7 +2779,7 @@ export default function AdminDashboard() {
                         </Card>
                       ) : (
                         filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").map((investor, idx) => {
-                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === investor.email && m.to_email === "admin@touchconnectpro.com" && !m.is_read).length;
+                          const unreadReplies = messageHistory.filter((m: any) => m.from_email === investor.email && (m.to_email === "admin@touchconnectpro.com" || m.to_name === "Admin" || m.to_email?.includes("+admin")) && !m.is_read).length;
                           const hasUnreadReplies = unreadReplies > 0;
                           return (
                           <Card key={idx} className={hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""}>
