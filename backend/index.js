@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import crypto from "crypto";
 import Stripe from "stripe";
+import OpenAI from "openai";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,84 @@ app.get("/api/config", (req, res) => {
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY
   });
+});
+
+// OpenAI client for AI features
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// AI: Rephrase entrepreneur answers
+app.post("/api/ai/rephrase", async (req, res) => {
+  console.log("[AI REPHRASE] Processing request...");
+  try {
+    const { answers } = req.body;
+    if (!answers || typeof answers !== "object") {
+      return res.status(400).json({ error: "Invalid answers format" });
+    }
+
+    const answerEntries = Object.entries(answers).filter(([_, value]) => value && String(value).trim());
+    const batchPrompt = answerEntries.map(([key, value], index) => 
+      `Question ${index + 1} (${key}):\nOriginal: "${value}"`
+    ).join("\n\n");
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are an expert business writing assistant. Improve each answer by correcting spelling/grammar, rephrasing for clarity and professional tone, while keeping the original meaning. Keep similar length." },
+        { role: "user", content: `Improve these startup pitch answers. Return JSON where each key matches the original key with the enhanced answer.\n\n${batchPrompt}\n\nReturn ONLY valid JSON: {"key1": "enhanced answer 1", ...}` }
+      ],
+      temperature: 0.7,
+      response_format: { type: "json_object" }
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) throw new Error("No response from AI");
+
+    const enhanced = JSON.parse(content);
+    const result = { answers: {} };
+    for (const [key, original] of answerEntries) {
+      result.answers[key] = { original: original, aiEnhanced: enhanced[key] || original };
+    }
+    console.log("[AI REPHRASE] Success - processed", Object.keys(result.answers).length, "answers");
+    return res.json(result);
+  } catch (error) {
+    console.error("[AI REPHRASE ERROR]:", error.message);
+    return res.status(500).json({ error: "Failed to process answers with AI" });
+  }
+});
+
+// AI: Generate business plan from answers
+app.post("/api/ai/generate-plan", async (req, res) => {
+  console.log("[AI GENERATE PLAN] Processing request...");
+  try {
+    const { answers } = req.body;
+    if (!answers || typeof answers !== "object") {
+      return res.status(400).json({ error: "Invalid answers format" });
+    }
+
+    const answersText = Object.entries(answers)
+      .filter(([_, value]) => value && String(value).trim())
+      .map(([key, value]) => `${key}: ${value}`)
+      .join("\n");
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: "You are an expert business strategist. Generate a comprehensive, investor-ready business plan based on entrepreneur's answers. Each section should be 2-4 paragraphs with specific details." },
+        { role: "user", content: `Generate business plan from these answers:\n\n${answersText}\n\nReturn JSON with these keys:\n{"executiveSummary":"...","problemStatement":"...","solution":"...","targetMarket":"...","marketSize":"...","revenue":"...","competitiveAdvantage":"...","roadmap":"...","fundingNeeds":"...","risks":"...","success":"..."}\n\nEach field: 2-4 paragraphs. Return ONLY valid JSON.` }
+      ],
+      temperature: 0.7,
+      response_format: { type: "json_object" }
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) throw new Error("No response from AI");
+
+    console.log("[AI GENERATE PLAN] Success - generated business plan");
+    return res.json(JSON.parse(content));
+  } catch (error) {
+    console.error("[AI GENERATE PLAN ERROR]:", error.message);
+    return res.status(500).json({ error: "Failed to generate business plan with AI" });
+  }
 });
 
 const supabase = createClient(
