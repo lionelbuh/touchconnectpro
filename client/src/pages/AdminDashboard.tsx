@@ -795,6 +795,11 @@ export default function AdminDashboard() {
             data-testid="button-approvals-tab"
           >
             <Check className="mr-2 h-4 w-4" /> Approvals
+            {(pendingEntrepreneurApplications.length + pendingMentorApplications.length + pendingCoachApplications.length + pendingInvestorApplications.length) > 0 && (
+              <Badge className="ml-2 bg-red-500 text-white animate-pulse">
+                {pendingEntrepreneurApplications.length + pendingMentorApplications.length + pendingCoachApplications.length + pendingInvestorApplications.length}
+              </Badge>
+            )}
           </Button>
           <Button 
             variant={activeTab === "members" ? "default" : "outline"}
@@ -826,6 +831,11 @@ export default function AdminDashboard() {
                 data-testid="button-entrepreneurs-subtab"
               >
                 Entrepreneurs
+                {pendingEntrepreneurApplications.length > 0 && (
+                  <Badge className="ml-2 bg-red-500 text-white text-xs">
+                    {pendingEntrepreneurApplications.length}
+                  </Badge>
+                )}
               </Button>
               <Button 
                 variant={activeApprovalsSubTab === "mentors" ? "default" : "ghost"}
@@ -834,6 +844,11 @@ export default function AdminDashboard() {
                 data-testid="button-mentors-subtab"
               >
                 Mentors
+                {pendingMentorApplications.length > 0 && (
+                  <Badge className="ml-2 bg-red-500 text-white text-xs">
+                    {pendingMentorApplications.length}
+                  </Badge>
+                )}
               </Button>
               <Button 
                 variant={activeApprovalsSubTab === "coaches" ? "default" : "ghost"}
@@ -842,6 +857,11 @@ export default function AdminDashboard() {
                 data-testid="button-coaches-subtab"
               >
                 Coaches
+                {pendingCoachApplications.length > 0 && (
+                  <Badge className="ml-2 bg-red-500 text-white text-xs">
+                    {pendingCoachApplications.length}
+                  </Badge>
+                )}
               </Button>
               <Button 
                 variant={activeApprovalsSubTab === "investors" ? "default" : "ghost"}
@@ -850,6 +870,11 @@ export default function AdminDashboard() {
                 data-testid="button-investors-subtab"
               >
                 Investors
+                {pendingInvestorApplications.length > 0 && (
+                  <Badge className="ml-2 bg-red-500 text-white text-xs">
+                    {pendingInvestorApplications.length}
+                  </Badge>
+                )}
               </Button>
             </div>
 
