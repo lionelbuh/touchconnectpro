@@ -2570,41 +2570,31 @@ export default function AdminDashboard() {
                                       </p>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                      {!msg.is_read && (
-                                        <Button 
-                                          size="sm" 
-                                          variant="outline"
-                                          onClick={async () => {
-                                            try {
-                                              const response = await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, {
-                                                method: 'PATCH',
-                                                credentials: 'include'
-                                              });
-                                              if (response.ok) {
-                                                // Refetch all messages to ensure counts are accurate
-                                                const messagesResponse = await fetch(`${API_BASE_URL}/api/messages`);
-                                                if (messagesResponse.ok) {
-                                                  const messagesData = await messagesResponse.json();
-                                                  setMessageHistory(messagesData.messages || []);
-                                                }
-                                                toast.success("Message marked as read");
-                                              }
-                                            } catch (error) {
-                                              console.error("Failed to mark as read:", error);
-                                            }
-                                          }}
-                                          data-testid={`button-inbox-mark-read-${msg.id}`}
-                                        >
-                                          Mark as Read
-                                        </Button>
-                                      )}
                                       {senderType !== "System" && (
                                         <Button
                                           size="sm"
                                           className="bg-purple-600 hover:bg-purple-700"
-                                          onClick={() => {
+                                          onClick={async () => {
                                             const member = entrepreneur || mentor || coach || investor;
                                             if (member) {
+                                              // Auto-mark as read when clicking Reply
+                                              if (!msg.is_read) {
+                                                try {
+                                                  const response = await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, {
+                                                    method: 'PATCH',
+                                                    credentials: 'include'
+                                                  });
+                                                  if (response.ok) {
+                                                    const messagesResponse = await fetch(`${API_BASE_URL}/api/messages`);
+                                                    if (messagesResponse.ok) {
+                                                      const messagesData = await messagesResponse.json();
+                                                      setMessageHistory(messagesData.messages || []);
+                                                    }
+                                                  }
+                                                } catch (error) {
+                                                  console.error("Failed to mark as read:", error);
+                                                }
+                                              }
                                               setSelectedMember({
                                                 id: member.id,
                                                 name: member.fullName,
