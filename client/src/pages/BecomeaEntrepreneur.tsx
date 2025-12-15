@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Lightbulb, Mail, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { Check, Lightbulb, Mail, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, Sparkles, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -707,6 +707,26 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
           ) : (
             <Card className="border-slate-200 dark:border-slate-700 mb-16">
               <CardContent className="p-10">
+                {/* AI Loading Overlay */}
+                <Dialog open={isLoadingAI}>
+                  <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+                    <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                      <div className="relative">
+                        <Loader2 className="h-12 w-12 text-emerald-500 animate-spin" />
+                        <Sparkles className="h-5 w-5 text-cyan-500 absolute -top-1 -right-1 animate-pulse" />
+                      </div>
+                      <div className="text-center space-y-2">
+                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">AI is reviewing your answers</h3>
+                        <p className="text-slate-600 dark:text-slate-400">This usually takes 15-30 seconds. Please be patient while our AI enhances your responses.</p>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-slate-500">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <span>Processing your 43 answers...</span>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
                 {/* AI Review Screen */}
                 {showingAiReview && (
                   <div className="space-y-6" data-section="ai-review">
@@ -1279,10 +1299,19 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                         <Button
                           type="button"
                           onClick={handleNext}
-                          className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white font-semibold"
+                          disabled={isLoadingAI}
+                          className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white font-semibold disabled:opacity-50"
                           data-testid="button-entrepreneur-review"
                         >
-                          <Sparkles className="mr-2 h-4 w-4" /> Next: AI Review
+                          {isLoadingAI ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> AI is working...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="mr-2 h-4 w-4" /> Next: AI Review
+                            </>
+                          )}
                         </Button>
                       </div>
                     </form>
