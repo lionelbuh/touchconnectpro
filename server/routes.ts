@@ -838,13 +838,13 @@ export async function registerRoutes(
 
       // Merge the profile updates into the existing data object
       // linkedIn = LinkedIn profile URL (stored in linkedin_profile column)
-      // website = personal/business website (stored in data.linkedinWebsite for backwards compat)
+      // website = personal/business website (stored in data.website field)
       const updatedData = {
         ...currentData?.data,
         fullName: fullName,
         country: country,
         bio: bio || "",
-        linkedinWebsite: website || currentData?.data?.linkedinWebsite || "",
+        website: website || currentData?.data?.website || "",
         profileImage: profileImage || currentData?.data?.profileImage || ""
       };
 

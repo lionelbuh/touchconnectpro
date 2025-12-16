@@ -264,7 +264,7 @@ export default function DashboardEntrepreneur() {
               fullName: data.entrepreneur_name || prev.fullName,
               email: data.entrepreneur_email || prev.email,
               linkedIn: data.linkedin_profile || prev.linkedIn,
-              website: data.data?.linkedinWebsite || data.data?.website || prev.website,
+              website: data.data?.website || prev.website,
               bio: data.data?.fullBio || data.data?.bio || prev.bio,
               country: data.data?.country || prev.country,
               profileImage: data.data?.profileImage || prev.profileImage
