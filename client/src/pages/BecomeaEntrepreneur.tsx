@@ -864,7 +864,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                         { key: "marketSize", label: "Market Size & Opportunity" },
                         { key: "revenueModel", label: "Revenue Model & Pricing" },
                         { key: "competitiveAdvantage", label: "Competitive Advantage" },
-                        { key: "roadmap12Month", label: "12-Month Roadmap" },
+                        { key: "roadmap12Month", label: "Month Roadmap" },
                         { key: "fundingRequirements", label: "Funding Requirements" },
                         { key: "risksAndMitigation", label: "Risks & Mitigation" },
                         { key: "successMetrics", label: "Success Metrics" }

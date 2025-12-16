@@ -747,7 +747,7 @@ export default function DashboardMentor() {
                                           <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.competitiveAdvantage || 'N/A'}</p>
                                         </div>
                                         <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
-                                          <p className="font-semibold text-slate-700 dark:text-slate-300">8. 12-Month Roadmap</p>
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300">8. Month Roadmap</p>
                                           <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.roadmap12Month || 'N/A'}</p>
                                         </div>
                                         <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
@@ -790,12 +790,12 @@ export default function DashboardMentor() {
                                             { key: 'solution', label: '3. Solution' },
                                             { key: 'targetMarket', label: '4. Target Market' },
                                             { key: 'marketSize', label: '5. Market Size' },
-                                            { key: 'revenue', label: '6. Revenue Model' },
+                                            { key: 'revenueModel', label: '6. Revenue Model' },
                                             { key: 'competitiveAdvantage', label: '7. Competitive Advantage' },
-                                            { key: 'roadmap', label: '8. 12-Month Roadmap' },
-                                            { key: 'fundingNeeds', label: '9. Funding Needs' },
-                                            { key: 'risks', label: '10. Risks & Mitigation' },
-                                            { key: 'success', label: '11. Success Metrics' },
+                                            { key: 'roadmap12Month', label: '8. Month Roadmap' },
+                                            { key: 'fundingRequirements', label: '9. Funding Requirements' },
+                                            { key: 'risksAndMitigation', label: '10. Risks & Mitigation' },
+                                            { key: 'successMetrics', label: '11. Success Metrics' },
                                           ].map((section) => (
                                             <div key={section.key} className="text-sm border-b border-purple-200 dark:border-purple-800 pb-3">
                                               <p className="font-semibold text-purple-700 dark:text-purple-300">{section.label}</p>
