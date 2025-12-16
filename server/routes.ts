@@ -182,8 +182,8 @@ async function sendPaymentWelcomeEmail(email: string, fullName: string) {
   }
 }
 
-async function sendStatusEmail(email: string, fullName: string, userType: string, status: string, applicationId: string) {
-  console.log("[EMAIL] Starting email send process for:", email, "userType:", userType, "status:", status);
+async function sendStatusEmail(email: string, fullName: string, userType: string, status: string, applicationId: string, wasPreApproved: boolean = false) {
+  console.log("[EMAIL] Starting email send process for:", email, "userType:", userType, "status:", status, "wasPreApproved:", wasPreApproved);
   
   const resendData = await getResendClient();
   
@@ -202,58 +202,114 @@ async function sendStatusEmail(email: string, fullName: string, userType: string
   let subject, htmlContent;
   
   if (status === "approved") {
-    const token = await createPasswordToken(email, userType, applicationId);
-    
-    if (!token) {
-      console.error("[EMAIL] Failed to create password token for:", email);
-      return { success: false, reason: "Failed to create password token" };
+    // For entrepreneurs who were pre-approved, they already have a login - don't ask them to set password again
+    if (userType === "entrepreneur" && wasPreApproved) {
+      subject = `Congratulations! Your TouchConnectPro Membership is Now Active!`;
+      htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+            .highlight-box { background: #d1fae5; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Congratulations, ${fullName}!</h1>
+            </div>
+            <div class="content">
+              <p>Great news! Your membership to TouchConnectPro has been <strong style="color: #10b981;">fully activated</strong>!</p>
+              
+              <p>You're now an official member of our exclusive community connecting entrepreneurs with mentors, coaches, and investors.</p>
+              
+              <div class="highlight-box">
+                <p style="margin: 0;"><strong>What's Next:</strong> A mentor will be assigned to you soon to help guide your entrepreneurial journey. You'll receive a notification when your mentor is ready to connect with you.</p>
+              </div>
+              
+              <p>In the meantime, you have full access to your dashboard where you can:</p>
+              <ul>
+                <li>View and update your business plan</li>
+                <li>Explore our coach marketplace</li>
+                <li>Prepare for your upcoming mentor sessions</li>
+              </ul>
+              
+              <p style="text-align: center;">
+                <a href="${FRONTEND_URL}/login" class="button">Go to Your Dashboard</a>
+              </p>
+              
+              <p>We're excited to support your entrepreneurial journey!</p>
+              
+              <p>Best regards,<br>The TouchConnectPro Team</p>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+    } else {
+      // For other user types or direct approvals (not pre-approved first), ask them to set password
+      const token = await createPasswordToken(email, userType, applicationId);
+      
+      if (!token) {
+        console.error("[EMAIL] Failed to create password token for:", email);
+        return { success: false, reason: "Failed to create password token" };
+      }
+      
+      const setPasswordUrl = `${FRONTEND_URL}/set-password?token=${token}`;
+      
+      subject = `Welcome to TouchConnectPro - Your ${userType.charAt(0).toUpperCase() + userType.slice(1)} Application is Approved!`;
+      htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Congratulations, ${fullName}!</h1>
+            </div>
+            <div class="content">
+              <p>Great news! Your application to join TouchConnectPro as a <strong>${userType}</strong> has been <strong style="color: #10b981;">approved</strong>!</p>
+              
+              <p>You're now part of our exclusive community connecting entrepreneurs with mentors, coaches, and investors.</p>
+              
+              <p>To access your dashboard, please set up your password by clicking the button below:</p>
+              
+              <p style="text-align: center;">
+                <a href="${setPasswordUrl}" class="button">Set Up Your Password</a>
+              </p>
+              
+              <p style="font-size: 14px; color: #64748b;">This link will expire in 7 days. If you didn't apply to TouchConnectPro, please ignore this email.</p>
+              
+              <p>We're excited to have you on board!</p>
+              
+              <p>Best regards,<br>The TouchConnectPro Team</p>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
     }
-    
-    const setPasswordUrl = `${FRONTEND_URL}/set-password?token=${token}`;
-    
-    subject = `Welcome to TouchConnectPro - Your ${userType.charAt(0).toUpperCase() + userType.slice(1)} Application is Approved!`;
-    htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-          .button { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-          .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>Congratulations, ${fullName}!</h1>
-          </div>
-          <div class="content">
-            <p>Great news! Your application to join TouchConnectPro as a <strong>${userType}</strong> has been <strong style="color: #10b981;">approved</strong>!</p>
-            
-            <p>You're now part of our exclusive community connecting entrepreneurs with mentors, coaches, and investors.</p>
-            
-            <p>To access your dashboard, please set up your password by clicking the button below:</p>
-            
-            <p style="text-align: center;">
-              <a href="${setPasswordUrl}" class="button">Set Up Your Password</a>
-            </p>
-            
-            <p style="font-size: 14px; color: #64748b;">This link will expire in 7 days. If you didn't apply to TouchConnectPro, please ignore this email.</p>
-            
-            <p>We're excited to have you on board!</p>
-            
-            <p>Best regards,<br>The TouchConnectPro Team</p>
-          </div>
-          <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
   } else if (status === "pre-approved") {
     const token = await createPasswordToken(email, userType, applicationId);
     
@@ -675,16 +731,18 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Invalid status" });
       }
 
-      // Get entrepreneur email and name before updating
+      // Get entrepreneur email, name, and current status before updating
       const { data: existingData, error: fetchError } = await (client
         .from("ideas")
-        .select("entrepreneur_email, entrepreneur_name")
+        .select("entrepreneur_email, entrepreneur_name, status")
         .eq("id", id)
         .single() as any);
 
       if (fetchError) {
         return res.status(400).json({ error: fetchError.message });
       }
+
+      const previousStatus = existingData.status;
 
       const { data, error } = await (client
         .from("ideas")
@@ -696,13 +754,15 @@ export async function registerRoutes(
         return res.status(400).json({ error: error.message });
       }
 
-      // Send status email
+      // Send status email - pass wasPreApproved so approved entrepreneurs don't get password setup prompt again
+      const wasPreApproved = previousStatus === "pre-approved";
       const emailResult = await sendStatusEmail(
         existingData.entrepreneur_email,
         existingData.entrepreneur_name,
         "entrepreneur",
         status,
-        id
+        id,
+        wasPreApproved
       );
 
       return res.json({ success: true, idea: data?.[0], emailSent: emailResult.success });
