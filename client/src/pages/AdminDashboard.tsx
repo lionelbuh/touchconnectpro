@@ -286,8 +286,8 @@ export default function AdminDashboard() {
               submittedAt: idea.created_at,
               ideaReview: baseData.ideaReview || {},
               businessPlan: idea.business_plan || {},
-              linkedin: idea.linkedin_profile || baseData.linkedin || "",
-              website: baseData.website || baseData.linkedinWebsite || "",
+              linkedin: baseData.linkedin || "",
+              website: baseData.website || "",
               is_resubmitted: idea.is_resubmitted,
               is_disabled: idea.is_disabled || false
             };
