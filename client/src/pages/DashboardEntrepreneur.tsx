@@ -1981,12 +1981,12 @@ export default function DashboardEntrepreneur() {
                     { key: "solution", label: "Solution" },
                     { key: "targetMarket", label: "Target Market" },
                     { key: "marketSize", label: "Market Size & Opportunity" },
-                    { key: "revenue", label: "Revenue Model & Pricing" },
+                    { key: "revenueModel", label: "Revenue Model & Pricing" },
                     { key: "competitiveAdvantage", label: "Competitive Advantage" },
-                    { key: "roadmap", label: "12-Month Roadmap" },
-                    { key: "fundingNeeds", label: "Funding Requirements" },
-                    { key: "risks", label: "Risks & Mitigation" },
-                    { key: "success", label: "Success Metrics" }
+                    { key: "roadmap12Month", label: "12-Month Roadmap" },
+                    { key: "fundingRequirements", label: "Funding Requirements" },
+                    { key: "risksAndMitigation", label: "Risks & Mitigation" },
+                    { key: "successMetrics", label: "Success Metrics" }
                   ].map((section) => (
                     <Card key={section.key} className="border-cyan-200 dark:border-cyan-900/30">
                       <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
