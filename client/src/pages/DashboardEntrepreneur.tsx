@@ -266,11 +266,12 @@ export default function DashboardEntrepreneur() {
             }
             
             // Set profile data (including bio from application fullBio)
+            // Note: LinkedIn can be in linkedin_profile column OR data.linkedin field
             setProfileData(prev => ({
               ...prev,
               fullName: data.entrepreneur_name || prev.fullName,
               email: data.entrepreneur_email || prev.email,
-              linkedIn: data.linkedin_profile || prev.linkedIn,
+              linkedIn: data.linkedin_profile || data.data?.linkedin || prev.linkedIn,
               website: data.data?.website || prev.website,
               bio: data.data?.fullBio || data.data?.bio || prev.bio,
               country: data.data?.country || prev.country,
@@ -338,11 +339,12 @@ export default function DashboardEntrepreneur() {
                 }
                 
                 // Update profile data with fresh API data
+                // Note: LinkedIn can be in linkedin_profile column OR data.linkedin field
                 setProfileData(prev => ({
                   ...prev,
                   fullName: data.entrepreneur_name || prev.fullName,
                   email: data.entrepreneur_email || prev.email,
-                  linkedIn: data.linkedin_profile || prev.linkedIn,
+                  linkedIn: data.linkedin_profile || data.data?.linkedin || prev.linkedIn,
                   website: data.data?.website || prev.website,
                   bio: data.data?.fullBio || data.data?.bio || prev.bio,
                   country: data.data?.country || prev.country,
@@ -2321,7 +2323,7 @@ export default function DashboardEntrepreneur() {
                       </Card>
                     )}
 
-                    {(profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite || profileData.website || entrepreneurData?.data?.website) && (
+                    {(profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedin || profileData.website || entrepreneurData?.data?.website) && (
                       <Card className="border-cyan-200 dark:border-cyan-900/30">
                         <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
                           <CardTitle className="text-lg">Links</CardTitle>
@@ -2329,17 +2331,17 @@ export default function DashboardEntrepreneur() {
                         <CardContent className="pt-6 space-y-4">
                           <div>
                             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">LinkedIn</p>
-                            {(profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) ? (
+                            {(profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedin) ? (
                               <a 
-                                href={(profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite || "").startsWith('http') 
-                                  ? (profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) 
-                                  : `https://${profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite}`} 
+                                href={(profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedin || "").startsWith('http') 
+                                  ? (profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedin) 
+                                  : `https://${profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedin}`} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
                                 className="text-cyan-600 hover:text-cyan-700 break-all"
                                 data-testid="link-entrepreneur-linkedin"
                               >
-                                {profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite}
+                                {profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedin}
                               </a>
                             ) : (
                               <p className="text-slate-500 dark:text-slate-400">—</p>
