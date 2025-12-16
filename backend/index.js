@@ -2842,7 +2842,7 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
           full_name: entrepreneur.entrepreneur_name || entData.fullName || "",
           email: entrepreneur.entrepreneur_email || entData.email || "",
           linkedin: entrepreneur.linkedin_profile || entData.linkedin || entData.linkedinWebsite || "",
-          website: entData.website || "",
+          website: entData.website || entData.linkedinWebsite || "",
           business_idea: entData.ideaDescription || entData.ideaName || "",
           idea_name: entData.ideaName || "",
           country: entData.country || "",
