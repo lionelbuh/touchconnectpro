@@ -12,6 +12,27 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Session)
 
+**Public Partner API (December 16, 2025):**
+- ✅ Added public API endpoints for partners to submit applications programmatically
+- ✅ API key authentication via `x-api-key` header
+- ✅ Endpoints:
+  - POST `/api/public/applications/entrepreneurs` - Submit entrepreneur application
+  - POST `/api/public/applications/mentors` - Submit mentor application
+  - POST `/api/public/applications/coaches` - Submit coach application
+  - POST `/api/public/applications/investors` - Submit investor application
+  - GET `/api/public/applications/:id?type=<type>` - Check application status
+- ✅ Returns 201 with `applicationId` on success
+- ✅ Returns 401 for invalid/missing API key
+- ✅ Returns 409 for duplicate applications
+- ✅ Returns 400 for missing required fields
+- ⚠️ **Environment Variable Required**: Set `PARTNER_API_KEYS` (comma-separated list of valid API keys)
+
+**Entrepreneur Form - Full Bio Field (December 16, 2025):**
+- ✅ Added mandatory "Your Full Bio" textarea field after LinkedIn in Step 1
+- ✅ Field asks: who you are, what motivates you, solo or team
+- ✅ Form validation requires bio before proceeding
+- ✅ Bio is stored in `data` JSONB field as `fullBio`
+
 **Entrepreneur Edit Profile (December 15, 2025):**
 - ✅ Made email field read-only with "Email cannot be changed" helper text
 - ✅ Added profile picture upload using Supabase Storage
