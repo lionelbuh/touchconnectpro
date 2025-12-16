@@ -2312,16 +2312,6 @@ export default function DashboardEntrepreneur() {
                       </CardContent>
                     </Card>
 
-                    {profileData.bio && (
-                      <Card className="border-cyan-200 dark:border-cyan-900/30">
-                        <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
-                          <CardTitle className="text-lg">About</CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                          <p className="text-slate-900 dark:text-white">{profileData.bio}</p>
-                        </CardContent>
-                      </Card>
-                    )}
 
                   </div>
                 )}
