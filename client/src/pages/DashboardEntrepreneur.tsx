@@ -59,6 +59,7 @@ export default function DashboardEntrepreneur() {
     country: "United States",
     bio: "",
     linkedIn: "",
+    website: "",
     profileImage: null as string | null
   });
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -262,7 +263,8 @@ export default function DashboardEntrepreneur() {
               ...prev,
               fullName: data.entrepreneur_name || prev.fullName,
               email: data.entrepreneur_email || prev.email,
-              linkedIn: data.linkedin_profile || data.data?.linkedinWebsite || prev.linkedIn,
+              linkedIn: data.linkedin_profile || prev.linkedIn,
+              website: data.data?.linkedinWebsite || data.data?.website || prev.website,
               bio: data.data?.fullBio || data.data?.bio || prev.bio,
               country: data.data?.country || prev.country,
               profileImage: data.data?.profileImage || prev.profileImage
@@ -2128,6 +2130,17 @@ export default function DashboardEntrepreneur() {
                         />
                       </div>
 
+                      <div>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Website</label>
+                        <Input
+                          value={profileData.website}
+                          onChange={(e) => setProfileData({ ...profileData, website: e.target.value })}
+                          placeholder="https://yourwebsite.com"
+                          className="bg-slate-50 dark:bg-slate-800/50"
+                          data-testid="input-profile-website"
+                        />
+                      </div>
+
                       <div className="flex gap-4 pt-4">
                         <Button 
                           variant="outline" 
@@ -2149,6 +2162,7 @@ export default function DashboardEntrepreneur() {
                                   country: profileData.country,
                                   bio: profileData.bio,
                                   linkedIn: profileData.linkedIn,
+                                  website: profileData.website,
                                   profileImage: profileData.profileImage
                                 })
                               });
@@ -2210,15 +2224,28 @@ export default function DashboardEntrepreneur() {
                       </Card>
                     )}
 
-                    {profileData.linkedIn && (
+                    {(profileData.linkedIn || profileData.website) && (
                       <Card className="border-cyan-200 dark:border-cyan-900/30">
                         <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
-                          <CardTitle className="text-lg">LinkedIn</CardTitle>
+                          <CardTitle className="text-lg">Links</CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-6">
-                          <a href={profileData.linkedIn} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 break-all">
-                            {profileData.linkedIn}
-                          </a>
+                        <CardContent className="pt-6 space-y-4">
+                          {profileData.linkedIn && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">LinkedIn</p>
+                              <a href={profileData.linkedIn.startsWith('http') ? profileData.linkedIn : `https://${profileData.linkedIn}`} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 break-all">
+                                {profileData.linkedIn}
+                              </a>
+                            </div>
+                          )}
+                          {profileData.website && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Website</p>
+                              <a href={profileData.website.startsWith('http') ? profileData.website : `https://${profileData.website}`} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 break-all">
+                                {profileData.website}
+                              </a>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     )}
