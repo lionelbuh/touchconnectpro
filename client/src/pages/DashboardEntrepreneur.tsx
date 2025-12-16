@@ -2213,24 +2213,13 @@ export default function DashboardEntrepreneur() {
                       </div>
 
                       <div>
-                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">LinkedIn</label>
-                        <Input
-                          value={profileData.linkedIn}
-                          onChange={(e) => setProfileData({ ...profileData, linkedIn: e.target.value })}
-                          placeholder="https://linkedin.com/in/yourprofile"
-                          className="bg-slate-50 dark:bg-slate-800/50"
-                          data-testid="input-profile-linkedin"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Website</label>
-                        <Input
-                          value={profileData.website}
-                          onChange={(e) => setProfileData({ ...profileData, website: e.target.value })}
-                          placeholder="https://yourwebsite.com"
-                          className="bg-slate-50 dark:bg-slate-800/50"
-                          data-testid="input-profile-website"
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">About the entrepreneur</label>
+                        <textarea
+                          value={profileData.bio}
+                          onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                          placeholder="Tell us about yourself..."
+                          className="w-full min-h-[100px] p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white resize-y"
+                          data-testid="input-profile-bio"
                         />
                       </div>
 
@@ -2257,9 +2246,7 @@ export default function DashboardEntrepreneur() {
                                   fullName: profileData.fullName,
                                   country: profileData.country,
                                   bio: profileData.bio,
-                                  profileImage: profileData.profileImage,
-                                  linkedIn: profileData.linkedIn,
-                                  website: profileData.website
+                                  profileImage: profileData.profileImage
                                 })
                               });
                               if (response.ok) {
@@ -2313,43 +2300,17 @@ export default function DashboardEntrepreneur() {
                               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Country</p>
                               <p className="text-slate-900 dark:text-white">{profileData.country}</p>
                             </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">LinkedIn</p>
-                              {profileData.linkedIn ? (
-                                <a 
-                                  href={profileData.linkedIn.startsWith('http') ? profileData.linkedIn : `https://${profileData.linkedIn}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-cyan-600 hover:text-cyan-700 break-all"
-                                  data-testid="link-profile-linkedin"
-                                >
-                                  {profileData.linkedIn}
-                                </a>
-                              ) : (
-                                <p className="text-slate-500 dark:text-slate-400">—</p>
-                              )}
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Website</p>
-                              {profileData.website ? (
-                                <a 
-                                  href={profileData.website.startsWith('http') ? profileData.website : `https://${profileData.website}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-cyan-600 hover:text-cyan-700 break-all"
-                                  data-testid="link-profile-website"
-                                >
-                                  {profileData.website}
-                                </a>
-                              ) : (
-                                <p className="text-slate-500 dark:text-slate-400">—</p>
-                              )}
-                            </div>
                           </div>
                         </div>
                       </CardContent>
                     </Card>
 
+                    <Card className="border-cyan-200 dark:border-cyan-900/30">
+                      <CardContent className="pt-6">
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">About the entrepreneur</p>
+                        <p className="text-slate-900 dark:text-white">{profileData.bio || "—"}</p>
+                      </CardContent>
+                    </Card>
 
                   </div>
                 )}
