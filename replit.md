@@ -12,6 +12,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Session)
 
+**AI Meeting Questions Generator (December 16, 2025):**
+- ✅ Added AI tool to generate probing questions for mentor meetings with entrepreneurs
+- ✅ Backend function `generateMeetingQuestions` in server/aiService.ts
+- ✅ API endpoint: POST `/api/ai/generate-questions` takes entrepreneurId, generates questions from business plan
+- ✅ Questions organized by 11 business plan sections (2-4 questions each)
+- ✅ Questions saved to `data` JSONB as `meetingQuestions` and `meetingQuestionsGeneratedAt`
+- ✅ AdminDashboard: "Generate Questions" button (purple) on each entrepreneur card
+- ✅ AdminDashboard: Expandable "AI Meeting Questions" section with regenerate option
+- ✅ MentorDashboard: Read-only view of questions for assigned entrepreneurs
+- ✅ Both Replit dev (server/routes.ts) and Render production (backend/index.js) synchronized
+
 **Public Partner API (December 16, 2025):**
 - ✅ Added public API endpoints for partners to submit applications programmatically
 - ✅ API key authentication via `x-api-key` header

@@ -63,12 +63,17 @@ export default function DashboardMentor() {
       photoUrl?: string;
       ideaReview?: any;
       businessPlan?: any;
+      meetingQuestions?: any;
+      meetingQuestionsGeneratedAt?: string;
+      mentorNotes?: any[];
+      assignment_id?: string;
     }>;
     lastMeeting: string;
   }>>([]);
   
   const [expandedProposal, setExpandedProposal] = useState<{[key: string]: boolean}>({});
   const [expandedBusinessPlan, setExpandedBusinessPlan] = useState<{[key: string]: boolean}>({});
+  const [expandedQuestions, setExpandedQuestions] = useState<{[key: string]: boolean}>({});
 
   const [messages, setMessages] = useState<any[]>([]);
   const [entrepreneurMessages, setEntrepreneurMessages] = useState<any[]>([]);
@@ -260,6 +265,8 @@ export default function DashboardMentor() {
               photoUrl: m.entrepreneur?.photo_url,
               ideaReview: m.entrepreneur?.ideaReview,
               businessPlan: m.entrepreneur?.businessPlan,
+              meetingQuestions: m.entrepreneur?.meetingQuestions,
+              meetingQuestionsGeneratedAt: m.entrepreneur?.meetingQuestionsGeneratedAt,
               mentorNotes: m.mentor_notes || []
             };
           }),
@@ -732,6 +739,53 @@ export default function DashboardMentor() {
                                       </div>
                                     )}
                                   </div>
+
+                                  {/* AI Meeting Questions Section - View Only for Mentors */}
+                                  {member.meetingQuestions && (
+                                    <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+                                      <Button 
+                                        variant="ghost" 
+                                        className="w-full justify-start text-purple-600 hover:text-purple-700 font-semibold text-sm"
+                                        onClick={() => setExpandedQuestions({...expandedQuestions, [`member-${member.id}`]: !expandedQuestions[`member-${member.id}`]})}
+                                        data-testid={`button-expand-questions-${member.id}`}
+                                      >
+                                        {expandedQuestions[`member-${member.id}`] ? "▼" : "▶"} AI Meeting Questions (Prepared by Admin)
+                                      </Button>
+                                      {expandedQuestions[`member-${member.id}`] && (
+                                        <div className="mt-4 space-y-4 max-h-96 overflow-y-auto bg-purple-50 dark:bg-purple-900/20 p-4 rounded">
+                                          {member.meetingQuestionsGeneratedAt && (
+                                            <p className="text-xs text-purple-600 dark:text-purple-400 mb-2">
+                                              Generated: {new Date(member.meetingQuestionsGeneratedAt).toLocaleDateString()}
+                                            </p>
+                                          )}
+                                          {[
+                                            { key: 'executiveSummary', label: '1. Executive Summary' },
+                                            { key: 'problemStatement', label: '2. Problem Statement' },
+                                            { key: 'solution', label: '3. Solution' },
+                                            { key: 'targetMarket', label: '4. Target Market' },
+                                            { key: 'marketSize', label: '5. Market Size' },
+                                            { key: 'revenue', label: '6. Revenue Model' },
+                                            { key: 'competitiveAdvantage', label: '7. Competitive Advantage' },
+                                            { key: 'roadmap', label: '8. 12-Month Roadmap' },
+                                            { key: 'fundingNeeds', label: '9. Funding Needs' },
+                                            { key: 'risks', label: '10. Risks & Mitigation' },
+                                            { key: 'success', label: '11. Success Metrics' },
+                                          ].map((section) => (
+                                            <div key={section.key} className="text-sm border-b border-purple-200 dark:border-purple-800 pb-3">
+                                              <p className="font-semibold text-purple-700 dark:text-purple-300">{section.label}</p>
+                                              <ul className="mt-2 space-y-1">
+                                                {(member.meetingQuestions[section.key] || []).map((q: string, qIdx: number) => (
+                                                  <li key={qIdx} className="text-purple-600 dark:text-purple-400 text-xs pl-4 before:content-['•'] before:mr-2">
+                                                    {q}
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
 
                                   <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
                                     <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-2 block">Next Steps & Notes</label>

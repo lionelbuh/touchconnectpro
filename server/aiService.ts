@@ -166,3 +166,88 @@ Each field should contain 2-4 well-written paragraphs. Return ONLY valid JSON.`
 
   return JSON.parse(content) as BusinessPlanOutput;
 }
+
+// Generate meeting questions based on business plan
+export interface MeetingQuestionsInput {
+  businessPlan: BusinessPlanOutput;
+  fullBio?: string;
+  ideaName?: string;
+}
+
+export interface MeetingQuestionsOutput {
+  executiveSummary: string[];
+  problemStatement: string[];
+  solution: string[];
+  targetMarket: string[];
+  marketSize: string[];
+  revenue: string[];
+  competitiveAdvantage: string[];
+  roadmap: string[];
+  fundingNeeds: string[];
+  risks: string[];
+  success: string[];
+}
+
+const MEETING_QUESTIONS_PROMPT = `You are an experienced mentor and investor advisor helping prepare for a meeting with an entrepreneur.
+
+Review the business plan draft provided and generate insightful questions that a mentor should ask the entrepreneur during their meeting. 
+
+DO NOT rephrase or improve the business plan - instead, identify gaps, unclear areas, assumptions that need validation, and areas where more detail is needed.
+
+For EACH of the 11 business plan sections, provide 2-4 specific, probing questions that will:
+1. Clarify vague or missing information
+2. Challenge assumptions
+3. Dig deeper into the entrepreneur's thinking
+4. Help the mentor understand the entrepreneur's preparedness
+
+Make questions specific to the content provided, not generic. Reference specific claims or numbers from the plan.`;
+
+export async function generateMeetingQuestions(input: MeetingQuestionsInput): Promise<MeetingQuestionsOutput> {
+  const businessPlanText = Object.entries(input.businessPlan)
+    .map(([key, value]) => `**${key}**:\n${value}`)
+    .join("\n\n");
+
+  const bioContext = input.fullBio ? `\nEntrepreneur Bio: ${input.fullBio}` : "";
+  const ideaContext = input.ideaName ? `\nIdea Name: ${input.ideaName}` : "";
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: MEETING_QUESTIONS_PROMPT },
+      { 
+        role: "user", 
+        content: `Review this business plan and generate meeting questions for the mentor to ask:
+${ideaContext}${bioContext}
+
+BUSINESS PLAN:
+${businessPlanText}
+
+Return as JSON with these exact keys, each containing an array of 2-4 question strings:
+{
+  "executiveSummary": ["question 1", "question 2", ...],
+  "problemStatement": ["question 1", "question 2", ...],
+  "solution": ["question 1", "question 2", ...],
+  "targetMarket": ["question 1", "question 2", ...],
+  "marketSize": ["question 1", "question 2", ...],
+  "revenue": ["question 1", "question 2", ...],
+  "competitiveAdvantage": ["question 1", "question 2", ...],
+  "roadmap": ["question 1", "question 2", ...],
+  "fundingNeeds": ["question 1", "question 2", ...],
+  "risks": ["question 1", "question 2", ...],
+  "success": ["question 1", "question 2", ...]
+}
+
+Return ONLY valid JSON.`
+      }
+    ],
+    temperature: 0.7,
+    response_format: { type: "json_object" }
+  });
+
+  const content = response.choices[0]?.message?.content;
+  if (!content) {
+    throw new Error("No response from AI");
+  }
+
+  return JSON.parse(content) as MeetingQuestionsOutput;
+}

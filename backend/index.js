@@ -119,6 +119,121 @@ app.post("/api/ai/generate-plan", async (req, res) => {
   }
 });
 
+// AI: Generate meeting questions from business plan
+app.post("/api/ai/generate-questions", async (req, res) => {
+  console.log("[AI GENERATE QUESTIONS] Processing request...");
+  try {
+    const openai = getOpenAI();
+    if (!openai) {
+      return res.status(503).json({ error: "AI service not configured. Please add OPENAI_API_KEY." });
+    }
+    
+    const { entrepreneurId } = req.body;
+    if (!entrepreneurId) {
+      return res.status(400).json({ error: "entrepreneurId is required" });
+    }
+
+    // Fetch entrepreneur data
+    const { data: entrepreneur, error: fetchError } = await supabase
+      .from("ideas")
+      .select("*")
+      .eq("id", entrepreneurId)
+      .single();
+
+    if (fetchError || !entrepreneur) {
+      console.error("[AI GENERATE QUESTIONS] Entrepreneur not found:", fetchError);
+      return res.status(404).json({ error: "Entrepreneur not found" });
+    }
+
+    const businessPlan = entrepreneur.business_plan;
+    if (!businessPlan || Object.keys(businessPlan).length === 0) {
+      return res.status(400).json({ error: "Entrepreneur has no business plan to analyze" });
+    }
+
+    const fullBio = entrepreneur.data?.fullBio || entrepreneur.data?.bio || "";
+    const ideaName = entrepreneur.data?.ideaName || entrepreneur.idea_name || "";
+
+    const businessPlanText = Object.entries(businessPlan)
+      .map(([key, value]) => `**${key}**:\n${value}`)
+      .join("\n\n");
+
+    const bioContext = fullBio ? `\nEntrepreneur Bio: ${fullBio}` : "";
+    const ideaContext = ideaName ? `\nIdea Name: ${ideaName}` : "";
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: `You are an experienced mentor and investor advisor helping prepare for a meeting with an entrepreneur.
+
+Review the business plan draft provided and generate insightful questions that a mentor should ask the entrepreneur during their meeting. 
+
+DO NOT rephrase or improve the business plan - instead, identify gaps, unclear areas, assumptions that need validation, and areas where more detail is needed.
+
+For EACH of the 11 business plan sections, provide 2-4 specific, probing questions that will:
+1. Clarify vague or missing information
+2. Challenge assumptions
+3. Dig deeper into the entrepreneur's thinking
+4. Help the mentor understand the entrepreneur's preparedness
+
+Make questions specific to the content provided, not generic. Reference specific claims or numbers from the plan.` },
+        { role: "user", content: `Review this business plan and generate meeting questions for the mentor to ask:
+${ideaContext}${bioContext}
+
+BUSINESS PLAN:
+${businessPlanText}
+
+Return as JSON with these exact keys, each containing an array of 2-4 question strings:
+{
+  "executiveSummary": ["question 1", "question 2", ...],
+  "problemStatement": ["question 1", "question 2", ...],
+  "solution": ["question 1", "question 2", ...],
+  "targetMarket": ["question 1", "question 2", ...],
+  "marketSize": ["question 1", "question 2", ...],
+  "revenue": ["question 1", "question 2", ...],
+  "competitiveAdvantage": ["question 1", "question 2", ...],
+  "roadmap": ["question 1", "question 2", ...],
+  "fundingNeeds": ["question 1", "question 2", ...],
+  "risks": ["question 1", "question 2", ...],
+  "success": ["question 1", "question 2", ...]
+}
+
+Return ONLY valid JSON.` }
+      ],
+      temperature: 0.7,
+      response_format: { type: "json_object" }
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) throw new Error("No response from AI");
+
+    const questions = JSON.parse(content);
+    console.log("[AI GENERATE QUESTIONS] Generated questions for:", entrepreneurId);
+
+    // Save questions to the database
+    const updatedData = {
+      ...entrepreneur.data,
+      meetingQuestions: questions,
+      meetingQuestionsGeneratedAt: new Date().toISOString()
+    };
+
+    const { error: updateError } = await supabase
+      .from("ideas")
+      .update({ data: updatedData })
+      .eq("id", entrepreneurId);
+
+    if (updateError) {
+      console.error("[AI GENERATE QUESTIONS] Failed to save:", updateError);
+      return res.status(500).json({ error: "Failed to save generated questions" });
+    }
+
+    console.log("[AI GENERATE QUESTIONS] Saved questions for:", entrepreneurId);
+    return res.json({ success: true, questions });
+  } catch (error) {
+    console.error("[AI GENERATE QUESTIONS ERROR]:", error.message);
+    return res.status(500).json({ error: "Failed to generate questions with AI" });
+  }
+});
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -2615,7 +2730,9 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
           state: entData.state || "",
           photo_url: "",
           ideaReview: entData.ideaReview || entData,
-          businessPlan: entrepreneur.business_plan || {}
+          businessPlan: entrepreneur.business_plan || {},
+          meetingQuestions: entData.meetingQuestions || null,
+          meetingQuestionsGeneratedAt: entData.meetingQuestionsGeneratedAt || null
         } : null
       };
     });

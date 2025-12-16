@@ -118,6 +118,8 @@ export default function AdminDashboard() {
   const [disabledProfessionals, setDisabledProfessionals] = useState<{[key: string]: boolean}>({});
   const [expandedProposal, setExpandedProposal] = useState<{[key: string]: boolean}>({});
   const [expandedBusinessPlan, setExpandedBusinessPlan] = useState<{[key: string]: boolean}>({});
+  const [expandedQuestions, setExpandedQuestions] = useState<{[key: string]: boolean}>({});
+  const [generatingQuestions, setGeneratingQuestions] = useState<{[key: string]: boolean}>({});
   const [portfolioForApp, setPortfolioForApp] = useState<{[key: string]: string}>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -569,6 +571,36 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Error toggling disabled status:", error);
       toast.error("Network error. Please try again.");
+    }
+  };
+
+  const handleGenerateQuestions = async (entrepreneurId: string) => {
+    setGeneratingQuestions({...generatingQuestions, [entrepreneurId]: true});
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/ai/generate-questions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entrepreneurId })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        // Update the local state with the new questions
+        setEntrepreneurApplications(prev => prev.map(app => 
+          app.id === entrepreneurId 
+            ? { ...app, meetingQuestions: data.questions, meetingQuestionsGeneratedAt: new Date().toISOString() }
+            : app
+        ));
+        toast.success("Meeting questions generated successfully!");
+        setExpandedQuestions({...expandedQuestions, [entrepreneurId]: true});
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Failed to generate questions");
+      }
+    } catch (err) {
+      console.error("Error generating questions:", err);
+      toast.error("Failed to generate questions");
+    } finally {
+      setGeneratingQuestions({...generatingQuestions, [entrepreneurId]: false});
     }
   };
 
@@ -1024,6 +1056,69 @@ export default function AdminDashboard() {
                                   <p className="font-semibold text-slate-700 dark:text-slate-300">11. Success Metrics</p>
                                   <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.successMetrics || 'N/A'}</p>
                                 </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* AI Meeting Questions Section */}
+                          <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <Button 
+                                variant="ghost" 
+                                className="justify-start text-purple-600 hover:text-purple-700 font-semibold"
+                                onClick={() => setExpandedQuestions({...expandedQuestions, [app.id]: !expandedQuestions[app.id]})}
+                                data-testid={`button-expand-questions-${actualIdx}`}
+                              >
+                                {expandedQuestions[app.id] ? "▼" : "▶"} AI Meeting Questions
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="bg-purple-600 hover:bg-purple-700"
+                                onClick={() => handleGenerateQuestions(app.id)}
+                                disabled={generatingQuestions[app.id] || !app.businessPlan}
+                                data-testid={`button-generate-questions-${actualIdx}`}
+                              >
+                                {generatingQuestions[app.id] ? (
+                                  <>Generating...</>
+                                ) : (
+                                  <>{app.meetingQuestions ? "Regenerate" : "Generate"} Questions</>
+                                )}
+                              </Button>
+                            </div>
+                            {!app.businessPlan && (
+                              <p className="text-xs text-amber-600 dark:text-amber-400 ml-4">Business plan required to generate questions</p>
+                            )}
+                            {expandedQuestions[app.id] && app.meetingQuestions && (
+                              <div className="mt-4 space-y-4 max-h-96 overflow-y-auto bg-purple-50 dark:bg-purple-900/20 p-4 rounded">
+                                {app.meetingQuestionsGeneratedAt && (
+                                  <p className="text-xs text-purple-600 dark:text-purple-400 mb-2">
+                                    Generated: {new Date(app.meetingQuestionsGeneratedAt).toLocaleDateString()}
+                                  </p>
+                                )}
+                                {[
+                                  { key: 'executiveSummary', label: '1. Executive Summary' },
+                                  { key: 'problemStatement', label: '2. Problem Statement' },
+                                  { key: 'solution', label: '3. Solution' },
+                                  { key: 'targetMarket', label: '4. Target Market' },
+                                  { key: 'marketSize', label: '5. Market Size' },
+                                  { key: 'revenue', label: '6. Revenue Model' },
+                                  { key: 'competitiveAdvantage', label: '7. Competitive Advantage' },
+                                  { key: 'roadmap', label: '8. 12-Month Roadmap' },
+                                  { key: 'fundingNeeds', label: '9. Funding Needs' },
+                                  { key: 'risks', label: '10. Risks & Mitigation' },
+                                  { key: 'success', label: '11. Success Metrics' },
+                                ].map((section) => (
+                                  <div key={section.key} className="text-sm border-b border-purple-200 dark:border-purple-800 pb-3">
+                                    <p className="font-semibold text-purple-700 dark:text-purple-300">{section.label}</p>
+                                    <ul className="mt-2 space-y-1">
+                                      {(app.meetingQuestions[section.key] || []).map((q: string, qIdx: number) => (
+                                        <li key={qIdx} className="text-purple-600 dark:text-purple-400 text-xs pl-4 before:content-['•'] before:mr-2">
+                                          {q}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ))}
                               </div>
                             )}
                           </div>

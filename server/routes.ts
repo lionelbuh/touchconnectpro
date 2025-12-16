@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import crypto from "crypto";
-import { rephraseAnswers, generateBusinessPlan } from "./aiService";
+import { rephraseAnswers, generateBusinessPlan, generateMeetingQuestions } from "./aiService";
 
 let supabase: ReturnType<typeof createClient> | null = null;
 let resendClient: Resend | null = null;
@@ -470,6 +470,75 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("[AI GENERATE PLAN ERROR]:", error.message);
       return res.status(500).json({ error: "Failed to generate business plan with AI" });
+    }
+  });
+
+  // AI: Generate meeting questions from business plan (Admin only)
+  app.post("/api/ai/generate-questions", async (req, res) => {
+    console.log("[AI GENERATE QUESTIONS] Processing request...");
+    try {
+      const { entrepreneurId } = req.body;
+      
+      if (!entrepreneurId) {
+        return res.status(400).json({ error: "entrepreneurId is required" });
+      }
+
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      // Fetch entrepreneur data
+      const { data: entrepreneur, error: fetchError } = await (client
+        .from("ideas")
+        .select("*")
+        .eq("id", entrepreneurId)
+        .single() as any);
+
+      if (fetchError || !entrepreneur) {
+        console.error("[AI GENERATE QUESTIONS] Entrepreneur not found:", fetchError);
+        return res.status(404).json({ error: "Entrepreneur not found" });
+      }
+
+      const businessPlan = entrepreneur.business_plan;
+      if (!businessPlan || Object.keys(businessPlan).length === 0) {
+        return res.status(400).json({ error: "Entrepreneur has no business plan to analyze" });
+      }
+
+      const fullBio = entrepreneur.data?.fullBio || entrepreneur.data?.bio || "";
+      const ideaName = entrepreneur.data?.ideaName || entrepreneur.idea_name || "";
+
+      // Generate questions using AI
+      const questions = await generateMeetingQuestions({
+        businessPlan,
+        fullBio,
+        ideaName
+      });
+
+      console.log("[AI GENERATE QUESTIONS] Generated questions for:", entrepreneurId);
+
+      // Save questions to the database
+      const updatedData = {
+        ...entrepreneur.data,
+        meetingQuestions: questions,
+        meetingQuestionsGeneratedAt: new Date().toISOString()
+      };
+
+      const { error: updateError } = await (client
+        .from("ideas")
+        .update({ data: updatedData } as any)
+        .eq("id", entrepreneurId) as any);
+
+      if (updateError) {
+        console.error("[AI GENERATE QUESTIONS] Failed to save:", updateError);
+        return res.status(500).json({ error: "Failed to save generated questions" });
+      }
+
+      console.log("[AI GENERATE QUESTIONS] Saved questions for:", entrepreneurId);
+      return res.json({ success: true, questions });
+    } catch (error: any) {
+      console.error("[AI GENERATE QUESTIONS ERROR]:", error.message);
+      return res.status(500).json({ error: "Failed to generate questions with AI" });
     }
   });
 
@@ -1214,7 +1283,9 @@ export async function registerRoutes(
             state: entData.state || "",
             photo_url: "",
             ideaReview: entData.ideaReview || entData,
-            businessPlan: entrepreneur.business_plan || {}
+            businessPlan: entrepreneur.business_plan || {},
+            meetingQuestions: entData.meetingQuestions || null,
+            meetingQuestionsGeneratedAt: entData.meetingQuestionsGeneratedAt || null
           } : null
         };
       });
