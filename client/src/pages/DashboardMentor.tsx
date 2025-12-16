@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap } from "lucide-react";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -21,6 +21,10 @@ interface MentorProfileData {
   country: string;
   state: string | null;
   is_disabled?: boolean;
+  data?: {
+    profileImage?: string | null;
+    [key: string]: any;
+  };
 }
 
 export default function DashboardMentor() {
@@ -130,7 +134,7 @@ export default function DashboardMentor() {
             bio: data.bio || "",
             expertise: data.expertise || "",
             yearsExperience: data.experience || "",
-            profileImage: null,
+            profileImage: data.data?.profileImage || null,
             approved: true
           });
           setMentorStatus("approved");
@@ -302,7 +306,8 @@ export default function DashboardMentor() {
           bio: mentorProfile.bio,
           expertise: mentorProfile.expertise,
           experience: mentorProfile.yearsExperience,
-          linkedin: mentorProfile.linkedin
+          linkedin: mentorProfile.linkedin,
+          profileImage: mentorProfile.profileImage
         })
       });
 
@@ -1270,6 +1275,66 @@ export default function DashboardMentor() {
                   </CardHeader>
                   <CardContent className="pt-6 space-y-6">
                     <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Profile Picture</label>
+                      <div className="flex items-center gap-4">
+                        <div className="w-20 h-20 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-2xl overflow-hidden">
+                          {mentorProfile.profileImage ? (
+                            <img src={mentorProfile.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                          ) : (
+                            <User className="h-10 w-10 text-cyan-600" />
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                            id="mentor-profile-upload"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast.error("Image is too large. Please use an image under 5MB.");
+                                  return;
+                                }
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  setMentorProfile({ ...mentorProfile, profileImage: reader.result as string });
+                                  toast.success("Image added! Click 'Save Profile' to keep it.");
+                                };
+                                reader.onerror = () => {
+                                  toast.error("Failed to read image file.");
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                            data-testid="input-mentor-profile-image"
+                          />
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => document.getElementById('mentor-profile-upload')?.click()}
+                            data-testid="button-upload-mentor-photo"
+                          >
+                            <Camera className="h-4 w-4 mr-2" />
+                            Upload Photo
+                          </Button>
+                          {mentorProfile.profileImage && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => setMentorProfile({ ...mentorProfile, profileImage: null })}
+                              data-testid="button-remove-mentor-photo"
+                            >
+                              Remove
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
                       <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Full Name *</label>
                       <Input
                         value={mentorProfile.fullName}
@@ -1348,6 +1413,19 @@ export default function DashboardMentor() {
               ) : (
                 <Card className="border-cyan-200 dark:border-cyan-900/30 max-w-2xl">
                   <CardContent className="pt-6 space-y-6">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-20 h-20 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-2xl overflow-hidden">
+                        {mentorProfile.profileImage ? (
+                          <img src={mentorProfile.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="h-10 w-10 text-cyan-600" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xl font-semibold text-slate-900 dark:text-white">{mentorProfile.fullName}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{mentorProfile.email}</p>
+                      </div>
+                    </div>
                     <div>
                       <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Full Name</p>
                       <p className="text-slate-900 dark:text-white">{mentorProfile.fullName}</p>

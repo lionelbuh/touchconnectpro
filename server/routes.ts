@@ -1049,18 +1049,35 @@ export async function registerRoutes(
       }
 
       const { id } = req.params;
-      const { bio, expertise, experience, linkedin } = req.body;
+      const { bio, expertise, experience, linkedin, profileImage } = req.body;
 
       console.log("[PUT /api/mentors/profile/:id] Updating profile:", id);
 
+      // Build update object - store profileImage in data JSONB field
+      const updateData: any = {
+        bio,
+        expertise,
+        experience,
+        linkedin: linkedin || null
+      };
+
+      // If profileImage is provided, merge it into the data JSONB field
+      if (profileImage !== undefined) {
+        const { data: existingData } = await (client
+          .from("mentor_applications")
+          .select("data")
+          .eq("id", id)
+          .single() as any);
+        
+        updateData.data = {
+          ...(existingData?.data || {}),
+          profileImage: profileImage
+        };
+      }
+
       const { data, error } = await (client
         .from("mentor_applications")
-        .update({
-          bio,
-          expertise,
-          experience,
-          linkedin: linkedin || null
-        } as any)
+        .update(updateData)
         .eq("id", id)
         .select() as any);
 
