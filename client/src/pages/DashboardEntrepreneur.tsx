@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
@@ -38,6 +38,7 @@ export default function DashboardEntrepreneur() {
   const [userEmail, setUserEmail] = useState<string>("");
   const [isAccountDisabled, setIsAccountDisabled] = useState(false);
   const [isPreApproved, setIsPreApproved] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [businessPlanData, setBusinessPlanData] = useState<any>({
@@ -2160,7 +2161,10 @@ export default function DashboardEntrepreneur() {
                         </Button>
                         <Button 
                           className="flex-1 bg-cyan-600 hover:bg-cyan-700"
+                          disabled={savingProfile}
                           onClick={async () => {
+                            setSavingProfile(true);
+                            toast.loading("Updating your profile...", { id: "saving-profile" });
                             try {
                               const response = await fetch(`${API_BASE_URL}/api/entrepreneurs/profile/${encodeURIComponent(profileData.email)}`, {
                                 method: "PUT",
@@ -2175,20 +2179,29 @@ export default function DashboardEntrepreneur() {
                                 })
                               });
                               if (response.ok) {
-                                toast.success("Profile updated successfully!");
+                                toast.success("Profile updated successfully!", { id: "saving-profile" });
                                 setIsEditingProfile(false);
                               } else {
                                 const errorData = await response.json();
-                                toast.error(errorData.error || "Failed to update profile");
+                                toast.error(errorData.error || "Failed to update profile", { id: "saving-profile" });
                               }
                             } catch (err) {
                               console.error("Error updating profile:", err);
-                              toast.error("Failed to update profile");
+                              toast.error("Failed to update profile", { id: "saving-profile" });
+                            } finally {
+                              setSavingProfile(false);
                             }
                           }}
                           data-testid="button-save-profile"
                         >
-                          Save Changes
+                          {savingProfile ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            "Save Changes"
+                          )}
                         </Button>
                       </div>
                     </CardContent>
