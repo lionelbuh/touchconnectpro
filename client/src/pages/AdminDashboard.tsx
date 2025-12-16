@@ -24,6 +24,7 @@ interface MentorApplication {
   rejection_reason?: string;
   updated_at?: string;
   is_resubmitted?: boolean;
+  profileImage?: string | null;
 }
 
 interface CoachApplication {
@@ -157,7 +158,8 @@ export default function AdminDashboard() {
               status: m.status === "submitted" ? "pending" : m.status,
               submittedAt: m.created_at,
               is_resubmitted: m.is_resubmitted,
-              is_disabled: m.is_disabled || false
+              is_disabled: m.is_disabled || false,
+              profileImage: m.data?.profileImage || null
             }));
             setMentorApplications(mappedMentors);
             setApprovedMentors(mappedMentors.filter((app: any) => app.status === "approved"));
@@ -2257,9 +2259,18 @@ export default function AdminDashboard() {
                         <Card key={idx} className="border-l-4 border-l-blue-500">
                           <CardHeader>
                             <div className="flex justify-between items-start">
-                              <div className="flex-1">
-                                <CardTitle>{app.fullName}</CardTitle>
-                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                              <div className="flex items-center gap-4 flex-1">
+                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-lg font-bold overflow-hidden flex-shrink-0 shadow-md">
+                                  {app.profileImage ? (
+                                    <img src={app.profileImage} alt={app.fullName} className="w-full h-full object-cover" />
+                                  ) : (
+                                    app.fullName?.substring(0, 2).toUpperCase() || "MT"
+                                  )}
+                                </div>
+                                <div>
+                                  <CardTitle>{app.fullName}</CardTitle>
+                                  <p className="text-sm text-muted-foreground mt-1">{app.email}</p>
+                                </div>
                               </div>
                               <div className="flex gap-2">
                                 <Badge className="bg-blue-600">Approved</Badge>

@@ -1071,9 +1071,18 @@ export default function DashboardEntrepreneur() {
                 )}
 
                 <div className="flex justify-between items-start mb-8">
-                  <div>
-                    <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Welcome, {profileData.fullName?.split(" ")[0] || "Entrepreneur"}!</h1>
-                    <p className="text-muted-foreground">Here's what's happening with <span className="font-semibold text-foreground">{formData.ideaName || entrepreneurData?.data?.ideaName || "Your Idea"}</span>.</p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-xl font-bold overflow-hidden flex-shrink-0 shadow-lg">
+                      {profileData.profileImage ? (
+                        <img src={profileData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        profileData.fullName?.substring(0, 2).toUpperCase() || "EN"
+                      )}
+                    </div>
+                    <div>
+                      <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Welcome, {profileData.fullName?.split(" ")[0] || "Entrepreneur"}!</h1>
+                      <p className="text-muted-foreground">Here's what's happening with <span className="font-semibold text-foreground">{formData.ideaName || entrepreneurData?.data?.ideaName || "Your Idea"}</span>.</p>
+                    </div>
                   </div>
                   <Button 
                     variant="outline" 

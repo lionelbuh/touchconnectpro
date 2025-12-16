@@ -1665,7 +1665,7 @@ export async function registerRoutes(
             experience: mentorData.experience || "",
             linkedin: mentorData.linkedin || "",
             bio: mentorData.bio || "",
-            photo_url: mentorData.photo_url || mentorData.photoUrl || ""
+            photo_url: mentorData.photo_url || mentorData.photoUrl || mentorData.data?.profileImage || ""
           };
         }
 

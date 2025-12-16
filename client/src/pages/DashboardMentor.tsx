@@ -514,12 +514,23 @@ export default function DashboardMentor() {
                   </CardContent>
                 </Card>
               )}
-              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Dashboard</h1>
-              <p className="text-muted-foreground mb-8">
-                {isAccountDisabled 
-                  ? "Your dashboard is currently in view-only mode."
-                  : `Welcome back, ${mentorProfile.fullName}! Manage your portfolios and mentees here.`}
-              </p>
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-xl font-bold overflow-hidden flex-shrink-0 shadow-lg">
+                  {mentorProfile.profileImage ? (
+                    <img src={mentorProfile.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    mentorProfile.fullName?.substring(0, 2).toUpperCase() || "MT"
+                  )}
+                </div>
+                <div>
+                  <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Dashboard</h1>
+                  <p className="text-muted-foreground">
+                    {isAccountDisabled 
+                      ? "Your dashboard is currently in view-only mode."
+                      : `Welcome back, ${mentorProfile.fullName}! Manage your portfolios and mentees here.`}
+                  </p>
+                </div>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <Card className="border-l-4 border-l-cyan-500 shadow-sm">
