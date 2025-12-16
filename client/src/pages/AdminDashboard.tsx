@@ -1770,9 +1770,20 @@ export default function AdminDashboard() {
                         <Card key={idx} className={`border-l-4 ${app.status === "pre-approved" ? "border-l-amber-500" : "border-l-emerald-500"}`}>
                           <CardHeader>
                             <div className="flex justify-between items-start">
-                              <div className="flex-1">
-                                <CardTitle>{app.fullName}</CardTitle>
-                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                              <div className="flex items-start gap-4">
+                                {/* Profile Picture */}
+                                {app.profileImage && (
+                                  <img 
+                                    src={app.profileImage} 
+                                    alt={app.fullName}
+                                    className="w-16 h-16 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700"
+                                    data-testid={`img-profile-member-${app.id}`}
+                                  />
+                                )}
+                                <div className="flex-1">
+                                  <CardTitle>{app.fullName}</CardTitle>
+                                  <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                                </div>
                               </div>
                               <div className="flex gap-2">
                                 {app.status === "pre-approved" ? (
@@ -1807,6 +1818,14 @@ export default function AdminDashboard() {
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
+                            {/* Bio Section */}
+                            {app.fullBio && (
+                              <div className="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-lg">
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-2">About the Entrepreneur</p>
+                                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{app.fullBio}</p>
+                              </div>
+                            )}
+                            
                             <div className="grid grid-cols-2 gap-4 text-sm">
                               <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
@@ -1818,7 +1837,23 @@ export default function AdminDashboard() {
                               </div>
                               <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
-                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                                {app.linkedin ? (
+                                  <a href={app.linkedin.startsWith('http') ? app.linkedin : `https://${app.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 truncate block">
+                                    {app.linkedin}
+                                  </a>
+                                ) : (
+                                  <p className="text-slate-900 dark:text-white">—</p>
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Website</p>
+                                {app.linkedinWebsite ? (
+                                  <a href={app.linkedinWebsite.startsWith('http') ? app.linkedinWebsite : `https://${app.linkedinWebsite}`} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 truncate block">
+                                    {app.linkedinWebsite}
+                                  </a>
+                                ) : (
+                                  <p className="text-slate-900 dark:text-white">—</p>
+                                )}
                               </div>
                               <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Idea Name</p>

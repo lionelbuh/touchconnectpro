@@ -257,12 +257,15 @@ export default function DashboardEntrepreneur() {
               setBusinessPlanData(data.business_plan);
             }
             
-            // Set profile data
+            // Set profile data (including bio from application fullBio)
             setProfileData(prev => ({
               ...prev,
               fullName: data.entrepreneur_name || prev.fullName,
               email: data.entrepreneur_email || prev.email,
-              linkedIn: data.linkedin_profile || prev.linkedIn
+              linkedIn: data.linkedin_profile || data.data?.linkedinWebsite || prev.linkedIn,
+              bio: data.data?.fullBio || data.data?.bio || prev.bio,
+              country: data.data?.country || prev.country,
+              profileImage: data.data?.profileImage || prev.profileImage
             }));
             
             // Set mentor data if assigned
