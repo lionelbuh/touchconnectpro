@@ -2411,7 +2411,7 @@ app.get("/api/entrepreneur/:email", async (req, res) => {
           experience: mentorData.experience || "",
           linkedin: mentorData.linkedin || "",
           bio: mentorData.bio || "",
-          photo_url: mentorData.photo_url || mentorData.photoUrl || ""
+          photo_url: mentorData.photo_url || mentorData.photoUrl || mentorData.data?.profileImage || ""
         };
       }
 
@@ -2703,7 +2703,7 @@ app.get("/api/mentor-assignments/entrepreneur/:entrepreneurId", async (req, res)
         email: mentor.email,
         expertise: mentor.expertise,
         experience: mentor.experience,
-        photo_url: mentor.photo_url || mentor.photoUrl
+        photo_url: mentor.photo_url || mentor.photoUrl || mentor.data?.profileImage || ""
       }
     });
   } catch (error) {
@@ -2844,7 +2844,7 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
           idea_name: entData.ideaName || "",
           country: entData.country || "",
           state: entData.state || "",
-          photo_url: "",
+          photo_url: entData.profileImage || "",
           ideaReview: entData.ideaReview || entData,
           businessPlan: entrepreneur.business_plan || {},
           meetingQuestions: entData.meetingQuestions || null,

@@ -1360,7 +1360,7 @@ export async function registerRoutes(
             idea_name: entData.ideaName || "",
             country: entData.country || "",
             state: entData.state || "",
-            photo_url: "",
+            photo_url: entData.profileImage || "",
             ideaReview: entData.ideaReview || entData,
             businessPlan: entrepreneur.business_plan || {},
             meetingQuestions: entData.meetingQuestions || null,
@@ -1429,7 +1429,7 @@ export async function registerRoutes(
           bio: mentor.bio,
           expertise: mentor.expertise,
           experience: mentor.experience,
-          photo_url: mentor.photo_url || mentor.photoUrl
+          photo_url: mentor.photo_url || mentor.photoUrl || mentor.data?.profileImage || ""
         },
         portfolio_number: assignment.portfolio_number,
         meeting_link: assignment.meeting_link,
