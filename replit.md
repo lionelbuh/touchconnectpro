@@ -2,271 +2,33 @@
 
 ## Overview
 
-TouchConnectPro is a platform that connects entrepreneurs with mentors, coaches, and investors to transform ideas into fundable businesses. The platform combines AI-powered business planning tools with human mentorship to guide founders from concept to investor-ready stage.
-
-The application follows a freemium model where entrepreneurs can start for free with AI-assisted idea refinement, then upgrade to a $49/month membership once accepted into a mentor's portfolio. The platform also includes marketplaces for coaches (who offer paid courses) and investors (who access vetted deal flow).
+TouchConnectPro is a platform designed to connect entrepreneurs with mentors, coaches, and investors to develop ideas into fundable businesses. It integrates AI-powered business planning tools with human mentorship, guiding founders from initial concept to an investor-ready stage. The platform operates on a freemium model, allowing free AI-assisted idea refinement, with an optional $49/month membership for access to a mentor's portfolio. It also features marketplaces for coaches offering paid courses and investors seeking vetted deal flow, aiming to foster innovation and business growth.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
 
-## Recent Changes (Latest Session)
-
-**AI Meeting Questions Generator (December 16, 2025):**
-- ✅ Added AI tool to generate probing questions for mentor meetings with entrepreneurs
-- ✅ Backend function `generateMeetingQuestions` in server/aiService.ts
-- ✅ API endpoint: POST `/api/ai/generate-questions` takes entrepreneurId, generates questions from business plan
-- ✅ Questions organized by 11 business plan sections (2-4 questions each)
-- ✅ Questions saved to `data` JSONB as `meetingQuestions` and `meetingQuestionsGeneratedAt`
-- ✅ AdminDashboard: "Generate Questions" button (purple) on each entrepreneur card
-- ✅ AdminDashboard: Expandable "AI Meeting Questions" section with regenerate option
-- ✅ MentorDashboard: Read-only view of questions for assigned entrepreneurs
-- ✅ Both Replit dev (server/routes.ts) and Render production (backend/index.js) synchronized
-
-**Public Partner API (December 16, 2025):**
-- ✅ Added public API endpoints for partners to submit applications programmatically
-- ✅ API key authentication via `x-api-key` header
-- ✅ Endpoints:
-  - POST `/api/public/applications/entrepreneurs` - Submit entrepreneur application
-  - POST `/api/public/applications/mentors` - Submit mentor application
-  - POST `/api/public/applications/coaches` - Submit coach application
-  - POST `/api/public/applications/investors` - Submit investor application
-  - GET `/api/public/applications/:id?type=<type>` - Check application status
-- ✅ Returns 201 with `applicationId` on success
-- ✅ Returns 401 for invalid/missing API key
-- ✅ Returns 409 for duplicate applications
-- ✅ Returns 400 for missing required fields
-- ⚠️ **Environment Variable Required**: Set `PARTNER_API_KEYS` (comma-separated list of valid API keys)
-
-**Entrepreneur Form - Full Bio Field (December 16, 2025):**
-- ✅ Added mandatory "Your Full Bio" textarea field after LinkedIn in Step 1
-- ✅ Field asks: who you are, what motivates you, solo or team
-- ✅ Form validation requires bio before proceeding
-- ✅ Bio is stored in `data` JSONB field as `fullBio`
-
-**Entrepreneur Edit Profile (December 15, 2025):**
-- ✅ Made email field read-only with "Email cannot be changed" helper text
-- ✅ Added profile picture upload using Supabase Storage
-- ✅ Base64 fallback if storage upload fails
-- ✅ Save button now persists changes to database via API
-- ✅ Profile image displays in both edit and view modes
-- ✅ API endpoint: PUT /api/entrepreneurs/profile/:email
-- ✅ Updates ideas.data JSONB with merged profile fields
-- ⚠️ **Supabase Requirement**: Add `profile_image` (text) column to `ideas` table. Create "profile-images" bucket in Supabase Storage with public access.
-
-**Admin Dashboard - Messages Tab (December 15, 2025):**
-- ✅ Added new "Messages" tab to admin dashboard
-- ✅ Shows messages specifically from pre-approved entrepreneurs awaiting payment
-- ✅ Displays unread message count badge on tab button
-- ✅ Each message shows sender name, email, idea name, read/unread status
-- ✅ "Mark as Read" button to update message status
-- ✅ "Reply" button opens existing conversation modal
-- ✅ Messages sorted by date (newest first)
-- ⚠️ **Supabase Requirement**: The `messages` table must have an `is_read` (boolean, default false) column for read status tracking
-
-**Coach Enhancements (December 14, 2025):**
-- ✅ Added mandatory Bio field to coach application form (textarea for self-introduction)
-- ✅ Added Specialization Tags with tag-style input (add/remove tags like "eCommerce", "Marketing")
-- ✅ Created Coach Ratings API endpoints:
-  - POST /api/coach-ratings - Submit a 1-5 star rating for a coach
-  - GET /api/coach-ratings/:coachId - Get ratings for specific coach
-  - GET /api/coach-ratings - Get all ratings aggregated by coach
-- ✅ Updated coach cards on entrepreneur dashboard to display:
-  - Bio section with coach introduction
-  - Star ratings with average and review count
-  - Specialization tags as purple badges
-- ✅ Added specialization filter on entrepreneur dashboard - clickable tags to filter coaches
-- ⚠️ **Supabase Migration Required**: Add `bio` (text) and `specializations` (text[]) columns to `coach_applications` table, and create `coach_ratings` table (id, coach_id, rater_email, rating, review, created_at, updated_at)
-
-**Post-Payment Notifications (December 13, 2025):**
-- ✅ Added `sendPaymentWelcomeEmail` function for welcome emails after payment
-- ✅ After successful Stripe payment, system now sends:
-  1. Welcome email to entrepreneur with membership confirmation
-  2. Internal message to user about mentor assignment coming soon
-  3. Internal message to admin notifying about new paid member
-- ✅ Updated `/api/stripe/confirm-payment` endpoint with all notification logic
-- ✅ All notifications wrapped in try-catch to prevent payment flow failures
-
-**Session Persistence Fix (December 12, 2025):**
-- ✅ Fixed Supabase client singleton pattern using window-based storage to survive HMR
-- ✅ All dashboards (Entrepreneur, Mentor, Coach, Investor) now use `getSession()` first before `getUser()`
-- ✅ Login page updated to use `getSession()` for faster, more reliable session detection
-- ✅ Auth options set: `persistSession: true`, `autoRefreshToken: true`, `detectSessionInUrl: true`
-- ✅ **Critical fix**: Login page role detection now includes "pre-approved" status (not just "approved")
-- ✅ **Root cause**: New users with "pre-approved" status were being treated as logged out because role check only looked for "approved"
-- ✅ Fixed SUPABASE_SERVICE_ROLE_KEY (was incorrectly set to anon key, now properly set to bypass RLS)
-
-**Pre-Approval Status for Entrepreneurs:**
-- ✅ Admin can "Pre-Approve" entrepreneurs who are awaiting payment confirmation
-- ✅ Pre-approved entrepreneurs appear in dedicated section with amber styling
-- ✅ "Approve (Payment Received)" button converts pre-approved to fully approved
-- ✅ Pre-approved entrepreneurs get view-only dashboard access with payment-pending messaging
-- ✅ API endpoint updated to accept "pre-approved" status alongside "approved" and "rejected"
-- ✅ Distinct status hierarchy: pending → pre-approved → approved (or pending → approved/rejected directly)
-
-**Mentor Dashboard - Full Entrepreneur Profile View:**
-- ✅ Mentors can now view complete entrepreneur profiles in portfolio tab
-- ✅ Expandable "Idea Proposal (43 Questions)" section with full ideaReview data
-- ✅ Expandable "Business Plan AI Draft (11 Sections)" with all business plan fields
-- ✅ Added country, state, LinkedIn, and idea name fields to entrepreneur cards
-- ✅ API endpoint updated to return ideaReview and businessPlan data for assigned entrepreneurs
-
-**Mentor-Entrepreneur Direct Messaging:**
-- ✅ Mentors can send direct messages to individual entrepreneurs via modal
-- ✅ Entrepreneurs see mentor message section when assigned (green-themed)
-- ✅ Message history now displays mentor messages with distinct styling (emerald green)
-- ✅ Two-way messaging between mentors and entrepreneurs fully functional
-
-**Previous Session - Email & Authentication System:**
-- Integrated Resend for transactional emails (approval/rejection notifications)
-- Created `password_tokens` table in Supabase for secure password setup links (7-day expiry)
-- Users receive approval emails with password setup link
-- After password setup, users are routed to their personal dashboard based on role
-- Login now properly redirects to role-specific dashboards (entrepreneur, mentor, coach, investor)
-- Fixed admin dashboard approve/reject buttons with proper styling
-
-**Backend Improvements:**
-- Updated `/api/set-password` to create user profile in `users` table with role
-- Added support for `RESEND_API_KEY` environment variable (for Render deployment)
-- Added detailed logging for email sending and error tracking
-- Email sends with branded HTML templates for approved/rejected users
-- Updated `/api/mentor-assignments/mentor-email/:email` to return full entrepreneur data including ideaReview and businessPlan
-
-**Deployment:**
-- Backend now requires: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `FRONTEND_URL` environment variables on Render
-- Domain must be verified in Resend for email deliverability
-
 ## System Architecture
 
 ### Frontend Architecture
 
-**Technology Stack:**
-- React with TypeScript
-- Vite as the build tool and development server
-- Wouter for client-side routing
-- TanStack React Query for server state management
-- Tailwind CSS for styling with shadcn/ui components
-- Supabase client for authentication and database operations
-
-**Design Decisions:**
-- Component-based architecture using shadcn/ui design system
-- Custom fonts: Space Grotesk for headings, Inter for body text
-- Theme system with dark mode support using CSS variables
-- Responsive design with mobile-first approach
-- Path aliases (@/, @shared/, @assets/) for clean imports
-
-**Key Pages:**
-- Public marketing pages (Home, How It Works, Pricing, Q&A)
-- Role-based dashboards (Entrepreneur, Mentor, Coach, Investor)
-- Application flows for each user type
-- Admin dashboard for approving applications
-- Business plan builder with AI assistance
+The frontend is built with React and TypeScript, using Vite for development and bundling. Wouter handles client-side routing, and TanStack React Query manages server state. Styling is implemented with Tailwind CSS and shadcn/ui components. Supabase client is used for authentication and direct database operations. The design emphasizes a component-based approach with responsive, mobile-first design, custom fonts (Space Grotesk, Inter), and dark mode support. Key pages include public marketing sites, role-based dashboards (Entrepreneur, Mentor, Coach, Investor), application flows, an admin dashboard, and an AI-assisted business plan builder.
 
 ### Backend Architecture
 
-**Technology Stack:**
-- Express.js server
-- TypeScript throughout
-- Drizzle ORM for database operations
-- PostgreSQL via Neon Database serverless driver
-- Session management with connect-pg-simple
-- In-memory storage fallback for development
-
-**Design Decisions:**
-- RESTful API endpoints under `/api` prefix
-- Separation of concerns: routes, storage layer, static file serving
-- Custom build script using esbuild for server bundling
-- Vite middleware integration for development HMR
-- Webhook support with raw body parsing for payment processing
-
-**Server Structure:**
-- `server/index.ts` - Express app setup and middleware
-- `server/routes.ts` - API route definitions
-- `server/storage.ts` - Data access layer interface
-- `server/static.ts` - Production static file serving
-- `server/vite.ts` - Development server with HMR
+The backend is an Express.js server developed with TypeScript. It uses Drizzle ORM for database interactions with PostgreSQL (Neon Database serverless driver). Session management is handled with `connect-pg-simple`. It follows a RESTful API design under an `/api` prefix, with a clear separation of concerns for routes, data access, and static file serving. Custom build scripts using esbuild bundle the server, and Vite middleware is integrated for development HMR.
 
 ### Data Storage
 
-**Database:**
-- PostgreSQL hosted on Neon (serverless)
-- Drizzle ORM for type-safe database queries
-- Schema defined in `shared/schema.ts`
-- Migration files in `/migrations` directory
-
-**Current Schema:**
-- Users table with basic authentication fields
-- Schema is minimal, suggesting Supabase handles most data storage
-
-**Alternative Storage:**
-- MemStorage class provides in-memory fallback
-- LocalStorage used client-side for form state and temporary data
-
-**Design Rationale:**
-The application uses a hybrid storage approach. Supabase handles user data, applications, and business plans through its built-in database and authentication. The Express backend maintains a minimal user schema for session management. LocalStorage provides client-side persistence for form progress and draft states.
+The primary database is PostgreSQL, hosted on Neon, with Drizzle ORM for type-safe queries. Supabase also handles user authentication, application data, and business plans, acting as a critical component for user-facing data. The `shared/schema.ts` defines the database schema. LocalStorage provides client-side persistence for form progress and temporary data.
 
 ### Authentication & Authorization
 
-**Authentication System:**
-- Supabase Auth for user management
-- Email/password authentication
-- Password reset flow
-- Role-based access control (Entrepreneur, Mentor, Coach, Investor, Admin)
+Authentication is managed via Supabase Auth, supporting email/password and password reset flows. It implements role-based access control (Entrepreneur, Mentor, Coach, Investor, Admin). Express sessions are stored in PostgreSQL using `connect-pg-simple`. Authorization is based on user roles, determining access to specific dashboard routes and functionalities, including an admin approval workflow for applications.
 
-**Session Management:**
-- Express sessions stored in PostgreSQL
-- connect-pg-simple for session store
-- Credentials included in API requests
-- Custom query functions handle 401 responses
+## External Dependencies
 
-**Authorization Pattern:**
-- Role stored in user profile/metadata
-- Different dashboard routes per role
-- Admin approval workflow for applications
-- Protected routes check authentication status
-
-### External Dependencies
-
-**Third-Party Services:**
-
-1. **Supabase** (Primary Database & Auth)
-   - PostgreSQL database hosting
-   - Authentication and user management
-   - Real-time subscriptions capability
-   - Storage for user-uploaded files
-
-2. **Neon Database** (PostgreSQL Serverless)
-   - Serverless PostgreSQL for Express backend
-   - Connection pooling and auto-scaling
-   - Used via `@neondatabase/serverless` driver
-
-3. **Stripe** (Payment Processing)
-   - Subscription billing for $49/month membership
-   - Webhook integration for payment events
-   - Commission processing for coach marketplace
-
-4. **GitHub Octokit** (Optional Integration)
-   - REST API client for GitHub
-   - Potential use for portfolio/project management
-
-5. **Resend** (Email Service)
-   - Transactional emails for approval/rejection notifications
-   - Password setup links for new users
-   - Domain verification required for email deliverability
-   - API key configured via environment variables on Render
-
-**UI Component Libraries:**
-- Radix UI primitives (dialogs, dropdowns, tooltips, etc.)
-- shadcn/ui component collection
-- Lucide React for icons
-- CMDK for command palette
-- date-fns for date manipulation
-
-**Development Tools:**
-- Replit-specific plugins (dev banner, cartographer, error modal)
-- Custom Vite plugin for OpenGraph meta tags
-- TypeScript for type safety
-- ESBuild for production bundling
-
-**Design Rationale:**
-The architecture separates concerns between Supabase (user-facing data) and Express/Neon (server logic and sessions). This allows Supabase to handle authentication and real-time features while Express manages business logic, payment webhooks, and admin operations. The dual-database approach provides flexibility but may require data synchronization between systems.
+1.  **Supabase**: Provides PostgreSQL database hosting, authentication, user management, real-time subscriptions, and storage for user-uploaded files.
+2.  **Neon Database**: Serves as the serverless PostgreSQL backend for the Express.js application, utilized through the `@neondatabase/serverless` driver.
+3.  **Stripe**: Integrated for payment processing, handling subscription billing for memberships, and potentially commission processing for the coach marketplace, with webhook support.
+4.  **Resend**: Used for sending transactional emails, including approval/rejection notifications and password setup links.
