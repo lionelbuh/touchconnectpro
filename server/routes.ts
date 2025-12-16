@@ -776,22 +776,22 @@ export async function registerRoutes(
         return res.status(400).json({ error: fetchError.message });
       }
 
-      // Merge the profile updates into the existing data object
+      // Merge the profile updates into the existing data object (including profileImage)
       const updatedData = {
         ...currentData?.data,
         fullName: fullName,
         country: country,
         bio: bio || "",
-        linkedinWebsite: linkedIn || ""
+        linkedinWebsite: linkedIn || "",
+        profileImage: profileImage || currentData?.data?.profileImage || ""
       };
 
-      // Update the ideas table with merged data
+      // Update the ideas table with merged data (profileImage stored in data JSONB, not as column)
       const { data, error } = await (client
         .from("ideas")
         .update({
           entrepreneur_name: fullName,
           linkedin_profile: linkedIn,
-          profile_image: profileImage,
           data: updatedData
         } as any)
         .eq("entrepreneur_email", decodedEmail)
