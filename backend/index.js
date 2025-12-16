@@ -1194,7 +1194,7 @@ app.put("/api/entrepreneurs/profile/:email", async (req, res) => {
   try {
     const { email } = req.params;
     const decodedEmail = decodeURIComponent(email);
-    const { fullName, country, bio, linkedIn, profileImage } = req.body;
+    const { fullName, country, bio, linkedIn, website, profileImage } = req.body;
 
     console.log("[PUT /api/entrepreneurs/profile/:email] Updating profile for:", decodedEmail);
 
@@ -1210,13 +1210,15 @@ app.put("/api/entrepreneurs/profile/:email", async (req, res) => {
       return res.status(400).json({ error: fetchError.message });
     }
 
-    // Merge the profile updates into the existing data object (including profileImage)
+    // Merge the profile updates into the existing data object
+    // linkedIn = LinkedIn profile URL (stored in linkedin_profile column)
+    // website = personal/business website (stored in data.website field)
     const updatedData = {
       ...currentData?.data,
       fullName: fullName,
       country: country,
       bio: bio || "",
-      linkedinWebsite: linkedIn || "",
+      website: website || currentData?.data?.website || "",
       profileImage: profileImage || currentData?.data?.profileImage || ""
     };
 
@@ -1225,7 +1227,7 @@ app.put("/api/entrepreneurs/profile/:email", async (req, res) => {
       .from("ideas")
       .update({
         entrepreneur_name: fullName,
-        linkedin_profile: linkedIn,
+        linkedin_profile: linkedIn || "",
         data: updatedData
       })
       .eq("entrepreneur_email", decodedEmail)
@@ -2839,7 +2841,8 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
           id: entrepreneur.id,
           full_name: entrepreneur.entrepreneur_name || entData.fullName || "",
           email: entrepreneur.entrepreneur_email || entData.email || "",
-          linkedin: entData.linkedin || entData.linkedinWebsite || "",
+          linkedin: entrepreneur.linkedin_profile || entData.linkedin || entData.linkedinWebsite || "",
+          website: entData.website || "",
           business_idea: entData.ideaDescription || entData.ideaName || "",
           idea_name: entData.ideaName || "",
           country: entData.country || "",
