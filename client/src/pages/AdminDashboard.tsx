@@ -575,6 +575,13 @@ export default function AdminDashboard() {
   };
 
   const handleGenerateQuestions = async (entrepreneurId: string) => {
+    // Defensive guard: prevent generation for approved entrepreneurs
+    const entrepreneur = entrepreneurApplications.find(app => app.id === entrepreneurId);
+    if (entrepreneur?.status === "approved") {
+      toast.error("Cannot regenerate questions for approved entrepreneurs");
+      return;
+    }
+    
     setGeneratingQuestions({...generatingQuestions, [entrepreneurId]: true});
     try {
       const response = await fetch(`${API_BASE_URL}/api/ai/generate-questions`, {
@@ -1197,6 +1204,69 @@ export default function AdminDashboard() {
                                 <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
                               </div>
                             </div>
+                            {/* AI Meeting Questions Section for Pre-Approved */}
+                            <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <Button 
+                                  variant="ghost" 
+                                  className="justify-start text-purple-600 hover:text-purple-700 font-semibold"
+                                  onClick={() => setExpandedQuestions({...expandedQuestions, [`preapproved-${app.id}`]: !expandedQuestions[`preapproved-${app.id}`]})}
+                                  data-testid={`button-expand-questions-preapproved-${actualIdx}`}
+                                >
+                                  {expandedQuestions[`preapproved-${app.id}`] ? "▼" : "▶"} AI Meeting Questions
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="bg-purple-600 hover:bg-purple-700"
+                                  onClick={() => handleGenerateQuestions(app.id)}
+                                  disabled={generatingQuestions[app.id] || !app.businessPlan}
+                                  data-testid={`button-generate-questions-preapproved-${actualIdx}`}
+                                >
+                                  {generatingQuestions[app.id] ? (
+                                    <>Generating...</>
+                                  ) : (
+                                    <>{app.meetingQuestions ? "Regenerate" : "Generate"} Questions</>
+                                  )}
+                                </Button>
+                              </div>
+                              {!app.businessPlan && (
+                                <p className="text-xs text-amber-600 dark:text-amber-400 ml-4">Business plan required to generate questions</p>
+                              )}
+                              {expandedQuestions[`preapproved-${app.id}`] && app.meetingQuestions && (
+                                <div className="mt-4 space-y-4 max-h-96 overflow-y-auto bg-purple-50 dark:bg-purple-900/20 p-4 rounded">
+                                  {app.meetingQuestionsGeneratedAt && (
+                                    <p className="text-xs text-purple-600 dark:text-purple-400 mb-2">
+                                      Generated: {new Date(app.meetingQuestionsGeneratedAt).toLocaleDateString()}
+                                    </p>
+                                  )}
+                                  {[
+                                    { key: 'executiveSummary', label: '1. Executive Summary' },
+                                    { key: 'problemStatement', label: '2. Problem Statement' },
+                                    { key: 'solution', label: '3. Solution' },
+                                    { key: 'targetMarket', label: '4. Target Market' },
+                                    { key: 'marketSize', label: '5. Market Size' },
+                                    { key: 'revenue', label: '6. Revenue Model' },
+                                    { key: 'competitiveAdvantage', label: '7. Competitive Advantage' },
+                                    { key: 'roadmap', label: '8. 12-Month Roadmap' },
+                                    { key: 'fundingNeeds', label: '9. Funding Needs' },
+                                    { key: 'risks', label: '10. Risks & Mitigation' },
+                                    { key: 'success', label: '11. Success Metrics' },
+                                  ].map((section) => (
+                                    <div key={section.key} className="text-sm border-b border-purple-200 dark:border-purple-800 pb-3">
+                                      <p className="font-semibold text-purple-700 dark:text-purple-300">{section.label}</p>
+                                      <ul className="mt-2 space-y-1">
+                                        {(app.meetingQuestions[section.key] || []).map((q: string, qIdx: number) => (
+                                          <li key={qIdx} className="text-purple-600 dark:text-purple-400 text-xs pl-4 before:content-['•'] before:mr-2">
+                                            {q}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
                             <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
                               <Button 
                                 type="button"
@@ -1862,6 +1932,79 @@ export default function AdminDashboard() {
                                     <p className="font-semibold text-slate-700 dark:text-slate-300">11. Funding Requirements</p>
                                     <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs leading-relaxed">{app.businessPlan.fundingRequirements || 'N/A'}</p>
                                   </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* AI Meeting Questions Section for Members Tab */}
+                            <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <Button 
+                                  variant="ghost" 
+                                  className="justify-start text-purple-600 hover:text-purple-700 font-semibold"
+                                  onClick={() => setExpandedQuestions({...expandedQuestions, [`member-${app.id}`]: !expandedQuestions[`member-${app.id}`]})}
+                                  data-testid={`button-expand-questions-member-${idx}`}
+                                >
+                                  {expandedQuestions[`member-${app.id}`] ? "▼" : "▶"} AI Meeting Questions
+                                </Button>
+                                {app.status === "pre-approved" && (
+                                  <Button
+                                    size="sm"
+                                    className="bg-purple-600 hover:bg-purple-700"
+                                    onClick={() => handleGenerateQuestions(app.id)}
+                                    disabled={generatingQuestions[app.id] || !app.businessPlan}
+                                    data-testid={`button-generate-questions-member-${idx}`}
+                                  >
+                                    {generatingQuestions[app.id] ? (
+                                      <>Generating...</>
+                                    ) : (
+                                      <>{app.meetingQuestions ? "Regenerate" : "Generate"} Questions</>
+                                    )}
+                                  </Button>
+                                )}
+                                {app.status === "approved" && app.meetingQuestions && (
+                                  <Badge variant="outline" className="text-purple-600 border-purple-300">
+                                    Read-Only
+                                  </Badge>
+                                )}
+                              </div>
+                              {!app.businessPlan && app.status === "pre-approved" && (
+                                <p className="text-xs text-amber-600 dark:text-amber-400 ml-4">Business plan required to generate questions</p>
+                              )}
+                              {!app.meetingQuestions && app.status === "approved" && (
+                                <p className="text-xs text-slate-500 dark:text-slate-400 ml-4">No questions generated for this entrepreneur</p>
+                              )}
+                              {expandedQuestions[`member-${app.id}`] && app.meetingQuestions && (
+                                <div className="mt-4 space-y-4 max-h-96 overflow-y-auto bg-purple-50 dark:bg-purple-900/20 p-4 rounded">
+                                  {app.meetingQuestionsGeneratedAt && (
+                                    <p className="text-xs text-purple-600 dark:text-purple-400 mb-2">
+                                      Generated: {new Date(app.meetingQuestionsGeneratedAt).toLocaleDateString()}
+                                    </p>
+                                  )}
+                                  {[
+                                    { key: 'executiveSummary', label: '1. Executive Summary' },
+                                    { key: 'problemStatement', label: '2. Problem Statement' },
+                                    { key: 'solution', label: '3. Solution' },
+                                    { key: 'targetMarket', label: '4. Target Market' },
+                                    { key: 'marketSize', label: '5. Market Size' },
+                                    { key: 'revenue', label: '6. Revenue Model' },
+                                    { key: 'competitiveAdvantage', label: '7. Competitive Advantage' },
+                                    { key: 'roadmap', label: '8. 12-Month Roadmap' },
+                                    { key: 'fundingNeeds', label: '9. Funding Needs' },
+                                    { key: 'risks', label: '10. Risks & Mitigation' },
+                                    { key: 'success', label: '11. Success Metrics' },
+                                  ].map((section) => (
+                                    <div key={section.key} className="text-sm border-b border-purple-200 dark:border-purple-800 pb-3">
+                                      <p className="font-semibold text-purple-700 dark:text-purple-300">{section.label}</p>
+                                      <ul className="mt-2 space-y-1">
+                                        {(app.meetingQuestions[section.key] || []).map((q: string, qIdx: number) => (
+                                          <li key={qIdx} className="text-purple-600 dark:text-purple-400 text-xs pl-4 before:content-['•'] before:mr-2">
+                                            {q}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  ))}
                                 </div>
                               )}
                             </div>
