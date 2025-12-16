@@ -129,6 +129,7 @@ export default function BecomeaEntrepreneur() {
     fullName: "",
     email: "",
     linkedin: "",
+    fullBio: "",
     country: "United States",
     state: "",
 
@@ -186,8 +187,8 @@ export default function BecomeaEntrepreneur() {
   const validateStep = () => {
     switch (currentStep) {
       case 0: // Basic Info
-        if (!formData.fullName || !formData.email || !formData.country) {
-          alert("Please fill in Full Name, Email, and Country");
+        if (!formData.fullName || !formData.email || !formData.fullBio || !formData.country) {
+          alert("Please fill in Full Name, Email, Full Bio, and Country");
           return { valid: false, missingField: null };
         }
         if (formData.country === "United States" && !formData.state) {
@@ -241,7 +242,7 @@ export default function BecomeaEntrepreneur() {
       const answers: Record<string, string> = {};
       Object.entries(formData).forEach(([key, value]) => {
         if (value && typeof value === 'string' && value.trim() && 
-            !['fullName', 'email', 'linkedin', 'country', 'state'].includes(key)) {
+            !['fullName', 'email', 'linkedin', 'fullBio', 'country', 'state'].includes(key)) {
           answers[key] = value;
         }
       });
@@ -297,7 +298,7 @@ export default function BecomeaEntrepreneur() {
       // Use the AI-enhanced answers (editedReview) for the business plan
       const answers: Record<string, string> = {};
       // Include basic info from formData
-      ['fullName', 'email', 'linkedin', 'country', 'state'].forEach(key => {
+      ['fullName', 'email', 'linkedin', 'fullBio', 'country', 'state'].forEach(key => {
         if (formData[key as keyof typeof formData]) {
           answers[key] = formData[key as keyof typeof formData];
         }
@@ -632,7 +633,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
     setShowingAiReview(false);
     setShowingBusinessPlan(false);
     setFormData({
-      fullName: "", email: "", linkedin: "", country: "United States", state: "",
+      fullName: "", email: "", linkedin: "", fullBio: "", country: "United States", state: "",
       problem: "", whoExperiences: "", problemImportance: "", currentSolutions: "",
       ideaName: "", ideaDescription: "", valueProposition: "",
       idealCustomer: "", targetMarket: "", marketSize: "", customerReach: "",
@@ -957,6 +958,19 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                           className="w-full"
                           data-testid="input-entrepreneur-linkedin"
                         />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Your Full Bio *</label>
+                        <textarea
+                          name="fullBio"
+                          value={formData.fullBio}
+                          onChange={handleInputChange}
+                          placeholder="Tell us about yourself: Who are you? What motivates you to be an entrepreneur? Are you working solo or with a team? Share your background and passion..."
+                          className="w-full min-h-32 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                          data-testid="textarea-entrepreneur-fullbio"
+                        />
+                        <p className="text-xs text-slate-500 mt-1">Share who you are, what motivates you, and whether you're a solo founder or part of a team.</p>
                       </div>
 
                       <div>
