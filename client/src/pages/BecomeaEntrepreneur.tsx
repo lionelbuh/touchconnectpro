@@ -129,6 +129,7 @@ export default function BecomeaEntrepreneur() {
     fullName: "",
     email: "",
     linkedin: "",
+    website: "",
     fullBio: "",
     country: "United States",
     state: "",
@@ -633,7 +634,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
     setShowingAiReview(false);
     setShowingBusinessPlan(false);
     setFormData({
-      fullName: "", email: "", linkedin: "", fullBio: "", country: "United States", state: "",
+      fullName: "", email: "", linkedin: "", website: "", fullBio: "", country: "United States", state: "",
       problem: "", whoExperiences: "", problemImportance: "", currentSolutions: "",
       ideaName: "", ideaDescription: "", valueProposition: "",
       idealCustomer: "", targetMarket: "", marketSize: "", customerReach: "",
@@ -957,6 +958,19 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                           placeholder="https://linkedin.com/in/yourprofile"
                           className="w-full"
                           data-testid="input-entrepreneur-linkedin"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Website (Optional)</label>
+                        <Input
+                          type="url"
+                          name="website"
+                          value={formData.website}
+                          onChange={handleInputChange}
+                          placeholder="https://yourwebsite.com"
+                          className="w-full"
+                          data-testid="input-entrepreneur-website"
                         />
                       </div>
 
