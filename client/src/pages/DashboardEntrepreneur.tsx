@@ -2211,25 +2211,6 @@ export default function DashboardEntrepreneur() {
                         />
                       </div>
 
-                      {(entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) && (
-                        <div>
-                          <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">LinkedIn Profile</label>
-                          <div className="p-3 bg-slate-100 dark:bg-slate-800/70 rounded-lg">
-                            <a 
-                              href={(entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite || "").startsWith('http') 
-                                ? (entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) 
-                                : `https://${entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite}`} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="text-cyan-600 hover:text-cyan-700 break-all"
-                            >
-                              {entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite}
-                            </a>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">From your application (cannot be changed here)</p>
-                        </div>
-                      )}
-
                       <div className="flex gap-4 pt-4">
                         <Button 
                           variant="outline" 
