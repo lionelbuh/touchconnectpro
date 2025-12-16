@@ -2321,25 +2321,44 @@ export default function DashboardEntrepreneur() {
                       </Card>
                     )}
 
-                    {(entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) && (
+                    {(entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite || entrepreneurData?.data?.website) && (
                       <Card className="border-cyan-200 dark:border-cyan-900/30">
                         <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
                           <CardTitle className="text-lg">Links</CardTitle>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-4">
-                          <div>
-                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">LinkedIn</p>
-                            <a 
-                              href={(entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite || "").startsWith('http') 
-                                ? (entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) 
-                                : `https://${entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite}`} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="text-cyan-600 hover:text-cyan-700 break-all"
-                            >
-                              {entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite}
-                            </a>
-                          </div>
+                          {(entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">LinkedIn</p>
+                              <a 
+                                href={(entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite || "").startsWith('http') 
+                                  ? (entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) 
+                                  : `https://${entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-cyan-600 hover:text-cyan-700 break-all"
+                                data-testid="link-entrepreneur-linkedin"
+                              >
+                                {entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite}
+                              </a>
+                            </div>
+                          )}
+                          {entrepreneurData?.data?.website && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Website</p>
+                              <a 
+                                href={(entrepreneurData?.data?.website || "").startsWith('http') 
+                                  ? entrepreneurData?.data?.website 
+                                  : `https://${entrepreneurData?.data?.website}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-cyan-600 hover:text-cyan-700 break-all"
+                                data-testid="link-entrepreneur-website"
+                              >
+                                {entrepreneurData?.data?.website}
+                              </a>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     )}
