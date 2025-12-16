@@ -2118,18 +2118,6 @@ export default function DashboardEntrepreneur() {
                       </div>
 
                       <div>
-                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Short Bio</label>
-                        <textarea
-                          value={profileData.bio}
-                          onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
-                          placeholder="Tell mentors about yourself..."
-                          rows={4}
-                          className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
-                          data-testid="textarea-profile-bio"
-                        />
-                      </div>
-
-                      <div>
                         <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">LinkedIn Profile URL</label>
                         <Input
                           value={profileData.linkedIn}
