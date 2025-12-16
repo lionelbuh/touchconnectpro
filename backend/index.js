@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type"]
+  allowedHeaders: ["Content-Type", "x-api-key"]
 }));
 app.use(express.json({ limit: "10mb" }));
 
@@ -3726,6 +3726,338 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
 });
 
 // ============ END STRIPE ROUTES ============
+
+// ============================================
+// PUBLIC PARTNER API ENDPOINTS
+// ============================================
+
+// API Key validation helper
+const validatePartnerApiKey = (apiKey) => {
+  if (!apiKey) return false;
+  const validKeys = (process.env.PARTNER_API_KEYS || "").split(",").map(k => k.trim()).filter(Boolean);
+  return validKeys.includes(apiKey);
+};
+
+// Partner API middleware
+const partnerApiAuth = (req, res, next) => {
+  const apiKey = req.headers["x-api-key"];
+  if (!validatePartnerApiKey(apiKey)) {
+    console.log("[PUBLIC API] Invalid or missing API key");
+    return res.status(401).json({ 
+      error: "Unauthorized", 
+      message: "Valid API key required. Include 'x-api-key' header with your partner API key." 
+    });
+  }
+  console.log("[PUBLIC API] Valid API key received");
+  next();
+};
+
+// POST /api/public/applications/entrepreneurs
+app.post("/api/public/applications/entrepreneurs", partnerApiAuth, async (req, res) => {
+  console.log("[PUBLIC API] POST /api/public/applications/entrepreneurs");
+  try {
+    const { fullName, email, ideaName, linkedinWebsite, fullBio, country, state, formData, businessPlan } = req.body;
+
+    if (!email || !fullName) {
+      return res.status(400).json({ error: "fullName and email are required" });
+    }
+
+    if (!ideaName) {
+      return res.status(400).json({ error: "ideaName is required" });
+    }
+
+    // Check for existing application
+    const { data: existing } = await supabase
+      .from("ideas")
+      .select("id, status")
+      .eq("entrepreneur_email", email)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      const app = existing[0];
+      if (app.status === "approved" || app.status === "pre-approved") {
+        return res.status(409).json({ error: "Application already approved for this email" });
+      }
+      if (app.status === "pending" || app.status === "submitted") {
+        return res.status(409).json({ error: "Pending application exists for this email" });
+      }
+    }
+
+    // Build data object to match internal submission format
+    const dataPayload = formData ? {
+      ...formData,
+      fullBio: fullBio || formData.fullBio,
+      ideaName: ideaName || formData.ideaName,
+      country: country || formData.country,
+      state: state || formData.state
+    } : {
+      fullBio,
+      ideaName,
+      country,
+      state
+    };
+
+    const { data, error } = await supabase
+      .from("ideas")
+      .insert({
+        status: "submitted",
+        entrepreneur_email: email,
+        entrepreneur_name: fullName,
+        data: dataPayload,
+        business_plan: businessPlan || {},
+        linkedin_profile: linkedinWebsite || "",
+        user_id: null
+      })
+      .select();
+
+    if (error) {
+      console.error("[PUBLIC API] Entrepreneur insert error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.status(201).json({ 
+      success: true, 
+      applicationId: data?.[0]?.id,
+      status: "submitted",
+      message: "Entrepreneur application submitted successfully"
+    });
+  } catch (error) {
+    console.error("[PUBLIC API] Entrepreneur error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/public/applications/mentors
+app.post("/api/public/applications/mentors", partnerApiAuth, async (req, res) => {
+  console.log("[PUBLIC API] POST /api/public/applications/mentors");
+  try {
+    const { fullName, email, linkedin, bio, expertise, experience, country, state } = req.body;
+
+    if (!email || !fullName || !bio || !expertise || !experience || !country) {
+      return res.status(400).json({ 
+        error: "Missing required fields",
+        required: ["fullName", "email", "bio", "expertise", "experience", "country"]
+      });
+    }
+
+    // Check for existing application
+    const { data: existing } = await supabase
+      .from("mentor_applications")
+      .select("id, status")
+      .eq("email", email)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      const app = existing[0];
+      if (app.status === "approved") {
+        return res.status(409).json({ error: "Application already approved for this email" });
+      }
+      if (app.status === "pending" || app.status === "submitted") {
+        return res.status(409).json({ error: "Pending application exists for this email" });
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("mentor_applications")
+      .insert({
+        full_name: fullName,
+        email,
+        linkedin: linkedin || null,
+        bio,
+        expertise,
+        experience,
+        country,
+        state: state || null,
+        status: "submitted"
+      })
+      .select();
+
+    if (error) {
+      console.error("[PUBLIC API] Mentor insert error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.status(201).json({ 
+      success: true, 
+      applicationId: data?.[0]?.id,
+      status: "submitted",
+      message: "Mentor application submitted successfully"
+    });
+  } catch (error) {
+    console.error("[PUBLIC API] Mentor error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/public/applications/coaches
+app.post("/api/public/applications/coaches", partnerApiAuth, async (req, res) => {
+  console.log("[PUBLIC API] POST /api/public/applications/coaches");
+  try {
+    const { fullName, email, linkedin, bio, expertise, focusAreas, hourlyRate, country, state, specializations } = req.body;
+
+    if (!email || !fullName || !expertise || !focusAreas || !hourlyRate || !country || !bio) {
+      return res.status(400).json({ 
+        error: "Missing required fields",
+        required: ["fullName", "email", "bio", "expertise", "focusAreas", "hourlyRate", "country"]
+      });
+    }
+
+    // Check for existing application
+    const { data: existing } = await supabase
+      .from("coach_applications")
+      .select("id, status")
+      .eq("email", email)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      const app = existing[0];
+      if (app.status === "approved") {
+        return res.status(409).json({ error: "Application already approved for this email" });
+      }
+      if (app.status === "pending" || app.status === "submitted") {
+        return res.status(409).json({ error: "Pending application exists for this email" });
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .insert({
+        full_name: fullName,
+        email,
+        linkedin: linkedin || null,
+        bio: bio || null,
+        expertise,
+        focus_areas: focusAreas,
+        hourly_rate: hourlyRate,
+        country,
+        state: state || null,
+        specializations: specializations || [],
+        status: "submitted"
+      })
+      .select();
+
+    if (error) {
+      console.error("[PUBLIC API] Coach insert error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.status(201).json({ 
+      success: true, 
+      applicationId: data?.[0]?.id,
+      status: "submitted",
+      message: "Coach application submitted successfully"
+    });
+  } catch (error) {
+    console.error("[PUBLIC API] Coach error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/public/applications/investors
+app.post("/api/public/applications/investors", partnerApiAuth, async (req, res) => {
+  console.log("[PUBLIC API] POST /api/public/applications/investors");
+  try {
+    const { fullName, email, linkedin, fundName, investmentFocus, investmentPreference, investmentAmount, country, state } = req.body;
+
+    if (!email || !fullName || !fundName || !investmentFocus || !investmentPreference || !investmentAmount || !country) {
+      return res.status(400).json({ 
+        error: "Missing required fields",
+        required: ["fullName", "email", "fundName", "investmentFocus", "investmentPreference", "investmentAmount", "country"]
+      });
+    }
+
+    // Check for existing application
+    const { data: existing } = await supabase
+      .from("investor_applications")
+      .select("id, status")
+      .eq("email", email)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      const app = existing[0];
+      if (app.status === "approved") {
+        return res.status(409).json({ error: "Application already approved for this email" });
+      }
+      if (app.status === "pending" || app.status === "submitted") {
+        return res.status(409).json({ error: "Pending application exists for this email" });
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("investor_applications")
+      .insert({
+        full_name: fullName,
+        email,
+        linkedin: linkedin || null,
+        fund_name: fundName,
+        investment_focus: investmentFocus,
+        investment_preference: investmentPreference,
+        investment_amount: investmentAmount,
+        country,
+        state: state || null,
+        status: "submitted"
+      })
+      .select();
+
+    if (error) {
+      console.error("[PUBLIC API] Investor insert error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.status(201).json({ 
+      success: true, 
+      applicationId: data?.[0]?.id,
+      status: "submitted",
+      message: "Investor application submitted successfully"
+    });
+  } catch (error) {
+    console.error("[PUBLIC API] Investor error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/public/applications/:id - Check application status
+app.get("/api/public/applications/:id", partnerApiAuth, async (req, res) => {
+  console.log("[PUBLIC API] GET /api/public/applications/:id");
+  try {
+    const { id } = req.params;
+    const { type } = req.query;
+
+    const tableMap = {
+      entrepreneur: "ideas",
+      mentor: "mentor_applications",
+      coach: "coach_applications",
+      investor: "investor_applications"
+    };
+
+    const table = tableMap[type] || "ideas";
+
+    const { data, error } = await supabase
+      .from(table)
+      .select("id, status, created_at")
+      .eq("id", id)
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: "Application not found" });
+    }
+
+    return res.json({
+      applicationId: data.id,
+      status: data.status,
+      createdAt: data.created_at
+    });
+  } catch (error) {
+    console.error("[PUBLIC API] Get application error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// ============ END PUBLIC PARTNER API ============
 
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);

@@ -53,3 +53,6 @@ integrations = ["github:1.0.0", "resend:1.0.0", "stripe:2.0.0"]
 VITE_SUPABASE_URL = "https://mfkxbjtrxwajlyxnxzdn.supabase.co"
 VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ma3hianRyeHdhamx5eG54emRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MjYxMjIsImV4cCI6MjA4MDIwMjEyMn0.BESZziUogihdpP-zlwFsIk8hGzUPUna1_n0nmcX3XOc"
 STRIPE_PRICE_ID = "price_1SdZpuIzajgsohRkDXQlR7xZ"
+
+[userenv.development]
+PARTNER_API_KEYS = "test-partner-key-123"

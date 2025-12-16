@@ -3038,8 +3038,7 @@ export async function registerRoutes(
           experience,
           country,
           state: state || null,
-          status: "submitted",
-          source: "partner_api"
+          status: "submitted"
         } as any)
         .select() as any);
 
@@ -3109,8 +3108,7 @@ export async function registerRoutes(
           country,
           state: state || null,
           specializations: specializations || [],
-          status: "submitted",
-          source: "partner_api"
+          status: "submitted"
         } as any)
         .select() as any);
 
@@ -3179,8 +3177,7 @@ export async function registerRoutes(
           investment_amount: investmentAmount,
           country,
           state: state || null,
-          status: "submitted",
-          source: "partner_api"
+          status: "submitted"
         } as any)
         .select() as any);
 
