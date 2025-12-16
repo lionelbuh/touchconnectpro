@@ -2321,44 +2321,48 @@ export default function DashboardEntrepreneur() {
                       </Card>
                     )}
 
-                    {(entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite || entrepreneurData?.data?.website) && (
+                    {(profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite || profileData.website || entrepreneurData?.data?.website) && (
                       <Card className="border-cyan-200 dark:border-cyan-900/30">
                         <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
                           <CardTitle className="text-lg">Links</CardTitle>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-4">
-                          {(entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) && (
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">LinkedIn / Website</p>
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">LinkedIn</p>
+                            {(profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) ? (
                               <a 
-                                href={(entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite || "").startsWith('http') 
-                                  ? (entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) 
-                                  : `https://${entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite}`} 
+                                href={(profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite || "").startsWith('http') 
+                                  ? (profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) 
+                                  : `https://${profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite}`} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
                                 className="text-cyan-600 hover:text-cyan-700 break-all"
                                 data-testid="link-entrepreneur-linkedin"
                               >
-                                {entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite}
+                                {profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite}
                               </a>
-                            </div>
-                          )}
-                          {entrepreneurData?.data?.website && (
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Website</p>
+                            ) : (
+                              <p className="text-slate-500 dark:text-slate-400">—</p>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Website</p>
+                            {(profileData.website || entrepreneurData?.data?.website) ? (
                               <a 
-                                href={(entrepreneurData?.data?.website || "").startsWith('http') 
-                                  ? entrepreneurData?.data?.website 
-                                  : `https://${entrepreneurData?.data?.website}`} 
+                                href={(profileData.website || entrepreneurData?.data?.website || "").startsWith('http') 
+                                  ? (profileData.website || entrepreneurData?.data?.website) 
+                                  : `https://${profileData.website || entrepreneurData?.data?.website}`} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
                                 className="text-cyan-600 hover:text-cyan-700 break-all"
                                 data-testid="link-entrepreneur-website"
                               >
-                                {entrepreneurData?.data?.website}
+                                {profileData.website || entrepreneurData?.data?.website}
                               </a>
-                            </div>
-                          )}
+                            ) : (
+                              <p className="text-slate-500 dark:text-slate-400">—</p>
+                            )}
+                          </div>
                         </CardContent>
                       </Card>
                     )}
