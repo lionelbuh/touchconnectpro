@@ -760,7 +760,7 @@ export async function registerRoutes(
 
       const { email } = req.params;
       const decodedEmail = decodeURIComponent(email);
-      const { fullName, country, bio, linkedIn, profileImage } = req.body;
+      const { fullName, country, bio, linkedIn, website, profileImage } = req.body;
 
       console.log("[PUT /api/entrepreneurs/profile/:email] Updating profile for:", decodedEmail);
 
@@ -776,22 +776,24 @@ export async function registerRoutes(
         return res.status(400).json({ error: fetchError.message });
       }
 
-      // Merge the profile updates into the existing data object (including profileImage)
+      // Merge the profile updates into the existing data object
+      // linkedIn = LinkedIn profile URL (stored in linkedin_profile column)
+      // website = personal/business website (stored in data.linkedinWebsite for backwards compat)
       const updatedData = {
         ...currentData?.data,
         fullName: fullName,
         country: country,
         bio: bio || "",
-        linkedinWebsite: linkedIn || "",
+        linkedinWebsite: website || currentData?.data?.linkedinWebsite || "",
         profileImage: profileImage || currentData?.data?.profileImage || ""
       };
 
-      // Update the ideas table with merged data (profileImage stored in data JSONB, not as column)
+      // Update the ideas table with merged data
       const { data, error } = await (client
         .from("ideas")
         .update({
           entrepreneur_name: fullName,
-          linkedin_profile: linkedIn,
+          linkedin_profile: linkedIn || "",
           data: updatedData
         } as any)
         .eq("entrepreneur_email", decodedEmail)
