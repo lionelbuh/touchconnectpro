@@ -2550,14 +2550,14 @@ export default function DashboardEntrepreneur() {
               <p className="text-slate-600 dark:text-slate-400 mt-2">{step.description}</p>
             </CardHeader>
             <CardContent className="space-y-6">
-              {step.fields.map((field) => (
+              {step.fields.map((field: any) => (
                 <div key={field.key} className="space-y-2">
                   <label className="text-sm font-medium text-slate-900 dark:text-white">
                     {field.label}
                   </label>
                   {field.type === "textarea" ? (
                     <textarea
-                      rows={(field as any).rows || 3}
+                      rows={field.rows || 3}
                       placeholder={field.placeholder}
                       value={formData[field.key as keyof typeof formData]}
                       onChange={(e) => handleInputChange(field.key, e.target.value)}
@@ -2572,7 +2572,7 @@ export default function DashboardEntrepreneur() {
                       data-testid={`select-${field.key}`}
                     >
                       <option value="">Select {field.label.toLowerCase()}...</option>
-                      {(field as any).options?.map((opt: string) => (
+                      {field.options?.map((opt: string) => (
                         <option key={opt} value={opt}>{opt}</option>
                       ))}
                     </select>
