@@ -354,15 +354,31 @@ export default function DashboardEntrepreneur() {
   }, [userEmail]);
 
   useEffect(() => {
-    localStorage.setItem("tcp_formData", JSON.stringify(formData));
+    try {
+      localStorage.setItem("tcp_formData", JSON.stringify(formData));
+    } catch (e) {
+      console.warn("Could not save form data to localStorage - storage may be full");
+    }
   }, [formData]);
 
   useEffect(() => {
-    localStorage.setItem("tcp_businessPlan", JSON.stringify(businessPlanData));
+    try {
+      localStorage.setItem("tcp_businessPlan", JSON.stringify(businessPlanData));
+    } catch (e) {
+      console.warn("Could not save business plan to localStorage - storage may be full");
+    }
   }, [businessPlanData]);
 
   useEffect(() => {
-    localStorage.setItem("tcp_profileData", JSON.stringify(profileData));
+    try {
+      const dataToSave = { ...profileData };
+      if (dataToSave.profileImage && dataToSave.profileImage.length > 100000) {
+        dataToSave.profileImage = null;
+      }
+      localStorage.setItem("tcp_profileData", JSON.stringify(dataToSave));
+    } catch (e) {
+      console.warn("Could not save profile data to localStorage - storage may be full");
+    }
   }, [profileData]);
 
   // Load messages from database
