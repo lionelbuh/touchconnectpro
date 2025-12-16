@@ -1242,10 +1242,6 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                       <div className="border-l-4 border-red-500 pl-6">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Founder Profile</h3>
                         <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">LinkedIn profile or website?</label>
-                            <Input name="linkedinWebsite" value={formData.linkedinWebsite} onChange={handleInputChange} placeholder="Your LinkedIn/website..." className="w-full" data-testid="input-linkedin-web" />
-                          </div>
                           <div data-field="foundedBefore">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Have you founded or launched a startup before? *</label>
                             <select name="foundedBefore" value={formData.foundedBefore} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" data-testid="select-founded" data-field="foundedBefore">
