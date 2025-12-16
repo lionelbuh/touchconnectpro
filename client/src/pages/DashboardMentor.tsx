@@ -271,7 +271,9 @@ export default function DashboardMentor() {
               businessPlan: m.entrepreneur?.businessPlan,
               meetingQuestions: m.entrepreneur?.meetingQuestions,
               meetingQuestionsGeneratedAt: m.entrepreneur?.meetingQuestionsGeneratedAt,
-              mentorNotes: m.mentor_notes || []
+              mentorNotes: m.mentor_notes || [],
+              bio: m.entrepreneur?.bio,
+              fullBio: m.entrepreneur?.fullBio
             };
           }),
           lastMeeting: ""
@@ -653,6 +655,14 @@ export default function DashboardMentor() {
                                     )}
                                   </div>
                                   
+                                  {/* About the Entrepreneur */}
+                                  {(member.fullBio || member.bio) && (
+                                    <div className="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-lg">
+                                      <p className="text-xs font-semibold text-slate-500 uppercase mb-2">About the Entrepreneur</p>
+                                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{member.fullBio || member.bio}</p>
+                                    </div>
+                                  )}
+
                                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-slate-50 dark:bg-slate-800/30 p-4 rounded-lg">
                                     <div>
                                       <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Idea/Company</p>

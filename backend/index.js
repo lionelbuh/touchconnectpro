@@ -2851,7 +2851,9 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
           ideaReview: entData.ideaReview || entData,
           businessPlan: entrepreneur.business_plan || {},
           meetingQuestions: entData.meetingQuestions || null,
-          meetingQuestionsGeneratedAt: entData.meetingQuestionsGeneratedAt || null
+          meetingQuestionsGeneratedAt: entData.meetingQuestionsGeneratedAt || null,
+          bio: entData.bio || "",
+          fullBio: entData.fullBio || ""
         } : null
       };
     });

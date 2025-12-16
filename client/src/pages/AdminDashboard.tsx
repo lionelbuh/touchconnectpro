@@ -1822,10 +1822,10 @@ export default function AdminDashboard() {
                           </CardHeader>
                           <CardContent className="space-y-4">
                             {/* Bio Section */}
-                            {app.fullBio && (
+                            {(app.fullBio || app.bio) && (
                               <div className="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-lg">
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-2">About the Entrepreneur</p>
-                                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{app.fullBio}</p>
+                                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{app.fullBio || app.bio}</p>
                               </div>
                             )}
                             

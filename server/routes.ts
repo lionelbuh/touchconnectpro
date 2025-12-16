@@ -1365,7 +1365,9 @@ export async function registerRoutes(
             ideaReview: entData.ideaReview || entData,
             businessPlan: entrepreneur.business_plan || {},
             meetingQuestions: entData.meetingQuestions || null,
-            meetingQuestionsGeneratedAt: entData.meetingQuestionsGeneratedAt || null
+            meetingQuestionsGeneratedAt: entData.meetingQuestionsGeneratedAt || null,
+            bio: entData.bio || "",
+            fullBio: entData.fullBio || ""
           } : null
         };
       });
