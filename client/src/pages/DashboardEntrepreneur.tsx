@@ -2329,7 +2329,7 @@ export default function DashboardEntrepreneur() {
                         <CardContent className="pt-6 space-y-4">
                           {(entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) && (
                             <div>
-                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">LinkedIn</p>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">LinkedIn / Website</p>
                               <a 
                                 href={(entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite || "").startsWith('http') 
                                   ? (entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedinWebsite) 
