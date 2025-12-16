@@ -243,6 +243,12 @@ export default function DashboardEntrepreneur() {
           const response = await fetch(`${API_BASE_URL}/api/entrepreneur/${encodeURIComponent(user.email)}`);
           if (response.ok) {
             const data = await response.json();
+            console.log("[DASHBOARD] Entrepreneur data received:", {
+              linkedin_profile: data.linkedin_profile,
+              data_linkedinWebsite: data.data?.linkedinWebsite,
+              data_website: data.data?.website,
+              hasData: !!data.data
+            });
             setEntrepreneurData(data);
             
             // Check if account is disabled
@@ -303,6 +309,72 @@ export default function DashboardEntrepreneur() {
           if (storedProfile) {
             const profile = JSON.parse(storedProfile);
             setUserEmail(profile.email);
+            
+            // Also fetch entrepreneur data from API using the stored email
+            if (profile.email) {
+              const response = await fetch(`${API_BASE_URL}/api/entrepreneur/${encodeURIComponent(profile.email)}`);
+              if (response.ok) {
+                const data = await response.json();
+                console.log("[DASHBOARD] Entrepreneur data received (localStorage fallback):", {
+                  linkedin_profile: data.linkedin_profile,
+                  data_linkedinWebsite: data.data?.linkedinWebsite,
+                  data_website: data.data?.website,
+                  hasData: !!data.data
+                });
+                setEntrepreneurData(data);
+                
+                // Check if account is disabled
+                setIsAccountDisabled(data.is_disabled === true);
+                setIsPreApproved(data.status === "pre-approved");
+                
+                // Set form data from application
+                if (data.data) {
+                  setFormData(prev => ({ ...prev, ...data.data }));
+                }
+                
+                // Set business plan from application
+                if (data.business_plan) {
+                  setBusinessPlanData(data.business_plan);
+                }
+                
+                // Update profile data with fresh API data
+                setProfileData(prev => ({
+                  ...prev,
+                  fullName: data.entrepreneur_name || prev.fullName,
+                  email: data.entrepreneur_email || prev.email,
+                  linkedIn: data.linkedin_profile || prev.linkedIn,
+                  website: data.data?.website || prev.website,
+                  bio: data.data?.fullBio || data.data?.bio || prev.bio,
+                  country: data.data?.country || prev.country,
+                  profileImage: data.data?.profileImage || prev.profileImage
+                }));
+                
+                // Set mentor data if assigned
+                if (data.mentorAssignment) {
+                  setMentorData(data.mentorAssignment);
+                }
+                
+                // Set mentor notes
+                if (data.mentorNotes) {
+                  setMentorNotes(data.mentorNotes);
+                }
+                
+                // Mark as submitted if we have data
+                if (data.id) {
+                  setSubmitted(true);
+                  
+                  // Fetch messages using the entrepreneur's email
+                  const entrepreneurEmail = data.entrepreneur_email || profile.email;
+                  if (entrepreneurEmail) {
+                    const messagesResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(entrepreneurEmail)}`);
+                    if (messagesResponse.ok) {
+                      const messagesData = await messagesResponse.json();
+                      setMessages(messagesData.messages || []);
+                    }
+                  }
+                }
+              }
+            }
           }
         }
         
