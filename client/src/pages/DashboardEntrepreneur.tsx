@@ -2030,36 +2030,28 @@ export default function DashboardEntrepreneur() {
                           <div className="flex flex-col gap-2">
                             <input
                               type="file"
-                              accept="image/*"
+                              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                               id="profile-upload"
                               className="hidden"
                               onChange={async (e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                  const supabase = getSupabase();
-                                  if (!supabase) {
-                                    toast.error("Storage not available");
+                                  // Check file size (max 5MB)
+                                  if (file.size > 5 * 1024 * 1024) {
+                                    toast.error("Image is too large. Please use an image under 5MB.");
                                     return;
                                   }
-                                  const fileName = `profile_${Date.now()}_${file.name}`;
-                                  const { data, error } = await supabase.storage
-                                    .from("profile-images")
-                                    .upload(fileName, file, { upsert: true });
-                                  if (error) {
-                                    console.error("Upload error:", error);
-                                    toast.error("Failed to upload image. Using local preview.");
-                                    const reader = new FileReader();
-                                    reader.onloadend = () => {
-                                      setProfileData({ ...profileData, profileImage: reader.result as string });
-                                    };
-                                    reader.readAsDataURL(file);
-                                  } else {
-                                    const { data: urlData } = supabase.storage
-                                      .from("profile-images")
-                                      .getPublicUrl(fileName);
-                                    setProfileData({ ...profileData, profileImage: urlData.publicUrl });
-                                    toast.success("Image uploaded!");
-                                  }
+                                  
+                                  // Always use base64 for reliability
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => {
+                                    setProfileData({ ...profileData, profileImage: reader.result as string });
+                                    toast.success("Image added! Click 'Save Changes' to keep it.");
+                                  };
+                                  reader.onerror = () => {
+                                    toast.error("Failed to read image file.");
+                                  };
+                                  reader.readAsDataURL(file);
                                 }
                               }}
                               data-testid="input-profile-image"
