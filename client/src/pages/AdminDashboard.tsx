@@ -971,7 +971,23 @@ export default function AdminDashboard() {
                             </div>
                             <div>
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
-                              <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                              {app.linkedin ? (
+                                <a href={app.linkedin.startsWith('http') ? app.linkedin : `https://${app.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 truncate block">
+                                  {app.linkedin}
+                                </a>
+                              ) : (
+                                <p className="text-slate-900 dark:text-white">—</p>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Website</p>
+                              {app.website ? (
+                                <a href={app.website.startsWith('http') ? app.website : `https://${app.website}`} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 truncate block">
+                                  {app.website}
+                                </a>
+                              ) : (
+                                <p className="text-slate-900 dark:text-white">—</p>
+                              )}
                             </div>
                             <div>
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>

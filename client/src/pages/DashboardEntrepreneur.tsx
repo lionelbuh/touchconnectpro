@@ -2300,6 +2300,26 @@ export default function DashboardEntrepreneur() {
                               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Country</p>
                               <p className="text-slate-900 dark:text-white">{profileData.country}</p>
                             </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">LinkedIn</p>
+                              {profileData.linkedIn ? (
+                                <a href={profileData.linkedIn.startsWith('http') ? profileData.linkedIn : `https://${profileData.linkedIn}`} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700">
+                                  {profileData.linkedIn}
+                                </a>
+                              ) : (
+                                <p className="text-slate-900 dark:text-white">—</p>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Website</p>
+                              {profileData.website ? (
+                                <a href={profileData.website.startsWith('http') ? profileData.website : `https://${profileData.website}`} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700">
+                                  {profileData.website}
+                                </a>
+                              ) : (
+                                <p className="text-slate-900 dark:text-white">—</p>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </CardContent>
