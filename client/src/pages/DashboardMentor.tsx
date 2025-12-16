@@ -663,10 +663,54 @@ export default function DashboardMentor() {
                                     </Button>
                                     {isProposalExpanded && member.ideaReview && (
                                       <div className="mt-3 space-y-2 max-h-64 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-3 rounded text-xs">
-                                        {Object.entries(member.ideaReview).map(([key, value]: [string, any], i) => (
-                                          <div key={i}>
-                                            <p className="font-semibold text-slate-700 dark:text-slate-300 capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
-                                            <p className="text-slate-600 dark:text-slate-400 mt-0.5">{String(value || 'N/A')}</p>
+                                        {[
+                                          { key: "problem", label: "1. What problem are you solving?" },
+                                          { key: "whoExperiences", label: "2. Who experiences this problem?" },
+                                          { key: "problemImportance", label: "3. Why is this problem important to solve now?" },
+                                          { key: "currentSolutions", label: "4. How are people solving it today?" },
+                                          { key: "ideaName", label: "5. Project/Company name?" },
+                                          { key: "ideaDescription", label: "6. What is your idea/solution in simple words?" },
+                                          { key: "valueProposition", label: "7. What is the unique benefit/value proposition?" },
+                                          { key: "idealCustomer", label: "8. Who is your ideal customer?" },
+                                          { key: "targetMarket", label: "9. What market/industry does your solution target?" },
+                                          { key: "marketSize", label: "10. How large is your potential market?" },
+                                          { key: "customerReach", label: "11. Where or how will you reach your customers?" },
+                                          { key: "hasCustomers", label: "12. Do you already have customers/users?" },
+                                          { key: "customerCount", label: "13. How many customers/users do you currently have?" },
+                                          { key: "hasRevenue", label: "14. Do you already generate revenue?" },
+                                          { key: "revenueAmount", label: "15. How much revenue so far?" },
+                                          { key: "revenueRecurring", label: "16. Is revenue recurring or one-time?" },
+                                          { key: "productUsage", label: "17. Do customers actively use the product?" },
+                                          { key: "monetization", label: "18. How will you make money?" },
+                                          { key: "pricing", label: "19. What do you plan to charge?" },
+                                          { key: "mainCosts", label: "20. What are your main costs?" },
+                                          { key: "successIn12Months", label: "21. What does success look like in 12 months?" },
+                                          { key: "directCompetitors", label: "22. Who are your direct competitors?" },
+                                          { key: "competitorStrengths", label: "23. What do competitors do well?" },
+                                          { key: "competitorWeakness", label: "24. Where can you outperform them?" },
+                                          { key: "currentStage", label: "25. What stage are you currently in?" },
+                                          { key: "hasDemo", label: "26. Do you have a demo/prototype?" },
+                                          { key: "existingFeatures", label: "27. Which key features already exist?" },
+                                          { key: "featuresToBuild", label: "28. Which features still need to be built?" },
+                                          { key: "linkedinWebsite", label: "29. LinkedIn profile or website?" },
+                                          { key: "foundedBefore", label: "30. Have you founded or launched a startup before?" },
+                                          { key: "soloOrCoFounders", label: "31. Solo or with co-founders?" },
+                                          { key: "personalSkills", label: "32. What skills do you personally bring?" },
+                                          { key: "missingSkills", label: "33. What skills are missing from your team?" },
+                                          { key: "timePerWeek", label: "34. How much time per week can you dedicate?" },
+                                          { key: "personalInvestment", label: "35. Have you invested personal money?" },
+                                          { key: "externalFunding", label: "36. Have you received any external funding?" },
+                                          { key: "fundingNeeded", label: "37. How much funding do you think you need now?" },
+                                          { key: "fundingUseCase", label: "38. What would funding be used for?" },
+                                          { key: "investorType", label: "39. What type of investors are you looking for?" },
+                                          { key: "nextSteps", label: "40. What are the next 3 steps you plan to take?" },
+                                          { key: "currentObstacle", label: "41. What is your biggest current obstacle?" },
+                                          { key: "mentorHelp", label: "42. What help do you need from mentors?" },
+                                          { key: "technicalExpertHelp", label: "43. What help do you need from technical experts?" }
+                                        ].map((q) => (
+                                          <div key={q.key}>
+                                            <p className="font-semibold text-slate-700 dark:text-slate-300">{q.label}</p>
+                                            <p className="text-slate-600 dark:text-slate-400 mt-0.5">{String(member.ideaReview[q.key] || 'N/A')}</p>
                                           </div>
                                         ))}
                                       </div>
