@@ -2323,51 +2323,6 @@ export default function DashboardEntrepreneur() {
                       </Card>
                     )}
 
-                    {(profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedin || profileData.website || entrepreneurData?.data?.website) && (
-                      <Card className="border-cyan-200 dark:border-cyan-900/30">
-                        <CardHeader className="pb-3 bg-cyan-50/50 dark:bg-cyan-950/20">
-                          <CardTitle className="text-lg">Links</CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-6 space-y-4">
-                          <div>
-                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">LinkedIn</p>
-                            {(profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedin) ? (
-                              <a 
-                                href={(profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedin || "").startsWith('http') 
-                                  ? (profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedin) 
-                                  : `https://${profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedin}`} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="text-cyan-600 hover:text-cyan-700 break-all"
-                                data-testid="link-entrepreneur-linkedin"
-                              >
-                                {profileData.linkedIn || entrepreneurData?.linkedin_profile || entrepreneurData?.data?.linkedin}
-                              </a>
-                            ) : (
-                              <p className="text-slate-500 dark:text-slate-400">—</p>
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Website</p>
-                            {(profileData.website || entrepreneurData?.data?.website) ? (
-                              <a 
-                                href={(profileData.website || entrepreneurData?.data?.website || "").startsWith('http') 
-                                  ? (profileData.website || entrepreneurData?.data?.website) 
-                                  : `https://${profileData.website || entrepreneurData?.data?.website}`} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="text-cyan-600 hover:text-cyan-700 break-all"
-                                data-testid="link-entrepreneur-website"
-                              >
-                                {profileData.website || entrepreneurData?.data?.website}
-                              </a>
-                            ) : (
-                              <p className="text-slate-500 dark:text-slate-400">—</p>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
                   </div>
                 )}
               </div>
