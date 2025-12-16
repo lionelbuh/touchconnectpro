@@ -1387,25 +1387,46 @@ app.get("/api/mentors/profile/:email", async (req, res) => {
 app.put("/api/mentors/profile/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { bio, expertise, experience, linkedin } = req.body;
+    const { bio, expertise, experience, linkedin, profileImage } = req.body;
+
+    console.log("[PUT /api/mentors/profile/:id] Updating profile:", id);
+
+    // Build update object - store profileImage in data JSONB field
+    const updateData = {
+      bio,
+      expertise,
+      experience,
+      linkedin: linkedin || null
+    };
+
+    // If profileImage is provided, merge it into the data JSONB field
+    if (profileImage !== undefined) {
+      const { data: existingData } = await supabase
+        .from("mentor_applications")
+        .select("data")
+        .eq("id", id)
+        .single();
+      
+      updateData.data = {
+        ...(existingData?.data || {}),
+        profileImage: profileImage
+      };
+    }
 
     const { data, error } = await supabase
       .from("mentor_applications")
-      .update({
-        bio,
-        expertise,
-        experience,
-        linkedin: linkedin || null
-      })
+      .update(updateData)
       .eq("id", id)
       .select();
 
     if (error) {
+      console.error("[PUT /api/mentors/profile/:id] Error:", error);
       return res.status(400).json({ error: error.message });
     }
 
     return res.json({ success: true, mentor: data?.[0] });
   } catch (error) {
+    console.error("[PUT /api/mentors/profile/:id] Exception:", error);
     return res.status(500).json({ error: error.message });
   }
 });
@@ -4254,6 +4275,35 @@ app.post("/api/public/applications/investors", partnerApiAuth, async (req, res) 
     });
   } catch (error) {
     console.error("[PUBLIC API] Investor error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Admin endpoint to add data column to mentor_applications (run once)
+app.post("/api/admin/add-mentor-data-column", async (req, res) => {
+  try {
+    // Try to add the column if it doesn't exist
+    // First, check if column exists by trying an update with it
+    const testResult = await supabase
+      .from("mentor_applications")
+      .select("data")
+      .limit(1);
+
+    if (testResult.error && testResult.error.message.includes("data")) {
+      // Column doesn't exist - we need to add it via SQL
+      // Since Supabase JS client doesn't support DDL, we return instructions
+      return res.json({
+        success: false,
+        message: "Column 'data' does not exist. Please add it manually in Supabase SQL Editor.",
+        sql: "ALTER TABLE mentor_applications ADD COLUMN IF NOT EXISTS data JSONB DEFAULT '{}'::jsonb;"
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Column 'data' already exists in mentor_applications table"
+    });
+  } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 });

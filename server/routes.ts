@@ -3351,6 +3351,40 @@ export async function registerRoutes(
     }
   });
 
+  // Admin endpoint to add data column to mentor_applications (run once)
+  app.post("/api/admin/add-mentor-data-column", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      // Try to add the column if it doesn't exist
+      // First, check if column exists by trying an update with it
+      const testResult = await (client
+        .from("mentor_applications")
+        .select("data")
+        .limit(1) as any);
+
+      if (testResult.error && testResult.error.message.includes("data")) {
+        // Column doesn't exist - we need to add it via SQL
+        // Since Supabase JS client doesn't support DDL, we return instructions
+        return res.json({
+          success: false,
+          message: "Column 'data' does not exist. Please add it manually in Supabase SQL Editor.",
+          sql: "ALTER TABLE mentor_applications ADD COLUMN IF NOT EXISTS data JSONB DEFAULT '{}'::jsonb;"
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: "Column 'data' already exists in mentor_applications table"
+      });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // GET /api/public/applications/:id - Check application status
   app.get("/api/public/applications/:id", partnerApiAuth, async (req, res) => {
     console.log("[PUBLIC API] GET /api/public/applications/:id");
