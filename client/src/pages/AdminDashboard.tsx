@@ -272,23 +272,26 @@ export default function AdminDashboard() {
         console.log("Ideas count:", Array.isArray(ideas) ? ideas.length : "not array");
         
         if (Array.isArray(ideas) && ideas.length > 0) {
-          const entrepreneurs = ideas.map((idea: any) => ({
-            id: idea.id,
-            fullName: idea.entrepreneur_name || idea.data?.fullName || "Unknown",
-            email: idea.entrepreneur_email || idea.data?.email || "N/A",
-            ideaName: idea.data?.ideaName || "Untitled",
-            problem: idea.data?.problem || "",
-            solution: idea.data?.ideaDescription || "",
-            status: idea.status,
-            submittedAt: idea.created_at,
-            ideaReview: idea.data?.ideaReview || {},
-            businessPlan: idea.business_plan || {},
-            linkedin: idea.linkedin_profile || idea.data?.linkedin || idea.data?.linkedinWebsite || "",
-            website: idea.data?.website || idea.data?.linkedinWebsite || "",
-            is_resubmitted: idea.is_resubmitted,
-            is_disabled: idea.is_disabled || false,
-            ...idea.data
-          }));
+          const entrepreneurs = ideas.map((idea: any) => {
+            const baseData = idea.data || {};
+            return {
+              ...baseData,
+              id: idea.id,
+              fullName: idea.entrepreneur_name || baseData.fullName || "Unknown",
+              email: idea.entrepreneur_email || baseData.email || "N/A",
+              ideaName: baseData.ideaName || "Untitled",
+              problem: baseData.problem || "",
+              solution: baseData.ideaDescription || "",
+              status: idea.status,
+              submittedAt: idea.created_at,
+              ideaReview: baseData.ideaReview || {},
+              businessPlan: idea.business_plan || {},
+              linkedin: idea.linkedin_profile || baseData.linkedin || "",
+              website: baseData.website || baseData.linkedinWebsite || "",
+              is_resubmitted: idea.is_resubmitted,
+              is_disabled: idea.is_disabled || false
+            };
+          });
           console.log("Mapped entrepreneurs:", entrepreneurs.length);
           setEntrepreneurApplications(entrepreneurs);
           setApprovedEntrepreneurs(entrepreneurs.filter((app: any) => app.status === "approved"));
