@@ -22,12 +22,12 @@ export interface BusinessPlanOutput {
   solution: string;
   targetMarket: string;
   marketSize: string;
-  revenue: string;
+  revenueModel: string;
   competitiveAdvantage: string;
-  roadmap: string;
-  fundingNeeds: string;
-  risks: string;
-  success: string;
+  roadmap12Month: string;
+  fundingRequirements: string;
+  risksAndMitigation: string;
+  successMetrics: string;
 }
 
 const REPHRASE_SYSTEM_PROMPT = `You are an expert business writing assistant helping entrepreneurs refine their startup pitch answers.
@@ -144,12 +144,12 @@ Return the business plan as a JSON object with these exact keys:
   "solution": "...",
   "targetMarket": "...",
   "marketSize": "...",
-  "revenue": "...",
+  "revenueModel": "...",
   "competitiveAdvantage": "...",
-  "roadmap": "...",
-  "fundingNeeds": "...",
-  "risks": "...",
-  "success": "..."
+  "roadmap12Month": "...",
+  "fundingRequirements": "...",
+  "risksAndMitigation": "...",
+  "successMetrics": "..."
 }
 
 Each field should contain 2-4 well-written paragraphs. Return ONLY valid JSON.`
@@ -180,12 +180,12 @@ export interface MeetingQuestionsOutput {
   solution: string[];
   targetMarket: string[];
   marketSize: string[];
-  revenue: string[];
+  revenueModel: string[];
   competitiveAdvantage: string[];
-  roadmap: string[];
-  fundingNeeds: string[];
-  risks: string[];
-  success: string[];
+  roadmap12Month: string[];
+  fundingRequirements: string[];
+  risksAndMitigation: string[];
+  successMetrics: string[];
 }
 
 const MEETING_QUESTIONS_PROMPT = `You are an experienced mentor and investor advisor helping prepare for a meeting with an entrepreneur.
@@ -229,12 +229,12 @@ Return as JSON with these exact keys, each containing an array of 2-4 question s
   "solution": ["question 1", "question 2", ...],
   "targetMarket": ["question 1", "question 2", ...],
   "marketSize": ["question 1", "question 2", ...],
-  "revenue": ["question 1", "question 2", ...],
+  "revenueModel": ["question 1", "question 2", ...],
   "competitiveAdvantage": ["question 1", "question 2", ...],
-  "roadmap": ["question 1", "question 2", ...],
-  "fundingNeeds": ["question 1", "question 2", ...],
-  "risks": ["question 1", "question 2", ...],
-  "success": ["question 1", "question 2", ...]
+  "roadmap12Month": ["question 1", "question 2", ...],
+  "fundingRequirements": ["question 1", "question 2", ...],
+  "risksAndMitigation": ["question 1", "question 2", ...],
+  "successMetrics": ["question 1", "question 2", ...]
 }
 
 Return ONLY valid JSON.`

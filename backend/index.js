@@ -102,7 +102,7 @@ app.post("/api/ai/generate-plan", async (req, res) => {
       model: "gpt-4o",
       messages: [
         { role: "system", content: "You are an expert business strategist. Generate a comprehensive, investor-ready business plan based on entrepreneur's answers. Each section should be 2-4 paragraphs with specific details." },
-        { role: "user", content: `Generate business plan from these answers:\n\n${answersText}\n\nReturn JSON with these keys:\n{"executiveSummary":"...","problemStatement":"...","solution":"...","targetMarket":"...","marketSize":"...","revenue":"...","competitiveAdvantage":"...","roadmap":"...","fundingNeeds":"...","risks":"...","success":"..."}\n\nEach field: 2-4 paragraphs. Return ONLY valid JSON.` }
+        { role: "user", content: `Generate business plan from these answers:\n\n${answersText}\n\nReturn JSON with these keys:\n{"executiveSummary":"...","problemStatement":"...","solution":"...","targetMarket":"...","marketSize":"...","revenueModel":"...","competitiveAdvantage":"...","roadmap12Month":"...","fundingRequirements":"...","risksAndMitigation":"...","successMetrics":"..."}\n\nEach field: 2-4 paragraphs. Return ONLY valid JSON.` }
       ],
       temperature: 0.7,
       response_format: { type: "json_object" }
@@ -189,12 +189,12 @@ Return as JSON with these exact keys, each containing an array of 2-4 question s
   "solution": ["question 1", "question 2", ...],
   "targetMarket": ["question 1", "question 2", ...],
   "marketSize": ["question 1", "question 2", ...],
-  "revenue": ["question 1", "question 2", ...],
+  "revenueModel": ["question 1", "question 2", ...],
   "competitiveAdvantage": ["question 1", "question 2", ...],
-  "roadmap": ["question 1", "question 2", ...],
-  "fundingNeeds": ["question 1", "question 2", ...],
-  "risks": ["question 1", "question 2", ...],
-  "success": ["question 1", "question 2", ...]
+  "roadmap12Month": ["question 1", "question 2", ...],
+  "fundingRequirements": ["question 1", "question 2", ...],
+  "risksAndMitigation": ["question 1", "question 2", ...],
+  "successMetrics": ["question 1", "question 2", ...]
 }
 
 Return ONLY valid JSON.` }
