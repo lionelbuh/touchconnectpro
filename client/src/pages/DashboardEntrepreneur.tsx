@@ -2202,12 +2202,35 @@ export default function DashboardEntrepreneur() {
                       </div>
 
                       <div>
-                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Country *</label>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Country</label>
                         <Input
                           value={profileData.country}
-                          onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
-                          className="bg-slate-50 dark:bg-slate-800/50"
+                          disabled
+                          className="bg-slate-100 dark:bg-slate-800/70 text-slate-500 cursor-not-allowed"
                           data-testid="input-profile-country"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">Contact admin to change your country</p>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">LinkedIn</label>
+                        <Input
+                          value={profileData.linkedIn}
+                          onChange={(e) => setProfileData({ ...profileData, linkedIn: e.target.value })}
+                          placeholder="https://linkedin.com/in/yourprofile"
+                          className="bg-slate-50 dark:bg-slate-800/50"
+                          data-testid="input-profile-linkedin"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Website</label>
+                        <Input
+                          value={profileData.website}
+                          onChange={(e) => setProfileData({ ...profileData, website: e.target.value })}
+                          placeholder="https://yourwebsite.com"
+                          className="bg-slate-50 dark:bg-slate-800/50"
+                          data-testid="input-profile-website"
                         />
                       </div>
 
@@ -2234,7 +2257,9 @@ export default function DashboardEntrepreneur() {
                                   fullName: profileData.fullName,
                                   country: profileData.country,
                                   bio: profileData.bio,
-                                  profileImage: profileData.profileImage
+                                  profileImage: profileData.profileImage,
+                                  linkedIn: profileData.linkedIn,
+                                  website: profileData.website
                                 })
                               });
                               if (response.ok) {
@@ -2287,6 +2312,38 @@ export default function DashboardEntrepreneur() {
                             <div>
                               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Country</p>
                               <p className="text-slate-900 dark:text-white">{profileData.country}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">LinkedIn</p>
+                              {profileData.linkedIn ? (
+                                <a 
+                                  href={profileData.linkedIn.startsWith('http') ? profileData.linkedIn : `https://${profileData.linkedIn}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-cyan-600 hover:text-cyan-700 break-all"
+                                  data-testid="link-profile-linkedin"
+                                >
+                                  {profileData.linkedIn}
+                                </a>
+                              ) : (
+                                <p className="text-slate-500 dark:text-slate-400">—</p>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Website</p>
+                              {profileData.website ? (
+                                <a 
+                                  href={profileData.website.startsWith('http') ? profileData.website : `https://${profileData.website}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-cyan-600 hover:text-cyan-700 break-all"
+                                  data-testid="link-profile-website"
+                                >
+                                  {profileData.website}
+                                </a>
+                              ) : (
+                                <p className="text-slate-500 dark:text-slate-400">—</p>
+                              )}
                             </div>
                           </div>
                         </div>
