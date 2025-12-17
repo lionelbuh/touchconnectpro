@@ -2843,15 +2843,26 @@ app.get("/api/mentor-assignments/mentor-email/:email", async (req, res) => {
       const entrepreneur = entrepreneurs?.find(e => e.id === assignment.entrepreneur_id);
       const entData = entrepreneur?.data || {};
       
-      // Parse mentor_notes from JSON if needed
+      // Parse mentor_notes from JSON if needed, ensuring each note has an ID
       let parsedNotes = [];
       if (assignment.mentor_notes) {
         try {
-          parsedNotes = typeof assignment.mentor_notes === 'string'
+          let rawNotes = typeof assignment.mentor_notes === 'string'
             ? JSON.parse(assignment.mentor_notes)
             : (Array.isArray(assignment.mentor_notes) ? assignment.mentor_notes : [assignment.mentor_notes]);
+          // Normalize notes to ensure each has an ID and responses array
+          parsedNotes = rawNotes.map((note, idx) => {
+            if (typeof note === 'string') {
+              return { id: `note_legacy_${idx}_${Date.now()}`, text: note, timestamp: null, responses: [] };
+            }
+            return {
+              ...note,
+              id: note.id || `note_legacy_${idx}_${Date.now()}`,
+              responses: note.responses || []
+            };
+          });
         } catch (e) {
-          parsedNotes = [assignment.mentor_notes];
+          parsedNotes = [{ id: `note_legacy_0_${Date.now()}`, text: String(assignment.mentor_notes), timestamp: null, responses: [] }];
         }
       }
       
@@ -2977,10 +2988,12 @@ app.patch("/api/mentor-assignments/:id", async (req, res) => {
         }
       }
 
-      // Append new note with timestamp
+      // Append new note with timestamp and unique ID
       const newNote = {
+        id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         text: mentorNotes,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        responses: []
       };
       
       const updatedNotes = [...existingNotes, newNote];
@@ -3036,6 +3049,162 @@ app.patch("/api/mentor-assignments/:id", async (req, res) => {
     return res.json({ success: true, assignment: data?.[0] });
   } catch (error) {
     console.error("[PATCH /api/mentor-assignments/:id] Exception:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Submit response to a mentor note (entrepreneur)
+app.post("/api/mentor-assignments/:assignmentId/notes/:noteId/respond", async (req, res) => {
+  console.log("[POST /api/note-respond] Request received");
+  try {
+    const { assignmentId, noteId } = req.params;
+    const { responseText, attachmentUrl, attachmentName, attachmentSize, attachmentType } = req.body;
+
+    if (!responseText && !attachmentUrl) {
+      return res.status(400).json({ error: "Response text or attachment is required" });
+    }
+
+    // Get current assignment
+    const { data: assignment, error: fetchError } = await supabase
+      .from("mentor_assignments")
+      .select("mentor_notes")
+      .eq("id", assignmentId)
+      .single();
+
+    if (fetchError || !assignment) {
+      return res.status(404).json({ error: "Assignment not found" });
+    }
+
+    // Parse existing notes
+    let notes = [];
+    if (assignment.mentor_notes) {
+      try {
+        notes = typeof assignment.mentor_notes === 'string'
+          ? JSON.parse(assignment.mentor_notes)
+          : (Array.isArray(assignment.mentor_notes) ? assignment.mentor_notes : []);
+      } catch (e) {
+        notes = [];
+      }
+    }
+
+    // Find the note and add response
+    let noteFound = false;
+    notes = notes.map((note, idx) => {
+      // Match by ID or by index for notes without IDs
+      const noteIdMatch = note.id === noteId || `note_idx_${idx}` === noteId;
+      if (noteIdMatch) {
+        noteFound = true;
+        const responses = note.responses || [];
+        const newResponse = {
+          id: `resp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          text: responseText || "",
+          timestamp: new Date().toISOString(),
+          attachmentUrl: attachmentUrl || null,
+          attachmentName: attachmentName || null,
+          attachmentSize: attachmentSize || null,
+          attachmentType: attachmentType || null
+        };
+        return { ...note, responses: [...responses, newResponse] };
+      }
+      return note;
+    });
+
+    if (!noteFound) {
+      return res.status(404).json({ error: "Note not found" });
+    }
+
+    // Update the assignment
+    const { error: updateError } = await supabase
+      .from("mentor_assignments")
+      .update({ mentor_notes: JSON.stringify(notes) })
+      .eq("id", assignmentId);
+
+    if (updateError) {
+      return res.status(500).json({ error: updateError.message });
+    }
+
+    console.log("[POST /api/note-respond] Response added successfully");
+    return res.json({ success: true, notes });
+  } catch (error) {
+    console.error("[POST /api/note-respond] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Upload file for note response (Supabase Storage)
+app.post("/api/upload-note-attachment", async (req, res) => {
+  console.log("[POST /api/upload-note-attachment] Request received");
+  try {
+    const { fileName, fileData, fileType, assignmentId } = req.body;
+
+    if (!fileName || !fileData) {
+      return res.status(400).json({ error: "fileName and fileData are required" });
+    }
+
+    // Validate file type
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/csv',
+      'text/plain',
+      'image/jpeg',
+      'image/png',
+      'image/gif'
+    ];
+
+    if (fileType && !allowedTypes.includes(fileType)) {
+      return res.status(400).json({ error: "File type not allowed. Allowed: PDF, Word, Excel, CSV, TXT, images" });
+    }
+
+    // Convert base64 to buffer
+    const base64Data = fileData.replace(/^data:[^;]+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    // Check file size (10MB max)
+    if (buffer.length > 10 * 1024 * 1024) {
+      return res.status(400).json({ error: "File too large. Maximum size is 10MB" });
+    }
+
+    // Generate unique file path
+    const timestamp = Date.now();
+    const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const filePath = `note-attachments/${assignmentId || 'general'}/${timestamp}_${sanitizedFileName}`;
+
+    // Upload to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('note-attachments')
+      .upload(filePath, buffer, {
+        contentType: fileType || 'application/octet-stream',
+        upsert: true
+      });
+
+    if (error) {
+      console.error("[UPLOAD] Storage error:", error);
+      // If bucket doesn't exist, try to create it
+      if (error.message.includes('not found') || error.message.includes('Bucket')) {
+        return res.status(500).json({ error: "Storage bucket 'note-attachments' needs to be created in Supabase. Please create it manually in Supabase dashboard." });
+      }
+      return res.status(500).json({ error: error.message });
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('note-attachments')
+      .getPublicUrl(filePath);
+
+    console.log("[UPLOAD] File uploaded successfully:", filePath);
+    return res.json({
+      success: true,
+      url: urlData.publicUrl,
+      path: filePath,
+      name: fileName,
+      size: buffer.length
+    });
+  } catch (error) {
+    console.error("[UPLOAD] Error:", error);
     return res.status(500).json({ error: error.message });
   }
 });
