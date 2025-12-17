@@ -1545,10 +1545,12 @@ export async function registerRoutes(
           }
         }
 
-        // Append new note with timestamp
+        // Append new note with timestamp and unique ID
         const newNote = {
+          id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           text: mentorNotes,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          responses: []
         };
         
         const updatedNotes = [...existingNotes, newNote];
@@ -1573,6 +1575,172 @@ export async function registerRoutes(
       return res.json({ success: true, assignment: data?.[0] });
     } catch (error: any) {
       console.error("[PATCH /api/mentor-assignments/:id] Exception:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Submit response to a mentor note (entrepreneur)
+  app.post("/api/mentor-assignments/:assignmentId/notes/:noteId/respond", async (req, res) => {
+    console.log("[POST /api/note-respond] Request received");
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { assignmentId, noteId } = req.params;
+      const { responseText, attachmentUrl, attachmentName, attachmentSize, attachmentType } = req.body;
+
+      if (!responseText && !attachmentUrl) {
+        return res.status(400).json({ error: "Response text or attachment is required" });
+      }
+
+      // Get current assignment
+      const { data: assignment, error: fetchError } = await (client
+        .from("mentor_assignments")
+        .select("mentor_notes")
+        .eq("id", assignmentId)
+        .single() as any);
+
+      if (fetchError || !assignment) {
+        return res.status(404).json({ error: "Assignment not found" });
+      }
+
+      // Parse existing notes
+      let notes: any[] = [];
+      if (assignment.mentor_notes) {
+        try {
+          notes = typeof assignment.mentor_notes === 'string'
+            ? JSON.parse(assignment.mentor_notes)
+            : (Array.isArray(assignment.mentor_notes) ? assignment.mentor_notes : []);
+        } catch (e) {
+          notes = [];
+        }
+      }
+
+      // Find the note and add response
+      let noteFound = false;
+      notes = notes.map((note: any, idx: number) => {
+        // Match by ID or by index for notes without IDs
+        const noteIdMatch = note.id === noteId || `note_idx_${idx}` === noteId;
+        if (noteIdMatch) {
+          noteFound = true;
+          const responses = note.responses || [];
+          const newResponse = {
+            id: `resp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            text: responseText || "",
+            timestamp: new Date().toISOString(),
+            attachmentUrl: attachmentUrl || null,
+            attachmentName: attachmentName || null,
+            attachmentSize: attachmentSize || null,
+            attachmentType: attachmentType || null
+          };
+          return { ...note, responses: [...responses, newResponse] };
+        }
+        return note;
+      });
+
+      if (!noteFound) {
+        return res.status(404).json({ error: "Note not found" });
+      }
+
+      // Update the assignment
+      const { error: updateError } = await (client
+        .from("mentor_assignments")
+        .update({ mentor_notes: JSON.stringify(notes) })
+        .eq("id", assignmentId) as any);
+
+      if (updateError) {
+        return res.status(500).json({ error: updateError.message });
+      }
+
+      console.log("[POST /api/note-respond] Response added successfully");
+      return res.json({ success: true, notes });
+    } catch (error: any) {
+      console.error("[POST /api/note-respond] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Upload file for note response (Supabase Storage)
+  app.post("/api/upload-note-attachment", async (req, res) => {
+    console.log("[POST /api/upload-note-attachment] Request received");
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { fileName, fileData, fileType, assignmentId } = req.body;
+
+      if (!fileName || !fileData) {
+        return res.status(400).json({ error: "fileName and fileData are required" });
+      }
+
+      // Validate file type
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/csv',
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/gif'
+      ];
+
+      if (fileType && !allowedTypes.includes(fileType)) {
+        return res.status(400).json({ error: "File type not allowed. Allowed: PDF, Word, Excel, CSV, TXT, images" });
+      }
+
+      // Convert base64 to buffer
+      const base64Data = fileData.replace(/^data:[^;]+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+
+      // Check file size (10MB max)
+      if (buffer.length > 10 * 1024 * 1024) {
+        return res.status(400).json({ error: "File too large. Maximum size is 10MB" });
+      }
+
+      // Generate unique file path
+      const timestamp = Date.now();
+      const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const filePath = `note-attachments/${assignmentId || 'general'}/${timestamp}_${sanitizedFileName}`;
+
+      // Upload to Supabase Storage
+      const { data, error } = await client.storage
+        .from('note-attachments')
+        .upload(filePath, buffer, {
+          contentType: fileType || 'application/octet-stream',
+          upsert: true
+        });
+
+      if (error) {
+        console.error("[UPLOAD] Storage error:", error);
+        // If bucket doesn't exist, try to create it
+        if (error.message.includes('not found') || error.message.includes('Bucket')) {
+          return res.status(500).json({ error: "Storage bucket 'note-attachments' needs to be created in Supabase. Please create it manually in Supabase dashboard." });
+        }
+        return res.status(500).json({ error: error.message });
+      }
+
+      // Get public URL
+      const { data: urlData } = client.storage
+        .from('note-attachments')
+        .getPublicUrl(filePath);
+
+      console.log("[UPLOAD] File uploaded successfully:", filePath);
+      return res.json({
+        success: true,
+        url: urlData.publicUrl,
+        path: filePath,
+        name: fileName,
+        size: buffer.length
+      });
+    } catch (error: any) {
+      console.error("[UPLOAD] Error:", error);
       return res.status(500).json({ error: error.message });
     }
   });
