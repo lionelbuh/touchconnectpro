@@ -1502,7 +1502,9 @@ export async function registerRoutes(
 
       if (noteIdxNum >= 0 && noteIdxNum < notes.length) {
         const note = notes[noteIdxNum];
+        // Preserve all existing fields (including id, responses) when toggling completion
         notes[noteIdxNum] = {
+          ...(typeof note === 'object' ? note : {}),
           text: typeof note === 'string' ? note : note.text,
           timestamp: typeof note === 'string' ? new Date().toISOString() : (note.timestamp || new Date().toISOString()),
           completed: completed || false
