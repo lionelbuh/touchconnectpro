@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2 } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
@@ -67,6 +67,11 @@ export default function DashboardEntrepreneur() {
   const [isEditingPlan, setIsEditingPlan] = useState(false);
   const [showAllOverviewNotes, setShowAllOverviewNotes] = useState(false);
   const [showAllOverviewMessages, setShowAllOverviewMessages] = useState(false);
+  const [noteResponses, setNoteResponses] = useState<Record<string, string>>({});
+  const [noteAttachments, setNoteAttachments] = useState<Record<string, File | null>>({});
+  const [submittingNoteId, setSubmittingNoteId] = useState<string | null>(null);
+  const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
+  const [mentorAssignmentId, setMentorAssignmentId] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     // Questions 1-4: Problem & Idea
@@ -281,6 +286,7 @@ export default function DashboardEntrepreneur() {
             // Set mentor data if assigned
             if (data.mentorAssignment) {
               setMentorData(data.mentorAssignment);
+              setMentorAssignmentId(data.mentorAssignment.id || null);
             }
             
             // Set mentor notes
@@ -354,6 +360,7 @@ export default function DashboardEntrepreneur() {
                 // Set mentor data if assigned
                 if (data.mentorAssignment) {
                   setMentorData(data.mentorAssignment);
+                  setMentorAssignmentId(data.mentorAssignment.id || null);
                 }
                 
                 // Set mentor notes
@@ -837,6 +844,124 @@ export default function DashboardEntrepreneur() {
       toast.error(error.message || "Payment error. Please try again later.");
       localStorage.removeItem("tcp_pendingPaymentEmail");
       setIsSubscribing(false);
+    }
+  };
+
+  // Submit response to a mentor note
+  const handleSubmitNoteResponse = async (noteId: string) => {
+    const responseText = noteResponses[noteId] || "";
+    const file = noteAttachments[noteId];
+    
+    if (!responseText.trim() && !file) {
+      toast.error("Please enter a response or attach a file");
+      return;
+    }
+    
+    if (!mentorAssignmentId) {
+      toast.error("Unable to find your mentor assignment");
+      return;
+    }
+    
+    // Validate file if present
+    if (file) {
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/csv',
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/gif'
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("File type not allowed. Please use PDF, Word, Excel, CSV, TXT, or images.");
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("File too large. Maximum size is 10MB.");
+        return;
+      }
+    }
+    
+    setSubmittingNoteId(noteId);
+    
+    try {
+      let attachmentUrl = null;
+      let attachmentName = null;
+      let attachmentSize = null;
+      let attachmentType = null;
+      
+      // Upload file first if present
+      if (file) {
+        const reader = new FileReader();
+        const fileData = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        
+        const uploadResponse = await fetch(`${API_BASE_URL}/api/upload-note-attachment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: file.name,
+            fileData,
+            fileType: file.type,
+            assignmentId: mentorAssignmentId
+          })
+        });
+        
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          throw new Error(errorData.error || "Failed to upload file");
+        }
+        
+        const uploadResult = await uploadResponse.json();
+        attachmentUrl = uploadResult.url;
+        attachmentName = file.name;
+        attachmentSize = file.size;
+        attachmentType = file.type;
+      }
+      
+      // Submit response
+      const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/${mentorAssignmentId}/notes/${noteId}/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          responseText: responseText.trim(),
+          attachmentUrl,
+          attachmentName,
+          attachmentSize,
+          attachmentType
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to submit response");
+      }
+      
+      const result = await response.json();
+      
+      // Update local state with new notes
+      if (result.notes) {
+        setMentorNotes(result.notes);
+      }
+      
+      // Clear form
+      setNoteResponses(prev => ({ ...prev, [noteId]: "" }));
+      setNoteAttachments(prev => ({ ...prev, [noteId]: null }));
+      setExpandedNoteId(null);
+      
+      toast.success("Response submitted successfully!");
+    } catch (error: any) {
+      console.error("Error submitting note response:", error);
+      toast.error(error.message || "Failed to submit response");
+    } finally {
+      setSubmittingNoteId(null);
     }
   };
 
@@ -2016,10 +2141,9 @@ export default function DashboardEntrepreneur() {
             {activeTab === "notes" && (
               <div>
                 <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Notes</h1>
-                <p className="text-muted-foreground mb-8">Steps 1, 2, 3... from your mentor. Check them off as you complete them.</p>
+                <p className="text-muted-foreground mb-8">Respond to each task from your mentor. You can add text responses and attach files.</p>
 
                 {mentorNotes && mentorNotes.length > 0 ? (() => {
-                  // Sort notes oldest first
                   const sortedNotes = [...mentorNotes].sort((a: any, b: any) => {
                     const timeA = typeof a === 'string' ? 0 : new Date(a.timestamp || 0).getTime();
                     const timeB = typeof b === 'string' ? 0 : new Date(b.timestamp || 0).getTime();
@@ -2032,14 +2156,138 @@ export default function DashboardEntrepreneur() {
                         const noteText = typeof note === 'string' ? note : note.text;
                         const noteTime = typeof note === 'string' ? null : note.timestamp;
                         const isCompleted = typeof note === 'string' ? false : note.completed;
+                        const noteId = note.id || `note_idx_${idx}`;
+                        const noteResponses_list = note.responses || [];
+                        const isExpanded = expandedNoteId === noteId;
+                        const isSubmitting = submittingNoteId === noteId;
+                        
                         return (
-                          <Card key={idx} className={`border-l-4 ${isCompleted ? 'border-l-green-500 bg-green-50 dark:bg-green-950/20' : 'border-l-emerald-500'} border-cyan-200 dark:border-cyan-900/30`}>
+                          <Card key={noteId} className={`border-l-4 ${isCompleted ? 'border-l-green-500 bg-green-50 dark:bg-green-950/20' : 'border-l-emerald-500'} border-cyan-200 dark:border-cyan-900/30`} data-testid={`card-note-${noteId}`}>
                             <CardContent className="pt-6">
                               <div className="flex gap-4">
                                 <div className={`text-3xl font-bold min-w-12 ${isCompleted ? 'text-green-500' : 'text-emerald-500'}`}>{idx + 1}.</div>
                                 <div className="flex-1">
                                   <p className={`leading-relaxed ${isCompleted ? 'text-green-900 dark:text-green-100 line-through' : 'text-slate-900 dark:text-white'}`}>{noteText}</p>
                                   {noteTime && <p className={`text-xs mt-3 ${isCompleted ? 'text-green-700 dark:text-green-300' : 'text-slate-500 dark:text-slate-400'}`}>Added on {new Date(noteTime).toLocaleDateString()}</p>}
+                                  
+                                  {/* Existing Responses */}
+                                  {noteResponses_list.length > 0 && (
+                                    <div className="mt-4 space-y-3">
+                                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                                        <Reply className="h-4 w-4" /> Your Responses ({noteResponses_list.length})
+                                      </p>
+                                      {noteResponses_list.map((resp: any, respIdx: number) => (
+                                        <div key={resp.id || respIdx} className="bg-cyan-50 dark:bg-cyan-950/30 rounded-lg p-3 border border-cyan-200 dark:border-cyan-800" data-testid={`response-${resp.id || respIdx}`}>
+                                          {resp.text && <p className="text-sm text-slate-800 dark:text-slate-200">{resp.text}</p>}
+                                          {resp.attachmentUrl && (
+                                            <a 
+                                              href={resp.attachmentUrl} 
+                                              target="_blank" 
+                                              rel="noopener noreferrer"
+                                              className="inline-flex items-center gap-2 mt-2 text-sm text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300"
+                                              data-testid={`button-download-attachment-${resp.id || respIdx}`}
+                                            >
+                                              <Download className="h-4 w-4" />
+                                              {resp.attachmentName || "Download Attachment"}
+                                            </a>
+                                          )}
+                                          <p className="text-xs text-slate-500 mt-1">{new Date(resp.timestamp).toLocaleString()}</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  
+                                  {/* Response Form Toggle */}
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="mt-4"
+                                    onClick={() => setExpandedNoteId(isExpanded ? null : noteId)}
+                                    data-testid={`button-respond-${noteId}`}
+                                  >
+                                    {isExpanded ? <ChevronUp className="h-4 w-4 mr-2" /> : <Reply className="h-4 w-4 mr-2" />}
+                                    {isExpanded ? "Cancel" : "Respond"}
+                                  </Button>
+                                  
+                                  {/* Response Form */}
+                                  {isExpanded && (
+                                    <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                                      <textarea
+                                        value={noteResponses[noteId] || ""}
+                                        onChange={(e) => setNoteResponses(prev => ({ ...prev, [noteId]: e.target.value }))}
+                                        placeholder="Type your response here..."
+                                        className="w-full min-h-24 p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-y"
+                                        disabled={isSubmitting}
+                                        data-testid={`textarea-response-${noteId}`}
+                                      />
+                                      
+                                      {/* File Attachment */}
+                                      <div className="mt-3">
+                                        <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400">
+                                          <Paperclip className="h-4 w-4" />
+                                          <span>{noteAttachments[noteId] ? noteAttachments[noteId]!.name : "Attach a file (PDF, Word, Excel, CSV, Images)"}</span>
+                                          <input
+                                            type="file"
+                                            className="hidden"
+                                            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.jpg,.jpeg,.png,.gif"
+                                            onChange={(e) => {
+                                              const file = e.target.files?.[0] || null;
+                                              setNoteAttachments(prev => ({ ...prev, [noteId]: file }));
+                                            }}
+                                            disabled={isSubmitting}
+                                            data-testid={`input-file-${noteId}`}
+                                          />
+                                        </label>
+                                        {noteAttachments[noteId] && (
+                                          <div className="flex items-center gap-2 mt-2 text-sm text-slate-600 dark:text-slate-400">
+                                            <FileText className="h-4 w-4" />
+                                            <span>{noteAttachments[noteId]!.name}</span>
+                                            <span className="text-xs">({(noteAttachments[noteId]!.size / 1024).toFixed(1)} KB)</span>
+                                            <button
+                                              onClick={() => setNoteAttachments(prev => ({ ...prev, [noteId]: null }))}
+                                              className="text-red-500 hover:text-red-600 ml-2"
+                                              data-testid={`button-remove-file-${noteId}`}
+                                            >
+                                              ✕
+                                            </button>
+                                          </div>
+                                        )}
+                                      </div>
+                                      
+                                      <div className="flex gap-2 mt-4">
+                                        <Button
+                                          onClick={() => handleSubmitNoteResponse(noteId)}
+                                          disabled={isSubmitting || (!noteResponses[noteId]?.trim() && !noteAttachments[noteId])}
+                                          className="bg-cyan-600 hover:bg-cyan-700"
+                                          data-testid={`button-submit-response-${noteId}`}
+                                        >
+                                          {isSubmitting ? (
+                                            <>
+                                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                              Submitting...
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Send className="h-4 w-4 mr-2" />
+                                              Submit Response
+                                            </>
+                                          )}
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          onClick={() => {
+                                            setExpandedNoteId(null);
+                                            setNoteResponses(prev => ({ ...prev, [noteId]: "" }));
+                                            setNoteAttachments(prev => ({ ...prev, [noteId]: null }));
+                                          }}
+                                          disabled={isSubmitting}
+                                          data-testid={`button-cancel-response-${noteId}`}
+                                        >
+                                          Cancel
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                                 {isCompleted && <div className="text-green-600 text-2xl font-bold min-w-fit">✓</div>}
                               </div>

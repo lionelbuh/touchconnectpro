@@ -1336,15 +1336,26 @@ export async function registerRoutes(
         const entrepreneur = entrepreneurs?.find((e: any) => e.id === assignment.entrepreneur_id);
         const entData = entrepreneur?.data || {};
         
-        // Parse mentor_notes from JSON if needed
+        // Parse mentor_notes from JSON if needed, ensuring each note has an ID
         let parsedNotes: any[] = [];
         if (assignment.mentor_notes) {
           try {
-            parsedNotes = typeof assignment.mentor_notes === 'string'
+            let rawNotes = typeof assignment.mentor_notes === 'string'
               ? JSON.parse(assignment.mentor_notes)
               : (Array.isArray(assignment.mentor_notes) ? assignment.mentor_notes : [assignment.mentor_notes]);
+            // Normalize notes to ensure each has an ID and responses array
+            parsedNotes = rawNotes.map((note: any, idx: number) => {
+              if (typeof note === 'string') {
+                return { id: `note_legacy_${idx}_${Date.now()}`, text: note, timestamp: null, responses: [] };
+              }
+              return {
+                ...note,
+                id: note.id || `note_legacy_${idx}_${Date.now()}`,
+                responses: note.responses || []
+              };
+            });
           } catch (e) {
-            parsedNotes = [assignment.mentor_notes];
+            parsedNotes = [{ id: `note_legacy_0_${Date.now()}`, text: String(assignment.mentor_notes), timestamp: null, responses: [] }];
           }
         }
         
@@ -1402,15 +1413,26 @@ export async function registerRoutes(
         return res.json({ mentor: null });
       }
 
-      // Parse mentor_notes from JSON if needed
+      // Parse mentor_notes from JSON if needed, ensuring each note has an ID
       let parsedNotes: any[] = [];
       if (assignment.mentor_notes) {
         try {
-          parsedNotes = typeof assignment.mentor_notes === 'string'
+          let rawNotes = typeof assignment.mentor_notes === 'string'
             ? JSON.parse(assignment.mentor_notes)
             : (Array.isArray(assignment.mentor_notes) ? assignment.mentor_notes : [assignment.mentor_notes]);
+          // Normalize notes to ensure each has an ID and responses array
+          parsedNotes = rawNotes.map((note: any, idx: number) => {
+            if (typeof note === 'string') {
+              return { id: `note_legacy_${idx}_${Date.now()}`, text: note, timestamp: null, responses: [] };
+            }
+            return {
+              ...note,
+              id: note.id || `note_legacy_${idx}_${Date.now()}`,
+              responses: note.responses || []
+            };
+          });
         } catch (e) {
-          parsedNotes = [assignment.mentor_notes];
+          parsedNotes = [{ id: `note_legacy_0_${Date.now()}`, text: String(assignment.mentor_notes), timestamp: null, responses: [] }];
         }
       }
 
