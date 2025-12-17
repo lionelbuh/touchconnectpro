@@ -2947,6 +2947,83 @@ app.patch("/api/mentor-assignments/:id/toggle-note/:noteIndex", async (req, res)
       return res.status(500).json({ error: updateError.message });
     }
 
+    // Send email notification to entrepreneur when mentor marks note as completed
+    if (completed && noteIdxNum >= 0 && noteIdxNum < notes.length) {
+      try {
+        const noteText = notes[noteIdxNum]?.text || "a task";
+        
+        const { data: mentor } = await supabase
+          .from("mentor_applications")
+          .select("full_name, email")
+          .eq("id", assignment.mentor_id)
+          .single();
+
+        const { data: entrepreneur } = await supabase
+          .from("ideas")
+          .select("entrepreneur_name, entrepreneur_email")
+          .eq("id", assignment.entrepreneur_id)
+          .single();
+
+        if (entrepreneur?.entrepreneur_email && mentor) {
+          const resendData = await getResendClient();
+          if (resendData) {
+            const { client: resendClient, fromEmail } = resendData;
+            const FRONTEND_URL = process.env.FRONTEND_URL || "https://touchconnectpro.com";
+            
+            await resendClient.emails.send({
+              from: fromEmail,
+              to: entrepreneur.entrepreneur_email,
+              subject: `Your mentor marked a task as complete`,
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                  .completed-box { background: #d1fae5; border-left: 4px solid #10b981; padding: 15px; margin: 15px 0; border-radius: 4px; }
+                  .button { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+                  .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <h1>Task Completed!</h1>
+                  </div>
+                  <div class="content">
+                    <p>Hi ${entrepreneur.entrepreneur_name || "there"},</p>
+                    <p>Great news! Your mentor <strong>${mentor.full_name}</strong> has marked the following task as complete:</p>
+                    
+                    <div class="completed-box">
+                      <p style="margin: 0;"><strong style="color: #10b981;">✓</strong> ${noteText}</p>
+                    </div>
+                    
+                    <p>Keep up the great work on your entrepreneurial journey!</p>
+                    
+                    <p style="text-align: center;">
+                      <a href="${FRONTEND_URL}/entrepreneur-dashboard" class="button">View Your Dashboard</a>
+                    </p>
+                    
+                    <p>Best regards,<br>The TouchConnectPro Team</p>
+                  </div>
+                  <div class="footer">
+                    <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `
+          });
+          console.log("[TOGGLE-NOTE] Email sent to entrepreneur:", entrepreneur.entrepreneur_email);
+        }
+      } catch (emailError) {
+        console.error("[TOGGLE-NOTE] Email notification failed:", emailError.message);
+      }
+    }
+
     return res.json({ success: true });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -3126,6 +3203,92 @@ app.post("/api/mentor-assignments/:assignmentId/notes/:noteId/respond", async (r
     }
 
     console.log("[POST /api/note-respond] Response added successfully");
+
+    // Send email notification to mentor about entrepreneur's response
+    try {
+      const { data: fullAssignment } = await supabase
+        .from("mentor_assignments")
+        .select("mentor_id, entrepreneur_id")
+        .eq("id", assignmentId)
+        .single();
+
+      if (fullAssignment) {
+        const { data: mentor } = await supabase
+          .from("mentor_applications")
+          .select("email, full_name")
+          .eq("id", fullAssignment.mentor_id)
+          .single();
+
+        const { data: entrepreneur } = await supabase
+          .from("ideas")
+          .select("entrepreneur_name, entrepreneur_email")
+          .eq("id", fullAssignment.entrepreneur_id)
+          .single();
+
+        if (mentor?.email && entrepreneur) {
+          const resendData = await getResendClient();
+          if (resendData) {
+            const { client: resendClient, fromEmail } = resendData;
+            const FRONTEND_URL = process.env.FRONTEND_URL || "https://touchconnectpro.com";
+            const notePreview = notes.find((n) => n.id === noteId)?.text || "your note";
+            const responsePreview = responseText ? (responseText.length > 100 ? responseText.substring(0, 100) + "..." : responseText) : "";
+            
+            await resendClient.emails.send({
+              from: fromEmail,
+              to: mentor.email,
+              subject: `${entrepreneur.entrepreneur_name || "Your entrepreneur"} responded to your note`,
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background: linear-gradient(135deg, #0891b2, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                  .note-box { background: #e0f2fe; border-left: 4px solid #0891b2; padding: 15px; margin: 15px 0; border-radius: 4px; }
+                  .response-box { background: #d1fae5; border-left: 4px solid #10b981; padding: 15px; margin: 15px 0; border-radius: 4px; }
+                  .button { display: inline-block; background: #0891b2; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+                  .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <h1>New Response to Your Note</h1>
+                  </div>
+                  <div class="content">
+                    <p>Hi ${mentor.full_name},</p>
+                    <p><strong>${entrepreneur.entrepreneur_name || "Your entrepreneur"}</strong> has responded to your note:</p>
+                    
+                    <div class="note-box">
+                      <p style="margin: 0; font-style: italic;">"${notePreview}"</p>
+                    </div>
+                    
+                    ${responsePreview ? `<div class="response-box"><p style="margin: 0;"><strong>Their response:</strong><br>${responsePreview}</p></div>` : ""}
+                    ${attachmentName ? `<p><strong>📎 Attachment:</strong> ${attachmentName}</p>` : ""}
+                    
+                    <p style="text-align: center;">
+                      <a href="${FRONTEND_URL}/mentor-dashboard" class="button">View in Dashboard</a>
+                    </p>
+                    
+                    <p>Best regards,<br>The TouchConnectPro Team</p>
+                  </div>
+                  <div class="footer">
+                    <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `
+          });
+          console.log("[POST /api/note-respond] Email sent to mentor:", mentor.email);
+        }
+      }
+    } catch (emailError) {
+      console.error("[POST /api/note-respond] Email notification failed:", emailError.message);
+    }
+
     return res.json({ success: true, notes });
   } catch (error) {
     console.error("[POST /api/note-respond] Error:", error);

@@ -827,38 +827,43 @@ export default function DashboardMentor() {
                                           const noteResponses = note.responses || [];
                                           
                                           return (
-                                            <div key={noteId} className={`rounded-lg border ${isCompleted ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800' : 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800'}`} data-testid={`mentor-note-${noteId}`}>
-                                              <div className="p-2 flex items-start gap-2">
-                                                <Button
-                                                  size="xs"
-                                                  variant="ghost"
-                                                  className={`mt-0.5 min-w-fit px-1 py-0 ${isCompleted ? 'text-green-600 hover:text-green-700' : 'text-slate-400 hover:text-slate-600'}`}
-                                                  onClick={async () => {
-                                                    const assignmentId = member.assignment_id;
-                                                    if (!assignmentId) return;
-                                                    try {
-                                                      const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/${assignmentId}/toggle-note/${idx}`, {
-                                                        method: "PATCH",
-                                                        headers: { "Content-Type": "application/json" },
-                                                        body: JSON.stringify({ completed: !isCompleted })
-                                                      });
-                                                      if (response.ok) {
-                                                        await refreshPortfolios();
-                                                        toast.success("Step updated!");
-                                                      } else {
-                                                        toast.error("Failed to update note");
-                                                      }
-                                                    } catch (error) {
-                                                      toast.error("Error updating note");
+                                            <div key={noteId} className={`rounded-lg border ${isCompleted ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800' : 'bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700'}`} data-testid={`mentor-note-${noteId}`}>
+                                              <div className="p-3">
+                                                <div className="flex items-start justify-between gap-3">
+                                                  <div className="flex-1">
+                                                    <p className={`text-sm ${isCompleted ? 'text-green-900 dark:text-green-100 line-through' : 'text-slate-900 dark:text-slate-100'}`}>{noteText}</p>
+                                                    {noteTime && <p className={`text-xs mt-1 ${isCompleted ? 'text-green-600 dark:text-green-400' : 'text-slate-500 dark:text-slate-400'}`}>{new Date(noteTime).toLocaleDateString()}</p>}
+                                                  </div>
+                                                  <Button
+                                                    size="sm"
+                                                    variant={isCompleted ? "outline" : "default"}
+                                                    className={isCompleted 
+                                                      ? 'bg-green-100 hover:bg-green-200 text-green-700 border-green-300 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-300 dark:border-green-700' 
+                                                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                                                     }
-                                                  }}
-                                                  data-testid={`button-toggle-note-${member.id}-${idx}`}
-                                                >
-                                                  {isCompleted ? '✓' : '○'}
-                                                </Button>
-                                                <div className="flex-1 text-xs">
-                                                  <p className={`${isCompleted ? 'text-green-900 dark:text-green-100 line-through' : 'text-emerald-900 dark:text-emerald-100'}`}>{noteText}</p>
-                                                  {noteTime && <p className={`text-xs mt-1 ${isCompleted ? 'text-green-700 dark:text-green-300' : 'text-emerald-700 dark:text-emerald-300'}`}>{new Date(noteTime).toLocaleDateString()}</p>}
+                                                    onClick={async () => {
+                                                      const assignmentId = member.assignment_id;
+                                                      if (!assignmentId) return;
+                                                      try {
+                                                        const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/${assignmentId}/toggle-note/${idx}`, {
+                                                          method: "PATCH",
+                                                          headers: { "Content-Type": "application/json" },
+                                                          body: JSON.stringify({ completed: !isCompleted })
+                                                        });
+                                                        if (response.ok) {
+                                                          await refreshPortfolios();
+                                                          toast.success(isCompleted ? "Task reopened" : "Task marked complete!");
+                                                        } else {
+                                                          toast.error("Failed to update note");
+                                                        }
+                                                      } catch (error) {
+                                                        toast.error("Error updating note");
+                                                      }
+                                                    }}
+                                                    data-testid={`button-toggle-note-${member.id}-${idx}`}
+                                                  >
+                                                    {isCompleted ? '✓ Completed' : 'Mark Complete'}
+                                                  </Button>
                                                 </div>
                                               </div>
                                               
