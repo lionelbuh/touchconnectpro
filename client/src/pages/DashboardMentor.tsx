@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User } from "lucide-react";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -818,44 +818,77 @@ export default function DashboardMentor() {
                                     
                                     {/* Notes History */}
                                     {member.mentorNotes && member.mentorNotes.length > 0 && (
-                                      <div className="mb-4 space-y-2 max-h-48 overflow-y-auto">
+                                      <div className="mb-4 space-y-3 max-h-96 overflow-y-auto">
                                         {member.mentorNotes.map((note: any, idx: number) => {
                                           const noteText = typeof note === 'string' ? note : note.text;
                                           const noteTime = typeof note === 'string' ? null : note.timestamp;
                                           const isCompleted = typeof note === 'string' ? false : note.completed;
+                                          const noteId = note.id || `note_idx_${idx}`;
+                                          const noteResponses = note.responses || [];
+                                          
                                           return (
-                                            <div key={idx} className={`p-2 rounded text-xs flex items-start gap-2 ${isCompleted ? 'bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800' : 'bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800'}`}>
-                                              <Button
-                                                size="xs"
-                                                variant="ghost"
-                                                className={`mt-0.5 min-w-fit px-1 py-0 ${isCompleted ? 'text-green-600 hover:text-green-700' : 'text-slate-400 hover:text-slate-600'}`}
-                                                onClick={async () => {
-                                                  const assignmentId = member.assignment_id;
-                                                  if (!assignmentId) return;
-                                                  try {
-                                                    const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/${assignmentId}/toggle-note/${idx}`, {
-                                                      method: "PATCH",
-                                                      headers: { "Content-Type": "application/json" },
-                                                      body: JSON.stringify({ completed: !isCompleted })
-                                                    });
-                                                    if (response.ok) {
-                                                      await refreshPortfolios();
-                                                      toast.success("Step updated!");
-                                                    } else {
-                                                      toast.error("Failed to update note");
+                                            <div key={noteId} className={`rounded-lg border ${isCompleted ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800' : 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800'}`} data-testid={`mentor-note-${noteId}`}>
+                                              <div className="p-2 flex items-start gap-2">
+                                                <Button
+                                                  size="xs"
+                                                  variant="ghost"
+                                                  className={`mt-0.5 min-w-fit px-1 py-0 ${isCompleted ? 'text-green-600 hover:text-green-700' : 'text-slate-400 hover:text-slate-600'}`}
+                                                  onClick={async () => {
+                                                    const assignmentId = member.assignment_id;
+                                                    if (!assignmentId) return;
+                                                    try {
+                                                      const response = await fetch(`${API_BASE_URL}/api/mentor-assignments/${assignmentId}/toggle-note/${idx}`, {
+                                                        method: "PATCH",
+                                                        headers: { "Content-Type": "application/json" },
+                                                        body: JSON.stringify({ completed: !isCompleted })
+                                                      });
+                                                      if (response.ok) {
+                                                        await refreshPortfolios();
+                                                        toast.success("Step updated!");
+                                                      } else {
+                                                        toast.error("Failed to update note");
+                                                      }
+                                                    } catch (error) {
+                                                      toast.error("Error updating note");
                                                     }
-                                                  } catch (error) {
-                                                    toast.error("Error updating note");
-                                                  }
-                                                }}
-                                                data-testid={`button-toggle-note-${member.id}-${idx}`}
-                                              >
-                                                {isCompleted ? '✓' : '○'}
-                                              </Button>
-                                              <div className="flex-1">
-                                                <p className={`${isCompleted ? 'text-green-900 dark:text-green-100 line-through' : 'text-emerald-900 dark:text-emerald-100'}`}>{noteText}</p>
-                                                {noteTime && <p className={`text-xs mt-1 ${isCompleted ? 'text-green-700 dark:text-green-300' : 'text-emerald-700 dark:text-emerald-300'}`}>{new Date(noteTime).toLocaleDateString()}</p>}
+                                                  }}
+                                                  data-testid={`button-toggle-note-${member.id}-${idx}`}
+                                                >
+                                                  {isCompleted ? '✓' : '○'}
+                                                </Button>
+                                                <div className="flex-1 text-xs">
+                                                  <p className={`${isCompleted ? 'text-green-900 dark:text-green-100 line-through' : 'text-emerald-900 dark:text-emerald-100'}`}>{noteText}</p>
+                                                  {noteTime && <p className={`text-xs mt-1 ${isCompleted ? 'text-green-700 dark:text-green-300' : 'text-emerald-700 dark:text-emerald-300'}`}>{new Date(noteTime).toLocaleDateString()}</p>}
+                                                </div>
                                               </div>
+                                              
+                                              {/* Entrepreneur Responses */}
+                                              {noteResponses.length > 0 && (
+                                                <div className="border-t border-slate-200 dark:border-slate-700 p-2 space-y-2">
+                                                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                                                    <Reply className="h-3 w-3" /> Entrepreneur Responses ({noteResponses.length})
+                                                  </p>
+                                                  {noteResponses.map((resp: any, respIdx: number) => (
+                                                    <div key={resp.id || respIdx} className="bg-cyan-50 dark:bg-cyan-950/30 rounded p-2 text-xs border border-cyan-200 dark:border-cyan-800" data-testid={`mentor-response-view-${resp.id || respIdx}`}>
+                                                      {resp.text && <p className="text-slate-800 dark:text-slate-200">{resp.text}</p>}
+                                                      {resp.attachmentUrl && (
+                                                        <a 
+                                                          href={resp.attachmentUrl} 
+                                                          target="_blank" 
+                                                          rel="noopener noreferrer"
+                                                          className="inline-flex items-center gap-1 mt-1 text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 font-medium"
+                                                          data-testid={`button-download-note-response-${resp.id || respIdx}`}
+                                                        >
+                                                          <Download className="h-3 w-3" />
+                                                          <FileText className="h-3 w-3" />
+                                                          {resp.attachmentName || "Download File"}
+                                                        </a>
+                                                      )}
+                                                      <p className="text-xs text-slate-500 mt-1">{new Date(resp.timestamp).toLocaleString()}</p>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              )}
                                             </div>
                                           );
                                         })}
