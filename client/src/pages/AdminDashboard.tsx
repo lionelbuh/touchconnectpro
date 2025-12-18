@@ -566,7 +566,7 @@ export default function AdminDashboard() {
 
       if (investorNoteAttachment) {
         const supabaseModule = await import("@/lib/supabase");
-        const supabaseClient = supabaseModule.supabase;
+        const supabaseClient = await supabaseModule.getSupabase();
         if (!supabaseClient) throw new Error("Supabase not configured");
         const fileName = `investor-notes/${selectedInvestorForNotes.id}/${Date.now()}_${investorNoteAttachment.name}`;
         const { data, error } = await supabaseClient.storage
@@ -632,7 +632,7 @@ export default function AdminDashboard() {
 
       if (responseFile) {
         const supabaseModule = await import("@/lib/supabase");
-        const supabaseClient = supabaseModule.supabase;
+        const supabaseClient = await supabaseModule.getSupabase();
         if (!supabaseClient) throw new Error("Supabase not configured");
         const fileName = `investor-notes/${selectedInvestorForNotes.id}/${Date.now()}_${responseFile.name}`;
         const { data, error } = await supabaseClient.storage
