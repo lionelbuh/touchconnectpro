@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video } from "lucide-react";
+import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { API_BASE_URL } from "@/config";
@@ -619,6 +619,13 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         setInvestorNotes(data.notes || []);
+        // Update investorApplications and approvedInvestors to reflect new notes (for unread indicator)
+        const updateFn = (inv: any) => 
+          inv.id === selectedInvestorForNotes.id 
+            ? { ...inv, data: { ...inv.data, notes: data.notes || [] } } 
+            : inv;
+        setInvestorApplications(prev => prev.map(updateFn));
+        setApprovedInvestors(prev => prev.map(updateFn));
         setInvestorNoteText("");
         setInvestorNoteAttachment(null);
         toast.success("Note sent to investor!");
@@ -698,6 +705,13 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         setInvestorNotes(data.notes || []);
+        // Update investorApplications and approvedInvestors to reflect new notes (for unread indicator)
+        const updateFn = (inv: any) => 
+          inv.id === selectedInvestorForNotes.id 
+            ? { ...inv, data: { ...inv.data, notes: data.notes || [] } } 
+            : inv;
+        setInvestorApplications(prev => prev.map(updateFn));
+        setApprovedInvestors(prev => prev.map(updateFn));
         setInvestorNoteResponseText(prev => ({ ...prev, [noteId]: "" }));
         setInvestorNoteResponseAttachment(prev => ({ ...prev, [noteId]: null }));
         toast.success("Response sent!");
@@ -722,6 +736,13 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         setInvestorNotes(data.notes || []);
+        // Update investorApplications and approvedInvestors to reflect the new notes (for unread indicator)
+        const updateFn = (inv: any) => 
+          inv.id === selectedInvestorForNotes.id 
+            ? { ...inv, data: { ...inv.data, notes: data.notes || [] } } 
+            : inv;
+        setInvestorApplications(prev => prev.map(updateFn));
+        setApprovedInvestors(prev => prev.map(updateFn));
       }
     } catch (error) {
       console.error("Error toggling note status:", error);
@@ -1152,15 +1173,18 @@ export default function AdminDashboard() {
   const rejectedInvestorApplications = investorApplications.filter(app => app.status === "rejected");
 
   // Calculate unread investor notes (notes with responses from investors)
-  const unreadInvestorNoteCount = investorApplications.reduce((count, investor) => {
-    const notes = (investor as any).data?.notes || [];
-    const unreadNotes = notes.filter((note: any) => {
+  const getUnreadInvestorNoteCount = (investor: any) => {
+    const notes = investor.data?.notes || [];
+    return notes.filter((note: any) => {
       // Check if note has any response from investor (not admin)
       const hasInvestorResponse = note.responses?.some((r: any) => !r.fromAdmin);
       // If note is not completed and has investor response, it's unread
       return hasInvestorResponse && !note.completed;
-    });
-    return count + unreadNotes.length;
+    }).length;
+  };
+  
+  const unreadInvestorNoteCount = investorApplications.reduce((count, investor) => {
+    return count + getUnreadInvestorNoteCount(investor);
   }, 0);
 
   const filterAndSort = (items: any[], nameField: string) => {
@@ -3001,7 +3025,52 @@ export default function AdminDashboard() {
               {/* Investors - Full Details */}
               {activeMembersCategoryTab === "investors" && (
                 <div>
-                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Approved Investors</h2>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white">Approved Investors</h2>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          const investorResponse = await fetch(`${API_BASE_URL}/api/investors`);
+                          if (investorResponse.ok) {
+                            const investors = await investorResponse.json();
+                            if (Array.isArray(investors)) {
+                              const mappedInvestors = investors.map((i: any) => ({
+                                id: i.id,
+                                fullName: i.full_name,
+                                email: i.email,
+                                linkedin: i.linkedin,
+                                bio: i.data?.bio || i.bio || null,
+                                profileImage: i.data?.profileImage || null,
+                                fundName: i.fund_name,
+                                investmentFocus: i.investment_focus,
+                                investmentPreference: i.investment_preference,
+                                investmentAmount: i.investment_amount,
+                                country: i.country,
+                                state: i.state,
+                                status: i.status === "submitted" ? "pending" : i.status,
+                                submittedAt: i.created_at,
+                                is_resubmitted: i.is_resubmitted,
+                                is_disabled: i.is_disabled || false,
+                                data: i.data || {}
+                              }));
+                              setInvestorApplications(mappedInvestors);
+                              setApprovedInvestors(mappedInvestors.filter((app: any) => app.status === "approved"));
+                              toast.success("Investor data refreshed");
+                            }
+                          }
+                        } catch (err) {
+                          console.error("Error refreshing investors:", err);
+                          toast.error("Failed to refresh investor data");
+                        }
+                      }}
+                      data-testid="button-refresh-investors"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                  </div>
                   {investorApplications.filter(app => app.status === "approved").length === 0 ? (
                     <Card>
                       <CardContent className="pt-12 pb-12 text-center">
@@ -3025,7 +3094,14 @@ export default function AdminDashboard() {
                                   )}
                                 </Avatar>
                                 <div>
-                                  <CardTitle>{app.fullName}</CardTitle>
+                                  <CardTitle className="flex items-center gap-2">
+                                    {app.fullName}
+                                    {getUnreadInvestorNoteCount(app) > 0 && (
+                                      <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full animate-pulse">
+                                        {getUnreadInvestorNoteCount(app)} unread
+                                      </span>
+                                    )}
+                                  </CardTitle>
                                   <p className="text-sm text-muted-foreground mt-1">{app.email}</p>
                                 </div>
                               </div>
