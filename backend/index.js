@@ -1930,7 +1930,6 @@ app.post("/api/investors", async (req, res) => {
           .update({
             full_name: fullName,
             linkedin: linkedin || null,
-            bio: bio || null,
             fund_name: fundName,
             investment_focus: investmentFocus,
             investment_preference: investmentPreference,
@@ -1938,7 +1937,8 @@ app.post("/api/investors", async (req, res) => {
             country,
             state: state || null,
             status: "pending",
-            is_resubmitted: true
+            is_resubmitted: true,
+            data: bio ? { bio } : {}
           })
           .eq("id", existing.id)
           .select();
@@ -1960,14 +1960,14 @@ app.post("/api/investors", async (req, res) => {
         full_name: fullName,
         email,
         linkedin: linkedin || null,
-        bio: bio || null,
         fund_name: fundName,
         investment_focus: investmentFocus,
         investment_preference: investmentPreference,
         investment_amount: investmentAmount,
         country,
         state: state || null,
-        status: "submitted"
+        status: "submitted",
+        data: bio ? { bio } : {}
       })
       .select();
 
@@ -2045,8 +2045,7 @@ app.put("/api/investors/profile/:id", async (req, res) => {
       investment_focus: investmentFocus,
       investment_preference: investmentPreference,
       investment_amount: investmentAmount,
-      linkedin: linkedin || null,
-      bio: bio || null
+      linkedin: linkedin || null
     };
 
     // Update full_name if provided
@@ -2054,7 +2053,7 @@ app.put("/api/investors/profile/:id", async (req, res) => {
       updateData.full_name = fullName;
     }
 
-    // Merge profileImage into data JSONB field
+    // Store bio and profileImage in data JSONB field
     if (profileImage !== undefined || bio !== undefined) {
       updateData.data = {
         ...(existingData?.data || {}),

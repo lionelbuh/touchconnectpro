@@ -2547,8 +2547,7 @@ export async function registerRoutes(
         investment_focus: investmentFocus,
         investment_preference: investmentPreference,
         investment_amount: investmentAmount,
-        linkedin: linkedin || null,
-        bio: bio || null
+        linkedin: linkedin || null
       };
 
       // Update full_name if provided
@@ -2556,7 +2555,7 @@ export async function registerRoutes(
         updateData.full_name = fullName;
       }
 
-      // Merge profileImage into data JSONB field
+      // Store bio and profileImage in data JSONB field
       if (profileImage !== undefined || bio !== undefined) {
         updateData.data = {
           ...(existingData?.data || {}),
@@ -3962,14 +3961,14 @@ export async function registerRoutes(
           full_name: fullName,
           email,
           linkedin: linkedin || null,
-          bio: bio || null,
           fund_name: fundName,
           investment_focus: investmentFocus,
           investment_preference: investmentPreference,
           investment_amount: investmentAmount,
           country,
           state: state || null,
-          status: "submitted"
+          status: "submitted",
+          data: bio ? { bio } : {}
         } as any)
         .select() as any);
 

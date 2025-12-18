@@ -223,6 +223,7 @@ export default function AdminDashboard() {
               fullName: i.full_name,
               email: i.email,
               linkedin: i.linkedin,
+              bio: i.data?.bio || i.bio || null,
               fundName: i.fund_name,
               investmentFocus: i.investment_focus,
               investmentPreference: i.investment_preference,
