@@ -4684,6 +4684,35 @@ app.post("/api/stripe/create-checkout-session", async (req, res) => {
   }
 });
 
+// Get entrepreneur payment status
+app.get("/api/entrepreneur/payment-status/:email", async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email);
+    
+    const { data, error } = await supabase
+      .from("ideas")
+      .select("payment_status, stripe_customer_id, payment_date, status")
+      .ilike("entrepreneur_email", email)
+      .limit(1);
+
+    if (error) {
+      console.error("[PAYMENT STATUS] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    const idea = data?.[0];
+    return res.json({
+      paymentStatus: idea?.payment_status || null,
+      stripeCustomerId: idea?.stripe_customer_id || null,
+      paymentDate: idea?.payment_date || null,
+      applicationStatus: idea?.status || null
+    });
+  } catch (error) {
+    console.error("[PAYMENT STATUS] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // Confirm payment and update entrepreneur status
 app.post("/api/stripe/confirm-payment", async (req, res) => {
   console.log("[STRIPE] confirm-payment called");
