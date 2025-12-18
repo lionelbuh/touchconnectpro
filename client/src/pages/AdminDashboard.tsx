@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus } from "lucide-react";
+import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { API_BASE_URL } from "@/config";
@@ -145,15 +145,12 @@ export default function AdminDashboard() {
   const [investorNoteResponseText, setInvestorNoteResponseText] = useState<{[noteId: string]: string}>({});
   const [investorNoteResponseAttachment, setInvestorNoteResponseAttachment] = useState<{[noteId: string]: File | null}>({});
   const [showCreateMeetingModal, setShowCreateMeetingModal] = useState(false);
-  const [meetingTopic, setMeetingTopic] = useState("");
-  const [meetingDateTime, setMeetingDateTime] = useState("");
-  const [meetingDuration, setMeetingDuration] = useState("60");
-  const [meetingUrl, setMeetingUrl] = useState("");
-  const [meetingPassword, setMeetingPassword] = useState("");
-  const [meetingRecipientType, setMeetingRecipientType] = useState<"entrepreneur" | "mentor" | "investor">("entrepreneur");
-  const [meetingRecipientEmail, setMeetingRecipientEmail] = useState("");
-  const [meetingRecipientName, setMeetingRecipientName] = useState("");
-  const [sendingMeetingInvite, setSendingMeetingInvite] = useState(false);
+  const [adminMeeting, setAdminMeeting] = useState({ topic: "", date: "", time: "", duration: 60 });
+  const [creatingAdminZoomMeeting, setCreatingAdminZoomMeeting] = useState(false);
+  const [adminZoomMeetingResult, setAdminZoomMeetingResult] = useState<any>(null);
+  const [adminMeetingRecipientType, setAdminMeetingRecipientType] = useState<"entrepreneur" | "mentor" | "investor" | "coach">("entrepreneur");
+  const [selectedAdminMeetingRecipients, setSelectedAdminMeetingRecipients] = useState<string[]>([]);
+  const [sendingAdminMeetingInvites, setSendingAdminMeetingInvites] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -708,54 +705,125 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSendMeetingInvite = async () => {
-    if (!meetingTopic.trim() || !meetingUrl.trim() || !meetingRecipientEmail.trim()) {
-      toast.error("Please fill in topic, meeting URL, and recipient email");
+  const handleCreateAdminZoomMeeting = async () => {
+    if (!adminMeeting.topic.trim()) {
+      toast.error("Please enter a meeting topic");
       return;
     }
-
-    setSendingMeetingInvite(true);
+    setCreatingAdminZoomMeeting(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/send-meeting-invite`, {
+      let startTime = undefined;
+      if (adminMeeting.date && adminMeeting.time) {
+        startTime = new Date(`${adminMeeting.date}T${adminMeeting.time}`).toISOString();
+      }
+      const response = await fetch(`${API_BASE_URL}/api/zoom/create-meeting`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          recipientEmail: meetingRecipientEmail,
-          recipientName: meetingRecipientName || meetingRecipientEmail,
-          recipientType: meetingRecipientType,
-          topic: meetingTopic,
-          startTime: meetingDateTime || null,
-          duration: parseInt(meetingDuration) || 60,
-          joinUrl: meetingUrl,
-          password: meetingPassword || null,
-          hostName: "TouchConnectPro Admin"
+          topic: adminMeeting.topic,
+          duration: adminMeeting.duration,
+          startTime,
+          mentorId: null
         })
       });
-
-      if (response.ok) {
-        toast.success(`Meeting invite sent to ${meetingRecipientEmail}!`);
-        setShowCreateMeetingModal(false);
-        setMeetingTopic("");
-        setMeetingDateTime("");
-        setMeetingDuration("60");
-        setMeetingUrl("");
-        setMeetingPassword("");
-        setMeetingRecipientEmail("");
-        setMeetingRecipientName("");
-        // Reload meetings
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setAdminZoomMeetingResult(data.meeting);
+        toast.success("Zoom meeting created!");
+        // Reload meetings list
         const meetingsResponse = await fetch(`${API_BASE_URL}/api/admin/meetings`);
         if (meetingsResponse.ok) {
           const meetingsData = await meetingsResponse.json();
           setAllMeetings(meetingsData.meetings || []);
         }
       } else {
-        toast.error("Failed to send meeting invite");
+        if (data.error?.includes("Zoom credentials not configured")) {
+          toast.error("Zoom API not configured. Please set ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET, and ZOOM_ACCOUNT_ID.");
+        } else {
+          toast.error(data.error || "Failed to create Zoom meeting");
+        }
       }
     } catch (error) {
-      console.error("Error sending meeting invite:", error);
-      toast.error("Error sending meeting invite");
+      toast.error("Error creating Zoom meeting. Please check Zoom credentials.");
     } finally {
-      setSendingMeetingInvite(false);
+      setCreatingAdminZoomMeeting(false);
+    }
+  };
+
+  const handleSendAdminMeetingInvites = async () => {
+    if (!adminZoomMeetingResult || selectedAdminMeetingRecipients.length === 0) {
+      toast.error("Please create a meeting and select recipients");
+      return;
+    }
+    setSendingAdminMeetingInvites(true);
+    try {
+      const recipients = getActiveUsersByType(adminMeetingRecipientType)
+        .filter(u => selectedAdminMeetingRecipients.includes(u.id));
+      
+      for (const recipient of recipients) {
+        await fetch(`${API_BASE_URL}/api/admin/send-meeting-invite`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            recipientEmail: recipient.email,
+            recipientName: recipient.fullName,
+            recipientType: adminMeetingRecipientType,
+            topic: adminZoomMeetingResult.topic,
+            startTime: adminZoomMeetingResult.start_time || null,
+            duration: adminZoomMeetingResult.duration || 60,
+            joinUrl: adminZoomMeetingResult.join_url,
+            password: adminZoomMeetingResult.password || null,
+            hostName: "TouchConnectPro Admin"
+          })
+        });
+      }
+      toast.success(`Meeting invites sent to ${recipients.length} recipient(s)!`);
+      setShowCreateMeetingModal(false);
+      setAdminMeeting({ topic: "", date: "", time: "", duration: 60 });
+      setAdminZoomMeetingResult(null);
+      setSelectedAdminMeetingRecipients([]);
+      // Reload meetings
+      const meetingsResponse = await fetch(`${API_BASE_URL}/api/admin/meetings`);
+      if (meetingsResponse.ok) {
+        const meetingsData = await meetingsResponse.json();
+        setAllMeetings(meetingsData.meetings || []);
+      }
+    } catch (error) {
+      console.error("Error sending meeting invites:", error);
+      toast.error("Error sending meeting invites");
+    } finally {
+      setSendingAdminMeetingInvites(false);
+    }
+  };
+
+  const getActiveUsersByType = (type: "entrepreneur" | "mentor" | "investor" | "coach") => {
+    switch (type) {
+      case "entrepreneur":
+        return approvedEntrepreneurs.filter((e: any) => !e.is_disabled).map((e: any) => ({
+          id: e.id,
+          fullName: e.fullName,
+          email: e.email
+        }));
+      case "mentor":
+        return approvedMentors.filter((m: any) => !m.is_disabled).map((m: any) => ({
+          id: m.id,
+          fullName: m.fullName,
+          email: m.email
+        }));
+      case "investor":
+        return approvedInvestors.filter((i: any) => !i.is_disabled).map((i: any) => ({
+          id: i.id,
+          fullName: i.fullName,
+          email: i.email
+        }));
+      case "coach":
+        return approvedCoaches.filter((c: any) => !c.is_disabled).map((c: any) => ({
+          id: c.id,
+          fullName: c.fullName,
+          email: c.email
+        }));
+      default:
+        return [];
     }
   };
 
@@ -4111,17 +4179,25 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Create Meeting Modal */}
+      {/* Create Zoom Meeting Modal */}
       {showCreateMeetingModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-lg">
-            <CardHeader className="border-b">
+          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <CardHeader className="border-b bg-blue-50 dark:bg-blue-950/20">
               <div className="flex items-center justify-between">
-                <CardTitle>Schedule Meeting</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Video className="h-5 w-5 text-blue-600" />
+                  {adminZoomMeetingResult ? "Meeting Created!" : "Create Zoom Meeting"}
+                </CardTitle>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowCreateMeetingModal(false)}
+                  onClick={() => {
+                    setShowCreateMeetingModal(false);
+                    setAdminMeeting({ topic: "", date: "", time: "", duration: 60 });
+                    setAdminZoomMeetingResult(null);
+                    setSelectedAdminMeetingRecipients([]);
+                  }}
                   data-testid="button-close-create-meeting"
                 >
                   ✕
@@ -4129,133 +4205,183 @@ export default function AdminDashboard() {
               </div>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
-              <div>
-                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Meeting Topic *</label>
-                <input 
-                  type="text" 
-                  value={meetingTopic}
-                  onChange={(e) => setMeetingTopic(e.target.value)}
-                  placeholder="e.g., Business Plan Review"
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  data-testid="input-meeting-topic"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Date & Time</label>
-                  <input 
-                    type="datetime-local" 
-                    value={meetingDateTime}
-                    onChange={(e) => setMeetingDateTime(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    data-testid="input-meeting-datetime"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Duration (mins)</label>
-                  <select 
-                    value={meetingDuration}
-                    onChange={(e) => setMeetingDuration(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    data-testid="select-meeting-duration"
-                  >
-                    <option value="30">30 minutes</option>
-                    <option value="45">45 minutes</option>
-                    <option value="60">60 minutes</option>
-                    <option value="90">90 minutes</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Meeting URL *</label>
-                <input 
-                  type="url" 
-                  value={meetingUrl}
-                  onChange={(e) => setMeetingUrl(e.target.value)}
-                  placeholder="https://zoom.us/j/..."
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  data-testid="input-meeting-url"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Meeting Password (optional)</label>
-                <input 
-                  type="text" 
-                  value={meetingPassword}
-                  onChange={(e) => setMeetingPassword(e.target.value)}
-                  placeholder="Optional password"
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  data-testid="input-meeting-password"
-                />
-              </div>
-
-              <div className="border-t pt-4 mt-4">
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Recipient Details</h4>
-                
-                <div className="mb-3">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Recipient Type</label>
-                  <div className="flex gap-2">
-                    {(["entrepreneur", "mentor", "investor"] as const).map((type) => (
-                      <Button
-                        key={type}
-                        variant={meetingRecipientType === type ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setMeetingRecipientType(type)}
-                        className={meetingRecipientType === type ? "bg-cyan-600" : ""}
-                      >
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+              {!adminZoomMeetingResult ? (
+                <>
                   <div>
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Email *</label>
-                    <input 
-                      type="email" 
-                      value={meetingRecipientEmail}
-                      onChange={(e) => setMeetingRecipientEmail(e.target.value)}
-                      placeholder="recipient@example.com"
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      data-testid="input-recipient-email"
+                    <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Meeting Topic *</label>
+                    <Input
+                      placeholder="e.g., Monthly Check-in"
+                      value={adminMeeting.topic}
+                      onChange={(e) => setAdminMeeting({ ...adminMeeting, topic: e.target.value })}
+                      className="bg-slate-50 dark:bg-slate-800/50"
+                      data-testid="input-meeting-topic"
                     />
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Name (optional)</label>
-                    <input 
-                      type="text" 
-                      value={meetingRecipientName}
-                      onChange={(e) => setMeetingRecipientName(e.target.value)}
-                      placeholder="Recipient name"
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      data-testid="input-recipient-name"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Date (optional)</label>
+                      <Input
+                        type="date"
+                        value={adminMeeting.date}
+                        onChange={(e) => setAdminMeeting({ ...adminMeeting, date: e.target.value })}
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-meeting-date"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Time (optional)</label>
+                      <Input
+                        type="time"
+                        value={adminMeeting.time}
+                        onChange={(e) => setAdminMeeting({ ...adminMeeting, time: e.target.value })}
+                        className="bg-slate-50 dark:bg-slate-800/50"
+                        data-testid="input-meeting-time"
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
+                  <div>
+                    <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Duration</label>
+                    <div className="flex gap-3">
+                      {[30, 60, 90].map((dur) => (
+                        <label key={dur} className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800" style={{flex: 1}}>
+                          <input
+                            type="radio"
+                            name="admin-duration"
+                            value={dur}
+                            checked={adminMeeting.duration === dur}
+                            onChange={() => setAdminMeeting({ ...adminMeeting, duration: dur })}
+                            className="w-4 h-4"
+                          />
+                          <span className="font-medium">{dur} min</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Leave date/time empty to create an instant meeting.</p>
+                  
+                  <div className="flex gap-2 pt-2">
+                    <Button variant="outline" className="flex-1" onClick={() => {
+                      setShowCreateMeetingModal(false);
+                      setAdminMeeting({ topic: "", date: "", time: "", duration: 60 });
+                    }}>Cancel</Button>
+                    <Button 
+                      className="flex-1 bg-blue-600 hover:bg-blue-700" 
+                      onClick={handleCreateAdminZoomMeeting}
+                      disabled={creatingAdminZoomMeeting}
+                      data-testid="button-create-zoom"
+                    >
+                      {creatingAdminZoomMeeting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      Create Zoom Meeting
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                    <p className="font-semibold text-green-800 dark:text-green-200 mb-2">Meeting Created Successfully!</p>
+                    <p className="text-sm text-green-700 dark:text-green-300 mb-3">{adminZoomMeetingResult.topic}</p>
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <span className="font-medium">Host Link:</span>
+                        <a href={adminZoomMeetingResult.start_url} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-600 hover:underline flex items-center gap-1 inline">
+                          Start Meeting <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                      <div>
+                        <span className="font-medium">Join Link:</span>
+                        <div className="mt-1 p-2 bg-white dark:bg-slate-800 rounded border text-xs break-all">
+                          {adminZoomMeetingResult.join_url}
+                        </div>
+                      </div>
+                      {adminZoomMeetingResult.password && (
+                        <div>
+                          <span className="font-medium">Password:</span> {adminZoomMeetingResult.password}
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  variant="outline" 
-                  className="flex-1" 
-                  onClick={() => setShowCreateMeetingModal(false)}
-                  data-testid="button-cancel-meeting"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  className="flex-1 bg-cyan-600 hover:bg-cyan-700" 
-                  onClick={handleSendMeetingInvite}
-                  disabled={sendingMeetingInvite || !meetingTopic.trim() || !meetingUrl.trim() || !meetingRecipientEmail.trim()}
-                  data-testid="button-send-meeting-invite"
-                >
-                  {sendingMeetingInvite ? "Sending..." : <><Send className="mr-2 h-4 w-4" /> Send Invite</>}
-                </Button>
-              </div>
+                  <div className="border-t pt-4">
+                    <p className="font-semibold text-slate-900 dark:text-white mb-3">Select Recipients</p>
+                    
+                    <div className="flex gap-2 mb-3">
+                      {(["entrepreneur", "mentor", "coach", "investor"] as const).map((type) => (
+                        <Button
+                          key={type}
+                          variant={adminMeetingRecipientType === type ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => {
+                            setAdminMeetingRecipientType(type);
+                            setSelectedAdminMeetingRecipients([]);
+                          }}
+                          className={adminMeetingRecipientType === type ? "bg-cyan-600" : ""}
+                        >
+                          {type.charAt(0).toUpperCase() + type.slice(1)}s
+                        </Button>
+                      ))}
+                    </div>
+
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Select who should receive the meeting invitation:
+                    </p>
+                    
+                    <div className="max-h-48 overflow-y-auto space-y-2 border rounded-lg p-2">
+                      {getActiveUsersByType(adminMeetingRecipientType).length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">No active {adminMeetingRecipientType}s found</p>
+                      ) : (
+                        getActiveUsersByType(adminMeetingRecipientType).map((user: any) => (
+                          <label key={user.id} className="flex items-center gap-3 p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedAdminMeetingRecipients.includes(user.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedAdminMeetingRecipients([...selectedAdminMeetingRecipients, user.id]);
+                                } else {
+                                  setSelectedAdminMeetingRecipients(selectedAdminMeetingRecipients.filter(id => id !== user.id));
+                                }
+                              }}
+                              className="w-4 h-4 rounded border-slate-300"
+                            />
+                            <div>
+                              <p className="font-medium text-sm">{user.fullName}</p>
+                              <p className="text-xs text-muted-foreground">{user.email}</p>
+                            </div>
+                          </label>
+                        ))
+                      )}
+                    </div>
+                    
+                    {selectedAdminMeetingRecipients.length > 0 && (
+                      <p className="text-sm text-cyan-600 mt-2">{selectedAdminMeetingRecipients.length} recipient(s) selected</p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1" 
+                      onClick={() => {
+                        setShowCreateMeetingModal(false);
+                        setAdminMeeting({ topic: "", date: "", time: "", duration: 60 });
+                        setAdminZoomMeetingResult(null);
+                        setSelectedAdminMeetingRecipients([]);
+                      }}
+                    >
+                      Close
+                    </Button>
+                    <Button 
+                      className="flex-1 bg-cyan-600 hover:bg-cyan-700" 
+                      onClick={handleSendAdminMeetingInvites}
+                      disabled={sendingAdminMeetingInvites || selectedAdminMeetingRecipients.length === 0}
+                      data-testid="button-send-meeting-invites"
+                    >
+                      {sendingAdminMeetingInvites ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                      Send Invites ({selectedAdminMeetingRecipients.length})
+                    </Button>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
