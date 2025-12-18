@@ -4430,6 +4430,52 @@ app.post("/api/admin/send-meeting-invite", async (req, res) => {
       is_read: false
     });
 
+    // If recipient is an investor, add meeting to their data.meetings array
+    if (recipientType === "investor") {
+      try {
+        // Find investor by email
+        const { data: investor } = await supabase
+          .from("investor_applications")
+          .select("id, data")
+          .eq("email", recipientEmail)
+          .single();
+        
+        if (investor) {
+          const currentData = investor.data || {};
+          const existingMeetings = currentData.meetings || [];
+          const newMeeting = {
+            id: `meeting_${Date.now()}`,
+            topic,
+            startTime,
+            duration,
+            joinUrl,
+            password,
+            hostName: hostName || "TouchConnectPro Admin",
+            createdAt: new Date().toISOString(),
+            status: "scheduled"
+          };
+          
+          const { error: updateError } = await supabase
+            .from("investor_applications")
+            .update({
+              data: {
+                ...currentData,
+                meetings: [...existingMeetings, newMeeting]
+              }
+            })
+            .eq("id", investor.id);
+          
+          if (updateError) {
+            console.error("[ADMIN INVITE] Failed to update investor meetings:", updateError);
+          }
+          
+          console.log("[ADMIN INVITE] Meeting added to investor's dashboard:", investor.id);
+        }
+      } catch (investorErr) {
+        console.error("[ADMIN INVITE] Error adding meeting to investor:", investorErr.message);
+      }
+    }
+
     console.log("[ADMIN INVITE] Invitation sent successfully to:", recipientEmail);
 
     return res.json({ 
