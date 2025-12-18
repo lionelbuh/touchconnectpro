@@ -211,8 +211,17 @@ export default function DashboardMentor() {
   }, [activeTab, adminMessages, mentorProfile.email, mentorReadMessageIds]);
 
   // Calculate unread message count using is_read from database
+  // Count ALL unread messages to mentor (from admin + entrepreneurs)
   const unreadMessageCount = adminMessages.filter(
     (m: any) => m.to_email === mentorProfile.email && !m.is_read
+  ).length;
+
+  // Calculate unread messages specifically from mentees (exclude admin messages)
+  const unreadFromMentees = adminMessages.filter(
+    (m: any) => m.to_email === mentorProfile.email && 
+                !m.is_read && 
+                m.from_email !== "admin@touchconnectpro.com" &&
+                m.from_email !== "system@touchconnectpro.com"
   ).length;
 
   // Function to refresh portfolio data
@@ -565,7 +574,7 @@ export default function DashboardMentor() {
                     <CardTitle className="text-sm font-medium text-muted-foreground">Unread Messages</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{unreadMessageCount}</div>
+                    <div className="text-2xl font-bold">{unreadFromMentees}</div>
                     <p className="text-xs text-muted-foreground mt-1">From your mentees</p>
                   </CardContent>
                 </Card>
