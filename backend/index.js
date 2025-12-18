@@ -2086,9 +2086,10 @@ app.post("/api/investor-notes/:investorId/respond", async (req, res) => {
     const { investorId } = req.params;
     const { noteId, text, attachmentUrl, attachmentName, attachmentSize, attachmentType, fromAdmin } = req.body;
 
+    // Get existing data including email for notification
     const { data: existingData, error: fetchError } = await supabase
       .from("investor_applications")
-      .select("data")
+      .select("data, email, full_name")
       .eq("id", investorId)
       .single();
 
@@ -2132,6 +2133,92 @@ app.post("/api/investor-notes/:investorId/respond", async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
+    // Send email notification based on who responded
+    const resendData = await getResendClient();
+    if (resendData) {
+      try {
+        if (fromAdmin && existingData.email) {
+          // Admin responded - notify investor
+          await resendData.client.emails.send({
+            from: resendData.fromEmail,
+            to: existingData.email,
+            subject: "Admin Response to Your Note - TouchConnectPro",
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                  .note-box { background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <h1>Admin Response</h1>
+                  </div>
+                  <div class="content">
+                    <p>Hi ${existingData.full_name || "there"},</p>
+                    <p>The admin has responded to a note on your investor dashboard:</p>
+                    <div class="note-box">
+                      <p>${text || "Please check your dashboard for the response."}</p>
+                      ${attachmentName ? `<p><strong>Attachment:</strong> ${attachmentName}</p>` : ''}
+                    </div>
+                    <p>Please log in to your investor dashboard to continue the conversation.</p>
+                    <p>Best regards,<br><strong>The TouchConnectPro Team</strong></p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `
+          });
+          console.log("[INVESTOR NOTE] Admin response email sent to investor:", existingData.email);
+        } else {
+          // Investor responded - notify admin
+          await resendData.client.emails.send({
+            from: resendData.fromEmail,
+            to: "admin@touchconnectpro.com",
+            subject: `Investor Response: ${existingData.full_name || existingData.email}`,
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                  .note-box { background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <h1>New Investor Response</h1>
+                  </div>
+                  <div class="content">
+                    <p>Investor <strong>${existingData.full_name || "Unknown"}</strong> (${existingData.email}) has responded to a note:</p>
+                    <div class="note-box">
+                      <p>${text || "Please check the admin dashboard for the response."}</p>
+                      ${attachmentName ? `<p><strong>Attachment:</strong> ${attachmentName}</p>` : ''}
+                    </div>
+                    <p>Please log in to the admin dashboard to view and respond.</p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `
+          });
+          console.log("[INVESTOR NOTE] Investor response email sent to admin");
+        }
+      } catch (emailErr) {
+        console.error("[INVESTOR NOTE] Email error:", emailErr.message);
+      }
+    }
+
     return res.json({ success: true, notes: data?.[0]?.data?.notes || [] });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -2148,9 +2235,10 @@ app.post("/api/investor-notes/:investorId", async (req, res) => {
       return res.status(400).json({ error: "Note text or attachment is required" });
     }
 
+    // Get existing data including email for notification
     const { data: existingData, error: fetchError } = await supabase
       .from("investor_applications")
-      .select("data")
+      .select("data, email, full_name")
       .eq("id", investorId)
       .single();
 
@@ -2189,6 +2277,52 @@ app.post("/api/investor-notes/:investorId", async (req, res) => {
 
     if (error) {
       return res.status(400).json({ error: error.message });
+    }
+
+    // Send email notification to investor
+    const resendData = await getResendClient();
+    if (resendData && existingData.email) {
+      try {
+        await resendData.client.emails.send({
+          from: resendData.fromEmail,
+          to: existingData.email,
+          subject: "New Note from TouchConnectPro Admin",
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                .note-box { background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>New Note from Admin</h1>
+                </div>
+                <div class="content">
+                  <p>Hi ${existingData.full_name || "there"},</p>
+                  <p>You have received a new note from the TouchConnectPro admin team:</p>
+                  <div class="note-box">
+                    <p>${text?.trim() || "Please check your dashboard for an attached file."}</p>
+                    ${attachmentName ? `<p><strong>Attachment:</strong> ${attachmentName}</p>` : ''}
+                  </div>
+                  <p>Please log in to your investor dashboard to view and respond to this note.</p>
+                  <p>Best regards,<br><strong>The TouchConnectPro Team</strong></p>
+                </div>
+              </div>
+            </body>
+            </html>
+          `
+        });
+        console.log("[INVESTOR NOTE] Email sent to investor:", existingData.email);
+      } catch (emailErr) {
+        console.error("[INVESTOR NOTE] Email error:", emailErr.message);
+      }
     }
 
     return res.json({ success: true, notes: data?.[0]?.data?.notes || [] });

@@ -250,7 +250,8 @@ export default function AdminDashboard() {
               status: i.status === "submitted" ? "pending" : i.status,
               submittedAt: i.created_at,
               is_resubmitted: i.is_resubmitted,
-              is_disabled: i.is_disabled || false
+              is_disabled: i.is_disabled || false,
+              data: i.data || {}
             }));
             setInvestorApplications(mappedInvestors);
             setApprovedInvestors(mappedInvestors.filter((app: any) => app.status === "approved"));
@@ -1150,6 +1151,18 @@ export default function AdminDashboard() {
   const rejectedCoachApplications = coachApplications.filter(app => app.status === "rejected");
   const rejectedInvestorApplications = investorApplications.filter(app => app.status === "rejected");
 
+  // Calculate unread investor notes (notes with responses from investors)
+  const unreadInvestorNoteCount = investorApplications.reduce((count, investor) => {
+    const notes = (investor as any).data?.notes || [];
+    const unreadNotes = notes.filter((note: any) => {
+      // Check if note has any response from investor (not admin)
+      const hasInvestorResponse = note.responses?.some((r: any) => !r.fromAdmin);
+      // If note is not completed and has investor response, it's unread
+      return hasInvestorResponse && !note.completed;
+    });
+    return count + unreadNotes.length;
+  }, 0);
+
   const filterAndSort = (items: any[], nameField: string) => {
     const filtered = items.filter(item => item[nameField]?.toLowerCase().includes(searchTerm.toLowerCase()));
     const sorted = [...filtered].sort((a, b) => {
@@ -2031,6 +2044,11 @@ export default function AdminDashboard() {
                   data-testid="button-members-investors-subtab"
                 >
                   Investors
+                  {unreadInvestorNoteCount > 0 && (
+                    <span className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full animate-pulse">
+                      {unreadInvestorNoteCount}
+                    </span>
+                  )}
                 </Button>
                 <Button 
                   variant={activeMembersCategoryTab === "disabled" ? "default" : "ghost"}
