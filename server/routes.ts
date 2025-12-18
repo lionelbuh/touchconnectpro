@@ -2533,17 +2533,41 @@ export async function registerRoutes(
       }
 
       const { id } = req.params;
-      const { fundName, investmentFocus, investmentPreference, investmentAmount, linkedin } = req.body;
+      const { fullName, bio, fundName, investmentFocus, investmentPreference, investmentAmount, linkedin, profileImage } = req.body;
+
+      // Get existing data to preserve notes
+      const { data: existingData } = await (client
+        .from("investor_applications")
+        .select("data")
+        .eq("id", id)
+        .single() as any);
+
+      const updateData: any = {
+        fund_name: fundName,
+        investment_focus: investmentFocus,
+        investment_preference: investmentPreference,
+        investment_amount: investmentAmount,
+        linkedin: linkedin || null,
+        bio: bio || null
+      };
+
+      // Update full_name if provided
+      if (fullName) {
+        updateData.full_name = fullName;
+      }
+
+      // Merge profileImage into data JSONB field
+      if (profileImage !== undefined || bio !== undefined) {
+        updateData.data = {
+          ...(existingData?.data || {}),
+          ...(profileImage !== undefined && { profileImage }),
+          ...(bio !== undefined && { bio })
+        };
+      }
 
       const { data, error } = await (client
         .from("investor_applications")
-        .update({
-          fund_name: fundName,
-          investment_focus: investmentFocus,
-          investment_preference: investmentPreference,
-          investment_amount: investmentAmount,
-          linkedin: linkedin || null
-        } as any)
+        .update(updateData as any)
         .eq("id", id)
         .select() as any);
 
@@ -2552,6 +2576,256 @@ export async function registerRoutes(
       }
 
       return res.json({ success: true, investor: data?.[0] });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ===== INVESTOR NOTES ENDPOINTS =====
+
+  // Respond to an investor note
+  app.post("/api/investor-notes/:investorId/respond", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { investorId } = req.params;
+      const { noteId, text, attachmentUrl, attachmentName, attachmentSize, attachmentType, fromAdmin } = req.body;
+
+      // Get existing data
+      const { data: existingData, error: fetchError } = await (client
+        .from("investor_applications")
+        .select("data")
+        .eq("id", investorId)
+        .single() as any);
+
+      if (fetchError) {
+        return res.status(404).json({ error: "Investor not found" });
+      }
+
+      const notes = existingData?.data?.notes || [];
+      const noteIndex = notes.findIndex((n: any) => n.id === noteId);
+      
+      if (noteIndex === -1) {
+        return res.status(404).json({ error: "Note not found" });
+      }
+
+      // Add response to note
+      const newResponse = {
+        id: `resp_${Date.now()}`,
+        text,
+        timestamp: new Date().toISOString(),
+        attachmentUrl,
+        attachmentName,
+        attachmentSize,
+        attachmentType,
+        fromAdmin: fromAdmin || false
+      };
+
+      notes[noteIndex].responses = notes[noteIndex].responses || [];
+      notes[noteIndex].responses.push(newResponse);
+
+      const { data, error } = await (client
+        .from("investor_applications")
+        .update({
+          data: {
+            ...existingData.data,
+            notes
+          }
+        } as any)
+        .eq("id", investorId)
+        .select() as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, notes: data?.[0]?.data?.notes || [] });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Add a note to investor (admin use)
+  app.post("/api/investor-notes/:investorId", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { investorId } = req.params;
+      const { text } = req.body;
+
+      if (!text?.trim()) {
+        return res.status(400).json({ error: "Note text is required" });
+      }
+
+      // Get existing data
+      const { data: existingData, error: fetchError } = await (client
+        .from("investor_applications")
+        .select("data")
+        .eq("id", investorId)
+        .single() as any);
+
+      if (fetchError) {
+        return res.status(404).json({ error: "Investor not found" });
+      }
+
+      const notes = existingData?.data?.notes || [];
+      const newNote = {
+        id: `note_${Date.now()}`,
+        text: text.trim(),
+        timestamp: new Date().toISOString(),
+        completed: false,
+        responses: []
+      };
+
+      notes.push(newNote);
+
+      const { data, error } = await (client
+        .from("investor_applications")
+        .update({
+          data: {
+            ...existingData.data,
+            notes
+          }
+        } as any)
+        .eq("id", investorId)
+        .select() as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, notes: data?.[0]?.data?.notes || [] });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Toggle investor note completion
+  app.patch("/api/investor-notes/:investorId/:noteId/toggle", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { investorId, noteId } = req.params;
+      const { completed } = req.body;
+
+      // Get existing data
+      const { data: existingData, error: fetchError } = await (client
+        .from("investor_applications")
+        .select("data")
+        .eq("id", investorId)
+        .single() as any);
+
+      if (fetchError) {
+        return res.status(404).json({ error: "Investor not found" });
+      }
+
+      const notes = existingData?.data?.notes || [];
+      const noteIndex = notes.findIndex((n: any) => n.id === noteId);
+      
+      if (noteIndex === -1) {
+        return res.status(404).json({ error: "Note not found" });
+      }
+
+      notes[noteIndex].completed = completed;
+
+      const { data, error } = await (client
+        .from("investor_applications")
+        .update({
+          data: {
+            ...existingData.data,
+            notes
+          }
+        } as any)
+        .eq("id", investorId)
+        .select() as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, notes: data?.[0]?.data?.notes || [] });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Upload investor attachment
+  app.post("/api/upload-investor-attachment", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { fileName, fileData, fileType, investorId } = req.body;
+
+      if (!fileName || !fileData || !investorId) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // Extract base64 data
+      const base64Data = fileData.split(",")[1];
+      const buffer = Buffer.from(base64Data, "base64");
+
+      // Generate unique file name
+      const timestamp = Date.now();
+      const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
+      const storagePath = `investor-attachments/${investorId}/${timestamp}_${sanitizedFileName}`;
+
+      const { data, error } = await (client.storage
+        .from("note-attachments")
+        .upload(storagePath, buffer, {
+          contentType: fileType,
+          upsert: false
+        }) as any);
+
+      if (error) {
+        console.error("[UPLOAD] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      // Get public URL
+      const { data: urlData } = client.storage
+        .from("note-attachments")
+        .getPublicUrl(storagePath);
+
+      return res.json({ success: true, url: urlData.publicUrl });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get investor meetings
+  app.get("/api/investor-meetings/:investorId", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { investorId } = req.params;
+
+      // For now, return empty array - meetings will be stored in data.meetings
+      const { data, error } = await (client
+        .from("investor_applications")
+        .select("data")
+        .eq("id", investorId)
+        .single() as any);
+
+      if (error) {
+        return res.status(404).json({ error: "Investor not found" });
+      }
+
+      return res.json({ meetings: data?.data?.meetings || [] });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
     }

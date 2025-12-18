@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, Zap, Briefcase, TrendingUp, Settings, DollarSign, Target, Save, Loader2, Building2, Link as LinkIcon, LogOut, MessageSquare, AlertCircle } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { LayoutDashboard, TrendingUp, Settings, DollarSign, Target, Save, Loader2, Building2, Link as LinkIcon, LogOut, MessageSquare, AlertCircle, Calendar, Camera, FileText, Upload, Download, Paperclip, Reply, ChevronDown, Send, User } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -20,6 +21,41 @@ interface InvestorProfile {
   country: string;
   state: string | null;
   is_disabled?: boolean;
+  bio?: string;
+  data?: {
+    profileImage?: string;
+    bio?: string;
+    notes?: InvestorNote[];
+  };
+}
+
+interface InvestorNote {
+  id: string;
+  text: string;
+  timestamp: string;
+  completed?: boolean;
+  responses?: NoteResponse[];
+}
+
+interface NoteResponse {
+  id: string;
+  text: string;
+  timestamp: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
+  attachmentSize?: number;
+  attachmentType?: string;
+  fromAdmin?: boolean;
+}
+
+interface Meeting {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  host: string;
+  status: string;
+  meetingUrl?: string;
 }
 
 export default function DashboardInvestor() {
@@ -29,15 +65,29 @@ export default function DashboardInvestor() {
   const [saving, setSaving] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
+  const [fullName, setFullName] = useState("");
+  const [bio, setBio] = useState("");
   const [fundName, setFundName] = useState("");
   const [investmentFocus, setInvestmentFocus] = useState("");
   const [investmentPreference, setInvestmentPreference] = useState("");
   const [investmentAmount, setInvestmentAmount] = useState("");
   const [linkedin, setLinkedin] = useState("");
-  const [activeTab, setActiveTab] = useState<"overview" | "messages">("overview");
+  const [profileImage, setProfileImage] = useState("");
+  const [activeTab, setActiveTab] = useState<"overview" | "messages" | "investments" | "meetings">("overview");
   const [adminMessage, setAdminMessage] = useState("");
   const [adminMessages, setAdminMessages] = useState<any[]>([]);
   const [investorReadMessageIds, setInvestorReadMessageIds] = useState<string[]>([]);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  
+  // Investment notes state (like mentor notes)
+  const [investorNotes, setInvestorNotes] = useState<InvestorNote[]>([]);
+  const [noteResponses, setNoteResponses] = useState<Record<string, string>>({});
+  const [noteAttachments, setNoteAttachments] = useState<Record<string, File | null>>({});
+  const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
+  const [submittingNoteId, setSubmittingNoteId] = useState<string | null>(null);
+  
+  // Meetings state
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
 
   const handleLogout = async () => {
     try {
@@ -59,11 +109,9 @@ export default function DashboardInvestor() {
         const supabase = await getSupabase();
         if (!supabase) return;
 
-        // First try to get session from localStorage (faster, more reliable)
         const { data: { session } } = await supabase.auth.getSession();
         let user = session?.user;
         
-        // If no session, try getUser() as fallback
         if (!user) {
           const { data: userData } = await supabase.auth.getUser();
           user = userData.user;
@@ -80,11 +128,15 @@ export default function DashboardInvestor() {
         if (response.ok) {
           const data = await response.json();
           setProfile(data);
+          setFullName(data.full_name || "");
+          setBio(data.bio || data.data?.bio || "");
           setFundName(data.fund_name || "");
           setInvestmentFocus(data.investment_focus || "");
           setInvestmentPreference(data.investment_preference || "");
           setInvestmentAmount(data.investment_amount || "");
           setLinkedin(data.linkedin || "");
+          setProfileImage(data.data?.profileImage || "");
+          setInvestorNotes(data.data?.notes || []);
         }
       } catch (error) {
         console.error("Error loading profile:", error);
@@ -121,6 +173,25 @@ export default function DashboardInvestor() {
     loadMessages();
   }, [profile?.email]);
 
+  // Load meetings for this investor
+  useEffect(() => {
+    if (!profile?.id) return;
+    
+    async function loadMeetings() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/investor-meetings/${encodeURIComponent(profile!.id)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setMeetings(data.meetings || []);
+        }
+      } catch (error) {
+        console.error("Error loading meetings:", error);
+      }
+    }
+
+    loadMeetings();
+  }, [profile?.id]);
+
   // Mark admin messages as read when viewing messages tab
   useEffect(() => {
     if (activeTab === "messages" && profile?.email) {
@@ -141,6 +212,9 @@ export default function DashboardInvestor() {
     (m: any) => m.to_email === profile?.email && m.from_email === "admin@touchconnectpro.com" && !investorReadMessageIds.includes(m.id)
   ).length;
 
+  // Calculate unread notes count
+  const unreadNotesCount = investorNotes.filter(n => !n.completed).length;
+
   const handleSave = async () => {
     if (!profile?.id) return;
 
@@ -150,16 +224,20 @@ export default function DashboardInvestor() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          fullName,
+          bio,
           fundName,
           investmentFocus,
           investmentPreference,
           investmentAmount,
-          linkedin
+          linkedin,
+          profileImage
         })
       });
 
       if (response.ok) {
         toast.success("Profile updated successfully!");
+        setIsEditingProfile(false);
       } else {
         toast.error("Failed to update profile");
       }
@@ -167,6 +245,141 @@ export default function DashboardInvestor() {
       toast.error("Error saving profile");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Handle profile image upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB");
+      return;
+    }
+
+    try {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setProfileImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      toast.error("Error uploading image");
+    }
+  };
+
+  // Submit response to an investment note
+  const handleSubmitNoteResponse = async (noteId: string) => {
+    const responseText = noteResponses[noteId] || "";
+    const file = noteAttachments[noteId];
+    
+    if (!responseText.trim() && !file) {
+      toast.error("Please enter a response or attach a file");
+      return;
+    }
+    
+    if (!profile?.id) {
+      toast.error("Profile not found");
+      return;
+    }
+    
+    if (file) {
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/csv',
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/gif'
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("File type not allowed. Please use PDF, Word, Excel, CSV, TXT, or images.");
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("File too large. Maximum size is 10MB.");
+        return;
+      }
+    }
+    
+    setSubmittingNoteId(noteId);
+    
+    try {
+      let attachmentUrl = null;
+      let attachmentName = null;
+      let attachmentSize = null;
+      let attachmentType = null;
+      
+      if (file) {
+        const reader = new FileReader();
+        const fileData = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        
+        const uploadResponse = await fetch(`${API_BASE_URL}/api/upload-investor-attachment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: file.name,
+            fileData,
+            fileType: file.type,
+            investorId: profile.id
+          })
+        });
+        
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          throw new Error(errorData.error || "Failed to upload file");
+        }
+        
+        const uploadResult = await uploadResponse.json();
+        attachmentUrl = uploadResult.url;
+        attachmentName = file.name;
+        attachmentSize = file.size;
+        attachmentType = file.type;
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/api/investor-notes/${profile.id}/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          noteId,
+          text: responseText,
+          attachmentUrl,
+          attachmentName,
+          attachmentSize,
+          attachmentType,
+          fromAdmin: false
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to submit response");
+      }
+      
+      const result = await response.json();
+      setInvestorNotes(result.notes || []);
+      
+      setNoteResponses(prev => ({ ...prev, [noteId]: "" }));
+      setNoteAttachments(prev => ({ ...prev, [noteId]: null }));
+      
+      toast.success("Response submitted successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Error submitting response");
+    } finally {
+      setSubmittingNoteId(null);
     }
   };
 
@@ -188,12 +401,16 @@ export default function DashboardInvestor() {
         <div className="p-6 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-6">
             <Avatar className={`h-10 w-10 border border-slate-200 ${profile?.is_disabled ? "bg-red-500" : "bg-amber-500"}`}>
-              <AvatarFallback className="text-white">
-                {profile?.full_name ? getInitials(profile.full_name) : "IN"}
-              </AvatarFallback>
+              {profileImage ? (
+                <AvatarImage src={profileImage} alt={fullName} />
+              ) : (
+                <AvatarFallback className="text-white">
+                  {profile?.full_name ? getInitials(profile.full_name) : "IN"}
+                </AvatarFallback>
+              )}
             </Avatar>
             <div>
-              <div className="font-bold text-sm">{profile?.full_name || "Investor"}</div>
+              <div className="font-bold text-sm">{fullName || profile?.full_name || "Investor"}</div>
               <div className={`text-xs ${profile?.is_disabled ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
                 {profile?.is_disabled ? "Disabled" : (fundName || "Investment Fund")}
               </div>
@@ -221,14 +438,26 @@ export default function DashboardInvestor() {
                 </span>
               )}
             </Button>
-            <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
+            <Button 
+              variant={activeTab === "investments" ? "secondary" : "ghost"} 
+              className="w-full justify-start font-medium text-slate-600 relative"
+              onClick={() => setActiveTab("investments")}
+              data-testid="button-investments-tab"
+            >
               <TrendingUp className="mr-2 h-4 w-4" /> My Investments
+              {unreadNotesCount > 0 && (
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-amber-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  {unreadNotesCount}
+                </span>
+              )}
             </Button>
-            <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
-              <Briefcase className="mr-2 h-4 w-4" /> Portfolio
-            </Button>
-            <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
-              <Zap className="mr-2 h-4 w-4" /> Deal Flow
+            <Button 
+              variant={activeTab === "meetings" ? "secondary" : "ghost"} 
+              className="w-full justify-start font-medium text-slate-600"
+              onClick={() => setActiveTab("meetings")}
+              data-testid="button-meetings-tab"
+            >
+              <Calendar className="mr-2 h-4 w-4" /> My Meetings
             </Button>
             <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
               <Settings className="mr-2 h-4 w-4" /> Settings
@@ -268,7 +497,7 @@ export default function DashboardInvestor() {
           <header className="mb-8 flex justify-between items-start">
             <div>
               <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
-                Welcome, {profile?.full_name?.split(" ")[0] || "Investor"}!
+                Welcome, {fullName?.split(" ")[0] || profile?.full_name?.split(" ")[0] || "Investor"}!
               </h1>
               <p className="text-muted-foreground mt-2">
                 {profile?.is_disabled
@@ -277,19 +506,119 @@ export default function DashboardInvestor() {
               </p>
             </div>
             {!profile?.is_disabled && (
-              <Button 
-                onClick={handleSave} 
-                disabled={saving}
-                className="bg-amber-600 hover:bg-amber-700"
-                data-testid="button-save-profile"
-              >
-                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                Save Changes
-              </Button>
+              <div className="flex gap-2">
+                {isEditingProfile ? (
+                  <>
+                    <Button 
+                      variant="outline"
+                      onClick={() => setIsEditingProfile(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleSave} 
+                      disabled={saving}
+                      className="bg-amber-600 hover:bg-amber-700"
+                      data-testid="button-save-profile"
+                    >
+                      {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                      Save Changes
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    onClick={() => setIsEditingProfile(true)}
+                    className="bg-amber-600 hover:bg-amber-700"
+                    data-testid="button-edit-profile"
+                  >
+                    Edit Profile
+                  </Button>
+                )}
+              </div>
             )}
           </header>
 
+          {/* Profile Picture Section */}
+          {isEditingProfile && (
+            <Card className="mb-6 border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Camera className="h-5 w-5 text-amber-600" />
+                  Profile Picture
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex items-center gap-6">
+                <Avatar className="h-24 w-24 border-2 border-amber-300">
+                  {profileImage ? (
+                    <AvatarImage src={profileImage} alt={fullName} />
+                  ) : (
+                    <AvatarFallback className="text-2xl bg-amber-500 text-white">
+                      {fullName ? getInitials(fullName) : "IN"}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="profile-image-upload"
+                    data-testid="input-profile-image"
+                  />
+                  <label htmlFor="profile-image-upload">
+                    <Button variant="outline" className="cursor-pointer" asChild>
+                      <span><Upload className="mr-2 h-4 w-4" /> Upload Photo</span>
+                    </Button>
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-2">Max 5MB, JPG or PNG</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Full Name */}
+            {isEditingProfile && (
+              <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <User className="h-5 w-5 text-amber-600" />
+                    Full Name
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Enter your full name..."
+                    data-testid="input-full-name"
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Email (Non-editable) */}
+            {isEditingProfile && (
+              <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-amber-600" />
+                    Email Address
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Input
+                    value={profile?.email || ""}
+                    disabled
+                    className="bg-slate-100 dark:bg-slate-800/50 text-slate-500 cursor-not-allowed"
+                    data-testid="input-email"
+                  />
+                  <p className="text-xs text-slate-500">To change your email, please contact admin</p>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -299,15 +628,18 @@ export default function DashboardInvestor() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">Your investment fund or organization name</p>
-                <input
-                  type="text"
-                  value={fundName}
-                  onChange={(e) => setFundName(e.target.value)}
-                  placeholder="Enter fund name..."
-                  disabled={profile?.is_disabled}
-                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                  data-testid="input-fund-name"
-                />
+                {isEditingProfile ? (
+                  <input
+                    type="text"
+                    value={fundName}
+                    onChange={(e) => setFundName(e.target.value)}
+                    placeholder="Enter fund name..."
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20"
+                    data-testid="input-fund-name"
+                  />
+                ) : (
+                  <p className="font-medium text-slate-900 dark:text-white">{fundName || "Not specified"}</p>
+                )}
               </CardContent>
             </Card>
 
@@ -320,18 +652,25 @@ export default function DashboardInvestor() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">What type of investments interest you?</p>
-                <select 
-                  value={investmentPreference}
-                  onChange={(e) => setInvestmentPreference(e.target.value)}
-                  disabled={profile?.is_disabled}
-                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                  data-testid="select-investment-preference"
-                >
-                  <option value="">Select investment type...</option>
-                  <option value="platform">TouchConnectPro as a whole</option>
-                  <option value="projects">Individual Projects</option>
-                  <option value="both">Both</option>
-                </select>
+                {isEditingProfile ? (
+                  <select 
+                    value={investmentPreference}
+                    onChange={(e) => setInvestmentPreference(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20"
+                    data-testid="select-investment-preference"
+                  >
+                    <option value="">Select investment type...</option>
+                    <option value="platform">TouchConnectPro as a whole</option>
+                    <option value="projects">Individual Projects</option>
+                    <option value="both">Both</option>
+                  </select>
+                ) : (
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    {investmentPreference === "platform" ? "TouchConnectPro as a whole" :
+                     investmentPreference === "projects" ? "Individual Projects" :
+                     investmentPreference === "both" ? "Both" : "Not specified"}
+                  </p>
+                )}
               </CardContent>
             </Card>
 
@@ -344,21 +683,24 @@ export default function DashboardInvestor() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">What's your typical check size?</p>
-                <select 
-                  value={investmentAmount}
-                  onChange={(e) => setInvestmentAmount(e.target.value)}
-                  disabled={profile?.is_disabled}
-                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                  data-testid="select-investment-amount"
-                >
-                  <option value="">Select investment amount...</option>
-                  <option value="5000-10000">$5,000 - $10,000</option>
-                  <option value="20000-50000">$20,000 - $50,000</option>
-                  <option value="50000-100000">$50,000 - $100,000</option>
-                  <option value="100000-500000">$100,000 - $500,000</option>
-                  <option value="500000-1000000">$500,000 - $1,000,000</option>
-                  <option value="1000000plus">$1,000,000+</option>
-                </select>
+                {isEditingProfile ? (
+                  <select 
+                    value={investmentAmount}
+                    onChange={(e) => setInvestmentAmount(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20"
+                    data-testid="select-investment-amount"
+                  >
+                    <option value="">Select investment amount...</option>
+                    <option value="5000-10000">$5,000 - $10,000</option>
+                    <option value="20000-50000">$20,000 - $50,000</option>
+                    <option value="50000-100000">$50,000 - $100,000</option>
+                    <option value="100000-500000">$100,000 - $500,000</option>
+                    <option value="500000-1000000">$500,000 - $1,000,000</option>
+                    <option value="1000000plus">$1,000,000+</option>
+                  </select>
+                ) : (
+                  <p className="font-medium text-slate-900 dark:text-white">{investmentAmount || "Not specified"}</p>
+                )}
               </CardContent>
             </Card>
 
@@ -371,15 +713,22 @@ export default function DashboardInvestor() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">Your LinkedIn profile URL</p>
-                <input
-                  type="url"
-                  value={linkedin}
-                  onChange={(e) => setLinkedin(e.target.value)}
-                  placeholder="https://linkedin.com/in/..."
-                  disabled={profile?.is_disabled}
-                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                  data-testid="input-linkedin"
-                />
+                {isEditingProfile ? (
+                  <input
+                    type="url"
+                    value={linkedin}
+                    onChange={(e) => setLinkedin(e.target.value)}
+                    placeholder="https://linkedin.com/in/..."
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20"
+                    data-testid="input-linkedin"
+                  />
+                ) : (
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    {linkedin ? (
+                      <a href={linkedin} target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:underline">{linkedin}</a>
+                    ) : "Not specified"}
+                  </p>
+                )}
               </CardContent>
             </Card>
 
@@ -389,17 +738,40 @@ export default function DashboardInvestor() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">What industries or sectors do you focus on?</p>
-                <textarea 
-                  value={investmentFocus}
-                  onChange={(e) => setInvestmentFocus(e.target.value)}
-                  placeholder="e.g., SaaS, AI/ML, healthtech, fintech, climate tech..."
-                  rows={4}
-                  disabled={profile?.is_disabled}
-                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                  data-testid="input-investment-focus"
-                />
+                {isEditingProfile ? (
+                  <textarea 
+                    value={investmentFocus}
+                    onChange={(e) => setInvestmentFocus(e.target.value)}
+                    placeholder="e.g., SaaS, AI/ML, healthtech, fintech, climate tech..."
+                    rows={4}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20"
+                    data-testid="input-investment-focus"
+                  />
+                ) : (
+                  <p className="font-medium text-slate-900 dark:text-white whitespace-pre-wrap">{investmentFocus || "Not specified"}</p>
+                )}
               </CardContent>
             </Card>
+
+            {/* Bio Section */}
+            {isEditingProfile && (
+              <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20 md:col-span-2">
+                <CardHeader>
+                  <CardTitle className="text-lg">Bio</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Tell us about yourself and your investment philosophy</p>
+                  <textarea 
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Your professional background, investment philosophy, what you look for in startups..."
+                    rows={4}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-amber-500 focus:ring-amber-500/20"
+                    data-testid="input-bio"
+                  />
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <div className="mt-8 p-6 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-lg">
@@ -503,6 +875,199 @@ export default function DashboardInvestor() {
                   )}
                 </CardContent>
               </Card>
+            </div>
+          )}
+
+          {/* My Investments Tab (Notes from Admin) */}
+          {activeTab === "investments" && (
+            <div>
+              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">My Investments</h1>
+              <p className="text-muted-foreground mb-8">Investment opportunities and notes from the TouchConnectPro admin team.</p>
+
+              {investorNotes.length > 0 ? (
+                <div className="space-y-4">
+                  {investorNotes.map((note, idx) => {
+                    const isExpanded = expandedNoteId === note.id;
+                    const isSubmitting = submittingNoteId === note.id;
+                    
+                    return (
+                      <Card key={note.id} className={`border-l-4 ${note.completed ? 'border-l-green-500 bg-green-50 dark:bg-green-950/20' : 'border-l-amber-500'}`} data-testid={`card-note-${note.id}`}>
+                        <CardContent className="pt-6">
+                          <div className="flex gap-4">
+                            <div className={`text-3xl font-bold min-w-12 ${note.completed ? 'text-green-500' : 'text-amber-500'}`}>{idx + 1}.</div>
+                            <div className="flex-1">
+                              <p className={`leading-relaxed ${note.completed ? 'text-green-900 dark:text-green-100' : 'text-slate-900 dark:text-white'}`}>{note.text}</p>
+                              {note.timestamp && <p className={`text-xs mt-3 ${note.completed ? 'text-green-700 dark:text-green-300' : 'text-slate-500 dark:text-slate-400'}`}>Added on {new Date(note.timestamp).toLocaleDateString()}</p>}
+                              
+                              {/* Existing Responses */}
+                              {note.responses && note.responses.length > 0 && (
+                                <div className="mt-4 space-y-3">
+                                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                                    <Reply className="h-4 w-4" /> Responses ({note.responses.length})
+                                  </p>
+                                  {note.responses.map((resp, respIdx) => (
+                                    <div key={resp.id || respIdx} className={`rounded-lg p-3 border ${resp.fromAdmin ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700'}`}>
+                                      <div className="flex justify-between items-start mb-1">
+                                        <span className={`text-xs font-medium ${resp.fromAdmin ? 'text-amber-600' : 'text-slate-500'}`}>
+                                          {resp.fromAdmin ? 'Admin' : 'You'}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">{new Date(resp.timestamp).toLocaleString()}</span>
+                                      </div>
+                                      {resp.text && <p className="text-sm text-slate-800 dark:text-slate-200">{resp.text}</p>}
+                                      {resp.attachmentUrl && (
+                                        <a 
+                                          href={resp.attachmentUrl} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-2 mt-2 text-sm text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+                                        >
+                                          <Paperclip className="h-4 w-4" />
+                                          {resp.attachmentName || 'Download Attachment'}
+                                          <Download className="h-3 w-3" />
+                                        </a>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              {/* Response Form */}
+                              {!note.completed && (
+                                <div className="mt-4">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setExpandedNoteId(isExpanded ? null : note.id)}
+                                    className="text-amber-600 border-amber-300 hover:bg-amber-50"
+                                  >
+                                    <Reply className="mr-2 h-4 w-4" />
+                                    {isExpanded ? 'Hide Response Form' : 'Respond'}
+                                  </Button>
+                                  
+                                  {isExpanded && (
+                                    <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                                      <textarea
+                                        value={noteResponses[note.id] || ""}
+                                        onChange={(e) => setNoteResponses(prev => ({ ...prev, [note.id]: e.target.value }))}
+                                        placeholder="Write your response..."
+                                        className="w-full min-h-20 p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                        data-testid={`textarea-response-${note.id}`}
+                                      />
+                                      
+                                      <div className="flex items-center gap-4 mt-3">
+                                        <input
+                                          type="file"
+                                          accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.jpg,.jpeg,.png,.gif"
+                                          onChange={(e) => {
+                                            const file = e.target.files?.[0] || null;
+                                            setNoteAttachments(prev => ({ ...prev, [note.id]: file }));
+                                          }}
+                                          className="hidden"
+                                          id={`attachment-${note.id}`}
+                                          data-testid={`input-attachment-${note.id}`}
+                                        />
+                                        <label htmlFor={`attachment-${note.id}`} className="cursor-pointer">
+                                          <Button variant="outline" size="sm" asChild>
+                                            <span><Paperclip className="mr-2 h-4 w-4" /> Attach File</span>
+                                          </Button>
+                                        </label>
+                                        {noteAttachments[note.id] && (
+                                          <span className="text-sm text-slate-600 dark:text-slate-400">
+                                            {noteAttachments[note.id]?.name}
+                                          </span>
+                                        )}
+                                      </div>
+                                      
+                                      <Button
+                                        onClick={() => handleSubmitNoteResponse(note.id)}
+                                        disabled={isSubmitting || (!noteResponses[note.id]?.trim() && !noteAttachments[note.id])}
+                                        className="mt-3 bg-amber-600 hover:bg-amber-700"
+                                        data-testid={`button-submit-response-${note.id}`}
+                                      >
+                                        {isSubmitting ? (
+                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <Send className="mr-2 h-4 w-4" />
+                                        )}
+                                        Submit Response
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center py-12">
+                      <TrendingUp className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No Investment Notes Yet</h3>
+                      <p className="text-muted-foreground">When the admin team identifies investment opportunities for you, they'll appear here.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* My Meetings Tab */}
+          {activeTab === "meetings" && (
+            <div>
+              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">My Meetings</h1>
+              <p className="text-muted-foreground mb-8">Scheduled meetings with the TouchConnectPro team.</p>
+
+              {meetings.length > 0 ? (
+                <div className="space-y-4">
+                  {meetings.map((meeting) => (
+                    <Card key={meeting.id} className="border-l-4 border-l-amber-500">
+                      <CardContent className="pt-6">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-semibold text-lg text-slate-900 dark:text-white">{meeting.title}</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                              <Calendar className="inline h-4 w-4 mr-1" />
+                              {meeting.date} at {meeting.time}
+                            </p>
+                            <p className="text-sm text-slate-500 mt-1">Host: {meeting.host}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              meeting.status === 'scheduled' ? 'bg-amber-100 text-amber-700' :
+                              meeting.status === 'completed' ? 'bg-green-100 text-green-700' :
+                              'bg-slate-100 text-slate-700'
+                            }`}>
+                              {meeting.status}
+                            </span>
+                            {meeting.meetingUrl && (
+                              <a href={meeting.meetingUrl} target="_blank" rel="noopener noreferrer">
+                                <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
+                                  Join Meeting
+                                </Button>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center py-12">
+                      <Calendar className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No Meetings Scheduled</h3>
+                      <p className="text-muted-foreground">When meetings are scheduled with you, they'll appear here.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
         </div>
