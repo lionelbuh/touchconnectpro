@@ -565,7 +565,7 @@ export default function DashboardMentor() {
                     <CardTitle className="text-sm font-medium text-muted-foreground">Unread Messages</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{messages.length}</div>
+                    <div className="text-2xl font-bold">{unreadMessageCount}</div>
                     <p className="text-xs text-muted-foreground mt-1">From your mentees</p>
                   </CardContent>
                 </Card>
