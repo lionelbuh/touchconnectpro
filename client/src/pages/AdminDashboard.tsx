@@ -51,6 +51,7 @@ interface InvestorApplication {
   fullName: string;
   email: string;
   linkedin: string;
+  bio?: string;
   fundName: string;
   investmentFocus: string;
   investmentPreference: string;
@@ -1604,6 +1605,12 @@ export default function AdminDashboard() {
                             <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Focus</p>
                             <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.investmentFocus}</p>
                           </div>
+                          {app.bio && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
+                              <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded whitespace-pre-wrap">{app.bio}</p>
+                            </div>
+                          )}
                           <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700 relative z-10">
                             <Button 
                               type="button"
@@ -2683,6 +2690,12 @@ export default function AdminDashboard() {
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Investment Focus</p>
                                 <p className="text-slate-900 dark:text-white">{app.investmentFocus}</p>
                               </div>
+                              {app.bio && (
+                                <div className="col-span-2">
+                                  <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
+                                  <p className="text-slate-900 dark:text-white whitespace-pre-wrap">{app.bio}</p>
+                                </div>
+                              )}
                               <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
                                 <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>

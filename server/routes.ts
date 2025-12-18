@@ -3929,7 +3929,7 @@ export async function registerRoutes(
         return res.status(500).json({ error: "Database not configured" });
       }
 
-      const { fullName, email, linkedin, fundName, investmentFocus, investmentPreference, investmentAmount, country, state } = req.body;
+      const { fullName, email, linkedin, bio, fundName, investmentFocus, investmentPreference, investmentAmount, country, state } = req.body;
 
       if (!email || !fullName || !fundName || !investmentFocus || !investmentPreference || !investmentAmount || !country) {
         return res.status(400).json({ 
@@ -3962,6 +3962,7 @@ export async function registerRoutes(
           full_name: fullName,
           email,
           linkedin: linkedin || null,
+          bio: bio || null,
           fund_name: fundName,
           investment_focus: investmentFocus,
           investment_preference: investmentPreference,

@@ -37,6 +37,7 @@ export default function BecomeaInvestor() {
     fullName: "",
     email: "",
     linkedin: "",
+    bio: "",
     fundName: "",
     investmentFocus: "",
     investmentPreference: "",
@@ -84,7 +85,7 @@ export default function BecomeaInvestor() {
   const handleCloseModal = () => {
     setSubmitted(false);
     setShowForm(false);
-    setFormData({ fullName: "", email: "", linkedin: "", fundName: "", investmentFocus: "", investmentPreference: "", investmentAmount: "", country: "", state: "" });
+    setFormData({ fullName: "", email: "", linkedin: "", bio: "", fundName: "", investmentFocus: "", investmentPreference: "", investmentAmount: "", country: "", state: "" });
   };
 
   return (
@@ -301,6 +302,19 @@ export default function BecomeaInvestor() {
                         placeholder="linkedin.com/in/xxx (optional)"
                         className="bg-slate-50 dark:bg-slate-800/50"
                         data-testid="input-investor-linkedin"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Bio / About You</label>
+                      <textarea
+                        name="bio"
+                        value={formData.bio}
+                        onChange={handleInputChange}
+                        placeholder="Tell us about yourself, your background, and investment experience... (optional)"
+                        rows={3}
+                        className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        data-testid="input-investor-bio"
                       />
                     </div>
 
