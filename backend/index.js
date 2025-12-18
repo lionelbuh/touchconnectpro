@@ -3016,8 +3016,9 @@ app.patch("/api/mentor-assignments/:id/toggle-note/:noteIndex", async (req, res)
               </body>
               </html>
             `
-          });
-          console.log("[TOGGLE-NOTE] Email sent to entrepreneur:", entrepreneur.entrepreneur_email);
+            });
+            console.log("[TOGGLE-NOTE] Email sent to entrepreneur:", entrepreneur.entrepreneur_email);
+          }
         }
       } catch (emailError) {
         console.error("[TOGGLE-NOTE] Email notification failed:", emailError.message);
@@ -3281,8 +3282,9 @@ app.post("/api/mentor-assignments/:assignmentId/notes/:noteId/respond", async (r
               </body>
               </html>
             `
-          });
-          console.log("[POST /api/note-respond] Email sent to mentor:", mentor.email);
+            });
+            console.log("[POST /api/note-respond] Email sent to mentor:", mentor.email);
+          }
         }
       }
     } catch (emailError) {
