@@ -100,6 +100,7 @@ export default function AdminDashboard() {
   const [mentorApplications, setMentorApplications] = useState<MentorApplication[]>([]);
   const [coachApplications, setCoachApplications] = useState<CoachApplication[]>([]);
   const [investorApplications, setInvestorApplications] = useState<InvestorApplication[]>([]);
+  const [isRefreshingInvestors, setIsRefreshingInvestors] = useState(false);
   const [entrepreneurApplications, setEntrepreneurApplications] = useState<EntrepreneurApplication[]>([]);
   const [approvedMentors, setApprovedMentors] = useState<any[]>([]);
   const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
@@ -3030,7 +3031,9 @@ export default function AdminDashboard() {
                     <Button
                       variant="outline"
                       size="sm"
+                      disabled={isRefreshingInvestors}
                       onClick={async () => {
+                        setIsRefreshingInvestors(true);
                         try {
                           const investorResponse = await fetch(`${API_BASE_URL}/api/investors`);
                           if (investorResponse.ok) {
@@ -3059,16 +3062,24 @@ export default function AdminDashboard() {
                               setApprovedInvestors(mappedInvestors.filter((app: any) => app.status === "approved"));
                               toast.success("Investor data refreshed");
                             }
+                          } else {
+                            toast.error("Failed to refresh investor data");
                           }
                         } catch (err) {
                           console.error("Error refreshing investors:", err);
                           toast.error("Failed to refresh investor data");
+                        } finally {
+                          setIsRefreshingInvestors(false);
                         }
                       }}
                       data-testid="button-refresh-investors"
                     >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh
+                      {isRefreshingInvestors ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                      )}
+                      {isRefreshingInvestors ? "Refreshing..." : "Refresh"}
                     </Button>
                   </div>
                   {investorApplications.filter(app => app.status === "approved").length === 0 ? (
