@@ -795,10 +795,32 @@ export default function AdminDashboard() {
             duration: adminZoomMeetingResult.duration || 60,
             joinUrl: adminZoomMeetingResult.join_url,
             password: adminZoomMeetingResult.password || null,
-            hostName: "TouchConnectPro Admin"
+            hostName: "TouchConnectPro Admin",
+            meetingId: adminZoomMeetingResult.id
           })
         });
       }
+      
+      // Update meeting with invitee names
+      const inviteeNames = recipients.map(r => r.fullName);
+      if (adminZoomMeetingResult.id) {
+        try {
+          const updateResponse = await fetch(`${API_BASE_URL}/api/admin/meetings/${adminZoomMeetingResult.id}/invitees`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              invitees: inviteeNames,
+              inviteeType: adminMeetingRecipientType
+            })
+          });
+          if (!updateResponse.ok) {
+            console.error("Failed to save invitee names to meeting");
+          }
+        } catch (err) {
+          console.error("Error updating meeting invitees:", err);
+        }
+      }
+      
       toast.success(`Meeting invites sent to ${recipients.length} recipient(s)!`);
       setShowCreateMeetingModal(false);
       setAdminMeeting({ topic: "", date: "", time: "", duration: 60 });
@@ -3844,7 +3866,15 @@ export default function AdminDashboard() {
                         <p className="text-sm text-muted-foreground mb-1">Status: <Badge>{meeting.status}</Badge></p>
                         {meeting.start_time && <p className="text-sm text-muted-foreground">Date/Time: {new Date(meeting.start_time).toLocaleString()}</p>}
                         <p className="text-sm text-muted-foreground">Duration: {meeting.duration} minutes</p>
-                        {meeting.participants && meeting.participants.length > 0 && <p className="text-sm text-muted-foreground mt-2">Participants: {meeting.participants.length} entrepreneurs</p>}
+                        {meeting.invitees && meeting.invitees.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                              Invitees ({meeting.invitee_type ? meeting.invitee_type.charAt(0).toUpperCase() + meeting.invitee_type.slice(1) + 's' : 'Users'}):
+                            </p>
+                            <p className="text-sm text-muted-foreground">{meeting.invitees.join(', ')}</p>
+                          </div>
+                        )}
+                        {meeting.participants && meeting.participants.length > 0 && !meeting.invitees && <p className="text-sm text-muted-foreground mt-2">Participants: {meeting.participants.length} entrepreneurs</p>}
                         <a href={meeting.join_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 text-blue-600 hover:text-blue-700 flex items-center gap-1">
                           <ExternalLink className="h-3 w-3" /> View Meeting
                         </a>

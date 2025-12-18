@@ -3525,6 +3525,40 @@ export async function registerRoutes(
     }
   });
 
+  // Update meeting with invitee names
+  app.patch("/api/admin/meetings/:meetingId/invitees", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { meetingId } = req.params;
+      const { invitees, inviteeType } = req.body;
+
+      console.log("[ADMIN MEETINGS] Updating invitees for meeting:", meetingId, "invitees:", invitees);
+
+      const { data, error } = await (client
+        .from("meetings")
+        .update({ 
+          invitees: invitees || [],
+          invitee_type: inviteeType || null
+        })
+        .eq("id", meetingId)
+        .select() as any);
+
+      if (error) {
+        console.error("[ADMIN MEETINGS] Update error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, meeting: data?.[0] });
+    } catch (error: any) {
+      console.error("[ADMIN MEETINGS] Error updating invitees:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Admin: Send meeting invitations to any user type (mentor, investor, entrepreneur)
   app.post("/api/admin/send-meeting-invite", async (req, res) => {
     try {

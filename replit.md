@@ -32,3 +32,13 @@ Authentication is managed via Supabase Auth, supporting email/password and passw
 2.  **Neon Database**: Serves as the serverless PostgreSQL backend for the Express.js application, utilized through the `@neondatabase/serverless` driver.
 3.  **Stripe**: Integrated for payment processing, handling subscription billing for memberships, and potentially commission processing for the coach marketplace, with webhook support.
 4.  **Resend**: Used for sending transactional emails, including approval/rejection notifications and password setup links.
+
+## Required Database Migrations (Supabase)
+
+Run these SQL commands in Supabase SQL Editor if columns don't exist:
+
+```sql
+-- Add invitees columns to meetings table
+ALTER TABLE meetings ADD COLUMN IF NOT EXISTS invitees TEXT[] DEFAULT '{}';
+ALTER TABLE meetings ADD COLUMN IF NOT EXISTS invitee_type TEXT;
+```
