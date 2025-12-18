@@ -68,7 +68,7 @@ export default function WelcomePopup() {
               className="flex-1 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white"
               onClick={() => {
                 handleClose();
-                window.location.href = "/become-a-mentor";
+                window.location.href = "/become-mentor";
               }}
               data-testid="button-become-mentor"
             >
@@ -78,7 +78,7 @@ export default function WelcomePopup() {
           </div>
 
           <p className="text-xs text-muted-foreground mt-4">
-            Or <a href="/become-a-coach" className="text-cyan-600 hover:underline" onClick={handleClose}>become a coach</a> to offer paid courses
+            Or <a href="/become-coach" className="text-cyan-600 hover:underline" onClick={handleClose}>become a coach</a> to offer paid courses
           </p>
         </CardContent>
       </Card>

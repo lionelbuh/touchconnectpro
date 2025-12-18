@@ -135,8 +135,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <h4 className="font-semibold mb-4">Community</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/idea-proposal">Entrepreneur: Submit your Idea</Link></li>
-              <li><Link href="/become-a-mentor">Become a Mentor</Link></li>
-              <li><Link href="/become-a-coach">Become a Coach</Link></li>
+              <li><Link href="/become-mentor">Become a Mentor</Link></li>
+              <li><Link href="/become-coach">Become a Coach</Link></li>
               <li><Link href="/become-an-investor">For Investors</Link></li>
             </ul>
           </div>
