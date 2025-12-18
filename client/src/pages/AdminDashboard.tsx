@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star } from "lucide-react";
+import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { API_BASE_URL } from "@/config";
@@ -136,6 +136,14 @@ export default function AdminDashboard() {
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [selectedCoachForReviews, setSelectedCoachForReviews] = useState<any>(null);
   const [coachReviews, setCoachReviews] = useState<any[]>([]);
+  const [showInvestorNotesModal, setShowInvestorNotesModal] = useState(false);
+  const [selectedInvestorForNotes, setSelectedInvestorForNotes] = useState<any>(null);
+  const [investorNoteText, setInvestorNoteText] = useState("");
+  const [investorNoteAttachment, setInvestorNoteAttachment] = useState<File | null>(null);
+  const [investorNotes, setInvestorNotes] = useState<any[]>([]);
+  const [sendingInvestorNote, setSendingInvestorNote] = useState(false);
+  const [investorNoteResponseText, setInvestorNoteResponseText] = useState<{[noteId: string]: string}>({});
+  const [investorNoteResponseAttachment, setInvestorNoteResponseAttachment] = useState<{[noteId: string]: File | null}>({});
 
   useEffect(() => {
     const loadData = async () => {
@@ -524,6 +532,170 @@ export default function AdminDashboard() {
     setSelectedMember(member);
     setShowMessageModal(true);
     markMessagesAsReadByAdmin(member.email);
+  };
+
+  const openInvestorNotesModal = async (investor: any) => {
+    setSelectedInvestorForNotes(investor);
+    setShowInvestorNotesModal(true);
+    setInvestorNoteText("");
+    setInvestorNoteAttachment(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/investors/profile/${encodeURIComponent(investor.email)}`);
+      if (response.ok) {
+        const data = await response.json();
+        setInvestorNotes(data.data?.notes || []);
+      }
+    } catch (error) {
+      console.error("Error loading investor notes:", error);
+    }
+  };
+
+  const handleSendInvestorNote = async () => {
+    if (!selectedInvestorForNotes?.id) return;
+    if (!investorNoteText.trim() && !investorNoteAttachment) {
+      toast.error("Please enter a note or attach a file");
+      return;
+    }
+
+    setSendingInvestorNote(true);
+    try {
+      let attachmentUrl = "";
+      let attachmentName = "";
+      let attachmentSize = 0;
+      let attachmentType = "";
+
+      if (investorNoteAttachment) {
+        const supabaseModule = await import("@/lib/supabase");
+        const supabaseClient = supabaseModule.supabase;
+        if (!supabaseClient) throw new Error("Supabase not configured");
+        const fileName = `investor-notes/${selectedInvestorForNotes.id}/${Date.now()}_${investorNoteAttachment.name}`;
+        const { data, error } = await supabaseClient.storage
+          .from("note-attachments")
+          .upload(fileName, investorNoteAttachment);
+        
+        if (error) throw error;
+        
+        const { data: publicData } = supabaseClient.storage
+          .from("note-attachments")
+          .getPublicUrl(fileName);
+        
+        attachmentUrl = publicData.publicUrl;
+        attachmentName = investorNoteAttachment.name;
+        attachmentSize = investorNoteAttachment.size;
+        attachmentType = investorNoteAttachment.type;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/investor-notes/${selectedInvestorForNotes.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: investorNoteText,
+          attachmentUrl,
+          attachmentName,
+          attachmentSize,
+          attachmentType
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setInvestorNotes(data.notes || []);
+        setInvestorNoteText("");
+        setInvestorNoteAttachment(null);
+        toast.success("Note sent to investor!");
+      } else {
+        toast.error("Failed to send note");
+      }
+    } catch (error) {
+      console.error("Error sending investor note:", error);
+      toast.error("Error sending note");
+    } finally {
+      setSendingInvestorNote(false);
+    }
+  };
+
+  const handleInvestorNoteResponse = async (noteId: string) => {
+    if (!selectedInvestorForNotes?.id) return;
+    const responseText = investorNoteResponseText[noteId] || "";
+    const responseFile = investorNoteResponseAttachment[noteId];
+    
+    if (!responseText.trim() && !responseFile) {
+      toast.error("Please enter a response or attach a file");
+      return;
+    }
+
+    try {
+      let attachmentUrl = "";
+      let attachmentName = "";
+      let attachmentSize = 0;
+      let attachmentType = "";
+
+      if (responseFile) {
+        const supabaseModule = await import("@/lib/supabase");
+        const supabaseClient = supabaseModule.supabase;
+        if (!supabaseClient) throw new Error("Supabase not configured");
+        const fileName = `investor-notes/${selectedInvestorForNotes.id}/${Date.now()}_${responseFile.name}`;
+        const { data, error } = await supabaseClient.storage
+          .from("note-attachments")
+          .upload(fileName, responseFile);
+        
+        if (error) throw error;
+        
+        const { data: publicData } = supabaseClient.storage
+          .from("note-attachments")
+          .getPublicUrl(fileName);
+        
+        attachmentUrl = publicData.publicUrl;
+        attachmentName = responseFile.name;
+        attachmentSize = responseFile.size;
+        attachmentType = responseFile.type;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/investor-notes/${selectedInvestorForNotes.id}/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          noteId,
+          text: responseText,
+          attachmentUrl,
+          attachmentName,
+          attachmentSize,
+          attachmentType,
+          fromAdmin: true
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setInvestorNotes(data.notes || []);
+        setInvestorNoteResponseText(prev => ({ ...prev, [noteId]: "" }));
+        setInvestorNoteResponseAttachment(prev => ({ ...prev, [noteId]: null }));
+        toast.success("Response sent!");
+      } else {
+        toast.error("Failed to send response");
+      }
+    } catch (error) {
+      console.error("Error sending response:", error);
+      toast.error("Error sending response");
+    }
+  };
+
+  const handleToggleInvestorNoteStatus = async (noteId: string, completed: boolean) => {
+    if (!selectedInvestorForNotes?.id) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/investor-notes/${selectedInvestorForNotes.id}/${noteId}/toggle`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: !completed })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setInvestorNotes(data.notes || []);
+      }
+    } catch (error) {
+      console.error("Error toggling note status:", error);
+    }
   };
 
   const handleToggleProfessionalStatus = async (type: "entrepreneur" | "mentor" | "coach" | "investor", id: string) => {
@@ -2740,6 +2912,14 @@ export default function AdminDashboard() {
                               >
                                 <MessageSquare className="mr-2 h-4 w-4" /> Message
                               </Button>
+                              <Button 
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openInvestorNotesModal(app)}
+                                data-testid={`button-notes-investor-${idx}`}
+                              >
+                                <FileText className="mr-2 h-4 w-4" /> Notes
+                              </Button>
                             </div>
                           </CardContent>
                         </Card>
@@ -3623,6 +3803,172 @@ export default function AdminDashboard() {
                 <Button variant="outline" className="flex-1" onClick={() => setShowMessageModal(false)}>Cancel</Button>
                 <Button className="flex-1 bg-cyan-600 hover:bg-cyan-700" onClick={handleSendMessage} data-testid="button-send-message">Send</Button>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Investor Notes Modal */}
+      {showInvestorNotesModal && selectedInvestorForNotes && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-3xl max-h-[80vh] overflow-hidden">
+            <CardHeader className="border-b">
+              <div className="flex items-center justify-between">
+                <CardTitle>Notes for {selectedInvestorForNotes.fullName}</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowInvestorNotesModal(false);
+                    setSelectedInvestorForNotes(null);
+                    setInvestorNotes([]);
+                  }}
+                  data-testid="button-close-investor-notes"
+                >
+                  ✕
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="overflow-y-auto max-h-[60vh] p-4 space-y-4">
+              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border">
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Send New Note</h4>
+                <textarea
+                  value={investorNoteText}
+                  onChange={(e) => setInvestorNoteText(e.target.value)}
+                  placeholder="Write a note to this investor..."
+                  className="w-full min-h-20 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  data-testid="textarea-investor-note"
+                />
+                <div className="flex items-center gap-3 mt-3">
+                  <input
+                    type="file"
+                    onChange={(e) => setInvestorNoteAttachment(e.target.files?.[0] || null)}
+                    className="hidden"
+                    id="investor-note-attachment"
+                    data-testid="input-investor-note-attachment"
+                  />
+                  <label htmlFor="investor-note-attachment">
+                    <Button variant="outline" size="sm" className="cursor-pointer" asChild>
+                      <span><Paperclip className="mr-2 h-4 w-4" /> Attach File</span>
+                    </Button>
+                  </label>
+                  {investorNoteAttachment && (
+                    <span className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                      <FileText className="h-3 w-3" />
+                      {investorNoteAttachment.name}
+                      <button onClick={() => setInvestorNoteAttachment(null)} className="text-red-500 ml-1">✕</button>
+                    </span>
+                  )}
+                  <Button 
+                    className="ml-auto bg-amber-600 hover:bg-amber-700" 
+                    size="sm"
+                    onClick={handleSendInvestorNote}
+                    disabled={sendingInvestorNote}
+                    data-testid="button-send-investor-note"
+                  >
+                    {sendingInvestorNote ? "Sending..." : <><Send className="mr-2 h-4 w-4" /> Send Note</>}
+                  </Button>
+                </div>
+              </div>
+
+              {investorNotes.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No notes yet. Send the first note above.</p>
+              ) : (
+                <div className="space-y-4">
+                  {investorNotes.slice().reverse().map((note: any) => (
+                    <div key={note.id} className={`border rounded-lg p-4 ${note.completed ? 'bg-green-50 dark:bg-green-950/20 border-green-200' : 'bg-white dark:bg-slate-900'}`}>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex-1">
+                          <p className="text-sm text-slate-900 dark:text-white whitespace-pre-wrap">{note.text}</p>
+                          {note.attachmentUrl && (
+                            <a 
+                              href={note.attachmentUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs text-amber-600 hover:underline mt-2"
+                            >
+                              <Download className="h-3 w-3" />
+                              {note.attachmentName || "Attachment"}
+                            </a>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant={note.completed ? "outline" : "default"}
+                            onClick={() => handleToggleInvestorNoteStatus(note.id, note.completed)}
+                            className={note.completed ? "bg-green-100 text-green-700 border-green-300" : ""}
+                          >
+                            {note.completed ? "Completed" : "Mark Complete"}
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{new Date(note.timestamp).toLocaleString()}</p>
+
+                      {note.responses && note.responses.length > 0 && (
+                        <div className="mt-3 pl-4 border-l-2 border-slate-200 dark:border-slate-700 space-y-2">
+                          {note.responses.map((resp: any) => (
+                            <div key={resp.id} className={`p-2 rounded text-sm ${resp.fromAdmin ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-blue-50 dark:bg-blue-900/20'}`}>
+                              <p className="font-semibold text-xs mb-1 text-slate-600 dark:text-slate-400">
+                                {resp.fromAdmin ? "Admin" : selectedInvestorForNotes.fullName} • {new Date(resp.timestamp).toLocaleString()}
+                              </p>
+                              <p className="text-slate-800 dark:text-slate-200">{resp.text}</p>
+                              {resp.attachmentUrl && (
+                                <a 
+                                  href={resp.attachmentUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs text-amber-600 hover:underline mt-1"
+                                >
+                                  <Download className="h-3 w-3" />
+                                  {resp.attachmentName || "Attachment"}
+                                </a>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="mt-3 pt-3 border-t">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={investorNoteResponseText[note.id] || ""}
+                            onChange={(e) => setInvestorNoteResponseText(prev => ({ ...prev, [note.id]: e.target.value }))}
+                            placeholder="Reply to this note..."
+                            className="flex-1 px-3 py-1.5 text-sm rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                          />
+                          <input
+                            type="file"
+                            onChange={(e) => setInvestorNoteResponseAttachment(prev => ({ ...prev, [note.id]: e.target.files?.[0] || null }))}
+                            className="hidden"
+                            id={`investor-note-response-${note.id}`}
+                          />
+                          <label htmlFor={`investor-note-response-${note.id}`}>
+                            <Button variant="ghost" size="sm" className="cursor-pointer px-2" asChild>
+                              <span><Paperclip className="h-4 w-4" /></span>
+                            </Button>
+                          </label>
+                          <Button
+                            size="sm"
+                            onClick={() => handleInvestorNoteResponse(note.id)}
+                            className="bg-amber-600 hover:bg-amber-700"
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        {investorNoteResponseAttachment[note.id] && (
+                          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                            <Paperclip className="h-3 w-3" />
+                            {investorNoteResponseAttachment[note.id]?.name}
+                            <button onClick={() => setInvestorNoteResponseAttachment(prev => ({ ...prev, [note.id]: null }))} className="text-red-500 ml-1">✕</button>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -2142,10 +2142,10 @@ app.post("/api/investor-notes/:investorId/respond", async (req, res) => {
 app.post("/api/investor-notes/:investorId", async (req, res) => {
   try {
     const { investorId } = req.params;
-    const { text } = req.body;
+    const { text, attachmentUrl, attachmentName, attachmentSize, attachmentType } = req.body;
 
-    if (!text?.trim()) {
-      return res.status(400).json({ error: "Note text is required" });
+    if (!text?.trim() && !attachmentUrl) {
+      return res.status(400).json({ error: "Note text or attachment is required" });
     }
 
     const { data: existingData, error: fetchError } = await supabase
@@ -2161,11 +2161,18 @@ app.post("/api/investor-notes/:investorId", async (req, res) => {
     const notes = existingData?.data?.notes || [];
     const newNote = {
       id: `note_${Date.now()}`,
-      text: text.trim(),
+      text: text?.trim() || "",
       timestamp: new Date().toISOString(),
       completed: false,
       responses: []
     };
+
+    if (attachmentUrl) {
+      newNote.attachmentUrl = attachmentUrl;
+      newNote.attachmentName = attachmentName;
+      newNote.attachmentSize = attachmentSize;
+      newNote.attachmentType = attachmentType;
+    }
 
     notes.push(newNote);
 

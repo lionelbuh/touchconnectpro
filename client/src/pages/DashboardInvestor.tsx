@@ -34,6 +34,10 @@ interface InvestorNote {
   text: string;
   timestamp: string;
   completed?: boolean;
+  attachmentUrl?: string;
+  attachmentName?: string;
+  attachmentSize?: number;
+  attachmentType?: string;
   responses?: NoteResponse[];
 }
 
@@ -927,6 +931,18 @@ export default function DashboardInvestor() {
                             <div className={`text-3xl font-bold min-w-12 ${note.completed ? 'text-green-500' : 'text-amber-500'}`}>{idx + 1}.</div>
                             <div className="flex-1">
                               <p className={`leading-relaxed ${note.completed ? 'text-green-900 dark:text-green-100' : 'text-slate-900 dark:text-white'}`}>{note.text}</p>
+                              {note.attachmentUrl && (
+                                <a 
+                                  href={note.attachmentUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-2 mt-2 text-sm text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+                                >
+                                  <Paperclip className="h-4 w-4" />
+                                  {note.attachmentName || 'Download Attachment'}
+                                  <Download className="h-3 w-3" />
+                                </a>
+                              )}
                               {note.timestamp && <p className={`text-xs mt-3 ${note.completed ? 'text-green-700 dark:text-green-300' : 'text-slate-500 dark:text-slate-400'}`}>Added on {new Date(note.timestamp).toLocaleDateString()}</p>}
                               
                               {/* Existing Responses */}
