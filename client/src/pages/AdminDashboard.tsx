@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download } from "lucide-react";
+import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { API_BASE_URL } from "@/config";
@@ -144,6 +144,16 @@ export default function AdminDashboard() {
   const [sendingInvestorNote, setSendingInvestorNote] = useState(false);
   const [investorNoteResponseText, setInvestorNoteResponseText] = useState<{[noteId: string]: string}>({});
   const [investorNoteResponseAttachment, setInvestorNoteResponseAttachment] = useState<{[noteId: string]: File | null}>({});
+  const [showCreateMeetingModal, setShowCreateMeetingModal] = useState(false);
+  const [meetingTopic, setMeetingTopic] = useState("");
+  const [meetingDateTime, setMeetingDateTime] = useState("");
+  const [meetingDuration, setMeetingDuration] = useState("60");
+  const [meetingUrl, setMeetingUrl] = useState("");
+  const [meetingPassword, setMeetingPassword] = useState("");
+  const [meetingRecipientType, setMeetingRecipientType] = useState<"entrepreneur" | "mentor" | "investor">("entrepreneur");
+  const [meetingRecipientEmail, setMeetingRecipientEmail] = useState("");
+  const [meetingRecipientName, setMeetingRecipientName] = useState("");
+  const [sendingMeetingInvite, setSendingMeetingInvite] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -695,6 +705,57 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error("Error toggling note status:", error);
+    }
+  };
+
+  const handleSendMeetingInvite = async () => {
+    if (!meetingTopic.trim() || !meetingUrl.trim() || !meetingRecipientEmail.trim()) {
+      toast.error("Please fill in topic, meeting URL, and recipient email");
+      return;
+    }
+
+    setSendingMeetingInvite(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/send-meeting-invite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipientEmail: meetingRecipientEmail,
+          recipientName: meetingRecipientName || meetingRecipientEmail,
+          recipientType: meetingRecipientType,
+          topic: meetingTopic,
+          startTime: meetingDateTime || null,
+          duration: parseInt(meetingDuration) || 60,
+          joinUrl: meetingUrl,
+          password: meetingPassword || null,
+          hostName: "TouchConnectPro Admin"
+        })
+      });
+
+      if (response.ok) {
+        toast.success(`Meeting invite sent to ${meetingRecipientEmail}!`);
+        setShowCreateMeetingModal(false);
+        setMeetingTopic("");
+        setMeetingDateTime("");
+        setMeetingDuration("60");
+        setMeetingUrl("");
+        setMeetingPassword("");
+        setMeetingRecipientEmail("");
+        setMeetingRecipientName("");
+        // Reload meetings
+        const meetingsResponse = await fetch(`${API_BASE_URL}/api/admin/meetings`);
+        if (meetingsResponse.ok) {
+          const meetingsData = await meetingsResponse.json();
+          setAllMeetings(meetingsData.meetings || []);
+        }
+      } else {
+        toast.error("Failed to send meeting invite");
+      }
+    } catch (error) {
+      console.error("Error sending meeting invite:", error);
+      toast.error("Error sending meeting invite");
+    } finally {
+      setSendingMeetingInvite(false);
     }
   };
 
@@ -3669,8 +3730,19 @@ export default function AdminDashboard() {
       {/* Meetings Tab */}
       {activeTab === "meetings" && (
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">All Scheduled Meetings</h2>
-          <p className="text-muted-foreground mb-6">View all Zoom meetings for backup and OOO coverage</p>
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">All Scheduled Meetings</h2>
+              <p className="text-muted-foreground">View and schedule meetings with mentors, investors, and entrepreneurs</p>
+            </div>
+            <Button 
+              className="bg-cyan-600 hover:bg-cyan-700"
+              onClick={() => setShowCreateMeetingModal(true)}
+              data-testid="button-create-meeting"
+            >
+              <Plus className="mr-2 h-4 w-4" /> Schedule Meeting
+            </Button>
+          </div>
           {allMeetings.length > 0 ? (
             <div className="grid gap-4">
               {allMeetings.map((meeting) => (
@@ -4034,6 +4106,156 @@ export default function AdminDashboard() {
                   </div>
                 ))
               )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Create Meeting Modal */}
+      {showCreateMeetingModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-lg">
+            <CardHeader className="border-b">
+              <div className="flex items-center justify-between">
+                <CardTitle>Schedule Meeting</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCreateMeetingModal(false)}
+                  data-testid="button-close-create-meeting"
+                >
+                  ✕
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              <div>
+                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Meeting Topic *</label>
+                <input 
+                  type="text" 
+                  value={meetingTopic}
+                  onChange={(e) => setMeetingTopic(e.target.value)}
+                  placeholder="e.g., Business Plan Review"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  data-testid="input-meeting-topic"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Date & Time</label>
+                  <input 
+                    type="datetime-local" 
+                    value={meetingDateTime}
+                    onChange={(e) => setMeetingDateTime(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    data-testid="input-meeting-datetime"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Duration (mins)</label>
+                  <select 
+                    value={meetingDuration}
+                    onChange={(e) => setMeetingDuration(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    data-testid="select-meeting-duration"
+                  >
+                    <option value="30">30 minutes</option>
+                    <option value="45">45 minutes</option>
+                    <option value="60">60 minutes</option>
+                    <option value="90">90 minutes</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Meeting URL *</label>
+                <input 
+                  type="url" 
+                  value={meetingUrl}
+                  onChange={(e) => setMeetingUrl(e.target.value)}
+                  placeholder="https://zoom.us/j/..."
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  data-testid="input-meeting-url"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Meeting Password (optional)</label>
+                <input 
+                  type="text" 
+                  value={meetingPassword}
+                  onChange={(e) => setMeetingPassword(e.target.value)}
+                  placeholder="Optional password"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  data-testid="input-meeting-password"
+                />
+              </div>
+
+              <div className="border-t pt-4 mt-4">
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Recipient Details</h4>
+                
+                <div className="mb-3">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Recipient Type</label>
+                  <div className="flex gap-2">
+                    {(["entrepreneur", "mentor", "investor"] as const).map((type) => (
+                      <Button
+                        key={type}
+                        variant={meetingRecipientType === type ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setMeetingRecipientType(type)}
+                        className={meetingRecipientType === type ? "bg-cyan-600" : ""}
+                      >
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Email *</label>
+                    <input 
+                      type="email" 
+                      value={meetingRecipientEmail}
+                      onChange={(e) => setMeetingRecipientEmail(e.target.value)}
+                      placeholder="recipient@example.com"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      data-testid="input-recipient-email"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Name (optional)</label>
+                    <input 
+                      type="text" 
+                      value={meetingRecipientName}
+                      onChange={(e) => setMeetingRecipientName(e.target.value)}
+                      placeholder="Recipient name"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      data-testid="input-recipient-name"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  className="flex-1" 
+                  onClick={() => setShowCreateMeetingModal(false)}
+                  data-testid="button-cancel-meeting"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  className="flex-1 bg-cyan-600 hover:bg-cyan-700" 
+                  onClick={handleSendMeetingInvite}
+                  disabled={sendingMeetingInvite || !meetingTopic.trim() || !meetingUrl.trim() || !meetingRecipientEmail.trim()}
+                  data-testid="button-send-meeting-invite"
+                >
+                  {sendingMeetingInvite ? "Sending..." : <><Send className="mr-2 h-4 w-4" /> Send Invite</>}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
