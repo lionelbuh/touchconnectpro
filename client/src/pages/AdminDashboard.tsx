@@ -556,19 +556,33 @@ export default function AdminDashboard() {
       }
       
       // Mark notes as read when admin opens the dialog
+      console.log("[MARK READ] Calling mark-read for investor:", investor.id);
       const markReadResponse = await fetch(`${API_BASE_URL}/api/investor-notes/${investor.id}/mark-read`, {
         method: "POST",
         headers: { "Content-Type": "application/json" }
       });
+      console.log("[MARK READ] Response status:", markReadResponse.status);
       if (markReadResponse.ok) {
         const markReadData = await markReadResponse.json();
-        // Update local state to reflect that notes have been read
-        const updateFn = (inv: any) => 
+        console.log("[MARK READ] Response data:", markReadData);
+        // Update local state to reflect that notes have been read - create new arrays to trigger re-render
+        const lastAdminViewedNotesAt = markReadData.lastAdminViewedNotesAt;
+        setInvestorApplications(prev => {
+          const updated = prev.map(inv => 
+            inv.id === investor.id 
+              ? { ...inv, data: { ...((inv as any).data || {}), lastAdminViewedNotesAt } } 
+              : inv
+          );
+          console.log("[MARK READ] Updated investorApplications, investor data:", (updated.find(i => i.id === investor.id) as any)?.data);
+          return updated;
+        });
+        setApprovedInvestors(prev => prev.map(inv => 
           inv.id === investor.id 
-            ? { ...inv, data: { ...inv.data, lastAdminViewedNotesAt: markReadData.lastAdminViewedNotesAt } } 
-            : inv;
-        setInvestorApplications(prev => prev.map(updateFn));
-        setApprovedInvestors(prev => prev.map(updateFn));
+            ? { ...inv, data: { ...((inv as any).data || {}), lastAdminViewedNotesAt } } 
+            : inv
+        ));
+      } else {
+        console.error("[MARK READ] Failed:", await markReadResponse.text());
       }
     } catch (error) {
       console.error("Error loading investor notes:", error);
@@ -1195,7 +1209,7 @@ export default function AdminDashboard() {
     const lastViewed = investor.data?.lastAdminViewedNotesAt ? new Date(investor.data.lastAdminViewedNotesAt) : null;
     
     // Count notes that have any unread investor response (not each individual response)
-    return notes.filter((note: any) => {
+    const count = notes.filter((note: any) => {
       const hasUnreadInvestorResponse = (note.responses || []).some((r: any) => {
         if (r.fromAdmin) return false; // Admin's own responses are not unread
         if (!lastViewed) return true; // Never viewed = all investor responses are unread
@@ -1203,6 +1217,8 @@ export default function AdminDashboard() {
       });
       return hasUnreadInvestorResponse;
     }).length;
+    console.log("[UNREAD COUNT]", investor.fullName, "lastViewed:", lastViewed, "notes:", notes.length, "unread:", count);
+    return count;
   };
   
   const unreadInvestorNoteCount = investorApplications.reduce((count, investor) => {
@@ -3111,8 +3127,8 @@ export default function AdminDashboard() {
                     </Card>
                   ) : (
                     <div className="space-y-6">
-                      {filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").map((app, idx) => (
-                        <Card key={idx} className="border-l-4 border-l-amber-500">
+                      {filterAndSort(investorApplications.filter(app => app.status === "approved"), "fullName").map((app) => (
+                        <Card key={app.id} className="border-l-4 border-l-amber-500">
                           <CardHeader>
                             <div className="flex justify-between items-start">
                               <div className="flex items-center gap-4 flex-1">
@@ -3207,7 +3223,7 @@ export default function AdminDashboard() {
                                   });
                                   setShowMessageModal(true);
                                 }}
-                                data-testid={`button-message-investor-${idx}`}
+                                data-testid={`button-message-investor-${app.id}`}
                               >
                                 <MessageSquare className="mr-2 h-4 w-4" /> Message
                               </Button>
@@ -3215,7 +3231,7 @@ export default function AdminDashboard() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => openInvestorNotesModal(app)}
-                                data-testid={`button-notes-investor-${idx}`}
+                                data-testid={`button-notes-investor-${app.id}`}
                               >
                                 <FileText className="mr-2 h-4 w-4" /> Notes
                               </Button>
