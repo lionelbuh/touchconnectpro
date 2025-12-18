@@ -572,21 +572,32 @@ export default function AdminDashboard() {
       let attachmentType = "";
 
       if (investorNoteAttachment) {
-        const supabaseModule = await import("@/lib/supabase");
-        const supabaseClient = await supabaseModule.getSupabase();
-        if (!supabaseClient) throw new Error("Supabase not configured");
-        const fileName = `investor-notes/${selectedInvestorForNotes.id}/${Date.now()}_${investorNoteAttachment.name}`;
-        const { data, error } = await supabaseClient.storage
-          .from("note-attachments")
-          .upload(fileName, investorNoteAttachment);
+        const reader = new FileReader();
+        const fileDataPromise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(investorNoteAttachment);
+        });
+        const fileData = await fileDataPromise;
         
-        if (error) throw error;
+        const uploadResponse = await fetch(`${API_BASE_URL}/api/upload-investor-attachment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: investorNoteAttachment.name,
+            fileData,
+            fileType: investorNoteAttachment.type,
+            investorId: selectedInvestorForNotes.id
+          })
+        });
         
-        const { data: publicData } = supabaseClient.storage
-          .from("note-attachments")
-          .getPublicUrl(fileName);
+        if (!uploadResponse.ok) {
+          const uploadError = await uploadResponse.json();
+          throw new Error(uploadError.error || "Failed to upload file");
+        }
         
-        attachmentUrl = publicData.publicUrl;
+        const uploadData = await uploadResponse.json();
+        attachmentUrl = uploadData.url;
         attachmentName = investorNoteAttachment.name;
         attachmentSize = investorNoteAttachment.size;
         attachmentType = investorNoteAttachment.type;
@@ -638,21 +649,32 @@ export default function AdminDashboard() {
       let attachmentType = "";
 
       if (responseFile) {
-        const supabaseModule = await import("@/lib/supabase");
-        const supabaseClient = await supabaseModule.getSupabase();
-        if (!supabaseClient) throw new Error("Supabase not configured");
-        const fileName = `investor-notes/${selectedInvestorForNotes.id}/${Date.now()}_${responseFile.name}`;
-        const { data, error } = await supabaseClient.storage
-          .from("note-attachments")
-          .upload(fileName, responseFile);
+        const reader = new FileReader();
+        const fileDataPromise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(responseFile);
+        });
+        const fileData = await fileDataPromise;
         
-        if (error) throw error;
+        const uploadResponse = await fetch(`${API_BASE_URL}/api/upload-investor-attachment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: responseFile.name,
+            fileData,
+            fileType: responseFile.type,
+            investorId: selectedInvestorForNotes.id
+          })
+        });
         
-        const { data: publicData } = supabaseClient.storage
-          .from("note-attachments")
-          .getPublicUrl(fileName);
+        if (!uploadResponse.ok) {
+          const uploadError = await uploadResponse.json();
+          throw new Error(uploadError.error || "Failed to upload file");
+        }
         
-        attachmentUrl = publicData.publicUrl;
+        const uploadData = await uploadResponse.json();
+        attachmentUrl = uploadData.url;
         attachmentName = responseFile.name;
         attachmentSize = responseFile.size;
         attachmentType = responseFile.type;

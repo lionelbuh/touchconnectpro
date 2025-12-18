@@ -2496,6 +2496,29 @@ export async function registerRoutes(
     }
   });
 
+  // Get all investors
+  app.get("/api/investors", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { data, error } = await (client
+        .from("investor_applications")
+        .select("*")
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json(data);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Get investor profile by email
   app.get("/api/investors/profile/:email", async (req, res) => {
     try {
