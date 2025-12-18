@@ -305,6 +305,7 @@ export default function DashboardMentor() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          fullName: mentorProfile.fullName,
           bio: mentorProfile.bio,
           expertise: mentorProfile.expertise,
           experience: mentorProfile.yearsExperience,
@@ -555,7 +556,11 @@ export default function DashboardMentor() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-amber-500 shadow-sm">
+                <Card 
+                  className="border-l-4 border-l-amber-500 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => setActiveTab("messages")}
+                  data-testid="card-unread-messages"
+                >
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Unread Messages</CardTitle>
                   </CardHeader>
@@ -1404,14 +1409,15 @@ export default function DashboardMentor() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Email Address *</label>
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Email Address</label>
                       <Input
                         type="email"
                         value={mentorProfile.email}
-                        onChange={(e) => setMentorProfile({ ...mentorProfile, email: e.target.value })}
-                        className="bg-slate-50 dark:bg-slate-800/50"
+                        disabled
+                        className="bg-slate-100 dark:bg-slate-800/50 text-slate-500 cursor-not-allowed"
                         data-testid="input-mentor-email"
                       />
+                      <p className="text-xs text-slate-500 mt-1">To change your email, please contact admin</p>
                     </div>
 
                     <div>

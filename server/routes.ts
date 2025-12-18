@@ -1051,7 +1051,7 @@ export async function registerRoutes(
       }
 
       const { id } = req.params;
-      const { bio, expertise, experience, linkedin, profileImage } = req.body;
+      const { fullName, bio, expertise, experience, linkedin, profileImage } = req.body;
 
       console.log("[PUT /api/mentors/profile/:id] Updating profile:", id);
 
@@ -1062,6 +1062,11 @@ export async function registerRoutes(
         experience,
         linkedin: linkedin || null
       };
+
+      // Update full_name if provided
+      if (fullName) {
+        updateData.full_name = fullName;
+      }
 
       // If profileImage is provided, merge it into the data JSONB field
       if (profileImage !== undefined) {

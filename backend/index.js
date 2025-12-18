@@ -1389,7 +1389,7 @@ app.get("/api/mentors/profile/:email", async (req, res) => {
 app.put("/api/mentors/profile/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { bio, expertise, experience, linkedin, profileImage } = req.body;
+    const { fullName, bio, expertise, experience, linkedin, profileImage } = req.body;
 
     console.log("[PUT /api/mentors/profile/:id] Updating profile:", id);
 
@@ -1400,6 +1400,11 @@ app.put("/api/mentors/profile/:id", async (req, res) => {
       experience,
       linkedin: linkedin || null
     };
+
+    // Update full_name if provided
+    if (fullName) {
+      updateData.full_name = fullName;
+    }
 
     // If profileImage is provided, merge it into the data JSONB field
     if (profileImage !== undefined) {
