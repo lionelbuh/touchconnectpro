@@ -17,7 +17,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const links = [
     { href: "/", label: "Home" },
     { href: "/how-it-works", label: "How it works" },
-    { href: "/pricing", label: "Pricing" },
+    { href: "/coming-soon", label: "Pricing" },
     { href: "/qa", label: "Q&A" },
   ];
 
@@ -55,7 +55,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-primary">
               Log in
             </Link>
-            <Link href="/pricing">
+            <Link href="/coming-soon">
               <Button className="font-medium">Get Started</Button>
             </Link>
           </div>
@@ -89,7 +89,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <Link href="/login" className="block px-4 py-2 rounded-lg font-medium text-muted-foreground hover:bg-white/5 hover:text-foreground">
                 Log in
               </Link>
-              <Link href="/pricing">
+              <Link href="/coming-soon">
                 <Button className="w-full font-medium">Get Started</Button>
               </Link>
             </div>
@@ -126,7 +126,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <h4 className="font-semibold mb-4">Platform</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/how-it-works">How it works</Link></li>
-              <li><Link href="/pricing">Pricing</Link></li>
+              <li><Link href="/coming-soon">Pricing</Link></li>
               <li><Link href="/qa">Q&A</Link></li>
             </ul>
           </div>
@@ -137,7 +137,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <li><Link href="/idea-proposal">Entrepreneur: Submit your Idea</Link></li>
               <li><Link href="/become-mentor">Become a Mentor</Link></li>
               <li><Link href="/become-coach">Become a Coach</Link></li>
-              <li><Link href="/become-an-investor">For Investors</Link></li>
+              <li><Link href="/investors">For Investors</Link></li>
             </ul>
           </div>
 
