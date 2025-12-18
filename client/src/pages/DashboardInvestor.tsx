@@ -186,7 +186,20 @@ export default function DashboardInvestor() {
         const response = await fetch(`${API_BASE_URL}/api/investor-meetings/${encodeURIComponent(profile!.id)}`);
         if (response.ok) {
           const data = await response.json();
-          setMeetings(data.meetings || []);
+          const rawMeetings = data.meetings || [];
+          const transformedMeetings: Meeting[] = rawMeetings.map((m: any) => {
+            const startDate = m.startTime ? new Date(m.startTime) : null;
+            return {
+              id: m.id,
+              title: m.topic || m.title || "Meeting",
+              date: startDate ? startDate.toLocaleDateString() : (m.date || "TBD"),
+              time: startDate ? startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (m.time || "TBD"),
+              host: m.hostName || m.host || "TouchConnectPro Admin",
+              status: m.status || "scheduled",
+              meetingUrl: m.joinUrl || m.meetingUrl
+            };
+          });
+          setMeetings(transformedMeetings);
         }
       } catch (error) {
         console.error("Error loading meetings:", error);
