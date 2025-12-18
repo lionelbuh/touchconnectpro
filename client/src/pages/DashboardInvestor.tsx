@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { LayoutDashboard, TrendingUp, Settings, DollarSign, Target, Save, Loader2, Building2, Link as LinkIcon, LogOut, MessageSquare, AlertCircle, Calendar, Camera, FileText, Upload, Download, Paperclip, Reply, ChevronDown, Send, User } from "lucide-react";
+import { LayoutDashboard, TrendingUp, DollarSign, Target, Save, Loader2, Building2, Link as LinkIcon, LogOut, MessageSquare, AlertCircle, Calendar, Camera, FileText, Upload, Download, Paperclip, Reply, ChevronDown, Send, User } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -236,6 +236,13 @@ export default function DashboardInvestor() {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        if (result.investor) {
+          setProfile(result.investor);
+          setBio(result.investor.data?.bio || bio);
+          setProfileImage(result.investor.data?.profileImage || profileImage);
+          setFullName(result.investor.full_name || fullName);
+        }
         toast.success("Profile updated successfully!");
         setIsEditingProfile(false);
       } else {
@@ -459,9 +466,6 @@ export default function DashboardInvestor() {
             >
               <Calendar className="mr-2 h-4 w-4" /> My Meetings
             </Button>
-            <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
-              <Settings className="mr-2 h-4 w-4" /> Settings
-            </Button>
           </nav>
           <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
             <Button 
@@ -495,15 +499,26 @@ export default function DashboardInvestor() {
               </Card>
             )}
           <header className="mb-8 flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
-                Welcome, {fullName?.split(" ")[0] || profile?.full_name?.split(" ")[0] || "Investor"}!
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                {profile?.is_disabled
-                  ? "Your profile is currently in view-only mode."
-                  : "Manage your investment profile and access pre-vetted startups."}
-              </p>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16 border-2 border-amber-300">
+                {profileImage ? (
+                  <AvatarImage src={profileImage} alt={fullName} />
+                ) : (
+                  <AvatarFallback className="text-xl bg-amber-500 text-white">
+                    {fullName ? getInitials(fullName) : "IN"}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <div>
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
+                  Welcome, {fullName?.split(" ")[0] || profile?.full_name?.split(" ")[0] || "Investor"}!
+                </h1>
+                <p className="text-muted-foreground mt-2">
+                  {profile?.is_disabled
+                    ? "Your profile is currently in view-only mode."
+                    : "Manage your investment profile and access pre-vetted startups."}
+                </p>
+              </div>
             </div>
             {!profile?.is_disabled && (
               <div className="flex gap-2">
@@ -537,6 +552,21 @@ export default function DashboardInvestor() {
               </div>
             )}
           </header>
+
+          {/* Bio Display Box - shown in Overview when not editing */}
+          {!isEditingProfile && bio && (
+            <Card className="mb-6 border-amber-200 dark:border-amber-900/30 bg-amber-50/50 dark:bg-amber-950/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-amber-600" />
+                  About Me
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{bio}</p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Profile Picture Section */}
           {isEditingProfile && (

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
@@ -224,6 +225,7 @@ export default function AdminDashboard() {
               email: i.email,
               linkedin: i.linkedin,
               bio: i.data?.bio || i.bio || null,
+              profileImage: i.data?.profileImage || null,
               fundName: i.fund_name,
               investmentFocus: i.investment_focus,
               investmentPreference: i.investment_preference,
@@ -2649,9 +2651,20 @@ export default function AdminDashboard() {
                         <Card key={idx} className="border-l-4 border-l-amber-500">
                           <CardHeader>
                             <div className="flex justify-between items-start">
-                              <div className="flex-1">
-                                <CardTitle>{app.fullName}</CardTitle>
-                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                              <div className="flex items-center gap-4 flex-1">
+                                <Avatar className="h-14 w-14 border-2 border-amber-300">
+                                  {(app as any).profileImage ? (
+                                    <AvatarImage src={(app as any).profileImage} alt={app.fullName} />
+                                  ) : (
+                                    <AvatarFallback className="text-lg bg-amber-500 text-white">
+                                      {app.fullName?.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2) || "IN"}
+                                    </AvatarFallback>
+                                  )}
+                                </Avatar>
+                                <div>
+                                  <CardTitle>{app.fullName}</CardTitle>
+                                  <p className="text-sm text-muted-foreground mt-1">{app.email}</p>
+                                </div>
                               </div>
                               <div className="flex gap-2">
                                 <Badge className="bg-amber-600">Approved</Badge>
