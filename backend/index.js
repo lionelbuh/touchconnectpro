@@ -4317,6 +4317,222 @@ app.get("/api/admin/meetings", async (req, res) => {
   }
 });
 
+// Admin: Send meeting invitations to any user type (mentor, investor, entrepreneur)
+app.post("/api/admin/send-meeting-invite", async (req, res) => {
+  try {
+    const { 
+      recipientEmail, 
+      recipientName, 
+      recipientType, 
+      topic, 
+      startTime, 
+      duration, 
+      joinUrl, 
+      password,
+      hostName 
+    } = req.body;
+
+    if (!recipientEmail || !topic || !joinUrl) {
+      return res.status(400).json({ error: "Recipient email, topic, and join URL are required" });
+    }
+
+    console.log("[ADMIN INVITE] Sending meeting invite to:", recipientEmail, "type:", recipientType);
+
+    const resendData = await getResendClient();
+    let emailSent = false;
+
+    if (resendData) {
+      try {
+        await resendData.client.emails.send({
+          from: resendData.fromEmail,
+          to: recipientEmail,
+          subject: `Meeting Invitation: ${topic}`,
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                .meeting-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #06b6d4; margin: 20px 0; }
+                .join-button { display: inline-block; background: #06b6d4; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 10px 0; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>You're Invited to a Meeting!</h1>
+                </div>
+                <div class="content">
+                  <p>Hi ${recipientName || "there"},</p>
+                  <p>${hostName || "TouchConnectPro Admin"} has scheduled a meeting with you.</p>
+                  
+                  <div class="meeting-box">
+                    <h3 style="margin-top: 0;">${topic}</h3>
+                    ${startTime ? `<p><strong>Date & Time:</strong> ${new Date(startTime).toLocaleString()}</p>` : ''}
+                    ${duration ? `<p><strong>Duration:</strong> ${duration} minutes</p>` : ''}
+                    ${password ? `<p><strong>Password:</strong> ${password}</p>` : ''}
+                    <a href="${joinUrl}" class="join-button">Join Meeting</a>
+                  </div>
+                  
+                  <p>Best regards,<br><strong>The TouchConnectPro Team</strong></p>
+                </div>
+              </div>
+            </body>
+            </html>
+          `
+        });
+        emailSent = true;
+        console.log("[ADMIN INVITE] Email sent to:", recipientEmail);
+      } catch (emailErr) {
+        console.error("[ADMIN INVITE] Email error:", emailErr.message);
+      }
+    }
+
+    // Also send in-app message
+    await supabase.from("messages").insert({
+      from_name: hostName || "TouchConnectPro Admin",
+      from_email: "admin@touchconnectpro.com",
+      to_name: recipientName || recipientEmail,
+      to_email: recipientEmail,
+      message: `You have been invited to a meeting: "${topic}". Join here: ${joinUrl}${password ? ` (Password: ${password})` : ''}`,
+      is_read: false
+    });
+
+    console.log("[ADMIN INVITE] Invitation sent successfully to:", recipientEmail);
+
+    return res.json({ 
+      success: true, 
+      emailSent,
+      messageCreated: true
+    });
+  } catch (error) {
+    console.error("[ADMIN INVITE] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Admin: Create meeting and send invitations to multiple recipients
+app.post("/api/admin/create-meeting-with-invites", async (req, res) => {
+  try {
+    const { 
+      topic, 
+      startTime, 
+      duration, 
+      joinUrl, 
+      password,
+      hostName,
+      recipients // Array of { email, name, type }
+    } = req.body;
+
+    if (!topic || !joinUrl || !recipients || recipients.length === 0) {
+      return res.status(400).json({ error: "Topic, join URL, and at least one recipient required" });
+    }
+
+    console.log("[ADMIN CREATE MEETING] Creating meeting:", topic, "for", recipients.length, "recipients");
+
+    // Save meeting to database
+    const { data: savedMeeting, error: dbError } = await supabase
+      .from("meetings")
+      .insert({
+        topic,
+        start_time: startTime,
+        duration: duration || 60,
+        join_url: joinUrl,
+        password,
+        host_name: hostName || "TouchConnectPro Admin",
+        participants: recipients.map(r => r.email),
+        created_at: new Date().toISOString()
+      })
+      .select();
+
+    if (dbError) {
+      console.error("[ADMIN CREATE MEETING] DB error:", dbError);
+    }
+
+    const resendData = await getResendClient();
+    let emailsSent = 0;
+    let messagesSent = 0;
+
+    for (const recipient of recipients) {
+      // Send email
+      if (resendData) {
+        try {
+          await resendData.client.emails.send({
+            from: resendData.fromEmail,
+            to: recipient.email,
+            subject: `Meeting Invitation: ${topic}`,
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                  .meeting-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #06b6d4; margin: 20px 0; }
+                  .join-button { display: inline-block; background: #06b6d4; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 10px 0; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <h1>You're Invited to a Meeting!</h1>
+                  </div>
+                  <div class="content">
+                    <p>Hi ${recipient.name || "there"},</p>
+                    <p>${hostName || "TouchConnectPro Admin"} has scheduled a meeting with you.</p>
+                    
+                    <div class="meeting-box">
+                      <h3 style="margin-top: 0;">${topic}</h3>
+                      ${startTime ? `<p><strong>Date & Time:</strong> ${new Date(startTime).toLocaleString()}</p>` : ''}
+                      ${duration ? `<p><strong>Duration:</strong> ${duration} minutes</p>` : ''}
+                      ${password ? `<p><strong>Password:</strong> ${password}</p>` : ''}
+                      <a href="${joinUrl}" class="join-button">Join Meeting</a>
+                    </div>
+                    
+                    <p>Best regards,<br><strong>The TouchConnectPro Team</strong></p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `
+          });
+          emailsSent++;
+        } catch (emailErr) {
+          console.error("[ADMIN CREATE MEETING] Email error for", recipient.email, emailErr.message);
+        }
+      }
+
+      // Send in-app message
+      await supabase.from("messages").insert({
+        from_name: hostName || "TouchConnectPro Admin",
+        from_email: "admin@touchconnectpro.com",
+        to_name: recipient.name || recipient.email,
+        to_email: recipient.email,
+        message: `You have been invited to a meeting: "${topic}". Join here: ${joinUrl}${password ? ` (Password: ${password})` : ''}`,
+        is_read: false
+      });
+      messagesSent++;
+    }
+
+    console.log("[ADMIN CREATE MEETING] Sent", emailsSent, "emails and", messagesSent, "in-app messages");
+
+    return res.json({ 
+      success: true, 
+      meetingId: savedMeeting?.[0]?.id,
+      emailsSent,
+      messagesCreated: messagesSent
+    });
+  } catch (error) {
+    console.error("[ADMIN CREATE MEETING] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/", (req, res) => {
   return res.json({ 
     message: "TouchConnectPro Backend API",
