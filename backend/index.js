@@ -2377,6 +2377,43 @@ app.patch("/api/investor-notes/:investorId/:noteId/toggle", async (req, res) => 
   }
 });
 
+// Mark investor notes as read (admin viewed them)
+app.post("/api/investor-notes/:investorId/mark-read", async (req, res) => {
+  try {
+    const { investorId } = req.params;
+
+    const { data: existingData, error: fetchError } = await supabase
+      .from("investor_applications")
+      .select("data")
+      .eq("id", investorId)
+      .single();
+
+    if (fetchError) {
+      return res.status(404).json({ error: "Investor not found" });
+    }
+
+    const { data, error } = await supabase
+      .from("investor_applications")
+      .update({
+        data: {
+          ...existingData.data,
+          lastAdminViewedNotesAt: new Date().toISOString()
+        }
+      })
+      .eq("id", investorId)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log("[INVESTOR NOTES] Marked as read for investor:", investorId);
+    return res.json({ success: true, lastAdminViewedNotesAt: data?.[0]?.data?.lastAdminViewedNotesAt });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // Upload investor attachment
 app.post("/api/upload-investor-attachment", async (req, res) => {
   try {

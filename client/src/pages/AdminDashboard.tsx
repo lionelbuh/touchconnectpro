@@ -554,6 +554,22 @@ export default function AdminDashboard() {
         const data = await response.json();
         setInvestorNotes(data.data?.notes || []);
       }
+      
+      // Mark notes as read when admin opens the dialog
+      const markReadResponse = await fetch(`${API_BASE_URL}/api/investor-notes/${investor.id}/mark-read`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+      if (markReadResponse.ok) {
+        const markReadData = await markReadResponse.json();
+        // Update local state to reflect that notes have been read
+        const updateFn = (inv: any) => 
+          inv.id === investor.id 
+            ? { ...inv, data: { ...inv.data, lastAdminViewedNotesAt: markReadData.lastAdminViewedNotesAt } } 
+            : inv;
+        setInvestorApplications(prev => prev.map(updateFn));
+        setApprovedInvestors(prev => prev.map(updateFn));
+      }
     } catch (error) {
       console.error("Error loading investor notes:", error);
     }
@@ -1173,14 +1189,19 @@ export default function AdminDashboard() {
   const rejectedCoachApplications = coachApplications.filter(app => app.status === "rejected");
   const rejectedInvestorApplications = investorApplications.filter(app => app.status === "rejected");
 
-  // Calculate unread investor notes (notes with responses from investors)
+  // Calculate unread investor notes (notes with investor responses after admin last viewed)
   const getUnreadInvestorNoteCount = (investor: any) => {
     const notes = investor.data?.notes || [];
+    const lastViewed = investor.data?.lastAdminViewedNotesAt ? new Date(investor.data.lastAdminViewedNotesAt) : null;
+    
+    // Count notes that have any unread investor response (not each individual response)
     return notes.filter((note: any) => {
-      // Check if note has any response from investor (not admin)
-      const hasInvestorResponse = note.responses?.some((r: any) => !r.fromAdmin);
-      // If note is not completed and has investor response, it's unread
-      return hasInvestorResponse && !note.completed;
+      const hasUnreadInvestorResponse = (note.responses || []).some((r: any) => {
+        if (r.fromAdmin) return false; // Admin's own responses are not unread
+        if (!lastViewed) return true; // Never viewed = all investor responses are unread
+        return new Date(r.timestamp) > lastViewed;
+      });
+      return hasUnreadInvestorResponse;
     }).length;
   };
   

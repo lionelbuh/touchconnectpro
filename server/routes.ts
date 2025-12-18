@@ -2919,6 +2919,50 @@ export async function registerRoutes(
     }
   });
 
+  // Mark investor notes as read (admin viewed them)
+  app.post("/api/investor-notes/:investorId/mark-read", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { investorId } = req.params;
+
+      // Get existing data
+      const { data: existingData, error: fetchError } = await (client
+        .from("investor_applications")
+        .select("data")
+        .eq("id", investorId)
+        .single() as any);
+
+      if (fetchError) {
+        return res.status(404).json({ error: "Investor not found" });
+      }
+
+      // Update lastAdminViewedNotesAt timestamp
+      const { data, error } = await (client
+        .from("investor_applications")
+        .update({
+          data: {
+            ...existingData.data,
+            lastAdminViewedNotesAt: new Date().toISOString()
+          }
+        } as any)
+        .eq("id", investorId)
+        .select() as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      console.log("[INVESTOR NOTES] Marked as read for investor:", investorId);
+      return res.json({ success: true, lastAdminViewedNotesAt: data?.[0]?.data?.lastAdminViewedNotesAt });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Upload investor attachment
   app.post("/api/upload-investor-attachment", async (req, res) => {
     try {
