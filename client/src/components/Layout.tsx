@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import logoFull from "@assets/Logo_TouchConnectPro-removebg-preview_1764217788734.png";
+import WelcomePopup from "./WelcomePopup";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -22,6 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-background text-foreground">
+      <WelcomePopup />
       {/* Navbar */}
       <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-24 flex items-center justify-between">
@@ -132,10 +134,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div>
             <h4 className="font-semibold mb-4">Community</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/coming-soon">Entrepreneur: Submit your Idea</Link></li>
-              <li><Link href="/coming-soon">Become a Mentor</Link></li>
-              <li><Link href="/coming-soon">Become a Coach</Link></li>
-              <li><Link href="/coming-soon">For Investors</Link></li>
+              <li><Link href="/idea-proposal">Entrepreneur: Submit your Idea</Link></li>
+              <li><Link href="/become-a-mentor">Become a Mentor</Link></li>
+              <li><Link href="/become-a-coach">Become a Coach</Link></li>
+              <li><Link href="/become-an-investor">For Investors</Link></li>
             </ul>
           </div>
 
