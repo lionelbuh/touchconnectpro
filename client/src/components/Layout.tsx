@@ -17,7 +17,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const links = [
     { href: "/", label: "Home" },
     { href: "/how-it-works", label: "How it works" },
-    { href: "/coming-soon", label: "Pricing" },
+    { href: "/pricing", label: "Pricing" },
     { href: "/qa", label: "Q&A" },
   ];
 
@@ -126,7 +126,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <h4 className="font-semibold mb-4">Platform</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/how-it-works">How it works</Link></li>
-              <li><Link href="/coming-soon">Pricing</Link></li>
+              <li><Link href="/pricing">Pricing</Link></li>
               <li><Link href="/qa">Q&A</Link></li>
             </ul>
           </div>
