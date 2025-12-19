@@ -2180,7 +2180,7 @@ app.post("/api/investor-notes/:investorId/respond", async (req, res) => {
           // Investor responded - notify admin
           await resendData.client.emails.send({
             from: resendData.fromEmail,
-            to: "admin@touchconnectpro.com",
+            to: ADMIN_EMAIL,
             subject: `Investor Response: ${existingData.full_name || existingData.email}`,
             html: `
               <!DOCTYPE html>

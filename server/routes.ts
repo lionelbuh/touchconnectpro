@@ -6,6 +6,8 @@ import { Resend } from "resend";
 import crypto from "crypto";
 import { rephraseAnswers, generateBusinessPlan, generateMeetingQuestions } from "./aiService";
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
+
 let supabase: ReturnType<typeof createClient> | null = null;
 let resendClient: Resend | null = null;
 
@@ -2711,7 +2713,7 @@ export async function registerRoutes(
             // Investor responded - notify admin
             await resendData.client.emails.send({
               from: resendData.fromEmail,
-              to: "admin@touchconnectpro.com",
+              to: ADMIN_EMAIL,
               subject: `Investor Response: ${existingData.full_name || existingData.email}`,
               html: `
                 <!DOCTYPE html>
