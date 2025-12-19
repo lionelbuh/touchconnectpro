@@ -35,6 +35,12 @@ Authentication is managed via Supabase Auth, supporting email/password and passw
 
 ## Recent Changes (December 2025)
 
+### Three-Tier Coach Pricing Structure
+- Coaches now set three rates: Intro Call ($), Per Session ($), Per Month/Full Courses ($)
+- Stored as JSON in `hourly_rate` field: `{"introCallRate": "25", "sessionRate": "150", "monthlyRate": "500"}`
+- Backward compatible: `parseRates()` function handles both JSON (new) and plain string (legacy) formats
+- Updated dashboards: DashboardCoach.tsx, AdminDashboard.tsx, DashboardEntrepreneur.tsx
+
 ### Investor Notes Read Tracking
 - Added `lastAdminViewedNotesAt` timestamp to track when admin views investor notes
 - Unread badge now clears when admin opens notes dialog (separate from marking as completed)
@@ -47,6 +53,13 @@ All investor note interactions trigger email notifications via Resend:
 - Admin responds → Email sent to investor
 
 **IMPORTANT**: Both `server/routes.ts` and `backend/index.js` use `ADMIN_EMAIL` constant with fallback to ensure emails are delivered to a real inbox, not `admin@touchconnectpro.com` which may not be receiving emails.
+
+### Debugging Investor Note Emails
+Enhanced logging added to both files for debugging email delivery:
+- Logs `fromAdmin` value and investor email
+- Logs whether resendData client is available
+- Logs target admin email when sending
+- Production (Render) requires `RESEND_API_KEY` and `RESEND_FROM_EMAIL` env vars
 
 ## Backend Synchronization
 

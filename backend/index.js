@@ -2147,7 +2147,9 @@ app.post("/api/investor-notes/:investorId/respond", async (req, res) => {
     }
 
     // Send email notification based on who responded
+    console.log("[INVESTOR NOTE RESPOND] fromAdmin:", fromAdmin, "investor email:", existingData.email);
     const resendData = await getResendClient();
+    console.log("[INVESTOR NOTE RESPOND] resendData available:", !!resendData);
     if (resendData) {
       try {
         if (fromAdmin && existingData.email) {
@@ -2225,11 +2227,13 @@ app.post("/api/investor-notes/:investorId/respond", async (req, res) => {
               </html>
             `
           });
-          console.log("[INVESTOR NOTE] Investor response email sent to admin");
+          console.log("[INVESTOR NOTE] Investor response email sent to admin:", ADMIN_EMAIL);
         }
       } catch (emailErr) {
-        console.error("[INVESTOR NOTE] Email error:", emailErr.message);
+        console.error("[INVESTOR NOTE] Email error:", emailErr.message, emailErr.stack);
       }
+    } else {
+      console.log("[INVESTOR NOTE RESPOND] No resend client available - email not sent");
     }
 
     return res.json({ success: true, notes: data?.[0]?.data?.notes || [] });
