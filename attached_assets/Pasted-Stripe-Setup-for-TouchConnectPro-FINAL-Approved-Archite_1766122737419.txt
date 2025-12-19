@@ -1,0 +1,130 @@
+Stripe Setup for TouchConnectPro (FINAL – Approved Architecture)
+Goal
+TouchConnectPro is a marketplace where each coach offers exactly 3 services with their own prices:
+1.	15 Minutes Introductory Call
+2.	Per session
+3.	Per Month / Full Courses
+Each coach:
+•	Chooses their own rates
+•	Is paid automatically by Stripe
+•	TouchConnectPro keeps 20% platform fee
+________________________________________
+1️⃣ Stripe Architecture (MANDATORY)
+•	Use Stripe Connect – Standard accounts
+•	TouchConnectPro = Platform
+•	Each coach = Connected Stripe account
+•	Do NOT collect 100% of funds on the platform
+•	Use destination charges with application fees
+This is required by Stripe TOS for multi-seller platforms.
+________________________________________
+2️⃣ Coach Onboarding Flow
+Coach applies and submits:
+-	15 Minutes Introductory Call
+-	Per session
+-	Per Month / Full Courses
+
+1.	Admin approves coach
+2.	System creates a Stripe Connect account link
+3.	Coach completes Stripe onboarding (KYC, bank info)
+4.	Save stripe_account_id in database
+coaches
+- id
+- name
+- stripe_account_id
+- intro_price_cents
+- session_price_cents
+- month_price_cents
+________________________________________
+3️⃣ Pricing Rules (IMPORTANT)
+⚠️ Do NOT create Prices in the Stripe Dashboard
+All prices must be:
+•	Stored in TouchConnectPro DB
+•	Created dynamically at checkout using price_data
+Reason:
+•	Each coach has different prices
+•	Stripe prices are immutable
+•	This avoids price explosion in Stripe
+________________________________________
+4️⃣ Checkout Logic (Core Implementation)
+When user clicks “Book now”
+Backend must:
+1.	Fetch coach data
+2.	Determine selected service
+3.	Create Stripe Checkout Session
+4.	Route payment to the coach
+5.	Take 20% platform fee
+________________________________________
+5️⃣ Checkout Session – Example (Node.js)
+One-time payments (Intro call & Hourly)
+const session = await stripe.checkout.sessions.create(
+  {
+    mode: "payment",
+    line_items: [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `${coach.name} – ${serviceName}`,
+          },
+          unit_amount: priceCents,
+        },
+        quantity: 1,
+      },
+    ],
+    payment_intent_data: {
+      application_fee_amount: Math.round(priceCents * 0.20),
+      transfer_data: {
+        destination: coach.stripe_account_id,
+      },
+    },
+    success_url: `${FRONTEND_URL}/success`,
+    cancel_url: `${FRONTEND_URL}/cancel`,
+  },
+  {
+    stripeAccount: coach.stripe_account_id,
+  }
+);
+________________________________________
+Full Course (Optional Subscription)
+mode: "subscription"
+Use if the course is multi-week or recurring.
+________________________________________
+6️⃣ Money Flow (Very Important)
+•	Customer pays via Stripe Checkout
+•	Stripe:
+o	Sends 80% to coach
+o	Sends 20% to TouchConnectPro
+•	TouchConnectPro never handles payouts manually
+•	Stripe handles:
+o	Taxes
+o	KYC
+o	1099 (US)
+o	Payouts
+________________________________________
+7️⃣ Admin Responsibilities
+Admin does NOT:
+•	Create Stripe prices manually
+•	Handle payouts
+•	Manage tax forms
+Admin does:
+•	Approve coaches
+•	Review prices
+•	Enable/disable coach visibility
+________________________________________
+8️⃣ Metadata (Recommended)
+Add metadata for tracking:
+metadata: {
+  coach_id: coach.id,
+  service_type: "hourly" | "intro" | "course"
+}
+________________________________________
+9️⃣ Why This Setup Is Required
+✔ Stripe-compliant
+✔ Scales to hundreds of coaches
+✔ No accounting nightmare
+✔ Automatic payouts
+✔ Minimal legal risk
+________________________________________
+10️⃣ Final Rule (DO NOT BREAK)
+If a coach sets their own price and receives money, Stripe Connect MUST be used.
+This implementation is the correct and final architecture.
