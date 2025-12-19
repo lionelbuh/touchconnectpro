@@ -33,6 +33,29 @@ Authentication is managed via Supabase Auth, supporting email/password and passw
 3.  **Stripe**: Integrated for payment processing, handling subscription billing for memberships, and potentially commission processing for the coach marketplace, with webhook support.
 4.  **Resend**: Used for sending transactional emails, including approval/rejection notifications and password setup links.
 
+## Recent Changes (December 2025)
+
+### Investor Notes Read Tracking
+- Added `lastAdminViewedNotesAt` timestamp to track when admin views investor notes
+- Unread badge now clears when admin opens notes dialog (separate from marking as completed)
+- New endpoint: `POST /api/investor-notes/:investorId/mark-read`
+
+### Email Notifications for Investor Notes
+All investor note interactions trigger email notifications via Resend:
+- Admin creates new note → Email sent to investor
+- Investor responds → Email sent to admin@touchconnectpro.com
+- Admin responds → Email sent to investor
+
+## Backend Synchronization
+
+**IMPORTANT**: The `backend/index.js` file is a standalone copy for Render production deployment. It must be kept in sync with `server/routes.ts` (development).
+
+Key investor notes endpoints synchronized:
+- `POST /api/investor-notes/:investorId` - Create new note
+- `POST /api/investor-notes/:investorId/respond` - Add response
+- `PATCH /api/investor-notes/:investorId/:noteId/toggle` - Toggle completion
+- `POST /api/investor-notes/:investorId/mark-read` - Mark as read
+
 ## Required Database Migrations (Supabase)
 
 Run these SQL commands in Supabase SQL Editor if columns don't exist:
@@ -41,4 +64,7 @@ Run these SQL commands in Supabase SQL Editor if columns don't exist:
 -- Add invitees columns to meetings table
 ALTER TABLE meetings ADD COLUMN IF NOT EXISTS invitees TEXT[] DEFAULT '{}';
 ALTER TABLE meetings ADD COLUMN IF NOT EXISTS invitee_type TEXT;
+
+-- Add data column to investor_applications if not exists
+ALTER TABLE investor_applications ADD COLUMN IF NOT EXISTS data JSONB DEFAULT '{}'::jsonb;
 ```
