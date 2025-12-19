@@ -38,6 +38,7 @@ interface CoachApplication {
   focusAreas: string;
   hourlyRate: string;
   specializations?: string[];
+  profileImage?: string;
   status: "pending" | "approved" | "rejected";
   submittedAt: string;
   country?: string;
@@ -205,6 +206,7 @@ export default function AdminDashboard() {
               focusAreas: c.focus_areas,
               hourlyRate: c.hourly_rate,
               specializations: c.specializations || [],
+              profileImage: c.profile_image,
               country: c.country,
               state: c.state,
               status: c.status === "submitted" ? "pending" : c.status,
@@ -1864,9 +1866,18 @@ export default function AdminDashboard() {
                       <Card key={actualIdx} className="border-l-4 border-l-cyan-500">
                         <CardHeader>
                           <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <CardTitle>{app.fullName}</CardTitle>
-                              <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                            <div className="flex items-center gap-4 flex-1">
+                              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-lg font-bold overflow-hidden flex-shrink-0 shadow-md">
+                                {app.profileImage ? (
+                                  <img src={app.profileImage} alt={app.fullName} className="w-full h-full object-cover" />
+                                ) : (
+                                  app.fullName?.substring(0, 2).toUpperCase() || "CO"
+                                )}
+                              </div>
+                              <div>
+                                <CardTitle>{app.fullName}</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-1">{app.email}</p>
+                              </div>
                             </div>
                             <div className="flex gap-2">
                               {app.is_resubmitted && <Badge className="bg-purple-600">Resubmission</Badge>}
@@ -2900,9 +2911,18 @@ export default function AdminDashboard() {
                         <Card key={idx} className="border-l-4 border-l-cyan-500">
                           <CardHeader>
                             <div className="flex justify-between items-start">
-                              <div className="flex-1">
-                                <CardTitle>{app.fullName}</CardTitle>
-                                <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
+                              <div className="flex items-center gap-4 flex-1">
+                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-lg font-bold overflow-hidden flex-shrink-0 shadow-md">
+                                  {app.profileImage ? (
+                                    <img src={app.profileImage} alt={app.fullName} className="w-full h-full object-cover" />
+                                  ) : (
+                                    app.fullName?.substring(0, 2).toUpperCase() || "CO"
+                                  )}
+                                </div>
+                                <div>
+                                  <CardTitle>{app.fullName}</CardTitle>
+                                  <p className="text-sm text-muted-foreground mt-1">{app.email}</p>
+                                </div>
                               </div>
                               <div className="flex gap-2">
                                 <Badge className="bg-cyan-600">Approved</Badge>

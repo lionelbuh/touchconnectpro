@@ -1665,6 +1665,9 @@ export default function DashboardEntrepreneur() {
                         <CardHeader>
                           <div className="flex items-start gap-4">
                             <Avatar className="h-12 w-12 border-2 border-purple-200">
+                              {coach.profile_image && (
+                                <AvatarImage src={coach.profile_image} alt={coach.full_name} />
+                              )}
                               <AvatarFallback className="bg-purple-500 text-white">
                                 {coach.full_name?.substring(0, 2).toUpperCase() || "CO"}
                               </AvatarFallback>
