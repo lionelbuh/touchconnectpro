@@ -32,6 +32,12 @@ const EXPERTISE_OPTIONS = [
   "Data Analysis"
 ];
 
+interface CoachRates {
+  introCallRate: string;
+  sessionRate: string;
+  monthlyRate: string;
+}
+
 interface CoachProfile {
   id: string;
   full_name: string;
@@ -45,6 +51,18 @@ interface CoachProfile {
   is_disabled?: boolean;
 }
 
+function parseRates(hourlyRate: string): CoachRates {
+  try {
+    const parsed = JSON.parse(hourlyRate);
+    if (parsed.introCallRate && parsed.sessionRate && parsed.monthlyRate) {
+      return parsed;
+    }
+  } catch {
+    // Legacy format - single rate
+  }
+  return { introCallRate: "", sessionRate: hourlyRate || "", monthlyRate: "" };
+}
+
 export default function DashboardCoach() {
   const [, navigate] = useLocation();
   const [profile, setProfile] = useState<CoachProfile | null>(null);
@@ -53,7 +71,9 @@ export default function DashboardCoach() {
 
   const [expertise, setExpertise] = useState<string[]>([]);
   const [focusAreas, setFocusAreas] = useState("");
-  const [hourlyRate, setHourlyRate] = useState("");
+  const [introCallRate, setIntroCallRate] = useState("");
+  const [sessionRate, setSessionRate] = useState("");
+  const [monthlyRate, setMonthlyRate] = useState("");
   const [linkedin, setLinkedin] = useState("");
   const [activeTab, setActiveTab] = useState<"overview" | "messages">("overview");
   const [adminMessage, setAdminMessage] = useState("");
@@ -102,7 +122,11 @@ export default function DashboardCoach() {
           // Parse comma-separated expertise string into array
           setExpertise(data.expertise ? data.expertise.split(", ").map((e: string) => e.trim()).filter((e: string) => e) : []);
           setFocusAreas(data.focus_areas || "");
-          setHourlyRate(data.hourly_rate || "");
+          // Parse rates (handles both new JSON format and legacy single rate)
+          const rates = parseRates(data.hourly_rate || "");
+          setIntroCallRate(rates.introCallRate);
+          setSessionRate(rates.sessionRate);
+          setMonthlyRate(rates.monthlyRate);
           setLinkedin(data.linkedin || "");
         }
       } catch (error) {
@@ -179,13 +203,16 @@ export default function DashboardCoach() {
 
     setSaving(true);
     try {
+      const allRatesProvided = introCallRate && sessionRate && monthlyRate;
       const response = await fetch(`${API_BASE_URL}/api/coaches/profile/${profile.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           expertise: expertise.join(", "),
           focusAreas,
-          hourlyRate,
+          ...(allRatesProvided 
+            ? { introCallRate, sessionRate, monthlyRate }
+            : { hourlyRate: sessionRate || profile.hourly_rate }),
           linkedin
         })
       });
@@ -227,7 +254,7 @@ export default function DashboardCoach() {
             <div>
               <div className="font-bold text-sm">{profile?.full_name || "Coach"}</div>
               <div className={`text-xs ${profile?.is_disabled ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
-                {profile?.is_disabled ? "Disabled" : `$${hourlyRate || "0"}/hour`}
+                {profile?.is_disabled ? "Disabled" : sessionRate ? `$${sessionRate}/session` : "Set your rates"}
               </div>
             </div>
           </div>
@@ -370,23 +397,57 @@ export default function DashboardCoach() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <DollarSign className="h-5 w-5 text-cyan-600" />
-                  Set Your Price
+                  Your Rates for Your Services
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">You keep 80%, we keep 20%</p>
-                <div className="flex gap-2">
-                  <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
-                  <input 
-                    type="number" 
-                    value={hourlyRate}
-                    onChange={(e) => setHourlyRate(e.target.value)}
-                    placeholder="100"
-                    disabled={profile?.is_disabled}
-                    className={`flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                    data-testid="input-coach-price"
-                  />
-                  <span className="text-slate-600 dark:text-slate-400 flex items-center">/hour</span>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">15 Minutes Introductory Call</label>
+                    <div className="flex gap-2">
+                      <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
+                      <input 
+                        type="number" 
+                        value={introCallRate}
+                        onChange={(e) => setIntroCallRate(e.target.value)}
+                        placeholder="25"
+                        disabled={profile?.is_disabled}
+                        className={`flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+                        data-testid="input-coach-introcall-rate"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Per Session</label>
+                    <div className="flex gap-2">
+                      <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
+                      <input 
+                        type="number" 
+                        value={sessionRate}
+                        onChange={(e) => setSessionRate(e.target.value)}
+                        placeholder="150"
+                        disabled={profile?.is_disabled}
+                        className={`flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+                        data-testid="input-coach-session-rate"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Per Month / Full Courses</label>
+                    <div className="flex gap-2">
+                      <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
+                      <input 
+                        type="number" 
+                        value={monthlyRate}
+                        onChange={(e) => setMonthlyRate(e.target.value)}
+                        placeholder="500"
+                        disabled={profile?.is_disabled}
+                        className={`flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+                        data-testid="input-coach-monthly-rate"
+                      />
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

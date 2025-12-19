@@ -76,7 +76,9 @@ export default function BecomeaCoach() {
     bio: string;
     expertise: string[];
     focusAreas: string;
-    hourlyRate: string;
+    introCallRate: string;
+    sessionRate: string;
+    monthlyRate: string;
     country: string;
     state: string;
   }>({
@@ -86,7 +88,9 @@ export default function BecomeaCoach() {
     bio: "",
     expertise: [] as string[],
     focusAreas: "",
-    hourlyRate: "",
+    introCallRate: "",
+    sessionRate: "",
+    monthlyRate: "",
     country: "",
     state: ""
   });
@@ -106,9 +110,9 @@ export default function BecomeaCoach() {
     e.preventDefault();
     console.log("Coach form submitted, validating...", formData);
     
-    if (!formData.fullName || !formData.email || !formData.bio || !Array.isArray(formData.expertise) || formData.expertise.length === 0 || !formData.focusAreas || !formData.hourlyRate || !formData.country) {
-      alert("Please fill in all required fields including your bio and select at least one area of expertise");
-      console.log("Validation failed", { fullName: formData.fullName, email: formData.email, bio: formData.bio, expertise: formData.expertise, focusAreas: formData.focusAreas, hourlyRate: formData.hourlyRate, country: formData.country });
+    if (!formData.fullName || !formData.email || !formData.bio || !Array.isArray(formData.expertise) || formData.expertise.length === 0 || !formData.focusAreas || !formData.introCallRate || !formData.sessionRate || !formData.monthlyRate || !formData.country) {
+      alert("Please fill in all required fields including your bio, all rate types, and select at least one area of expertise");
+      console.log("Validation failed", { fullName: formData.fullName, email: formData.email, bio: formData.bio, expertise: formData.expertise, focusAreas: formData.focusAreas, introCallRate: formData.introCallRate, sessionRate: formData.sessionRate, monthlyRate: formData.monthlyRate, country: formData.country });
       return;
     }
     if (formData.country === "United States" && !formData.state) {
@@ -148,7 +152,7 @@ export default function BecomeaCoach() {
   const handleCloseModal = () => {
     setSubmitted(false);
     setShowForm(false);
-    setFormData({ fullName: "", email: "", linkedin: "", bio: "", expertise: [], focusAreas: "", hourlyRate: "", country: "", state: "" });
+    setFormData({ fullName: "", email: "", linkedin: "", bio: "", expertise: [], focusAreas: "", introCallRate: "", sessionRate: "", monthlyRate: "", country: "", state: "" });
   };
 
   return (
@@ -446,17 +450,44 @@ export default function BecomeaCoach() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Hourly Rate for Your Services *</label>
-                      <div className="space-y-2">
-                        <Input
-                          name="hourlyRate"
-                          type="number"
-                          value={formData.hourlyRate}
-                          onChange={handleInputChange}
-                          placeholder="e.g., $150"
-                          className="bg-slate-50 dark:bg-slate-800/50"
-                          data-testid="input-coach-hourlyrate"
-                        />
+                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-3 block">Your Rates for Your Services *</label>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">15 Minutes Introductory Call *</label>
+                          <Input
+                            name="introCallRate"
+                            type="number"
+                            value={formData.introCallRate}
+                            onChange={handleInputChange}
+                            placeholder="e.g., $25"
+                            className="bg-slate-50 dark:bg-slate-800/50"
+                            data-testid="input-coach-introcallrate"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Per Session *</label>
+                          <Input
+                            name="sessionRate"
+                            type="number"
+                            value={formData.sessionRate}
+                            onChange={handleInputChange}
+                            placeholder="e.g., $150"
+                            className="bg-slate-50 dark:bg-slate-800/50"
+                            data-testid="input-coach-sessionrate"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Per Month / Full Courses *</label>
+                          <Input
+                            name="monthlyRate"
+                            type="number"
+                            value={formData.monthlyRate}
+                            onChange={handleInputChange}
+                            placeholder="e.g., $500"
+                            className="bg-slate-50 dark:bg-slate-800/50"
+                            data-testid="input-coach-monthlyrate"
+                          />
+                        </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400">TouchConnectPro retains 20% commission — you keep 80% of your earnings</p>
                       </div>
                     </div>

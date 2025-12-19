@@ -1888,9 +1888,25 @@ export default function AdminDashboard() {
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
                               <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
                             </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Hourly Rate</p>
-                              <p className="text-slate-900 dark:text-white">${app.hourlyRate}</p>
+                            <div className="col-span-2">
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Rates</p>
+                              <div className="text-slate-900 dark:text-white">
+                                {(() => {
+                                  try {
+                                    const rates = JSON.parse(app.hourlyRate);
+                                    if (rates.introCallRate && rates.sessionRate && rates.monthlyRate) {
+                                      return (
+                                        <div className="flex gap-4 text-sm">
+                                          <span>Intro: ${rates.introCallRate}</span>
+                                          <span>Session: ${rates.sessionRate}</span>
+                                          <span>Monthly: ${rates.monthlyRate}</span>
+                                        </div>
+                                      );
+                                    }
+                                  } catch {}
+                                  return <span>${app.hourlyRate}/hr</span>;
+                                })()}
+                              </div>
                             </div>
                             <div>
                               <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
@@ -2914,9 +2930,25 @@ export default function AdminDashboard() {
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
                                 <p className="text-slate-900 dark:text-white">{app.focusAreas}</p>
                               </div>
-                              <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Hourly Rate</p>
-                                <p className="text-slate-900 dark:text-white">${app.hourlyRate}</p>
+                              <div className="col-span-2">
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Rates</p>
+                                <div className="text-slate-900 dark:text-white">
+                                  {(() => {
+                                    try {
+                                      const rates = JSON.parse(app.hourlyRate);
+                                      if (rates.introCallRate && rates.sessionRate && rates.monthlyRate) {
+                                        return (
+                                          <div className="flex gap-4 text-sm">
+                                            <span>Intro: ${rates.introCallRate}</span>
+                                            <span>Session: ${rates.sessionRate}</span>
+                                            <span>Monthly: ${rates.monthlyRate}</span>
+                                          </div>
+                                        );
+                                      }
+                                    } catch {}
+                                    return <span>${app.hourlyRate}/hr</span>;
+                                  })()}
+                                </div>
                               </div>
                               <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
@@ -3045,9 +3077,25 @@ export default function AdminDashboard() {
                                     <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
                                     <p className="text-slate-900 dark:text-white">{app.focusAreas}</p>
                                   </div>
-                                  <div>
-                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Hourly Rate</p>
-                                    <p className="text-slate-900 dark:text-white">${app.hourlyRate}</p>
+                                  <div className="col-span-2">
+                                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Rates</p>
+                                    <div className="text-slate-900 dark:text-white">
+                                      {(() => {
+                                        try {
+                                          const rates = JSON.parse(app.hourlyRate);
+                                          if (rates.introCallRate && rates.sessionRate && rates.monthlyRate) {
+                                            return (
+                                              <div className="flex gap-4 text-sm">
+                                                <span>Intro: ${rates.introCallRate}</span>
+                                                <span>Session: ${rates.sessionRate}</span>
+                                                <span>Monthly: ${rates.monthlyRate}</span>
+                                              </div>
+                                            );
+                                          }
+                                        } catch {}
+                                        return <span>${app.hourlyRate}/hr</span>;
+                                      })()}
+                                    </div>
                                   </div>
                                 </div>
                               </CardContent>

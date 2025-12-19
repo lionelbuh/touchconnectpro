@@ -2351,14 +2351,19 @@ export async function registerRoutes(
       }
 
       const { id } = req.params;
-      const { expertise, focusAreas, hourlyRate, linkedin } = req.body;
+      const { expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, linkedin } = req.body;
+      
+      const ratesProvided = introCallRate && sessionRate && monthlyRate;
+      const rateValue = ratesProvided 
+        ? JSON.stringify({ introCallRate, sessionRate, monthlyRate })
+        : hourlyRate;
 
       const { data, error } = await (client
         .from("coach_applications")
         .update({
           expertise,
           focus_areas: focusAreas,
-          hourly_rate: hourlyRate,
+          hourly_rate: rateValue,
           linkedin: linkedin || null
         } as any)
         .eq("id", id)
@@ -4372,14 +4377,21 @@ export async function registerRoutes(
         return res.status(500).json({ error: "Database not configured" });
       }
 
-      const { fullName, email, linkedin, bio, expertise, focusAreas, hourlyRate, country, state, specializations } = req.body;
+      const { fullName, email, linkedin, bio, expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, country, state, specializations } = req.body;
 
-      if (!email || !fullName || !expertise || !focusAreas || !hourlyRate || !country || !bio) {
+      const ratesProvided = introCallRate && sessionRate && monthlyRate;
+      const legacyRateProvided = hourlyRate;
+      
+      if (!email || !fullName || !expertise || !focusAreas || (!ratesProvided && !legacyRateProvided) || !country || !bio) {
         return res.status(400).json({ 
           error: "Missing required fields",
-          required: ["fullName", "email", "bio", "expertise", "focusAreas", "hourlyRate", "country"]
+          required: ["fullName", "email", "bio", "expertise", "focusAreas", "introCallRate", "sessionRate", "monthlyRate", "country"]
         });
       }
+      
+      const rateValue = ratesProvided 
+        ? JSON.stringify({ introCallRate, sessionRate, monthlyRate })
+        : hourlyRate;
 
       // Check for existing application
       const { data: existing } = await (client
@@ -4408,7 +4420,7 @@ export async function registerRoutes(
           bio: bio || null,
           expertise,
           focus_areas: focusAreas,
-          hourly_rate: hourlyRate,
+          hourly_rate: rateValue,
           country,
           state: state || null,
           specializations: specializations || [],

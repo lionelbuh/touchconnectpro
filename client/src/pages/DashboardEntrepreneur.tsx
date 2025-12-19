@@ -1716,7 +1716,21 @@ export default function DashboardEntrepreneur() {
                             <p className="text-sm text-slate-700 dark:text-slate-300">{coach.focus_areas}</p>
                           </div>
                           <div className="pt-2">
-                            <span className="text-lg font-bold text-purple-600">${coach.hourly_rate}/hr</span>
+                            {(() => {
+                              try {
+                                const rates = JSON.parse(coach.hourly_rate);
+                                if (rates.introCallRate && rates.sessionRate && rates.monthlyRate) {
+                                  return (
+                                    <div className="space-y-1">
+                                      <div className="text-sm text-purple-600"><span className="font-medium">Intro Call:</span> ${rates.introCallRate}</div>
+                                      <div className="text-sm text-purple-600"><span className="font-medium">Per Session:</span> ${rates.sessionRate}</div>
+                                      <div className="text-sm text-purple-600"><span className="font-medium">Monthly:</span> ${rates.monthlyRate}</div>
+                                    </div>
+                                  );
+                                }
+                              } catch {}
+                              return <span className="text-lg font-bold text-purple-600">${coach.hourly_rate}/hr</span>;
+                            })()}
                           </div>
                         </CardContent>
                       </Card>

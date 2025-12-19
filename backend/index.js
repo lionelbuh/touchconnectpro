@@ -1484,11 +1484,18 @@ app.patch("/api/mentors/:id", async (req, res) => {
 app.post("/api/coaches", async (req, res) => {
   console.log("[POST /api/coaches] Called");
   try {
-    const { fullName, email, linkedin, bio, expertise, focusAreas, hourlyRate, country, state, specializations } = req.body;
+    const { fullName, email, linkedin, bio, expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, country, state, specializations } = req.body;
 
-    if (!email || !fullName || !expertise || !focusAreas || !hourlyRate || !country || !bio) {
-      return res.status(400).json({ error: "Missing required fields (including bio)" });
+    const ratesProvided = introCallRate && sessionRate && monthlyRate;
+    const legacyRateProvided = hourlyRate;
+    
+    if (!email || !fullName || !expertise || !focusAreas || (!ratesProvided && !legacyRateProvided) || !country || !bio) {
+      return res.status(400).json({ error: "Missing required fields (including bio and all rate types)" });
     }
+    
+    const rateValue = ratesProvided 
+      ? JSON.stringify({ introCallRate, sessionRate, monthlyRate })
+      : hourlyRate;
 
     // Check if email exists in another category
     const crossCategoryCheck = await checkEmailInOtherCategories(email, "coach");
@@ -1529,7 +1536,7 @@ app.post("/api/coaches", async (req, res) => {
             bio: bio || null,
             expertise,
             focus_areas: focusAreas,
-            hourly_rate: hourlyRate,
+            hourly_rate: rateValue,
             country,
             state: state || null,
             specializations: specializations || [],
@@ -1559,7 +1566,7 @@ app.post("/api/coaches", async (req, res) => {
         bio: bio || null,
         expertise,
         focus_areas: focusAreas,
-        hourly_rate: hourlyRate,
+        hourly_rate: rateValue,
         country,
         state: state || null,
         specializations: specializations || [],
@@ -1576,7 +1583,8 @@ app.post("/api/coaches", async (req, res) => {
     
     // Send confirmation email to applicant and notify admin
     sendApplicationSubmittedEmail(email, fullName, "coach").catch(err => console.error("[EMAIL] Failed:", err));
-    sendAdminNewApplicationEmail(email, fullName, "coach", data?.[0]?.id, `Expertise: ${expertise}, Rate: $${hourlyRate}/hr`).catch(err => console.error("[EMAIL] Admin notify failed:", err));
+    const rateDisplay = ratesProvided ? `Intro: $${introCallRate}, Session: $${sessionRate}, Monthly: $${monthlyRate}` : `Rate: $${hourlyRate}/hr`;
+    sendAdminNewApplicationEmail(email, fullName, "coach", data?.[0]?.id, `Expertise: ${expertise}, ${rateDisplay}`).catch(err => console.error("[EMAIL] Admin notify failed:", err));
     
     return res.json({ success: true, id: data?.[0]?.id });
   } catch (error) {
@@ -1819,14 +1827,19 @@ app.get("/api/coaches/profile/:email", async (req, res) => {
 app.put("/api/coaches/profile/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { expertise, focusAreas, hourlyRate, linkedin } = req.body;
+    const { expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, linkedin } = req.body;
+    
+    const ratesProvided = introCallRate && sessionRate && monthlyRate;
+    const rateValue = ratesProvided 
+      ? JSON.stringify({ introCallRate, sessionRate, monthlyRate })
+      : hourlyRate;
 
     const { data, error } = await supabase
       .from("coach_applications")
       .update({
         expertise,
         focus_areas: focusAreas,
-        hourly_rate: hourlyRate,
+        hourly_rate: rateValue,
         linkedin: linkedin || null
       })
       .eq("id", id)
@@ -5237,14 +5250,21 @@ app.post("/api/public/applications/mentors", partnerApiAuth, async (req, res) =>
 app.post("/api/public/applications/coaches", partnerApiAuth, async (req, res) => {
   console.log("[PUBLIC API] POST /api/public/applications/coaches");
   try {
-    const { fullName, email, linkedin, bio, expertise, focusAreas, hourlyRate, country, state, specializations } = req.body;
+    const { fullName, email, linkedin, bio, expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, country, state, specializations } = req.body;
 
-    if (!email || !fullName || !expertise || !focusAreas || !hourlyRate || !country || !bio) {
+    const ratesProvided = introCallRate && sessionRate && monthlyRate;
+    const legacyRateProvided = hourlyRate;
+    
+    if (!email || !fullName || !expertise || !focusAreas || (!ratesProvided && !legacyRateProvided) || !country || !bio) {
       return res.status(400).json({ 
         error: "Missing required fields",
-        required: ["fullName", "email", "bio", "expertise", "focusAreas", "hourlyRate", "country"]
+        required: ["fullName", "email", "bio", "expertise", "focusAreas", "introCallRate", "sessionRate", "monthlyRate", "country"]
       });
     }
+    
+    const rateValue = ratesProvided 
+      ? JSON.stringify({ introCallRate, sessionRate, monthlyRate })
+      : hourlyRate;
 
     // Check for existing application
     const { data: existing } = await supabase
@@ -5273,7 +5293,7 @@ app.post("/api/public/applications/coaches", partnerApiAuth, async (req, res) =>
         bio: bio || null,
         expertise,
         focus_areas: focusAreas,
-        hourly_rate: hourlyRate,
+        hourly_rate: rateValue,
         country,
         state: state || null,
         specializations: specializations || [],
