@@ -2928,11 +2928,11 @@ export default function AdminDashboard() {
                               </div>
                               <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
-                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                                <p className="text-slate-900 dark:text-white truncate" data-testid={`text-coach-linkedin-${idx}`}>{app.linkedin || "—"}</p>
                               </div>
                               <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
-                                <p className="text-slate-900 dark:text-white">{app.focusAreas}</p>
+                                <p className="text-slate-900 dark:text-white" data-testid={`text-coach-focus-areas-${idx}`}>{app.focusAreas}</p>
                               </div>
                               <div className="col-span-2">
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Rates</p>
@@ -2970,7 +2970,7 @@ export default function AdminDashboard() {
                             {app.bio && (
                               <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
-                                <p className="text-sm text-slate-700 dark:text-slate-300">{app.bio}</p>
+                                <p className="text-sm text-slate-700 dark:text-slate-300" data-testid={`text-coach-bio-${idx}`}>{app.bio}</p>
                               </div>
                             )}
                             {coachRatings[app.id] && (

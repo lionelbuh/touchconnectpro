@@ -63,7 +63,7 @@ Enhanced logging added to both files for debugging email delivery:
 
 ### Coach Dashboard Restructure (December 2025)
 Coach Dashboard now matches Mentor Dashboard structure with 4 tabs:
-- **Overview**: Editable profile with expertise, rates, LinkedIn, focus areas
+- **Overview**: Editable profile with expertise, rates, LinkedIn, focus areas, bio, and profile picture
 - **Entrepreneurs**: Shows clients who have purchased coaching services (name/email only)
 - **Messages**: Admin-only communication channel
 - **Earnings**: Historical transactions with commission breakdown (80% coach, 20% platform)
@@ -71,6 +71,16 @@ Coach Dashboard now matches Mentor Dashboard structure with 4 tabs:
 New API endpoints (synchronized in both server/routes.ts and backend/index.js):
 - `GET /api/coaches/:coachId/clients` - Returns coach's clients (placeholder until payment integration)
 - `GET /api/coaches/:coachId/transactions` - Returns earnings history (placeholder until payment integration)
+- `PUT /api/coaches/profile/:id` - Updates coach profile including bio and profileImage
+
+### Coach Profile Enhancements (December 2025)
+- **Focus Areas**: Changed from textarea to dropdown select (FOCUS_AREAS_OPTIONS)
+  - Options: Business Strategy, Pitching & Fundraising, Product & Technology, Marketing & Sales, Operations & Scaling, Leadership & Team Building, Legal & Compliance, Financial Planning, Sustainability & Impact
+- **Bio Field**: Added 4-row textarea for coach bio description
+- **Profile Picture**: Added Supabase storage upload (5MB limit, JPG/PNG/GIF/WebP)
+  - Stored in "profile-images" bucket as `coach-{id}-{timestamp}.{ext}`
+  - Public URL saved to `profile_image` column in coach_applications table
+- **Admin Dashboard**: Added LinkedIn and Bio display for approved coaches
 
 Commission calculation: Computed client-side as `commission = amount * 0.20`, `netEarnings = amount * 0.80`
 
