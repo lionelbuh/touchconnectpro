@@ -38,7 +38,7 @@ interface CoachApplication {
   focusAreas: string;
   hourlyRate: string;
   specializations?: string[];
-  profileImage?: string;
+  profileImage?: string | null;
   status: "pending" | "approved" | "rejected";
   submittedAt: string;
   country?: string;
