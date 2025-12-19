@@ -3,11 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail, User, FileText, Upload } from "lucide-react";
+import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail, User, FileText, Upload, CreditCard, CheckCircle2, ExternalLink } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
+
+interface StripeConnectStatus {
+  hasAccount: boolean;
+  onboardingComplete: boolean;
+  chargesEnabled: boolean;
+  payoutsEnabled: boolean;
+  accountId?: string;
+  email?: string;
+}
 
 const FOCUS_AREAS_OPTIONS = [
   "Business Strategy",
@@ -120,6 +129,8 @@ export default function DashboardCoach() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loadingClients, setLoadingClients] = useState(false);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
+  const [stripeStatus, setStripeStatus] = useState<StripeConnectStatus | null>(null);
+  const [loadingStripe, setLoadingStripe] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -252,6 +263,48 @@ export default function DashboardCoach() {
     }
     loadTransactions();
   }, [profile?.id]);
+
+  // Load Stripe Connect status
+  useEffect(() => {
+    async function loadStripeStatus() {
+      if (!profile?.id) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/stripe/connect/account-status/${profile.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setStripeStatus(data);
+        }
+      } catch (error) {
+        console.error("Error loading Stripe status:", error);
+      }
+    }
+    loadStripeStatus();
+  }, [profile?.id]);
+
+  // Handle Stripe onboarding
+  const handleStripeOnboarding = async () => {
+    if (!profile?.id) return;
+    setLoadingStripe(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/stripe/connect/account-link/${profile.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          toast.error("Could not get Stripe onboarding link");
+        }
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Failed to start Stripe onboarding");
+      }
+    } catch (error) {
+      console.error("Stripe onboarding error:", error);
+      toast.error("Error starting Stripe onboarding");
+    } finally {
+      setLoadingStripe(false);
+    }
+  };
 
   // Mark admin messages as read when viewing messages tab
   useEffect(() => {
@@ -456,6 +509,48 @@ export default function DashboardCoach() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Stripe Connect Status Card */}
+            {!profile?.is_disabled && (
+              <Card className={`mb-6 ${stripeStatus?.chargesEnabled ? 'border-green-300 bg-green-50 dark:bg-green-950/20 dark:border-green-800' : 'border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800'}`}>
+                <CardContent className="pt-6 pb-6">
+                  <div className="flex items-start gap-4">
+                    <CreditCard className={`h-6 w-6 ${stripeStatus?.chargesEnabled ? 'text-green-500' : 'text-amber-500'} flex-shrink-0 mt-0.5`} />
+                    <div className="flex-1">
+                      <h3 className={`text-lg font-semibold ${stripeStatus?.chargesEnabled ? 'text-green-800 dark:text-green-300' : 'text-amber-800 dark:text-amber-300'} mb-1`}>
+                        {stripeStatus?.chargesEnabled ? 'Payment Setup Complete' : 'Set Up Payments'}
+                      </h3>
+                      {stripeStatus?.chargesEnabled ? (
+                        <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                          <CheckCircle2 className="h-4 w-4" />
+                          <span>You can receive payments from entrepreneurs. You keep 80% of each transaction.</span>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-amber-700 dark:text-amber-400 mb-3">
+                            Connect your Stripe account to receive payments from entrepreneurs. You'll keep 80% of each transaction.
+                          </p>
+                          <Button
+                            onClick={handleStripeOnboarding}
+                            disabled={loadingStripe}
+                            className="bg-amber-600 hover:bg-amber-700 text-white"
+                            data-testid="button-stripe-onboarding"
+                          >
+                            {loadingStripe ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <ExternalLink className="mr-2 h-4 w-4" />
+                            )}
+                            {stripeStatus?.hasAccount ? 'Complete Stripe Setup' : 'Connect with Stripe'}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <header className="mb-8 flex justify-between items-start">
             <div>
               <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">

@@ -5123,6 +5123,301 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
 // ============ END STRIPE ROUTES ============
 
 // ============================================
+// STRIPE CONNECT - COACH MARKETPLACE
+// ============================================
+
+// Create Stripe Connect account for coach
+app.post("/api/stripe/connect/create-account", async (req, res) => {
+  try {
+    const { coachId, email, fullName } = req.body;
+    
+    if (!coachId || !email) {
+      return res.status(400).json({ error: "coachId and email required" });
+    }
+
+    console.log("[STRIPE CONNECT] Creating account for coach:", coachId, email);
+
+    const stripe = getStripeClient();
+    if (!stripe) {
+      return res.status(500).json({ error: "Stripe not configured" });
+    }
+
+    const account = await stripe.accounts.create({
+      type: 'standard',
+      email: email,
+      metadata: {
+        coach_id: coachId,
+        platform: 'TouchConnectPro'
+      }
+    });
+
+    console.log("[STRIPE CONNECT] Created account:", account.id);
+
+    const { error: updateError } = await supabase
+      .from("coach_applications")
+      .update({ stripe_account_id: account.id })
+      .eq("id", coachId);
+
+    if (updateError) {
+      console.error("[STRIPE CONNECT] Failed to save account ID:", updateError);
+      return res.status(500).json({ error: "Failed to save Stripe account ID" });
+    }
+
+    return res.json({ 
+      success: true, 
+      accountId: account.id,
+      message: "Stripe Connect account created. Coach needs to complete onboarding."
+    });
+  } catch (error) {
+    console.error("[STRIPE CONNECT] Create account error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Stripe Connect onboarding link for coach
+app.get("/api/stripe/connect/account-link/:coachId", async (req, res) => {
+  try {
+    const { coachId } = req.params;
+    
+    console.log("[STRIPE CONNECT] Getting account link for coach:", coachId);
+
+    const { data: coach, error: fetchError } = await supabase
+      .from("coach_applications")
+      .select("stripe_account_id, email, full_name")
+      .eq("id", coachId)
+      .single();
+
+    if (fetchError || !coach) {
+      return res.status(404).json({ error: "Coach not found" });
+    }
+
+    const stripe = getStripeClient();
+    if (!stripe) {
+      return res.status(500).json({ error: "Stripe not configured" });
+    }
+
+    let accountId = coach.stripe_account_id;
+    if (!accountId) {
+      const account = await stripe.accounts.create({
+        type: 'standard',
+        email: coach.email,
+        metadata: {
+          coach_id: coachId,
+          platform: 'TouchConnectPro'
+        }
+      });
+      accountId = account.id;
+
+      await supabase
+        .from("coach_applications")
+        .update({ stripe_account_id: accountId })
+        .eq("id", coachId);
+
+      console.log("[STRIPE CONNECT] Created new account:", accountId);
+    }
+
+    const baseUrl = process.env.FRONTEND_URL || "https://www.touchconnectpro.com";
+
+    const accountLink = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: `${baseUrl}/dashboard-coach?stripe=refresh`,
+      return_url: `${baseUrl}/dashboard-coach?stripe=success`,
+      type: 'account_onboarding',
+    });
+
+    console.log("[STRIPE CONNECT] Account link created for:", accountId);
+
+    return res.json({ 
+      url: accountLink.url,
+      accountId: accountId
+    });
+  } catch (error) {
+    console.error("[STRIPE CONNECT] Account link error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Check Stripe Connect account status
+app.get("/api/stripe/connect/account-status/:coachId", async (req, res) => {
+  try {
+    const { coachId } = req.params;
+
+    const { data: coach, error: fetchError } = await supabase
+      .from("coach_applications")
+      .select("stripe_account_id")
+      .eq("id", coachId)
+      .single();
+
+    if (fetchError || !coach) {
+      return res.status(404).json({ error: "Coach not found" });
+    }
+
+    if (!coach.stripe_account_id) {
+      return res.json({ 
+        hasAccount: false,
+        onboardingComplete: false,
+        chargesEnabled: false,
+        payoutsEnabled: false
+      });
+    }
+
+    const stripe = getStripeClient();
+    if (!stripe) {
+      return res.status(500).json({ error: "Stripe not configured" });
+    }
+
+    const account = await stripe.accounts.retrieve(coach.stripe_account_id);
+
+    return res.json({
+      hasAccount: true,
+      accountId: account.id,
+      onboardingComplete: account.details_submitted,
+      chargesEnabled: account.charges_enabled,
+      payoutsEnabled: account.payouts_enabled,
+      email: account.email
+    });
+  } catch (error) {
+    console.error("[STRIPE CONNECT] Account status error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Create checkout session for coach service purchase (destination charges)
+app.post("/api/stripe/connect/checkout", async (req, res) => {
+  try {
+    const { coachId, serviceType, entrepreneurEmail, entrepreneurName } = req.body;
+    
+    if (!coachId || !serviceType || !entrepreneurEmail) {
+      return res.status(400).json({ 
+        error: "Missing required fields",
+        required: ["coachId", "serviceType", "entrepreneurEmail"]
+      });
+    }
+
+    console.log("[STRIPE CONNECT CHECKOUT] Creating session for:", { coachId, serviceType, entrepreneurEmail });
+
+    const { data: coach, error: fetchError } = await supabase
+      .from("coach_applications")
+      .select("id, full_name, email, stripe_account_id, hourly_rate")
+      .eq("id", coachId)
+      .single();
+
+    if (fetchError || !coach) {
+      return res.status(404).json({ error: "Coach not found" });
+    }
+
+    if (!coach.stripe_account_id) {
+      return res.status(400).json({ 
+        error: "Coach has not completed Stripe onboarding",
+        message: "This coach cannot receive payments yet."
+      });
+    }
+
+    let rates;
+    try {
+      rates = JSON.parse(coach.hourly_rate);
+    } catch {
+      rates = { introCallRate: coach.hourly_rate, sessionRate: coach.hourly_rate, monthlyRate: coach.hourly_rate };
+    }
+
+    let priceInCents;
+    let serviceName;
+    
+    switch (serviceType) {
+      case 'intro':
+        priceInCents = Math.round(parseFloat(rates.introCallRate || '25') * 100);
+        serviceName = '15 Minutes Introductory Call';
+        break;
+      case 'session':
+        priceInCents = Math.round(parseFloat(rates.sessionRate || '150') * 100);
+        serviceName = 'Coaching Session';
+        break;
+      case 'monthly':
+        priceInCents = Math.round(parseFloat(rates.monthlyRate || '500') * 100);
+        serviceName = 'Monthly Coaching / Full Course';
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid serviceType. Use 'intro', 'session', or 'monthly'" });
+    }
+
+    const applicationFee = Math.round(priceInCents * 0.20);
+
+    console.log("[STRIPE CONNECT CHECKOUT] Price:", priceInCents, "Fee:", applicationFee);
+
+    const stripe = getStripeClient();
+    if (!stripe) {
+      return res.status(500).json({ error: "Stripe not configured" });
+    }
+
+    const baseUrl = process.env.FRONTEND_URL || "https://www.touchconnectpro.com";
+
+    const sessionConfig = {
+      mode: serviceType === 'monthly' ? 'subscription' : 'payment',
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: `${coach.full_name} - ${serviceName}`,
+              description: `Coaching service with ${coach.full_name}`,
+            },
+            unit_amount: priceInCents,
+            ...(serviceType === 'monthly' ? { recurring: { interval: 'month' } } : {}),
+          },
+          quantity: 1,
+        },
+      ],
+      customer_email: entrepreneurEmail,
+      metadata: {
+        coach_id: coachId,
+        coach_name: coach.full_name,
+        service_type: serviceType,
+        entrepreneur_email: entrepreneurEmail,
+        entrepreneur_name: entrepreneurName || '',
+        platform: 'TouchConnectPro'
+      },
+      success_url: `${baseUrl}/dashboard-entrepreneur?coach_payment=success&coach=${encodeURIComponent(coach.full_name)}`,
+      cancel_url: `${baseUrl}/dashboard-entrepreneur?coach_payment=cancelled`,
+    };
+
+    if (serviceType === 'monthly') {
+      sessionConfig.subscription_data = {
+        application_fee_percent: 20,
+        transfer_data: {
+          destination: coach.stripe_account_id,
+        },
+      };
+    } else {
+      sessionConfig.payment_intent_data = {
+        application_fee_amount: applicationFee,
+        transfer_data: {
+          destination: coach.stripe_account_id,
+        },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
+
+    console.log("[STRIPE CONNECT CHECKOUT] Session created:", session.id);
+
+    return res.json({ 
+      url: session.url,
+      sessionId: session.id,
+      coachName: coach.full_name,
+      serviceName,
+      price: priceInCents / 100,
+      platformFee: applicationFee / 100,
+      coachReceives: (priceInCents - applicationFee) / 100
+    });
+  } catch (error) {
+    console.error("[STRIPE CONNECT CHECKOUT] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// ============ END STRIPE CONNECT ============
+
+// ============================================
 // PUBLIC PARTNER API ENDPOINTS
 // ============================================
 
