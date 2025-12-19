@@ -72,6 +72,49 @@ export default function DashboardEntrepreneur() {
   const [submittingNoteId, setSubmittingNoteId] = useState<string | null>(null);
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
   const [mentorAssignmentId, setMentorAssignmentId] = useState<string | null>(null);
+  const [purchasingCoach, setPurchasingCoach] = useState<{ coachId: string; serviceType: string } | null>(null);
+  
+  const handleCoachPurchase = async (coachId: string, serviceType: 'intro' | 'session' | 'monthly', coachName: string) => {
+    if (!userEmail) {
+      toast.error("Please log in to purchase coaching services");
+      return;
+    }
+    
+    setPurchasingCoach({ coachId, serviceType });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/stripe/connect/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coachId,
+          serviceType,
+          entrepreneurEmail: userEmail,
+          entrepreneurName: profileData.fullName
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          toast.error("Could not get checkout link");
+        }
+      } else {
+        const error = await response.json();
+        if (error.message?.includes("not completed Stripe onboarding")) {
+          toast.error(`${coachName} hasn't set up payment processing yet. Please try another coach.`);
+        } else {
+          toast.error(error.error || "Failed to start checkout");
+        }
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast.error("Error starting checkout");
+    } finally {
+      setPurchasingCoach(null);
+    }
+  };
   
   const [formData, setFormData] = useState({
     // Questions 1-4: Problem & Idea
@@ -1723,11 +1766,66 @@ export default function DashboardEntrepreneur() {
                               try {
                                 const rates = JSON.parse(coach.hourly_rate);
                                 if (rates.introCallRate && rates.sessionRate && rates.monthlyRate) {
+                                  const isPurchasing = purchasingCoach?.coachId === coach.id;
                                   return (
-                                    <div className="space-y-1">
-                                      <div className="text-sm text-purple-600"><span className="font-medium">Intro Call:</span> ${rates.introCallRate}</div>
-                                      <div className="text-sm text-purple-600"><span className="font-medium">Per Session:</span> ${rates.sessionRate}</div>
-                                      <div className="text-sm text-purple-600"><span className="font-medium">Monthly:</span> ${rates.monthlyRate}</div>
+                                    <div className="space-y-3">
+                                      <div className="grid grid-cols-3 gap-2">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="border-purple-300 text-purple-700 hover:bg-purple-50 flex flex-col h-auto py-2"
+                                          onClick={() => handleCoachPurchase(coach.id, 'intro', coach.full_name)}
+                                          disabled={isPurchasing}
+                                          data-testid={`button-purchase-intro-${coach.id}`}
+                                        >
+                                          {isPurchasing && purchasingCoach?.serviceType === 'intro' ? (
+                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                          ) : (
+                                            <>
+                                              <span className="text-xs">Intro Call</span>
+                                              <span className="font-bold">${rates.introCallRate}</span>
+                                            </>
+                                          )}
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="border-purple-300 text-purple-700 hover:bg-purple-50 flex flex-col h-auto py-2"
+                                          onClick={() => handleCoachPurchase(coach.id, 'session', coach.full_name)}
+                                          disabled={isPurchasing}
+                                          data-testid={`button-purchase-session-${coach.id}`}
+                                        >
+                                          {isPurchasing && purchasingCoach?.serviceType === 'session' ? (
+                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                          ) : (
+                                            <>
+                                              <span className="text-xs">Session</span>
+                                              <span className="font-bold">${rates.sessionRate}</span>
+                                            </>
+                                          )}
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="border-purple-300 text-purple-700 hover:bg-purple-50 flex flex-col h-auto py-2"
+                                          onClick={() => handleCoachPurchase(coach.id, 'monthly', coach.full_name)}
+                                          disabled={isPurchasing}
+                                          data-testid={`button-purchase-monthly-${coach.id}`}
+                                        >
+                                          {isPurchasing && purchasingCoach?.serviceType === 'monthly' ? (
+                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                          ) : (
+                                            <>
+                                              <span className="text-xs">Monthly</span>
+                                              <span className="font-bold">${rates.monthlyRate}</span>
+                                            </>
+                                          )}
+                                        </Button>
+                                      </div>
+                                      <p className="text-xs text-muted-foreground text-center">
+                                        <CreditCard className="inline h-3 w-3 mr-1" />
+                                        Secure checkout via Stripe
+                                      </p>
                                     </div>
                                   );
                                 }

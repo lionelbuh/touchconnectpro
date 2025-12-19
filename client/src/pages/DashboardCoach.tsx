@@ -159,7 +159,7 @@ export default function DashboardCoach() {
         // If no session, try getUser() as fallback
         if (!user) {
           const { data: userData } = await supabase.auth.getUser();
-          user = userData.user;
+          user = userData.user || undefined;
         }
         
         if (!user?.email) {

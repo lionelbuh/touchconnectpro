@@ -100,6 +100,31 @@ Commission calculation: Computed client-side as `commission = amount * 0.20`, `n
   - LinkedIn link
   - Three-tier pricing (Intro Call, Session, Monthly)
 
+### Stripe Connect for Coach Marketplace (December 2025)
+Implemented Stripe Connect with destination charges for coach payments:
+- **Payment Flow**: Entrepreneur purchases coach service → 80% goes to coach's connected account, 20% platform fee
+- **Service Types**: intro (15 min call), session (coaching session), monthly (subscription/full course)
+- **Coach Onboarding**: Coaches connect their Stripe account via standard Connect onboarding flow
+- **Dynamic Pricing**: Uses `price_data` at checkout time based on coach's individual rates
+
+New Stripe Connect API endpoints (synchronized in both server/routes.ts and backend/index.js):
+- `POST /api/stripe/connect/create-account` - Create Stripe Connect account for coach
+- `GET /api/stripe/connect/account-link/:coachId` - Get onboarding link for coach
+- `GET /api/stripe/connect/account-status/:coachId` - Check if coach has completed onboarding
+- `POST /api/stripe/connect/checkout` - Create checkout session with destination charges
+
+**Coach Dashboard Updates**:
+- Shows Stripe Connect status card in Overview tab
+- Green card if onboarding complete, amber card with "Connect with Stripe" button if not
+- Automatic redirect to Stripe onboarding flow
+
+**Entrepreneur Dashboard Updates**:
+- Purchase buttons on each coach card (Intro Call, Session, Monthly)
+- Buttons disabled while processing, show loading spinner
+- Redirects to Stripe Checkout with coach's connected account as destination
+
+**Database Requirement**: Add `stripe_account_id` column to `coach_applications` table (see Required Database Migrations section)
+
 ## Backend Synchronization
 
 **IMPORTANT**: The `backend/index.js` file is a standalone copy for Render production deployment. It must be kept in sync with `server/routes.ts` (development).
@@ -113,6 +138,11 @@ Key synchronized endpoints:
 - **Coach Endpoints**:
   - `GET /api/coaches/:coachId/clients` - Get coach's clients
   - `GET /api/coaches/:coachId/transactions` - Get coach's earnings history
+- **Stripe Connect Endpoints**:
+  - `POST /api/stripe/connect/create-account` - Create Stripe Connect account
+  - `GET /api/stripe/connect/account-link/:coachId` - Get onboarding link
+  - `GET /api/stripe/connect/account-status/:coachId` - Check account status
+  - `POST /api/stripe/connect/checkout` - Create checkout with destination charges
 
 ## Required Database Migrations (Supabase)
 
@@ -129,6 +159,9 @@ ALTER TABLE investor_applications ADD COLUMN IF NOT EXISTS data JSONB DEFAULT '{
 -- Add bio and profile_image columns to coach_applications table
 ALTER TABLE coach_applications ADD COLUMN IF NOT EXISTS bio TEXT;
 ALTER TABLE coach_applications ADD COLUMN IF NOT EXISTS profile_image TEXT;
+
+-- Add stripe_account_id for Stripe Connect integration
+ALTER TABLE coach_applications ADD COLUMN IF NOT EXISTS stripe_account_id TEXT;
 ```
 
 ## Required Supabase Storage Setup
