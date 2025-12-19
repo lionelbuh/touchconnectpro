@@ -5238,8 +5238,12 @@ app.get("/api/stripe/connect/account-link/:coachId", async (req, res) => {
       accountId: accountId
     });
   } catch (error) {
-    console.error("[STRIPE CONNECT] Account link error:", error.message);
-    return res.status(500).json({ error: error.message });
+    console.error("[STRIPE CONNECT] Account link error:", error.message, error.type || '', error.code || '');
+    return res.status(500).json({ 
+      error: error.message,
+      type: error.type || 'unknown',
+      code: error.code || 'unknown'
+    });
   }
 });
 
