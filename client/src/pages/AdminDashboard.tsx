@@ -2927,6 +2927,10 @@ export default function AdminDashboard() {
                                 <p className="text-slate-900 dark:text-white">{app.expertise}</p>
                               </div>
                               <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                              </div>
+                              <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
                                 <p className="text-slate-900 dark:text-white">{app.focusAreas}</p>
                               </div>

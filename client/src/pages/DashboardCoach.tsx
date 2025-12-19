@@ -3,11 +3,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail } from "lucide-react";
+import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail, User, FileText, Upload } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
+
+const FOCUS_AREAS_OPTIONS = [
+  "Business Strategy",
+  "Pitching & Fundraising",
+  "Product & Technology",
+  "Marketing & Brand",
+  "Sales & Growth",
+  "Finance & Analytics",
+  "People & Operations",
+  "Legal & Compliance",
+  "Customer Experience"
+];
 
 interface CoachClient {
   id: string;
@@ -69,6 +81,8 @@ interface CoachProfile {
   country: string;
   state: string | null;
   is_disabled?: boolean;
+  bio?: string | null;
+  profile_image?: string | null;
 }
 
 function parseRates(hourlyRate: string): CoachRates {
@@ -95,6 +109,9 @@ export default function DashboardCoach() {
   const [sessionRate, setSessionRate] = useState("");
   const [monthlyRate, setMonthlyRate] = useState("");
   const [linkedin, setLinkedin] = useState("");
+  const [bio, setBio] = useState("");
+  const [profileImage, setProfileImage] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "entrepreneurs" | "messages" | "earnings">("overview");
   const [adminMessage, setAdminMessage] = useState("");
   const [adminMessages, setAdminMessages] = useState<any[]>([]);
@@ -152,6 +169,8 @@ export default function DashboardCoach() {
           setSessionRate(rates.sessionRate);
           setMonthlyRate(rates.monthlyRate);
           setLinkedin(data.linkedin || "");
+          setBio(data.bio || "");
+          setProfileImage(data.profile_image || "");
         }
       } catch (error) {
         console.error("Error loading profile:", error);
@@ -283,7 +302,9 @@ export default function DashboardCoach() {
           ...(allRatesProvided 
             ? { introCallRate, sessionRate, monthlyRate }
             : { hourlyRate: sessionRate || profile.hourly_rate }),
-          linkedin
+          linkedin,
+          bio,
+          profileImage
         })
       });
 
@@ -296,6 +317,43 @@ export default function DashboardCoach() {
       toast.error("Error saving profile");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+    
+    setUploadingImage(true);
+    try {
+      const supabase = await getSupabase();
+      if (!supabase) throw new Error("Supabase not configured");
+      
+      const fileExt = file.name.split(".").pop();
+      const fileName = `coach-${profile?.id}-${Date.now()}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from("profile-images")
+        .upload(fileName, file, { cacheControl: "3600", upsert: true });
+      
+      if (error) throw error;
+      
+      const { data: urlData } = supabase.storage
+        .from("profile-images")
+        .getPublicUrl(data.path);
+      
+      setProfileImage(urlData.publicUrl);
+      toast.success("Image uploaded! Don't forget to save your profile.");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "Failed to upload image");
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -556,15 +614,85 @@ export default function DashboardCoach() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">Topics you help entrepreneurs with</p>
-                <textarea 
+                <select 
                   value={focusAreas}
                   onChange={(e) => setFocusAreas(e.target.value)}
-                  placeholder="e.g., Business planning, pitch preparation, market research..."
-                  rows={3}
                   disabled={profile?.is_disabled}
                   className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                  data-testid="input-focus-areas"
+                  data-testid="select-focus-areas"
+                >
+                  <option value="">Select a focus area...</option>
+                  {FOCUS_AREAS_OPTIONS.map((area) => (
+                    <option key={area} value={area}>{area}</option>
+                  ))}
+                </select>
+              </CardContent>
+            </Card>
+
+            <Card className="border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-cyan-600" />
+                  Your Bio
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Tell entrepreneurs about yourself</p>
+                <textarea 
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Share your background, experience, and what makes you a great coach..."
+                  rows={4}
+                  disabled={profile?.is_disabled}
+                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+                  data-testid="textarea-bio"
                 />
+              </CardContent>
+            </Card>
+
+            <Card className="border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <User className="h-5 w-5 text-cyan-600" />
+                  Profile Picture
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Upload a professional photo</p>
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-2xl overflow-hidden border-2 border-cyan-300 dark:border-cyan-700">
+                    {profileImage ? (
+                      <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="h-10 w-10 text-cyan-600" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                      id="coach-profile-upload"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={profile?.is_disabled || uploadingImage}
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => document.getElementById("coach-profile-upload")?.click()}
+                      disabled={profile?.is_disabled || uploadingImage}
+                      className="text-sm"
+                      data-testid="button-upload-photo"
+                    >
+                      {uploadingImage ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="mr-2 h-4 w-4" />
+                      )}
+                      {uploadingImage ? "Uploading..." : "Upload Photo"}
+                    </Button>
+                    <p className="text-xs text-slate-500">Max 5MB. JPG, PNG, GIF, WebP</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>

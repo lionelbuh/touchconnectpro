@@ -1827,21 +1827,27 @@ app.get("/api/coaches/profile/:email", async (req, res) => {
 app.put("/api/coaches/profile/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, linkedin } = req.body;
+    const { expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, linkedin, bio, profileImage } = req.body;
     
     const ratesProvided = introCallRate && sessionRate && monthlyRate;
     const rateValue = ratesProvided 
       ? JSON.stringify({ introCallRate, sessionRate, monthlyRate })
       : hourlyRate;
 
+    const updateData = {
+      expertise,
+      focus_areas: focusAreas,
+      hourly_rate: rateValue,
+      linkedin: linkedin || null
+    };
+    
+    // Add bio and profile_image if provided
+    if (bio !== undefined) updateData.bio = bio;
+    if (profileImage !== undefined) updateData.profile_image = profileImage;
+
     const { data, error } = await supabase
       .from("coach_applications")
-      .update({
-        expertise,
-        focus_areas: focusAreas,
-        hourly_rate: rateValue,
-        linkedin: linkedin || null
-      })
+      .update(updateData)
       .eq("id", id)
       .select();
 

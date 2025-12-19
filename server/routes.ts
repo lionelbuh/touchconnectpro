@@ -2351,21 +2351,27 @@ export async function registerRoutes(
       }
 
       const { id } = req.params;
-      const { expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, linkedin } = req.body;
+      const { expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, linkedin, bio, profileImage } = req.body;
       
       const ratesProvided = introCallRate && sessionRate && monthlyRate;
       const rateValue = ratesProvided 
         ? JSON.stringify({ introCallRate, sessionRate, monthlyRate })
         : hourlyRate;
 
+      const updateData: any = {
+        expertise,
+        focus_areas: focusAreas,
+        hourly_rate: rateValue,
+        linkedin: linkedin || null
+      };
+      
+      // Add bio and profile_image if provided
+      if (bio !== undefined) updateData.bio = bio;
+      if (profileImage !== undefined) updateData.profile_image = profileImage;
+
       const { data, error } = await (client
         .from("coach_applications")
-        .update({
-          expertise,
-          focus_areas: focusAreas,
-          hourly_rate: rateValue,
-          linkedin: linkedin || null
-        } as any)
+        .update(updateData)
         .eq("id", id)
         .select() as any);
 
