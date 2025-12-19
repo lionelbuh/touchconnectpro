@@ -4303,14 +4303,19 @@ export async function registerRoutes(
         return res.status(500).json({ error: "Database not configured" });
       }
 
-      // Get coach's stripe_account_id
+      // Get coach's stripe_account_id - select all fields to handle missing column
       const { data: coach, error: fetchError } = await (client
         .from("coach_applications")
-        .select("stripe_account_id, email, full_name")
+        .select("*")
         .eq("id", coachId)
         .single() as any);
 
-      if (fetchError || !coach) {
+      if (fetchError) {
+        console.error("[STRIPE CONNECT] Database error:", fetchError);
+        return res.status(500).json({ error: "Database error", details: fetchError.message });
+      }
+      
+      if (!coach) {
         return res.status(404).json({ error: "Coach not found" });
       }
 
@@ -4373,13 +4378,19 @@ export async function registerRoutes(
         return res.status(500).json({ error: "Database not configured" });
       }
 
+      // Select all fields to handle missing stripe_account_id column gracefully
       const { data: coach, error: fetchError } = await (client
         .from("coach_applications")
-        .select("stripe_account_id")
+        .select("*")
         .eq("id", coachId)
         .single() as any);
 
-      if (fetchError || !coach) {
+      if (fetchError) {
+        console.error("[STRIPE CONNECT] Database error:", fetchError);
+        return res.status(500).json({ error: "Database error", details: fetchError.message });
+      }
+      
+      if (!coach) {
         return res.status(404).json({ error: "Coach not found" });
       }
 
@@ -4430,14 +4441,19 @@ export async function registerRoutes(
         return res.status(500).json({ error: "Database not configured" });
       }
 
-      // Get coach data including stripe_account_id and rates
+      // Get coach data including stripe_account_id and rates - use * for flexibility
       const { data: coach, error: fetchError } = await (client
         .from("coach_applications")
-        .select("id, full_name, email, stripe_account_id, hourly_rate")
+        .select("*")
         .eq("id", coachId)
         .single() as any);
 
-      if (fetchError || !coach) {
+      if (fetchError) {
+        console.error("[STRIPE CONNECT CHECKOUT] Database error:", fetchError);
+        return res.status(500).json({ error: "Database error", details: fetchError.message });
+      }
+      
+      if (!coach) {
         return res.status(404).json({ error: "Coach not found" });
       }
 
