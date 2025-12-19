@@ -109,4 +109,21 @@ ALTER TABLE meetings ADD COLUMN IF NOT EXISTS invitee_type TEXT;
 
 -- Add data column to investor_applications if not exists
 ALTER TABLE investor_applications ADD COLUMN IF NOT EXISTS data JSONB DEFAULT '{}'::jsonb;
+
+-- Add bio and profile_image columns to coach_applications table
+ALTER TABLE coach_applications ADD COLUMN IF NOT EXISTS bio TEXT;
+ALTER TABLE coach_applications ADD COLUMN IF NOT EXISTS profile_image TEXT;
 ```
+
+## Required Supabase Storage Setup
+
+For coach profile pictures to work, create a storage bucket in Supabase:
+
+1. Go to Supabase Dashboard > Storage
+2. Click "New bucket"
+3. Name it: `profile-images`
+4. Set it as **Public** (for public URL access)
+5. Add a policy to allow uploads:
+   - Policy name: `Allow authenticated uploads`
+   - Allowed operations: `INSERT`, `UPDATE`, `DELETE`
+   - Target roles: `authenticated`
