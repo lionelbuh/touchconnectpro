@@ -2379,6 +2379,36 @@ export async function registerRoutes(
     }
   });
 
+  // Get coach clients (entrepreneurs who have purchased coaching services)
+  app.get("/api/coaches/:coachId/clients", async (req, res) => {
+    try {
+      const { coachId } = req.params;
+      console.log("[GET /api/coaches/:coachId/clients] Fetching clients for coach:", coachId);
+      
+      // For now, return empty array since we don't have a coach_clients table yet
+      // When Stripe payments are processed, client relationships should be stored
+      return res.json({ clients: [] });
+    } catch (error: any) {
+      console.error("[GET /api/coaches/:coachId/clients] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get coach transactions/earnings history
+  app.get("/api/coaches/:coachId/transactions", async (req, res) => {
+    try {
+      const { coachId } = req.params;
+      console.log("[GET /api/coaches/:coachId/transactions] Fetching transactions for coach:", coachId);
+      
+      // For now, return empty array since we don't have a coach_transactions table yet
+      // When Stripe payments are processed, transactions should be stored
+      return res.json({ transactions: [] });
+    } catch (error: any) {
+      console.error("[GET /api/coaches/:coachId/transactions] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // ===== COACH RATINGS ENDPOINTS =====
 
   // Submit a coach rating

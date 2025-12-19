@@ -3,11 +3,31 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { LayoutDashboard, BookOpen, DollarSign, Users, Settings, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle } from "lucide-react";
+import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
+
+interface CoachClient {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+  joinedAt: string;
+}
+
+interface Transaction {
+  id: string;
+  clientName: string;
+  clientEmail: string;
+  amount: number;
+  commission: number;
+  netEarnings: number;
+  type: string;
+  date: string;
+  status: string;
+}
 
 const EXPERTISE_OPTIONS = [
   "Business Planning",
@@ -75,10 +95,14 @@ export default function DashboardCoach() {
   const [sessionRate, setSessionRate] = useState("");
   const [monthlyRate, setMonthlyRate] = useState("");
   const [linkedin, setLinkedin] = useState("");
-  const [activeTab, setActiveTab] = useState<"overview" | "messages">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "entrepreneurs" | "messages" | "earnings">("overview");
   const [adminMessage, setAdminMessage] = useState("");
   const [adminMessages, setAdminMessages] = useState<any[]>([]);
   const [coachReadMessageIds, setCoachReadMessageIds] = useState<string[]>([]);
+  const [coachClients, setCoachClients] = useState<CoachClient[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loadingClients, setLoadingClients] = useState(false);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -163,6 +187,52 @@ export default function DashboardCoach() {
     }
     loadMessages();
   }, [profile?.email]);
+
+  // Load coach clients (entrepreneurs who purchased services)
+  useEffect(() => {
+    async function loadClients() {
+      if (!profile?.id) return;
+      setLoadingClients(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/coaches/${profile.id}/clients`);
+        if (response.ok) {
+          const data = await response.json();
+          setCoachClients(data.clients || []);
+        }
+      } catch (error) {
+        console.error("Error loading clients:", error);
+      } finally {
+        setLoadingClients(false);
+      }
+    }
+    loadClients();
+  }, [profile?.id]);
+
+  // Load transactions/earnings
+  useEffect(() => {
+    async function loadTransactions() {
+      if (!profile?.id) return;
+      setLoadingTransactions(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/coaches/${profile.id}/transactions`);
+        if (response.ok) {
+          const data = await response.json();
+          // Transform transactions to include commission calculations
+          const transformedTransactions = (data.transactions || []).map((tx: any) => ({
+            ...tx,
+            commission: tx.amount * 0.20,
+            netEarnings: tx.amount * 0.80
+          }));
+          setTransactions(transformedTransactions);
+        }
+      } catch (error) {
+        console.error("Error loading transactions:", error);
+      } finally {
+        setLoadingTransactions(false);
+      }
+    }
+    loadTransactions();
+  }, [profile?.id]);
 
   // Mark admin messages as read when viewing messages tab
   useEffect(() => {
@@ -268,6 +338,14 @@ export default function DashboardCoach() {
               <LayoutDashboard className="mr-2 h-4 w-4" /> Overview
             </Button>
             <Button 
+              variant={activeTab === "entrepreneurs" ? "secondary" : "ghost"} 
+              className="w-full justify-start font-medium text-slate-600"
+              onClick={() => setActiveTab("entrepreneurs")}
+              data-testid="button-entrepreneurs-tab"
+            >
+              <Users className="mr-2 h-4 w-4" /> Entrepreneurs
+            </Button>
+            <Button 
               variant={activeTab === "messages" ? "secondary" : "ghost"} 
               className="w-full justify-start font-medium text-slate-600 relative"
               onClick={() => setActiveTab("messages")}
@@ -280,17 +358,13 @@ export default function DashboardCoach() {
                 </span>
               )}
             </Button>
-            <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
-              <BookOpen className="mr-2 h-4 w-4" /> My Courses
-            </Button>
-            <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
+            <Button 
+              variant={activeTab === "earnings" ? "secondary" : "ghost"} 
+              className="w-full justify-start font-medium text-slate-600"
+              onClick={() => setActiveTab("earnings")}
+              data-testid="button-earnings-tab"
+            >
               <DollarSign className="mr-2 h-4 w-4" /> Earnings
-            </Button>
-            <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
-              <Users className="mr-2 h-4 w-4" /> Students
-            </Button>
-            <Button variant="ghost" className="w-full justify-start font-medium text-slate-600">
-              <Settings className="mr-2 h-4 w-4" /> Settings
             </Button>
           </nav>
           <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
@@ -596,6 +670,166 @@ export default function DashboardCoach() {
                   )}
                 </CardContent>
               </Card>
+            </div>
+          )}
+
+          {/* Entrepreneurs Tab */}
+          {activeTab === "entrepreneurs" && (
+            <div>
+              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">My Entrepreneurs</h1>
+              <p className="text-muted-foreground mb-8">View entrepreneurs who have engaged your coaching services.</p>
+
+              {loadingClients ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+                </div>
+              ) : coachClients.length > 0 ? (
+                <div className="space-y-4">
+                  {coachClients.map((client) => (
+                    <Card key={client.id} className="border-l-4 border-l-purple-500">
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-12 w-12 bg-purple-500">
+                              <AvatarFallback className="text-white">
+                                {client.name.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-semibold text-slate-900 dark:text-white">{client.name}</p>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Mail className="h-4 w-4" />
+                                {client.email}
+                              </div>
+                            </div>
+                          </div>
+                          <Badge className={client.status === "active" ? "bg-green-600" : "bg-slate-500"}>
+                            {client.status}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card className="text-center py-12">
+                  <CardContent>
+                    <Users className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No Entrepreneurs Yet</h3>
+                    <p className="text-muted-foreground">When entrepreneurs purchase your coaching services, they will appear here.</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* Earnings Tab */}
+          {activeTab === "earnings" && (
+            <div>
+              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Earnings</h1>
+              <p className="text-muted-foreground mb-8">Track your earnings and commission history.</p>
+
+              {loadingTransactions ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+                </div>
+              ) : (
+              <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <Card className="border-l-4 border-l-green-500">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Earnings</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">
+                      ${transactions.reduce((sum, t) => sum + t.netEarnings, 0).toFixed(2)}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">After 20% commission</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-amber-500">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-amber-600">
+                      ${transactions.reduce((sum, t) => sum + t.amount, 0).toFixed(2)}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Before commission</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-slate-500">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Sessions</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{transactions.length}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Completed transactions</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-cyan-600" />
+                    Transaction History
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {transactions.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-slate-200 dark:border-slate-700">
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Date</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Client</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Type</th>
+                            <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Amount</th>
+                            <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Commission (20%)</th>
+                            <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Your Earnings</th>
+                            <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {transactions.map((tx) => (
+                            <tr key={tx.id} className="border-b border-slate-100 dark:border-slate-800">
+                              <td className="py-3 px-4 text-sm text-slate-700 dark:text-slate-300">
+                                {new Date(tx.date).toLocaleDateString()}
+                              </td>
+                              <td className="py-3 px-4 text-sm text-slate-700 dark:text-slate-300">{tx.clientName}</td>
+                              <td className="py-3 px-4 text-sm text-slate-700 dark:text-slate-300">{tx.type}</td>
+                              <td className="py-3 px-4 text-sm text-right text-slate-700 dark:text-slate-300">${tx.amount.toFixed(2)}</td>
+                              <td className="py-3 px-4 text-sm text-right text-red-600">-${tx.commission.toFixed(2)}</td>
+                              <td className="py-3 px-4 text-sm text-right font-semibold text-green-600">${tx.netEarnings.toFixed(2)}</td>
+                              <td className="py-3 px-4 text-center">
+                                <Badge className={tx.status === "completed" ? "bg-green-600" : tx.status === "pending" ? "bg-amber-500" : "bg-slate-500"}>
+                                  {tx.status}
+                                </Badge>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <DollarSign className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No Transactions Yet</h3>
+                      <p className="text-muted-foreground">When you start earning from coaching sessions, your transaction history will appear here.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <div className="mt-8 p-6 bg-cyan-50 dark:bg-cyan-950/20 border border-cyan-200 dark:border-cyan-900/30 rounded-lg">
+                <h3 className="font-semibold text-cyan-900 dark:text-cyan-300 mb-2">Revenue Share Model</h3>
+                <p className="text-sm text-cyan-800 dark:text-cyan-200">You keep 80% of every transaction. TouchConnectPro handles payments and takes a 20% commission for platform services.</p>
+              </div>
+              </>
+              )}
             </div>
           )}
         </div>

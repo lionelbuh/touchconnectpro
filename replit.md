@@ -61,15 +61,32 @@ Enhanced logging added to both files for debugging email delivery:
 - Logs target admin email when sending
 - Production (Render) requires `RESEND_API_KEY` and `RESEND_FROM_EMAIL` env vars
 
+### Coach Dashboard Restructure (December 2025)
+Coach Dashboard now matches Mentor Dashboard structure with 4 tabs:
+- **Overview**: Editable profile with expertise, rates, LinkedIn, focus areas
+- **Entrepreneurs**: Shows clients who have purchased coaching services (name/email only)
+- **Messages**: Admin-only communication channel
+- **Earnings**: Historical transactions with commission breakdown (80% coach, 20% platform)
+
+New API endpoints (synchronized in both server/routes.ts and backend/index.js):
+- `GET /api/coaches/:coachId/clients` - Returns coach's clients (placeholder until payment integration)
+- `GET /api/coaches/:coachId/transactions` - Returns earnings history (placeholder until payment integration)
+
+Commission calculation: Computed client-side as `commission = amount * 0.20`, `netEarnings = amount * 0.80`
+
 ## Backend Synchronization
 
 **IMPORTANT**: The `backend/index.js` file is a standalone copy for Render production deployment. It must be kept in sync with `server/routes.ts` (development).
 
-Key investor notes endpoints synchronized:
-- `POST /api/investor-notes/:investorId` - Create new note
-- `POST /api/investor-notes/:investorId/respond` - Add response
-- `PATCH /api/investor-notes/:investorId/:noteId/toggle` - Toggle completion
-- `POST /api/investor-notes/:investorId/mark-read` - Mark as read
+Key synchronized endpoints:
+- **Investor Notes**:
+  - `POST /api/investor-notes/:investorId` - Create new note
+  - `POST /api/investor-notes/:investorId/respond` - Add response
+  - `PATCH /api/investor-notes/:investorId/:noteId/toggle` - Toggle completion
+  - `POST /api/investor-notes/:investorId/mark-read` - Mark as read
+- **Coach Endpoints**:
+  - `GET /api/coaches/:coachId/clients` - Get coach's clients
+  - `GET /api/coaches/:coachId/transactions` - Get coach's earnings history
 
 ## Required Database Migrations (Supabase)
 
