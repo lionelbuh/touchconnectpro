@@ -43,8 +43,10 @@ Authentication is managed via Supabase Auth, supporting email/password and passw
 ### Email Notifications for Investor Notes
 All investor note interactions trigger email notifications via Resend:
 - Admin creates new note → Email sent to investor
-- Investor responds → Email sent to admin@touchconnectpro.com
+- Investor responds → Email sent to ADMIN_EMAIL (falls back to buhler.lionel+admin@gmail.com)
 - Admin responds → Email sent to investor
+
+**IMPORTANT**: Both `server/routes.ts` and `backend/index.js` use `ADMIN_EMAIL` constant with fallback to ensure emails are delivered to a real inbox, not `admin@touchconnectpro.com` which may not be receiving emails.
 
 ## Backend Synchronization
 
