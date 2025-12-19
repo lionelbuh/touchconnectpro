@@ -81,8 +81,24 @@ New API endpoints (synchronized in both server/routes.ts and backend/index.js):
   - Stored in "profile-images" bucket as `coach-{id}-{timestamp}.{ext}`
   - Public URL saved to `profile_image` column in coach_applications table
 - **Admin Dashboard**: Added LinkedIn and Bio display for approved coaches
+- **Profile Image Display**: Coach profile pictures now display in:
+  - Entrepreneur Dashboard (Coach marketplace tab)
+  - Admin Dashboard (Pending and Approved coaches sections)
+  - Mentor Dashboard (Available Coaches tab)
 
 Commission calculation: Computed client-side as `commission = amount * 0.20`, `netEarnings = amount * 0.80`
+
+### Mentor Dashboard - Available Coaches Tab (December 2025)
+- Added "Available Coaches" tab to Mentor Dashboard
+- Allows mentors to browse all approved coaches to recommend to their portfolio members
+- Displays coach cards with:
+  - Profile picture (with fallback to initials)
+  - Name and expertise
+  - Star rating (if available)
+  - Bio (line-clamped to 3 lines)
+  - Focus areas
+  - LinkedIn link
+  - Three-tier pricing (Intro Call, Session, Monthly)
 
 ## Backend Synchronization
 

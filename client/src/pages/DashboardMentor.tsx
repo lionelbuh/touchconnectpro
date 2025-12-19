@@ -29,7 +29,7 @@ interface MentorProfileData {
 
 export default function DashboardMentor() {
   const [mentorStatus, setMentorStatus] = useState<"notApplied" | "pending" | "approved">("approved");
-  const [activeTab, setActiveTab] = useState<"overview" | "investors" | "portfolio" | "messages" | "meetings" | "profile">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "investors" | "portfolio" | "coaches" | "messages" | "meetings" | "profile">("overview");
   const [approvedInvestors, setApprovedInvestors] = useState<any[]>([]);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [selectedPortfolio, setSelectedPortfolio] = useState<number | null>(null);
@@ -39,6 +39,8 @@ export default function DashboardMentor() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isAccountDisabled, setIsAccountDisabled] = useState(false);
+  const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
+  const [coachRatings, setCoachRatings] = useState<Record<string, { averageRating: number; totalRatings: number }>>({});
 
   const [mentorProfile, setMentorProfile] = useState({
     fullName: "",
@@ -305,6 +307,43 @@ export default function DashboardMentor() {
     refreshPortfolios();
   }, [mentorProfile.email]);
 
+  // Fetch approved coaches
+  useEffect(() => {
+    async function loadCoaches() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/coaches`);
+        if (response.ok) {
+          const coaches = await response.json();
+          const approved = coaches.filter((c: any) => c.status === "approved" && !c.is_disabled);
+          setApprovedCoaches(approved);
+          
+          // Fetch ratings for each coach
+          const ratingsMap: Record<string, { averageRating: number; totalRatings: number }> = {};
+          await Promise.all(approved.map(async (coach: any) => {
+            try {
+              const ratingResponse = await fetch(`${API_BASE_URL}/api/coach-ratings/${coach.id}`);
+              if (ratingResponse.ok) {
+                const ratingData = await ratingResponse.json();
+                if (ratingData.averageRating !== null) {
+                  ratingsMap[coach.id] = {
+                    averageRating: ratingData.averageRating,
+                    totalRatings: ratingData.totalRatings
+                  };
+                }
+              }
+            } catch (e) {
+              console.error("Error fetching coach rating:", e);
+            }
+          }));
+          setCoachRatings(ratingsMap);
+        }
+      } catch (error) {
+        console.error("Error loading coaches:", error);
+      }
+    }
+    loadCoaches();
+  }, []);
+
   const handleSaveProfile = async () => {
     if (!profileId) return;
 
@@ -463,6 +502,14 @@ export default function DashboardMentor() {
               data-testid="button-portfolio-tab"
             >
               <Users className="mr-2 h-4 w-4" /> Portfolios
+            </Button>
+            <Button 
+              variant={activeTab === "coaches" ? "secondary" : "ghost"}
+              className="w-full justify-start font-medium text-slate-600"
+              onClick={() => setActiveTab("coaches")}
+              data-testid="button-coaches-tab"
+            >
+              <GraduationCap className="mr-2 h-4 w-4" /> Available Coaches
             </Button>
             <Button 
               variant={activeTab === "messages" ? "secondary" : "ghost"}
@@ -1002,6 +1049,109 @@ export default function DashboardMentor() {
                   </Card>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Available Coaches Tab */}
+          {activeTab === "coaches" && (
+            <div>
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Available Coaches</h1>
+                  <p className="text-muted-foreground">Browse our network of expert coaches to recommend to your portfolio members.</p>
+                </div>
+              </div>
+
+              {approvedCoaches.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-12 pb-12 text-center">
+                    <GraduationCap className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                    <p className="text-muted-foreground">No coaches available at this time.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {approvedCoaches.map((coach) => {
+                    const rating = coachRatings[coach.id];
+                    return (
+                      <Card key={coach.id} className="border-l-4 border-l-purple-500" data-testid={`card-coach-${coach.id}`}>
+                        <CardHeader>
+                          <div className="flex items-start gap-4">
+                            <Avatar className="h-12 w-12 border-2 border-purple-200">
+                              {coach.profile_image && (
+                                <AvatarImage src={coach.profile_image} alt={coach.full_name} />
+                              )}
+                              <AvatarFallback className="bg-purple-500 text-white">
+                                {coach.full_name?.substring(0, 2).toUpperCase() || "CO"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg">{coach.full_name}</CardTitle>
+                                <div className="flex items-center gap-1 px-2 py-1">
+                                  {rating ? (
+                                    <>
+                                      <span className="text-yellow-400">★</span>
+                                      <span className="text-sm font-semibold">{rating.averageRating}</span>
+                                      <span className="text-xs text-muted-foreground">({rating.totalRatings})</span>
+                                    </>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">No ratings yet</span>
+                                  )}
+                                </div>
+                              </div>
+                              <p className="text-sm text-muted-foreground">{coach.expertise}</p>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          {coach.bio && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">About</p>
+                              <p className="text-sm text-slate-700 dark:text-slate-300 line-clamp-3">{coach.bio}</p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Areas of Expertise</p>
+                            <p className="text-sm text-slate-700 dark:text-slate-300">{coach.focus_areas}</p>
+                          </div>
+                          {coach.linkedin && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                              <a 
+                                href={coach.linkedin.startsWith('http') ? coach.linkedin : `https://${coach.linkedin}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-sm text-cyan-600 hover:underline flex items-center gap-1"
+                                data-testid={`link-coach-linkedin-${coach.id}`}
+                              >
+                                {coach.linkedin} <ExternalLink className="h-3 w-3" />
+                              </a>
+                            </div>
+                          )}
+                          <div className="pt-2">
+                            {(() => {
+                              try {
+                                const rates = JSON.parse(coach.hourly_rate);
+                                if (rates.introCallRate && rates.sessionRate && rates.monthlyRate) {
+                                  return (
+                                    <div className="space-y-1">
+                                      <div className="text-sm text-purple-600"><span className="font-medium">Intro Call:</span> ${rates.introCallRate}</div>
+                                      <div className="text-sm text-purple-600"><span className="font-medium">Per Session:</span> ${rates.sessionRate}</div>
+                                      <div className="text-sm text-purple-600"><span className="font-medium">Monthly:</span> ${rates.monthlyRate}</div>
+                                    </div>
+                                  );
+                                }
+                              } catch {}
+                              return <span className="text-lg font-bold text-purple-600">${coach.hourly_rate}/hr</span>;
+                            })()}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
