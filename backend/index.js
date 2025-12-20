@@ -1867,9 +1867,34 @@ app.get("/api/coaches/:coachId/clients", async (req, res) => {
     const { coachId } = req.params;
     console.log("[GET /api/coaches/:coachId/clients] Fetching clients for coach:", coachId);
     
-    // For now, return empty array since we don't have a coach_clients table yet
-    // When Stripe payments are processed, client relationships should be stored
-    return res.json({ clients: [] });
+    // Query coach_purchases table for unique clients
+    const { data: purchases, error } = await supabase
+      .from("coach_purchases")
+      .select("entrepreneur_email, entrepreneur_name, service_name, created_at")
+      .eq("coach_id", coachId)
+      .eq("status", "completed")
+      .order("created_at", { ascending: false });
+    
+    if (error) {
+      console.error("[GET /api/coaches/:coachId/clients] Database error:", error);
+      return res.json({ clients: [] });
+    }
+    
+    // Get unique clients (by email)
+    const clientMap = new Map();
+    for (const purchase of purchases || []) {
+      if (!clientMap.has(purchase.entrepreneur_email)) {
+        clientMap.set(purchase.entrepreneur_email, {
+          id: purchase.entrepreneur_email,
+          name: purchase.entrepreneur_name || 'Entrepreneur',
+          email: purchase.entrepreneur_email,
+          status: 'active',
+          joinedAt: purchase.created_at
+        });
+      }
+    }
+    
+    return res.json({ clients: Array.from(clientMap.values()) });
   } catch (error) {
     console.error("[GET /api/coaches/:coachId/clients] Error:", error);
     return res.status(500).json({ error: error.message });
@@ -1882,11 +1907,69 @@ app.get("/api/coaches/:coachId/transactions", async (req, res) => {
     const { coachId } = req.params;
     console.log("[GET /api/coaches/:coachId/transactions] Fetching transactions for coach:", coachId);
     
-    // For now, return empty array since we don't have a coach_transactions table yet
-    // When Stripe payments are processed, transactions should be stored
-    return res.json({ transactions: [] });
+    // Query coach_purchases table for transactions
+    const { data: purchases, error } = await supabase
+      .from("coach_purchases")
+      .select("*")
+      .eq("coach_id", coachId)
+      .order("created_at", { ascending: false });
+    
+    if (error) {
+      console.error("[GET /api/coaches/:coachId/transactions] Database error:", error);
+      return res.json({ transactions: [] });
+    }
+    
+    // Transform to transaction format (amounts are in cents)
+    const transactions = (purchases || []).map(p => ({
+      id: p.id,
+      clientName: p.entrepreneur_name || 'Entrepreneur',
+      clientEmail: p.entrepreneur_email,
+      amount: (p.amount || 0) / 100,
+      commission: (p.platform_fee || 0) / 100,
+      netEarnings: (p.coach_earnings || 0) / 100,
+      type: p.service_name || p.service_type,
+      date: p.created_at,
+      status: p.status
+    }));
+    
+    return res.json({ transactions });
   } catch (error) {
     console.error("[GET /api/coaches/:coachId/transactions] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get entrepreneur's coach purchases history
+app.get("/api/entrepreneurs/:email/coach-purchases", async (req, res) => {
+  try {
+    const { email } = req.params;
+    console.log("[GET /api/entrepreneurs/:email/coach-purchases] Fetching purchases for:", email);
+    
+    const { data: purchases, error } = await supabase
+      .from("coach_purchases")
+      .select("*")
+      .eq("entrepreneur_email", decodeURIComponent(email))
+      .order("created_at", { ascending: false });
+    
+    if (error) {
+      console.error("[GET /api/entrepreneurs/:email/coach-purchases] Database error:", error);
+      return res.json({ purchases: [] });
+    }
+    
+    // Transform for frontend
+    const formattedPurchases = (purchases || []).map(p => ({
+      id: p.id,
+      coachName: p.coach_name,
+      serviceName: p.service_name,
+      serviceType: p.service_type,
+      amount: (p.amount || 0) / 100,
+      date: p.created_at,
+      status: p.status
+    }));
+    
+    return res.json({ purchases: formattedPurchases });
+  } catch (error) {
+    console.error("[GET /api/entrepreneurs/:email/coach-purchases] Error:", error);
     return res.status(500).json({ error: error.message });
   }
 });
@@ -5103,13 +5186,131 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
       const entrepreneurId = session.metadata?.entrepreneurId;
+      const coachId = session.metadata?.coach_id;
       
+      // Handle entrepreneur membership payment
       if (entrepreneurId && session.payment_status === "paid") {
         console.log("[STRIPE WEBHOOK] Updating entrepreneur", entrepreneurId, "to approved");
         await supabase
           .from("ideas")
           .update({ status: "approved" })
           .eq("id", entrepreneurId);
+      }
+      
+      // Handle coach service purchase
+      if (coachId && session.payment_status === "paid") {
+        console.log("[STRIPE WEBHOOK] Processing coach purchase for coach:", coachId);
+        
+        const serviceType = session.metadata?.service_type || 'session';
+        const entrepreneurEmail = session.metadata?.entrepreneur_email || session.customer_email;
+        const entrepreneurName = session.metadata?.entrepreneur_name || 'Entrepreneur';
+        const coachName = session.metadata?.coach_name || 'Coach';
+        const amountTotal = session.amount_total || 0;
+        const platformFee = Math.round(amountTotal * 0.20);
+        const coachEarnings = amountTotal - platformFee;
+        
+        // Get service name based on type
+        let serviceName = 'Coaching Session';
+        if (serviceType === 'intro') serviceName = '15 Minutes Introductory Call';
+        else if (serviceType === 'monthly') serviceName = 'Monthly Coaching / Full Course';
+        
+        // Save purchase to coach_purchases table
+        try {
+          const { error: insertError } = await supabase
+            .from("coach_purchases")
+            .insert({
+              coach_id: coachId,
+              coach_name: coachName,
+              entrepreneur_email: entrepreneurEmail,
+              entrepreneur_name: entrepreneurName,
+              service_type: serviceType,
+              service_name: serviceName,
+              amount: amountTotal,
+              platform_fee: platformFee,
+              coach_earnings: coachEarnings,
+              stripe_session_id: session.id,
+              status: 'completed'
+            });
+          
+          if (insertError) {
+            console.error("[STRIPE WEBHOOK] Error saving purchase:", insertError);
+          } else {
+            console.log("[STRIPE WEBHOOK] Purchase saved successfully");
+          }
+        } catch (dbError) {
+          console.error("[STRIPE WEBHOOK] Database error:", dbError.message);
+        }
+        
+        // Get coach email for notification
+        try {
+          const { data: coach } = await supabase
+            .from("coach_applications")
+            .select("email")
+            .eq("id", coachId)
+            .single();
+          
+          const coachEmail = coach?.email;
+          
+          // Send email to entrepreneur
+          if (resend && entrepreneurEmail) {
+            try {
+              await resend.emails.send({
+                from: RESEND_FROM_EMAIL,
+                to: entrepreneurEmail,
+                subject: `Your ${serviceName} with ${coachName} is Confirmed!`,
+                html: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2>🎉 Your Coaching Purchase is Confirmed!</h2>
+                    <p>Hi ${entrepreneurName},</p>
+                    <p>Thank you for purchasing <strong>${serviceName}</strong> with <strong>${coachName}</strong>.</p>
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                      <p><strong>Service:</strong> ${serviceName}</p>
+                      <p><strong>Coach:</strong> ${coachName}</p>
+                      <p><strong>Amount Paid:</strong> $${(amountTotal / 100).toFixed(2)}</p>
+                    </div>
+                    <p>Your coach will be in touch shortly to schedule your session. You can also reach out to them directly.</p>
+                    <p>Best,<br>The TouchConnectPro Team</p>
+                  </div>
+                `
+              });
+              console.log("[STRIPE WEBHOOK] Email sent to entrepreneur:", entrepreneurEmail);
+            } catch (emailError) {
+              console.error("[STRIPE WEBHOOK] Error sending entrepreneur email:", emailError.message);
+            }
+          }
+          
+          // Send email to coach
+          if (resend && coachEmail) {
+            try {
+              await resend.emails.send({
+                from: RESEND_FROM_EMAIL,
+                to: coachEmail,
+                subject: `New Client! ${entrepreneurName} purchased ${serviceName}`,
+                html: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2>🎉 You Have a New Client!</h2>
+                    <p>Hi ${coachName},</p>
+                    <p>Great news! <strong>${entrepreneurName}</strong> has just purchased your <strong>${serviceName}</strong>.</p>
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                      <p><strong>Client Name:</strong> ${entrepreneurName}</p>
+                      <p><strong>Client Email:</strong> ${entrepreneurEmail}</p>
+                      <p><strong>Service:</strong> ${serviceName}</p>
+                      <p><strong>Total Paid:</strong> $${(amountTotal / 100).toFixed(2)}</p>
+                      <p><strong>Your Earnings (80%):</strong> $${(coachEarnings / 100).toFixed(2)}</p>
+                    </div>
+                    <p>Please reach out to your new client to schedule the session.</p>
+                    <p>Best,<br>The TouchConnectPro Team</p>
+                  </div>
+                `
+              });
+              console.log("[STRIPE WEBHOOK] Email sent to coach:", coachEmail);
+            } catch (emailError) {
+              console.error("[STRIPE WEBHOOK] Error sending coach email:", emailError.message);
+            }
+          }
+        } catch (lookupError) {
+          console.error("[STRIPE WEBHOOK] Error looking up coach:", lookupError.message);
+        }
       }
     }
 

@@ -2391,9 +2391,39 @@ export async function registerRoutes(
       const { coachId } = req.params;
       console.log("[GET /api/coaches/:coachId/clients] Fetching clients for coach:", coachId);
       
-      // For now, return empty array since we don't have a coach_clients table yet
-      // When Stripe payments are processed, client relationships should be stored
-      return res.json({ clients: [] });
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.json({ clients: [] });
+      }
+      
+      // Query coach_purchases table for unique clients
+      const { data: purchases, error } = await (client
+        .from("coach_purchases")
+        .select("entrepreneur_email, entrepreneur_name, service_name, created_at")
+        .eq("coach_id", coachId)
+        .eq("status", "completed")
+        .order("created_at", { ascending: false }) as any);
+      
+      if (error) {
+        console.error("[GET /api/coaches/:coachId/clients] Database error:", error);
+        return res.json({ clients: [] });
+      }
+      
+      // Get unique clients (by email)
+      const clientMap = new Map();
+      for (const purchase of purchases || []) {
+        if (!clientMap.has(purchase.entrepreneur_email)) {
+          clientMap.set(purchase.entrepreneur_email, {
+            id: purchase.entrepreneur_email,
+            name: purchase.entrepreneur_name || 'Entrepreneur',
+            email: purchase.entrepreneur_email,
+            status: 'active',
+            joinedAt: purchase.created_at
+          });
+        }
+      }
+      
+      return res.json({ clients: Array.from(clientMap.values()) });
     } catch (error: any) {
       console.error("[GET /api/coaches/:coachId/clients] Error:", error);
       return res.status(500).json({ error: error.message });
@@ -2406,11 +2436,79 @@ export async function registerRoutes(
       const { coachId } = req.params;
       console.log("[GET /api/coaches/:coachId/transactions] Fetching transactions for coach:", coachId);
       
-      // For now, return empty array since we don't have a coach_transactions table yet
-      // When Stripe payments are processed, transactions should be stored
-      return res.json({ transactions: [] });
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.json({ transactions: [] });
+      }
+      
+      // Query coach_purchases table for transactions
+      const { data: purchases, error } = await (client
+        .from("coach_purchases")
+        .select("*")
+        .eq("coach_id", coachId)
+        .order("created_at", { ascending: false }) as any);
+      
+      if (error) {
+        console.error("[GET /api/coaches/:coachId/transactions] Database error:", error);
+        return res.json({ transactions: [] });
+      }
+      
+      // Transform to transaction format (amounts are in cents)
+      const transactions = (purchases || []).map((p: any) => ({
+        id: p.id,
+        clientName: p.entrepreneur_name || 'Entrepreneur',
+        clientEmail: p.entrepreneur_email,
+        amount: (p.amount || 0) / 100,
+        commission: (p.platform_fee || 0) / 100,
+        netEarnings: (p.coach_earnings || 0) / 100,
+        type: p.service_name || p.service_type,
+        date: p.created_at,
+        status: p.status
+      }));
+      
+      return res.json({ transactions });
     } catch (error: any) {
       console.error("[GET /api/coaches/:coachId/transactions] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get entrepreneur's coach purchases history
+  app.get("/api/entrepreneurs/:email/coach-purchases", async (req, res) => {
+    try {
+      const { email } = req.params;
+      console.log("[GET /api/entrepreneurs/:email/coach-purchases] Fetching purchases for:", email);
+      
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.json({ purchases: [] });
+      }
+      
+      const { data: purchases, error } = await (client
+        .from("coach_purchases")
+        .select("*")
+        .eq("entrepreneur_email", decodeURIComponent(email))
+        .order("created_at", { ascending: false }) as any);
+      
+      if (error) {
+        console.error("[GET /api/entrepreneurs/:email/coach-purchases] Database error:", error);
+        return res.json({ purchases: [] });
+      }
+      
+      // Transform for frontend
+      const formattedPurchases = (purchases || []).map((p: any) => ({
+        id: p.id,
+        coachName: p.coach_name,
+        serviceName: p.service_name,
+        serviceType: p.service_type,
+        amount: (p.amount || 0) / 100,
+        date: p.created_at,
+        status: p.status
+      }));
+      
+      return res.json({ purchases: formattedPurchases });
+    } catch (error: any) {
+      console.error("[GET /api/entrepreneurs/:email/coach-purchases] Error:", error);
       return res.status(500).json({ error: error.message });
     }
   });
