@@ -5290,62 +5290,98 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
           
           const coachEmail = coach?.email;
           
-          // Send email to entrepreneur
-          if (resend && entrepreneurEmail) {
-            try {
-              await resend.emails.send({
-                from: RESEND_FROM_EMAIL,
-                to: entrepreneurEmail,
-                subject: `Your ${serviceName} with ${coachName} is Confirmed!`,
-                html: `
-                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2>🎉 Your Coaching Purchase is Confirmed!</h2>
-                    <p>Hi ${entrepreneurName},</p>
-                    <p>Thank you for purchasing <strong>${serviceName}</strong> with <strong>${coachName}</strong>.</p>
-                    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                      <p><strong>Service:</strong> ${serviceName}</p>
-                      <p><strong>Coach:</strong> ${coachName}</p>
-                      <p><strong>Amount Paid:</strong> $${(amountTotal / 100).toFixed(2)}</p>
+          // Get Resend client for sending emails
+          const resendData = await getResendClient();
+          if (resendData) {
+            const { client: resendClient, fromEmail } = resendData;
+            
+            // Send email to entrepreneur
+            if (entrepreneurEmail) {
+              try {
+                await resendClient.emails.send({
+                  from: fromEmail,
+                  to: entrepreneurEmail,
+                  subject: `Your ${serviceName} with ${coachName} is Confirmed!`,
+                  html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                      <h2>🎉 Your Coaching Purchase is Confirmed!</h2>
+                      <p>Hi ${entrepreneurName},</p>
+                      <p>Thank you for purchasing <strong>${serviceName}</strong> with <strong>${coachName}</strong>.</p>
+                      <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p><strong>Service:</strong> ${serviceName}</p>
+                        <p><strong>Coach:</strong> ${coachName}</p>
+                        <p><strong>Amount Paid:</strong> $${(amountTotal / 100).toFixed(2)}</p>
+                      </div>
+                      <p>Your coach will be in touch shortly to schedule your session. You can also reach out to them directly.</p>
+                      <p>Best,<br>The TouchConnectPro Team</p>
                     </div>
-                    <p>Your coach will be in touch shortly to schedule your session. You can also reach out to them directly.</p>
-                    <p>Best,<br>The TouchConnectPro Team</p>
-                  </div>
-                `
-              });
-              console.log("[STRIPE WEBHOOK] Email sent to entrepreneur:", entrepreneurEmail);
-            } catch (emailError) {
-              console.error("[STRIPE WEBHOOK] Error sending entrepreneur email:", emailError.message);
+                  `
+                });
+                console.log("[STRIPE WEBHOOK] Email sent to entrepreneur:", entrepreneurEmail);
+              } catch (emailError) {
+                console.error("[STRIPE WEBHOOK] Error sending entrepreneur email:", emailError.message);
+              }
             }
-          }
-          
-          // Send email to coach
-          if (resend && coachEmail) {
+            
+            // Send email to coach
+            if (coachEmail) {
+              try {
+                await resendClient.emails.send({
+                  from: fromEmail,
+                  to: coachEmail,
+                  subject: `New Client! ${entrepreneurName} purchased ${serviceName}`,
+                  html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                      <h2>🎉 You Have a New Client!</h2>
+                      <p>Hi ${coachName},</p>
+                      <p>Great news! <strong>${entrepreneurName}</strong> has just purchased your <strong>${serviceName}</strong>.</p>
+                      <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p><strong>Client Name:</strong> ${entrepreneurName}</p>
+                        <p><strong>Client Email:</strong> ${entrepreneurEmail}</p>
+                        <p><strong>Service:</strong> ${serviceName}</p>
+                        <p><strong>Total Paid:</strong> $${(amountTotal / 100).toFixed(2)}</p>
+                        <p><strong>Your Earnings (80%):</strong> $${(coachEarnings / 100).toFixed(2)}</p>
+                      </div>
+                      <p>Please reach out to your new client to schedule the session.</p>
+                      <p>Best,<br>The TouchConnectPro Team</p>
+                    </div>
+                  `
+                });
+                console.log("[STRIPE WEBHOOK] Email sent to coach:", coachEmail);
+              } catch (emailError) {
+                console.error("[STRIPE WEBHOOK] Error sending coach email:", emailError.message);
+              }
+            }
+            
+            // Send email to admin
+            const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
             try {
-              await resend.emails.send({
-                from: RESEND_FROM_EMAIL,
-                to: coachEmail,
-                subject: `New Client! ${entrepreneurName} purchased ${serviceName}`,
+              await resendClient.emails.send({
+                from: fromEmail,
+                to: ADMIN_EMAIL,
+                subject: `New Coach Purchase: ${entrepreneurName} → ${coachName}`,
                 html: `
                   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2>🎉 You Have a New Client!</h2>
-                    <p>Hi ${coachName},</p>
-                    <p>Great news! <strong>${entrepreneurName}</strong> has just purchased your <strong>${serviceName}</strong>.</p>
+                    <h2>💰 New Coach Marketplace Sale</h2>
                     <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                      <p><strong>Client Name:</strong> ${entrepreneurName}</p>
-                      <p><strong>Client Email:</strong> ${entrepreneurEmail}</p>
+                      <p><strong>Coach:</strong> ${coachName}</p>
+                      <p><strong>Client:</strong> ${entrepreneurName} (${entrepreneurEmail})</p>
                       <p><strong>Service:</strong> ${serviceName}</p>
                       <p><strong>Total Paid:</strong> $${(amountTotal / 100).toFixed(2)}</p>
-                      <p><strong>Your Earnings (80%):</strong> $${(coachEarnings / 100).toFixed(2)}</p>
+                      <p><strong>Platform Fee (20%):</strong> $${(platformFee / 100).toFixed(2)}</p>
+                      <p><strong>Coach Earnings (80%):</strong> $${(coachEarnings / 100).toFixed(2)}</p>
                     </div>
-                    <p>Please reach out to your new client to schedule the session.</p>
-                    <p>Best,<br>The TouchConnectPro Team</p>
+                    <p>This transaction has been recorded in the coach_purchases table.</p>
                   </div>
                 `
               });
-              console.log("[STRIPE WEBHOOK] Email sent to coach:", coachEmail);
+              console.log("[STRIPE WEBHOOK] Email sent to admin:", ADMIN_EMAIL);
             } catch (emailError) {
-              console.error("[STRIPE WEBHOOK] Error sending coach email:", emailError.message);
+              console.error("[STRIPE WEBHOOK] Error sending admin email:", emailError.message);
             }
+          } else {
+            console.log("[STRIPE WEBHOOK] Resend not configured, skipping emails");
+            console.log("[STRIPE WEBHOOK] RESEND_API_KEY present?", !!process.env.RESEND_API_KEY);
           }
         } catch (lookupError) {
           console.error("[STRIPE WEBHOOK] Error looking up coach:", lookupError.message);
