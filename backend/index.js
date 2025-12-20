@@ -5201,6 +5201,18 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
       if (coachId && session.payment_status === "paid") {
         console.log("[STRIPE WEBHOOK] Processing coach purchase for coach:", coachId);
         
+        // Idempotency guard: check if this session was already processed
+        const { data: existingPurchase } = await supabase
+          .from("coach_purchases")
+          .select("id")
+          .eq("stripe_session_id", session.id)
+          .single();
+        
+        if (existingPurchase) {
+          console.log("[STRIPE WEBHOOK] Duplicate event - session already processed:", session.id);
+          return res.status(200).json({ received: true, duplicate: true });
+        }
+        
         const serviceType = session.metadata?.service_type || 'session';
         const entrepreneurEmail = session.metadata?.entrepreneur_email || session.customer_email;
         const entrepreneurName = session.metadata?.entrepreneur_name || 'Entrepreneur';

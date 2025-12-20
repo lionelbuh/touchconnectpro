@@ -162,7 +162,53 @@ ALTER TABLE coach_applications ADD COLUMN IF NOT EXISTS profile_image TEXT;
 
 -- Add stripe_account_id for Stripe Connect integration
 ALTER TABLE coach_applications ADD COLUMN IF NOT EXISTS stripe_account_id TEXT;
+
+-- Create coach_purchases table for tracking coaching service transactions
+CREATE TABLE IF NOT EXISTS coach_purchases (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  coach_id TEXT NOT NULL,
+  coach_name TEXT,
+  entrepreneur_email TEXT NOT NULL,
+  entrepreneur_name TEXT,
+  service_type TEXT NOT NULL,
+  service_name TEXT,
+  amount INTEGER NOT NULL,
+  platform_fee INTEGER,
+  coach_earnings INTEGER,
+  stripe_session_id TEXT,
+  status TEXT DEFAULT 'completed',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Add index for faster queries by coach_id and entrepreneur_email
+CREATE INDEX IF NOT EXISTS idx_coach_purchases_coach_id ON coach_purchases(coach_id);
+CREATE INDEX IF NOT EXISTS idx_coach_purchases_entrepreneur_email ON coach_purchases(entrepreneur_email);
 ```
+
+### Coach Purchases Table (December 2025)
+The `coach_purchases` table stores all coaching service transactions:
+- **coach_id**: References the coach from coach_applications
+- **entrepreneur_email**: Email of the entrepreneur who purchased
+- **service_type**: 'intro', 'session', or 'monthly'
+- **amount**: Total amount in cents (e.g., 2500 = $25.00)
+- **platform_fee**: 20% platform fee in cents
+- **coach_earnings**: 80% coach earnings in cents
+- **stripe_session_id**: Stripe checkout session ID for reference
+
+### Coach Purchase Flow
+1. Entrepreneur selects a coach service (Intro/Session/Monthly)
+2. Stripe checkout processes payment with destination charges
+3. Webhook receives `checkout.session.completed` event
+4. Purchase saved to `coach_purchases` table
+5. Emails sent to both entrepreneur and coach
+6. Coach Dashboard shows client in "Entrepreneurs" tab
+7. Coach Dashboard shows transaction in "Earnings" tab
+8. Entrepreneur can view purchase history
+
+### New API Endpoints (December 2025)
+- `GET /api/coaches/:coachId/clients` - Returns unique clients who purchased from coach
+- `GET /api/coaches/:coachId/transactions` - Returns earnings history with commission breakdown
+- `GET /api/entrepreneurs/:email/coach-purchases` - Returns entrepreneur's purchase history
 
 ## Required Supabase Storage Setup
 
