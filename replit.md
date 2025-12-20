@@ -143,6 +143,8 @@ Key synchronized endpoints:
   - `GET /api/stripe/connect/account-link/:coachId` - Get onboarding link
   - `GET /api/stripe/connect/account-status/:coachId` - Check account status
   - `POST /api/stripe/connect/checkout` - Create checkout with destination charges
+- **Stripe Webhook**:
+  - `POST /api/stripe/webhook` - Handles checkout.session.completed events for coach purchases. Sends email notifications to entrepreneur, coach, and admin (buhler.lionel+admin@gmail.com). Also saves purchase to coach_purchases table.
 
 ## Required Database Migrations (Supabase)
 
