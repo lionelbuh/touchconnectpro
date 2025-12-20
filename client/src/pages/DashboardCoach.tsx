@@ -247,13 +247,8 @@ export default function DashboardCoach() {
         const response = await fetch(`${API_BASE_URL}/api/coaches/${profile.id}/transactions`);
         if (response.ok) {
           const data = await response.json();
-          // Transform transactions to include commission calculations
-          const transformedTransactions = (data.transactions || []).map((tx: any) => ({
-            ...tx,
-            commission: tx.amount * 0.20,
-            netEarnings: tx.amount * 0.80
-          }));
-          setTransactions(transformedTransactions);
+          // Use server-provided commission values (already calculated)
+          setTransactions(data.transactions || []);
         }
       } catch (error) {
         console.error("Error loading transactions:", error);

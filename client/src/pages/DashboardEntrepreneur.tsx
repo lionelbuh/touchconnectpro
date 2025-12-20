@@ -19,8 +19,10 @@ export default function DashboardEntrepreneur() {
   const [showSuccessPage, setShowSuccessPage] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile" | "notes" | "messages" | "meetings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile" | "notes" | "messages" | "meetings" | "purchases">("overview");
   const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
+  const [coachPurchases, setCoachPurchases] = useState<any[]>([]);
+  const [loadingPurchases, setLoadingPurchases] = useState(false);
   const [coachRatings, setCoachRatings] = useState<Record<string, { averageRating: number; totalRatings: number }>>({});
   const [selectedSpecializations, setSelectedSpecializations] = useState<string[]>([]);
   const [showReviewsModal, setShowReviewsModal] = useState(false);
@@ -476,6 +478,26 @@ export default function DashboardEntrepreneur() {
       }
     }
     loadMeetings();
+  }, [userEmail]);
+
+  // Load coach purchases
+  useEffect(() => {
+    async function loadPurchases() {
+      if (!userEmail) return;
+      setLoadingPurchases(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/entrepreneurs/${encodeURIComponent(userEmail)}/coach-purchases`);
+        if (response.ok) {
+          const data = await response.json();
+          setCoachPurchases(data.purchases || []);
+        }
+      } catch (error) {
+        console.error("Error loading purchases:", error);
+      } finally {
+        setLoadingPurchases(false);
+      }
+    }
+    loadPurchases();
   }, [userEmail]);
 
   useEffect(() => {
@@ -1148,6 +1170,17 @@ export default function DashboardEntrepreneur() {
                 data-testid="button-coaches-tab"
               >
                 <GraduationCap className="mr-2 h-4 w-4" /> Available Coaches
+              </Button>
+              <Button 
+                variant={activeTab === "purchases" ? "secondary" : "ghost"}
+                className="w-full justify-start font-medium text-slate-600"
+                onClick={() => setActiveTab("purchases")}
+                data-testid="button-purchases-tab"
+              >
+                <ShoppingCart className="mr-2 h-4 w-4" /> My Purchases
+                {coachPurchases.length > 0 && (
+                  <span className="ml-auto bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 text-xs px-2 py-0.5 rounded-full">{coachPurchases.length}</span>
+                )}
               </Button>
               <Button 
                 variant={activeTab === "notes" ? "secondary" : "ghost"}
@@ -2249,6 +2282,58 @@ export default function DashboardEntrepreneur() {
                     </Card>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Purchases Tab */}
+            {activeTab === "purchases" && (
+              <div>
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">My Purchases</h1>
+                <p className="text-muted-foreground mb-8">View your coaching service purchases and transaction history.</p>
+
+                {loadingPurchases ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+                  </div>
+                ) : coachPurchases.length > 0 ? (
+                  <div className="space-y-4">
+                    {coachPurchases.map((purchase) => (
+                      <Card key={purchase.id} className="border-l-4 border-l-green-500" data-testid={`card-purchase-${purchase.id}`}>
+                        <CardContent className="pt-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                                <CreditCard className="h-6 w-6 text-green-600" />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-slate-900 dark:text-white">{purchase.serviceName}</p>
+                                <p className="text-sm text-muted-foreground">Coach: {purchase.coachName}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-green-600">${purchase.amount.toFixed(2)}</p>
+                              <p className="text-xs text-muted-foreground">{new Date(purchase.date).toLocaleDateString()}</p>
+                              <Badge className={purchase.status === "completed" ? "bg-green-600" : "bg-amber-500"}>
+                                {purchase.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="text-center py-12">
+                    <CardContent>
+                      <ShoppingCart className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No Purchases Yet</h3>
+                      <p className="text-muted-foreground mb-4">When you purchase coaching services, they will appear here.</p>
+                      <Button onClick={() => setActiveTab("coaches")} className="bg-cyan-600 hover:bg-cyan-700">
+                        Browse Available Coaches
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
 
