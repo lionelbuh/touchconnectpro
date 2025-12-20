@@ -1,0 +1,22 @@
+[SUPABASE] ALL localStorage keys: (17) ['tcp_businessPlan', 'tcp_entrepreneurReadMessageIds', 'tcp_messageHistory', 'tcp_coachReadMessageIds', 'tcp_entrepreneurApplications', 'tcp_investorReadMessageIds', 'tcp_profileData', 'tcp_mentorApplications', 'sb-mfkxbjtrxwajlyxnxzdn-auth-token', 'tcp_coachApplications', 'tcp_disabledProfessionals', 'apolloLastRefreshInt', 'tcp_welcome_popup_last_shown', 'tcp_mentorReadMessageIds', 'tcp_formData', 'tcp_adminReadMessageIds', 'tcp_investorApplications']
+index-gp1xvw3x.js:493 [SUPABASE] Auth-related keys BEFORE client creation: ['sb-mfkxbjtrxwajlyxnxzdn-auth-token']
+index-gp1xvw3x.js:493 [SUPABASE] Key "sb-mfkxbjtrxwajlyxnxzdn-auth-token": length=2066
+index-gp1xvw3x.js:493 [DASHBOARD] Auth keys in localStorage: ['sb-mfkxbjtrxwajlyxnxzdn-auth-token']
+index-gp1xvw3x.js:493 [DashboardEntrepreneur] No userEmail yet, skipping meetings load
+index-gp1xvw3x.js:493 Supabase client created with session persistence
+index-gp1xvw3x.js:493 [DASHBOARD] Supabase client ready, checking session...
+index-gp1xvw3x.js:493 [SUPABASE STORAGE] getItem("sb-mfkxbjtrxwajlyxnxzdn-auth-token-code-verifier"): null
+index-gp1xvw3x.js:493 [SUPABASE STORAGE] getItem("sb-mfkxbjtrxwajlyxnxzdn-auth-token"): found (2066 chars)
+index-gp1xvw3x.js:493 [SUPABASE STORAGE] getItem("sb-mfkxbjtrxwajlyxnxzdn-auth-token"): found (2066 chars)
+index-gp1xvw3x.js:493 [SUPABASE STORAGE] getItem("sb-mfkxbjtrxwajlyxnxzdn-auth-token"): found (2066 chars)
+index-gp1xvw3x.js:493 [DASHBOARD] getSession result: {hasSession: true, hasUser: true, userEmail: 'buhler.lionel+user2@gmail.com', accessTokenLength: 853, expiresAt: 1766217461, …}
+index-gp1xvw3x.js:493 [DASHBOARD] User found: buhler.lionel+user2@gmail.com
+index-gp1xvw3x.js:493 [DashboardEntrepreneur] Loading meetings for: buhler.lionel+user2@gmail.com
+index-gp1xvw3x.js:493 [DashboardEntrepreneur] Meetings API response status: 200
+index-gp1xvw3x.js:493 [DashboardEntrepreneur] Meetings data received: {meetings: Array(2)}
+inject.bundle.js:230 [ChromePolyfill] Chrome API support enabled for web context
+index-gp1xvw3x.js:493 [DASHBOARD] Entrepreneur data received: {linkedin_profile: '', data_linkedinWebsite: '', data_website: '', hasData: true}
+dashboard-entrepreneur?coach_payment=success&coach=Coach%20Five%205:1 Unchecked runtime.lastError: The message port closed before a response was received.Understand this error
+5index-gp1xvw3x.js:493 [SUPABASE STORAGE] getItem("sb-mfkxbjtrxwajlyxnxzdn-auth-token"): found (2066 chars)
+index-gp1xvw3x.js:493 [SUPABASE STORAGE] getItem("sb-mfkxbjtrxwajlyxnxzdn-auth-token"): found (2066 chars)
+2index-gp1xvw3x.js:493 [SUPABASE STORAGE] getItem("sb-mfkxbjtrxwajlyxnxzdn-auth-token"): found (2066 chars)
