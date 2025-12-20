@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw } from "lucide-react";
+import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { API_BASE_URL } from "@/config";
@@ -94,7 +94,7 @@ interface User {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings">("approvals");
+  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings" | "earnings">("approvals");
   const [activeMembersSubTab, setActiveMembersSubTab] = useState<"portfolio" | "messaging" | "management">("portfolio");
   const [activeApprovalsSubTab, setActiveApprovalsSubTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
   const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled">("entrepreneurs");
@@ -153,6 +153,11 @@ export default function AdminDashboard() {
   const [adminMeetingRecipientType, setAdminMeetingRecipientType] = useState<"entrepreneur" | "mentor" | "investor" | "coach">("entrepreneur");
   const [selectedAdminMeetingRecipients, setSelectedAdminMeetingRecipients] = useState<string[]>([]);
   const [sendingAdminMeetingInvites, setSendingAdminMeetingInvites] = useState(false);
+  const [earningsData, setEarningsData] = useState<{
+    purchases: any[];
+    totals: { totalRevenue: number; platformFees: number; coachEarnings: number };
+  }>({ purchases: [], totals: { totalRevenue: 0, platformFees: 0, coachEarnings: 0 } });
+  const [loadingEarnings, setLoadingEarnings] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -358,6 +363,17 @@ export default function AdminDashboard() {
         }
       } catch (err) {
         console.error("Error fetching meetings:", err);
+      }
+
+      // Load earnings data
+      try {
+        const earningsResponse = await fetch(`${API_BASE_URL}/api/admin/earnings`);
+        if (earningsResponse.ok) {
+          const data = await earningsResponse.json();
+          setEarningsData(data);
+        }
+      } catch (err) {
+        console.error("Error fetching earnings:", err);
       }
     };
 
@@ -1293,6 +1309,19 @@ export default function AdminDashboard() {
             data-testid="button-meetings-tab"
           >
             <Calendar className="mr-2 h-4 w-4" /> Meetings
+          </Button>
+          <Button 
+            variant={activeTab === "earnings" ? "default" : "outline"}
+            onClick={() => setActiveTab("earnings")}
+            className={activeTab === "earnings" ? "bg-green-600 hover:bg-green-700" : ""}
+            data-testid="button-earnings-tab"
+          >
+            <DollarSign className="mr-2 h-4 w-4" /> Earnings
+            {earningsData.purchases.length > 0 && (
+              <Badge className="ml-2 bg-green-800 text-white">
+                ${earningsData.totals.platformFees.toFixed(0)}
+              </Badge>
+            )}
           </Button>
         </div>
 
@@ -4647,6 +4676,119 @@ export default function AdminDashboard() {
                     </Button>
                   </div>
                 </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Earnings Tab */}
+      {activeTab === "earnings" && (
+        <div className="space-y-6">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-medium opacity-90">Total Revenue</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold" data-testid="text-total-revenue">
+                  ${earningsData.totals.totalRevenue.toFixed(2)}
+                </p>
+                <p className="text-sm opacity-80 mt-1">{earningsData.purchases.length} transactions</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-cyan-500 to-cyan-600 text-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-medium opacity-90">Platform Fees (20%)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold" data-testid="text-platform-fees">
+                  ${earningsData.totals.platformFees.toFixed(2)}
+                </p>
+                <p className="text-sm opacity-80 mt-1">Your earnings</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-amber-500 to-amber-600 text-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-medium opacity-90">Coach Payouts (80%)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold" data-testid="text-coach-earnings">
+                  ${earningsData.totals.coachEarnings.toFixed(2)}
+                </p>
+                <p className="text-sm opacity-80 mt-1">Paid to coaches</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Transactions Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5 text-green-600" />
+                All Coach Marketplace Transactions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {earningsData.purchases.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                  <p>No transactions yet</p>
+                  <p className="text-sm">Coach marketplace purchases will appear here</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b text-left">
+                        <th className="pb-3 font-medium text-muted-foreground">Date</th>
+                        <th className="pb-3 font-medium text-muted-foreground">Coach</th>
+                        <th className="pb-3 font-medium text-muted-foreground">Entrepreneur</th>
+                        <th className="pb-3 font-medium text-muted-foreground">Service</th>
+                        <th className="pb-3 font-medium text-muted-foreground text-right">Amount</th>
+                        <th className="pb-3 font-medium text-muted-foreground text-right">Platform Fee</th>
+                        <th className="pb-3 font-medium text-muted-foreground text-right">Coach Payout</th>
+                        <th className="pb-3 font-medium text-muted-foreground">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {earningsData.purchases.map((purchase: any) => (
+                        <tr key={purchase.id} className="border-b last:border-0" data-testid={`row-purchase-${purchase.id}`}>
+                          <td className="py-3 text-sm">
+                            {new Date(purchase.date).toLocaleDateString()}
+                          </td>
+                          <td className="py-3">
+                            <p className="font-medium text-sm">{purchase.coachName}</p>
+                          </td>
+                          <td className="py-3">
+                            <p className="font-medium text-sm">{purchase.entrepreneurName}</p>
+                            <p className="text-xs text-muted-foreground">{purchase.entrepreneurEmail}</p>
+                          </td>
+                          <td className="py-3">
+                            <Badge variant="outline" className="text-xs">
+                              {purchase.serviceName || purchase.serviceType}
+                            </Badge>
+                          </td>
+                          <td className="py-3 text-right font-medium text-green-600">
+                            ${purchase.amount.toFixed(2)}
+                          </td>
+                          <td className="py-3 text-right font-medium text-cyan-600">
+                            ${purchase.platformFee.toFixed(2)}
+                          </td>
+                          <td className="py-3 text-right font-medium text-amber-600">
+                            ${purchase.coachEarnings.toFixed(2)}
+                          </td>
+                          <td className="py-3">
+                            <Badge className={purchase.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                              {purchase.status}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </CardContent>
           </Card>
