@@ -5355,8 +5355,10 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
             
             // Send email to admin
             const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
+            console.log("[STRIPE WEBHOOK] Attempting to send admin email to:", ADMIN_EMAIL);
+            console.log("[STRIPE WEBHOOK] From email:", fromEmail);
             try {
-              await resendClient.emails.send({
+              const adminEmailResult = await resendClient.emails.send({
                 from: fromEmail,
                 to: ADMIN_EMAIL,
                 subject: `New Coach Purchase: ${entrepreneurName} → ${coachName}`,
@@ -5375,9 +5377,10 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
                   </div>
                 `
               });
-              console.log("[STRIPE WEBHOOK] Email sent to admin:", ADMIN_EMAIL);
+              console.log("[STRIPE WEBHOOK] Email sent to admin:", ADMIN_EMAIL, "Result:", JSON.stringify(adminEmailResult));
             } catch (emailError) {
               console.error("[STRIPE WEBHOOK] Error sending admin email:", emailError.message);
+              console.error("[STRIPE WEBHOOK] Full admin email error:", JSON.stringify(emailError));
             }
           } else {
             console.log("[STRIPE WEBHOOK] Resend not configured, skipping emails");
