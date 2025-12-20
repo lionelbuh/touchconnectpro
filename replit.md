@@ -209,6 +209,13 @@ The `coach_purchases` table stores all coaching service transactions:
 - `GET /api/coaches/:coachId/clients` - Returns unique clients who purchased from coach
 - `GET /api/coaches/:coachId/transactions` - Returns earnings history with commission breakdown
 - `GET /api/entrepreneurs/:email/coach-purchases` - Returns entrepreneur's purchase history
+- `GET /api/admin/earnings` - Returns all coach purchases with aggregated totals (totalRevenue, platformFees, coachEarnings)
+
+### Admin Earnings Tab (December 2025)
+Added Earnings tab to Admin Dashboard displaying:
+- **Summary Cards**: Total Revenue, Platform Fees (20%), Coach Payouts (80%)
+- **Transaction Table**: All coach marketplace purchases with date, coach name, entrepreneur, service type, amount breakdown, and status
+- Data fetched from `/api/admin/earnings` endpoint which queries the `coach_purchases` table
 
 ## Required Supabase Storage Setup
 
