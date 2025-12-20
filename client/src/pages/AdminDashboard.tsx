@@ -157,7 +157,12 @@ export default function AdminDashboard() {
     purchases: any[];
     totals: { totalRevenue: number; platformFees: number; coachEarnings: number };
   }>({ purchases: [], totals: { totalRevenue: 0, platformFees: 0, coachEarnings: 0 } });
+  const [subscriptionData, setSubscriptionData] = useState<{
+    subscriptions: any[];
+    totals: { totalRevenue: number; count: number };
+  }>({ subscriptions: [], totals: { totalRevenue: 0, count: 0 } });
   const [loadingEarnings, setLoadingEarnings] = useState(false);
+  const [earningsTab, setEarningsTab] = useState<"coach" | "subscription">("coach");
 
   useEffect(() => {
     const loadData = async () => {
@@ -374,6 +379,17 @@ export default function AdminDashboard() {
         }
       } catch (err) {
         console.error("Error fetching earnings:", err);
+      }
+
+      // Load subscription revenue data
+      try {
+        const subscriptionResponse = await fetch(`${API_BASE_URL}/api/admin/subscription-revenue`);
+        if (subscriptionResponse.ok) {
+          const data = await subscriptionResponse.json();
+          setSubscriptionData(data);
+        }
+      } catch (err) {
+        console.error("Error fetching subscription revenue:", err);
       }
     };
 
@@ -4685,7 +4701,7 @@ export default function AdminDashboard() {
       {/* Earnings Tab */}
       {activeTab === "earnings" && (
         <div className="space-y-6">
-          {/* Summary Cards */}
+          {/* Overall Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
               <CardHeader className="pb-2">
@@ -4693,105 +4709,189 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold" data-testid="text-total-revenue">
-                  ${earningsData.totals.totalRevenue.toFixed(2)}
+                  ${(earningsData.totals.totalRevenue + subscriptionData.totals.totalRevenue).toFixed(2)}
                 </p>
-                <p className="text-sm opacity-80 mt-1">{earningsData.purchases.length} transactions</p>
+                <p className="text-sm opacity-80 mt-1">
+                  {earningsData.purchases.length} coach + {subscriptionData.subscriptions.length} subscription
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-medium opacity-90">Subscriptions ($49/mo)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold" data-testid="text-subscription-revenue">
+                  ${subscriptionData.totals.totalRevenue.toFixed(2)}
+                </p>
+                <p className="text-sm opacity-80 mt-1">{subscriptionData.subscriptions.length} active members</p>
               </CardContent>
             </Card>
             <Card className="bg-gradient-to-br from-cyan-500 to-cyan-600 text-white">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium opacity-90">Platform Fees (20%)</CardTitle>
+                <CardTitle className="text-lg font-medium opacity-90">Coach Platform Fees (20%)</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold" data-testid="text-platform-fees">
                   ${earningsData.totals.platformFees.toFixed(2)}
                 </p>
-                <p className="text-sm opacity-80 mt-1">Your earnings</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-amber-500 to-amber-600 text-white">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium opacity-90">Coach Payouts (80%)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold" data-testid="text-coach-earnings">
-                  ${earningsData.totals.coachEarnings.toFixed(2)}
-                </p>
-                <p className="text-sm opacity-80 mt-1">Paid to coaches</p>
+                <p className="text-sm opacity-80 mt-1">From coach marketplace</p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Transactions Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-green-600" />
-                All Coach Marketplace Transactions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {earningsData.purchases.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                  <p>No transactions yet</p>
-                  <p className="text-sm">Coach marketplace purchases will appear here</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b text-left">
-                        <th className="pb-3 font-medium text-muted-foreground">Date</th>
-                        <th className="pb-3 font-medium text-muted-foreground">Coach</th>
-                        <th className="pb-3 font-medium text-muted-foreground">Entrepreneur</th>
-                        <th className="pb-3 font-medium text-muted-foreground">Service</th>
-                        <th className="pb-3 font-medium text-muted-foreground text-right">Amount</th>
-                        <th className="pb-3 font-medium text-muted-foreground text-right">Platform Fee</th>
-                        <th className="pb-3 font-medium text-muted-foreground text-right">Coach Payout</th>
-                        <th className="pb-3 font-medium text-muted-foreground">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {earningsData.purchases.map((purchase: any) => (
-                        <tr key={purchase.id} className="border-b last:border-0" data-testid={`row-purchase-${purchase.id}`}>
-                          <td className="py-3 text-sm">
-                            {new Date(purchase.date).toLocaleDateString()}
-                          </td>
-                          <td className="py-3">
-                            <p className="font-medium text-sm">{purchase.coachName}</p>
-                          </td>
-                          <td className="py-3">
-                            <p className="font-medium text-sm">{purchase.entrepreneurName}</p>
-                            <p className="text-xs text-muted-foreground">{purchase.entrepreneurEmail}</p>
-                          </td>
-                          <td className="py-3">
-                            <Badge variant="outline" className="text-xs">
-                              {purchase.serviceName || purchase.serviceType}
-                            </Badge>
-                          </td>
-                          <td className="py-3 text-right font-medium text-green-600">
-                            ${purchase.amount.toFixed(2)}
-                          </td>
-                          <td className="py-3 text-right font-medium text-cyan-600">
-                            ${purchase.platformFee.toFixed(2)}
-                          </td>
-                          <td className="py-3 text-right font-medium text-amber-600">
-                            ${purchase.coachEarnings.toFixed(2)}
-                          </td>
-                          <td className="py-3">
-                            <Badge className={purchase.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
-                              {purchase.status}
-                            </Badge>
-                          </td>
+          {/* Revenue Type Tabs */}
+          <div className="flex gap-2 border-b pb-2">
+            <Button
+              variant={earningsTab === "coach" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setEarningsTab("coach")}
+              className={earningsTab === "coach" ? "bg-amber-600 hover:bg-amber-700" : ""}
+              data-testid="button-earnings-coach"
+            >
+              Coach Marketplace ({earningsData.purchases.length})
+            </Button>
+            <Button
+              variant={earningsTab === "subscription" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setEarningsTab("subscription")}
+              className={earningsTab === "subscription" ? "bg-purple-600 hover:bg-purple-700" : ""}
+              data-testid="button-earnings-subscription"
+            >
+              Subscriptions ({subscriptionData.subscriptions.length})
+            </Button>
+          </div>
+
+          {/* Coach Marketplace Transactions */}
+          {earningsTab === "coach" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-amber-600" />
+                  Coach Marketplace Transactions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {earningsData.purchases.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p>No transactions yet</p>
+                    <p className="text-sm">Coach marketplace purchases will appear here</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b text-left">
+                          <th className="pb-3 font-medium text-muted-foreground">Date</th>
+                          <th className="pb-3 font-medium text-muted-foreground">Coach</th>
+                          <th className="pb-3 font-medium text-muted-foreground">Entrepreneur</th>
+                          <th className="pb-3 font-medium text-muted-foreground">Service</th>
+                          <th className="pb-3 font-medium text-muted-foreground text-right">Amount</th>
+                          <th className="pb-3 font-medium text-muted-foreground text-right">Platform Fee</th>
+                          <th className="pb-3 font-medium text-muted-foreground text-right">Coach Payout</th>
+                          <th className="pb-3 font-medium text-muted-foreground">Status</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                      </thead>
+                      <tbody>
+                        {earningsData.purchases.map((purchase: any) => (
+                          <tr key={purchase.id} className="border-b last:border-0" data-testid={`row-purchase-${purchase.id}`}>
+                            <td className="py-3 text-sm">
+                              {new Date(purchase.date).toLocaleDateString()}
+                            </td>
+                            <td className="py-3">
+                              <p className="font-medium text-sm">{purchase.coachName}</p>
+                            </td>
+                            <td className="py-3">
+                              <p className="font-medium text-sm">{purchase.entrepreneurName}</p>
+                              <p className="text-xs text-muted-foreground">{purchase.entrepreneurEmail}</p>
+                            </td>
+                            <td className="py-3">
+                              <Badge variant="outline" className="text-xs">
+                                {purchase.serviceName || purchase.serviceType}
+                              </Badge>
+                            </td>
+                            <td className="py-3 text-right font-medium text-green-600">
+                              ${purchase.amount.toFixed(2)}
+                            </td>
+                            <td className="py-3 text-right font-medium text-cyan-600">
+                              ${purchase.platformFee.toFixed(2)}
+                            </td>
+                            <td className="py-3 text-right font-medium text-amber-600">
+                              ${purchase.coachEarnings.toFixed(2)}
+                            </td>
+                            <td className="py-3">
+                              <Badge className={purchase.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                                {purchase.status}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Subscription Transactions */}
+          {earningsTab === "subscription" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-purple-600" />
+                  Subscription Payments ($49/month)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {subscriptionData.subscriptions.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p>No subscriptions yet</p>
+                    <p className="text-sm">Paid memberships will appear here</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b text-left">
+                          <th className="pb-3 font-medium text-muted-foreground">Date</th>
+                          <th className="pb-3 font-medium text-muted-foreground">Entrepreneur</th>
+                          <th className="pb-3 font-medium text-muted-foreground">Email</th>
+                          <th className="pb-3 font-medium text-muted-foreground text-right">Amount</th>
+                          <th className="pb-3 font-medium text-muted-foreground">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {subscriptionData.subscriptions.map((sub: any) => (
+                          <tr key={sub.id} className="border-b last:border-0" data-testid={`row-subscription-${sub.id}`}>
+                            <td className="py-3 text-sm">
+                              {sub.date ? new Date(sub.date).toLocaleDateString() : 'N/A'}
+                            </td>
+                            <td className="py-3">
+                              <p className="font-medium text-sm">{sub.entrepreneurName}</p>
+                            </td>
+                            <td className="py-3">
+                              <p className="text-sm text-muted-foreground">{sub.entrepreneurEmail}</p>
+                            </td>
+                            <td className="py-3 text-right font-medium text-purple-600">
+                              ${sub.amount.toFixed(2)}
+                            </td>
+                            <td className="py-3">
+                              <Badge className="bg-green-100 text-green-800">
+                                {sub.status}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>

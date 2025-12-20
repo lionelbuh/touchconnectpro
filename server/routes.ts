@@ -2574,6 +2574,54 @@ export async function registerRoutes(
     }
   });
 
+  // Get subscription revenue for admin earnings dashboard
+  app.get("/api/admin/subscription-revenue", async (req, res) => {
+    try {
+      console.log("[GET /api/admin/subscription-revenue] Fetching subscription payments");
+      
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.json({ subscriptions: [], totals: { totalRevenue: 0, count: 0 } });
+      }
+      
+      // Fetch all paid entrepreneurs from ideas table
+      const { data: paidEntrepreneurs, error } = await (client
+        .from("ideas")
+        .select("id, entrepreneur_name, entrepreneur_email, payment_date, payment_status, stripe_customer_id")
+        .eq("payment_status", "paid")
+        .order("payment_date", { ascending: false }) as any);
+      
+      if (error) {
+        console.error("[GET /api/admin/subscription-revenue] Database error:", error);
+        return res.json({ subscriptions: [], totals: { totalRevenue: 0, count: 0 } });
+      }
+      
+      const subscriptionAmount = 49; // $49/month per subscription
+      const subscriptions = (paidEntrepreneurs || []).map((e: any) => ({
+        id: e.id,
+        entrepreneurName: e.entrepreneur_name || 'Entrepreneur',
+        entrepreneurEmail: e.entrepreneur_email,
+        amount: subscriptionAmount,
+        date: e.payment_date,
+        status: 'active',
+        stripeCustomerId: e.stripe_customer_id
+      }));
+      
+      const totalRevenue = subscriptions.length * subscriptionAmount;
+      
+      return res.json({ 
+        subscriptions,
+        totals: {
+          totalRevenue,
+          count: subscriptions.length
+        }
+      });
+    } catch (error: any) {
+      console.error("[GET /api/admin/subscription-revenue] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // ===== COACH RATINGS ENDPOINTS =====
 
   // Submit a coach rating
