@@ -14,7 +14,14 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "x-api-key"]
 }));
-app.use(express.json({ limit: "10mb" }));
+// JSON parsing - SKIP for Stripe webhook (needs raw body for signature verification)
+app.use((req, res, next) => {
+  if (req.originalUrl === '/api/stripe/webhook') {
+    next();
+  } else {
+    express.json({ limit: "10mb" })(req, res, next);
+  }
+});
 
 // Config endpoint for frontend to get Supabase credentials
 app.get("/api/config", (req, res) => {
@@ -5164,23 +5171,41 @@ app.post("/api/stripe/confirm-payment", async (req, res) => {
 
 // Stripe webhook for automated payment events
 app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
-  console.log("[STRIPE WEBHOOK] Received");
+  console.log("[STRIPE WEBHOOK] ========== WEBHOOK RECEIVED ==========");
+  console.log("[STRIPE WEBHOOK] Body type:", typeof req.body);
+  console.log("[STRIPE WEBHOOK] Body is Buffer:", Buffer.isBuffer(req.body));
+  console.log("[STRIPE WEBHOOK] Body length:", req.body?.length || 0);
+  console.log("[STRIPE WEBHOOK] Headers:", JSON.stringify({
+    'content-type': req.headers['content-type'],
+    'stripe-signature': req.headers['stripe-signature'] ? 'present' : 'missing'
+  }));
   
   const stripe = getStripeClient();
   if (!stripe) {
+    console.log("[STRIPE WEBHOOK] ERROR: Stripe not configured");
     return res.status(500).json({ error: "Stripe not configured" });
   }
 
   const sig = req.headers["stripe-signature"];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+  console.log("[STRIPE WEBHOOK] Webhook secret configured:", !!webhookSecret);
+  console.log("[STRIPE WEBHOOK] Signature present:", !!sig);
+
   if (!webhookSecret) {
-    console.log("[STRIPE WEBHOOK] No webhook secret configured, skipping signature verification");
-    return res.status(200).json({ received: true });
+    console.log("[STRIPE WEBHOOK] ERROR: No webhook secret configured, skipping");
+    return res.status(200).json({ received: true, error: "no webhook secret" });
+  }
+
+  if (!sig) {
+    console.log("[STRIPE WEBHOOK] ERROR: No signature in headers");
+    return res.status(400).json({ error: "No stripe-signature header" });
   }
 
   try {
+    console.log("[STRIPE WEBHOOK] Attempting to construct event...");
     const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    console.log("[STRIPE WEBHOOK] Event constructed successfully!");
     console.log("[STRIPE WEBHOOK] Event type:", event.type);
 
     if (event.type === "checkout.session.completed") {
@@ -5199,7 +5224,9 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
       
       // Handle coach service purchase
       if (coachId && session.payment_status === "paid") {
-        console.log("[STRIPE WEBHOOK] Processing coach purchase for coach:", coachId);
+        console.log("[STRIPE WEBHOOK] ========== COACH PURCHASE ==========");
+        console.log("[STRIPE WEBHOOK] Coach ID:", coachId);
+        console.log("[STRIPE WEBHOOK] Session metadata:", JSON.stringify(session.metadata));
         
         // Idempotency guard: check if this session was already processed
         const { data: existingPurchase } = await supabase
