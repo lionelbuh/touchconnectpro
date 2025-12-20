@@ -2513,6 +2513,67 @@ export async function registerRoutes(
     }
   });
 
+  // ===== ADMIN EARNINGS ENDPOINT =====
+
+  // Get all coach purchases for admin earnings dashboard
+  app.get("/api/admin/earnings", async (req, res) => {
+    try {
+      console.log("[GET /api/admin/earnings] Fetching all coach purchases");
+      
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.json({ purchases: [], totals: { totalRevenue: 0, platformFees: 0, coachEarnings: 0 } });
+      }
+      
+      const { data: purchases, error } = await (client
+        .from("coach_purchases")
+        .select("*")
+        .order("created_at", { ascending: false }) as any);
+      
+      if (error) {
+        console.error("[GET /api/admin/earnings] Database error:", error);
+        return res.json({ purchases: [], totals: { totalRevenue: 0, platformFees: 0, coachEarnings: 0 } });
+      }
+      
+      // Calculate totals (amounts are in cents)
+      const totals = (purchases || []).reduce((acc: any, p: any) => {
+        acc.totalRevenue += (p.amount || 0);
+        acc.platformFees += (p.platform_fee || 0);
+        acc.coachEarnings += (p.coach_earnings || 0);
+        return acc;
+      }, { totalRevenue: 0, platformFees: 0, coachEarnings: 0 });
+      
+      // Transform for frontend (convert cents to dollars)
+      const formattedPurchases = (purchases || []).map((p: any) => ({
+        id: p.id,
+        coachId: p.coach_id,
+        coachName: p.coach_name || 'Coach',
+        entrepreneurEmail: p.entrepreneur_email,
+        entrepreneurName: p.entrepreneur_name || 'Entrepreneur',
+        serviceName: p.service_name,
+        serviceType: p.service_type,
+        amount: (p.amount || 0) / 100,
+        platformFee: (p.platform_fee || 0) / 100,
+        coachEarnings: (p.coach_earnings || 0) / 100,
+        date: p.created_at,
+        status: p.status,
+        stripeSessionId: p.stripe_session_id
+      }));
+      
+      return res.json({ 
+        purchases: formattedPurchases,
+        totals: {
+          totalRevenue: totals.totalRevenue / 100,
+          platformFees: totals.platformFees / 100,
+          coachEarnings: totals.coachEarnings / 100
+        }
+      });
+    } catch (error: any) {
+      console.error("[GET /api/admin/earnings] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // ===== COACH RATINGS ENDPOINTS =====
 
   // Submit a coach rating
