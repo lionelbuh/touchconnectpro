@@ -4393,6 +4393,226 @@ export async function registerRoutes(
     }
   });
 
+  // Stripe webhook for coach purchases (development testing endpoint)
+  // Note: Production on Render uses backend/index.js which has its own webhook handler
+  app.post("/api/stripe/webhook", async (req, res) => {
+    console.log("[STRIPE WEBHOOK DEV] ========== WEBHOOK RECEIVED ==========");
+    
+    const { getUncachableStripeClient } = await import('./stripeClient');
+    const stripe = await getUncachableStripeClient();
+    
+    const sig = req.headers["stripe-signature"];
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    console.log("[STRIPE WEBHOOK DEV] Webhook secret configured:", !!webhookSecret);
+    console.log("[STRIPE WEBHOOK DEV] Signature present:", !!sig);
+    console.log("[STRIPE WEBHOOK DEV] Has rawBody:", !!(req as any).rawBody);
+
+    if (!webhookSecret) {
+      console.log("[STRIPE WEBHOOK DEV] ERROR: No webhook secret configured");
+      return res.status(200).json({ received: true, error: "no webhook secret" });
+    }
+
+    if (!sig) {
+      console.log("[STRIPE WEBHOOK DEV] ERROR: No signature in headers");
+      return res.status(400).json({ error: "No stripe-signature header" });
+    }
+
+    try {
+      const rawBody = (req as any).rawBody;
+      if (!rawBody) {
+        console.error("[STRIPE WEBHOOK DEV] No rawBody available");
+        return res.status(400).json({ error: "No raw body available" });
+      }
+
+      console.log("[STRIPE WEBHOOK DEV] Attempting to construct event...");
+      const event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+      console.log("[STRIPE WEBHOOK DEV] Event constructed successfully!");
+      console.log("[STRIPE WEBHOOK DEV] Event type:", event.type);
+
+      if (event.type === "checkout.session.completed") {
+        const session = event.data.object as any;
+        const coachId = session.metadata?.coach_id;
+        
+        // Handle coach service purchase
+        if (coachId && session.payment_status === "paid") {
+          console.log("[STRIPE WEBHOOK DEV] ========== COACH PURCHASE ==========");
+          console.log("[STRIPE WEBHOOK DEV] Coach ID:", coachId);
+          console.log("[STRIPE WEBHOOK DEV] Session metadata:", JSON.stringify(session.metadata));
+          
+          const client = getSupabaseClient();
+          if (!client) {
+            console.error("[STRIPE WEBHOOK DEV] No Supabase client");
+            return res.status(500).json({ error: "Database not configured" });
+          }
+          
+          // Idempotency guard: check if this session was already processed
+          const { data: existingPurchase } = await (client
+            .from("coach_purchases")
+            .select("id")
+            .eq("stripe_session_id", session.id)
+            .single() as any);
+          
+          if (existingPurchase) {
+            console.log("[STRIPE WEBHOOK DEV] Duplicate event - session already processed:", session.id);
+            return res.status(200).json({ received: true, duplicate: true });
+          }
+          
+          const serviceType = session.metadata?.service_type || 'session';
+          const entrepreneurEmail = session.metadata?.entrepreneur_email || session.customer_email;
+          const entrepreneurName = session.metadata?.entrepreneur_name || 'Entrepreneur';
+          const coachName = session.metadata?.coach_name || 'Coach';
+          const amountTotal = session.amount_total || 0;
+          const platformFee = Math.round(amountTotal * 0.20);
+          const coachEarnings = amountTotal - platformFee;
+          
+          // Get service name based on type
+          let serviceName = 'Coaching Session';
+          if (serviceType === 'intro') serviceName = '15 Minutes Introductory Call';
+          else if (serviceType === 'monthly') serviceName = 'Monthly Coaching / Full Course';
+          
+          // Save purchase to coach_purchases table
+          try {
+            const { error: insertError } = await (client
+              .from("coach_purchases")
+              .insert({
+                coach_id: coachId,
+                coach_name: coachName,
+                entrepreneur_email: entrepreneurEmail,
+                entrepreneur_name: entrepreneurName,
+                service_type: serviceType,
+                service_name: serviceName,
+                amount: amountTotal,
+                platform_fee: platformFee,
+                coach_earnings: coachEarnings,
+                stripe_session_id: session.id,
+                status: 'completed'
+              } as any) as any);
+            
+            if (insertError) {
+              console.error("[STRIPE WEBHOOK DEV] Error saving purchase:", insertError);
+            } else {
+              console.log("[STRIPE WEBHOOK DEV] Purchase saved successfully");
+            }
+          } catch (dbError: any) {
+            console.error("[STRIPE WEBHOOK DEV] Database error:", dbError.message);
+          }
+          
+          // Get coach email for notification
+          try {
+            const { data: coach } = await (client
+              .from("coach_applications")
+              .select("email")
+              .eq("id", coachId)
+              .single() as any);
+            
+            const coachEmail = coach?.email;
+            
+            // Get Resend client for sending emails
+            const resendData = await getResendClient();
+            if (resendData) {
+              const { client: resendClient, fromEmail } = resendData;
+              
+              // Send email to entrepreneur
+              if (entrepreneurEmail) {
+                try {
+                  await resendClient.emails.send({
+                    from: fromEmail,
+                    to: entrepreneurEmail,
+                    subject: `Your ${serviceName} with ${coachName} is Confirmed!`,
+                    html: `
+                      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2>🎉 Your Coaching Purchase is Confirmed!</h2>
+                        <p>Hi ${entrepreneurName},</p>
+                        <p>Thank you for purchasing <strong>${serviceName}</strong> with <strong>${coachName}</strong>.</p>
+                        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                          <p><strong>Service:</strong> ${serviceName}</p>
+                          <p><strong>Coach:</strong> ${coachName}</p>
+                          <p><strong>Amount Paid:</strong> $${(amountTotal / 100).toFixed(2)}</p>
+                        </div>
+                        <p>Your coach will be in touch shortly to schedule your session. You can also reach out to them directly.</p>
+                        <p>Best,<br>The TouchConnectPro Team</p>
+                      </div>
+                    `
+                  });
+                  console.log("[STRIPE WEBHOOK DEV] Email sent to entrepreneur:", entrepreneurEmail);
+                } catch (emailError: any) {
+                  console.error("[STRIPE WEBHOOK DEV] Error sending entrepreneur email:", emailError.message);
+                }
+              }
+              
+              // Send email to coach
+              if (coachEmail) {
+                try {
+                  await resendClient.emails.send({
+                    from: fromEmail,
+                    to: coachEmail,
+                    subject: `New Client! ${entrepreneurName} purchased ${serviceName}`,
+                    html: `
+                      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2>🎉 You Have a New Client!</h2>
+                        <p>Hi ${coachName},</p>
+                        <p>Great news! <strong>${entrepreneurName}</strong> has just purchased your <strong>${serviceName}</strong>.</p>
+                        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                          <p><strong>Client Name:</strong> ${entrepreneurName}</p>
+                          <p><strong>Client Email:</strong> ${entrepreneurEmail}</p>
+                          <p><strong>Service:</strong> ${serviceName}</p>
+                          <p><strong>Total Paid:</strong> $${(amountTotal / 100).toFixed(2)}</p>
+                          <p><strong>Your Earnings (80%):</strong> $${(coachEarnings / 100).toFixed(2)}</p>
+                        </div>
+                        <p>Please reach out to your new client to schedule the session.</p>
+                        <p>Best,<br>The TouchConnectPro Team</p>
+                      </div>
+                    `
+                  });
+                  console.log("[STRIPE WEBHOOK DEV] Email sent to coach:", coachEmail);
+                } catch (emailError: any) {
+                  console.error("[STRIPE WEBHOOK DEV] Error sending coach email:", emailError.message);
+                }
+              }
+              
+              // Send email to admin
+              console.log("[STRIPE WEBHOOK DEV] Attempting to send admin email to:", ADMIN_EMAIL);
+              try {
+                const adminEmailResult = await resendClient.emails.send({
+                  from: fromEmail,
+                  to: ADMIN_EMAIL,
+                  subject: `New Coach Purchase: ${entrepreneurName} → ${coachName}`,
+                  html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                      <h2>💰 New Coach Marketplace Sale</h2>
+                      <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p><strong>Coach:</strong> ${coachName}</p>
+                        <p><strong>Client:</strong> ${entrepreneurName} (${entrepreneurEmail})</p>
+                        <p><strong>Service:</strong> ${serviceName}</p>
+                        <p><strong>Total Paid:</strong> $${(amountTotal / 100).toFixed(2)}</p>
+                        <p><strong>Platform Fee (20%):</strong> $${(platformFee / 100).toFixed(2)}</p>
+                        <p><strong>Coach Earnings (80%):</strong> $${(coachEarnings / 100).toFixed(2)}</p>
+                      </div>
+                      <p>This transaction has been recorded in the coach_purchases table.</p>
+                    </div>
+                  `
+                });
+                console.log("[STRIPE WEBHOOK DEV] Email sent to admin:", ADMIN_EMAIL, "Result:", JSON.stringify(adminEmailResult));
+              } catch (emailError: any) {
+                console.error("[STRIPE WEBHOOK DEV] Error sending admin email:", emailError.message);
+              }
+            } else {
+              console.log("[STRIPE WEBHOOK DEV] Resend not configured, skipping emails");
+            }
+          } catch (lookupError: any) {
+            console.error("[STRIPE WEBHOOK DEV] Error looking up coach:", lookupError.message);
+          }
+        }
+      }
+
+      return res.status(200).json({ received: true });
+    } catch (error: any) {
+      console.error("[STRIPE WEBHOOK DEV] Error:", error.message);
+      return res.status(400).json({ error: error.message });
+    }
+  });
+
   // ============================================
   // STRIPE CONNECT - COACH MARKETPLACE
   // ============================================
