@@ -281,6 +281,36 @@ export default function DashboardCoach() {
     loadStripeStatus();
   }, [profile?.id]);
 
+  // Handle Stripe return URL and refresh status
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const stripeParam = params.get('stripe');
+    
+    if (stripeParam === 'success' || stripeParam === 'refresh') {
+      // Refresh Stripe status after returning from onboarding
+      async function refreshStripeStatus() {
+        if (!profile?.id) return;
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/stripe/connect/account-status/${profile.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            setStripeStatus(data);
+            if (data.onboardingComplete) {
+              toast.success("Stripe account connected successfully!");
+            }
+          }
+        } catch (error) {
+          console.error("Error refreshing Stripe status:", error);
+        }
+      }
+      
+      refreshStripeStatus();
+      
+      // Clean up URL parameter
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [profile?.id]);
+
   // Handle Stripe onboarding
   const handleStripeOnboarding = async () => {
     if (!profile?.id) return;
