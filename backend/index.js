@@ -5586,8 +5586,10 @@ app.post("/api/stripe/connect/checkout", async (req, res) => {
 
     const baseUrl = process.env.FRONTEND_URL || "https://www.touchconnectpro.com";
 
+    // All coach purchases are one-time payments (including monthly/course)
+    // This simplifies Stripe Connect destination charges
     const sessionConfig = {
-      mode: serviceType === 'monthly' ? 'subscription' : 'payment',
+      mode: 'payment',
       line_items: [
         {
           price_data: {
@@ -5597,7 +5599,6 @@ app.post("/api/stripe/connect/checkout", async (req, res) => {
               description: `Coaching service with ${coach.full_name}`,
             },
             unit_amount: priceInCents,
-            ...(serviceType === 'monthly' ? { recurring: { interval: 'month' } } : {}),
           },
           quantity: 1,
         },
@@ -5611,25 +5612,15 @@ app.post("/api/stripe/connect/checkout", async (req, res) => {
         entrepreneur_name: entrepreneurName || '',
         platform: 'TouchConnectPro'
       },
-      success_url: `${baseUrl}/dashboard-entrepreneur?coach_payment=success&coach=${encodeURIComponent(coach.full_name)}`,
-      cancel_url: `${baseUrl}/dashboard-entrepreneur?coach_payment=cancelled`,
-    };
-
-    if (serviceType === 'monthly') {
-      sessionConfig.subscription_data = {
-        application_fee_percent: 20,
-        transfer_data: {
-          destination: coach.stripe_account_id,
-        },
-      };
-    } else {
-      sessionConfig.payment_intent_data = {
+      payment_intent_data: {
         application_fee_amount: applicationFee,
         transfer_data: {
           destination: coach.stripe_account_id,
         },
-      };
-    }
+      },
+      success_url: `${baseUrl}/dashboard-entrepreneur?coach_payment=success&coach=${encodeURIComponent(coach.full_name)}`,
+      cancel_url: `${baseUrl}/dashboard-entrepreneur?coach_payment=cancelled`,
+    };
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 

@@ -4603,9 +4603,10 @@ export async function registerRoutes(
       const baseUrl = process.env.FRONTEND_URL || 
         (replitDomain ? `https://${replitDomain}` : "http://localhost:5000");
 
-      // Create checkout session with destination charges
+      // All coach purchases are one-time payments (including monthly/course)
+      // This simplifies Stripe Connect destination charges
       const session = await stripe.checkout.sessions.create({
-        mode: serviceType === 'monthly' ? 'subscription' : 'payment',
+        mode: 'payment',
         line_items: [
           {
             price_data: {
@@ -4615,29 +4616,16 @@ export async function registerRoutes(
                 description: `Coaching service with ${coach.full_name}`,
               },
               unit_amount: priceInCents,
-              ...(serviceType === 'monthly' ? { recurring: { interval: 'month' } } : {}),
             },
             quantity: 1,
           },
         ],
-        ...(serviceType === 'monthly' 
-          ? {
-              subscription_data: {
-                application_fee_percent: 20,
-                transfer_data: {
-                  destination: coach.stripe_account_id,
-                },
-              },
-            }
-          : {
-              payment_intent_data: {
-                application_fee_amount: applicationFee,
-                transfer_data: {
-                  destination: coach.stripe_account_id,
-                },
-              },
-            }
-        ),
+        payment_intent_data: {
+          application_fee_amount: applicationFee,
+          transfer_data: {
+            destination: coach.stripe_account_id,
+          },
+        },
         customer_email: entrepreneurEmail,
         metadata: {
           coach_id: coachId,
