@@ -85,6 +85,11 @@ export default function DashboardEntrepreneur() {
   const [sendingContact, setSendingContact] = useState(false);
   const [contactedCoaches, setContactedCoaches] = useState<Record<string, { status: string; reply?: string }>>({});
   const [myContactRequests, setMyContactRequests] = useState<any[]>([]);
+  
+  // Debug: Log when contact modal state changes
+  useEffect(() => {
+    console.log("[Contact Modal] State changed - showContactModal:", showContactModal, "selectedCoach:", selectedCoachForContact?.id);
+  }, [showContactModal, selectedCoachForContact]);
 
   // Load contact requests for the entrepreneur
   const loadContactRequests = async () => {
@@ -1970,8 +1975,13 @@ export default function DashboardEntrepreneur() {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   console.log("[Contact] Button clicked, coach:", coach.id);
+                                  console.log("[Contact] Setting state - coach object:", coach);
                                   setSelectedCoachForContact(coach);
                                   setShowContactModal(true);
+                                  console.log("[Contact] State set - showContactModal should be true now");
+                                  setTimeout(() => {
+                                    console.log("[Contact] After 100ms - checking if modal rendered");
+                                  }, 100);
                                 }}
                                 data-testid={`button-contact-coach-${coach.id}`}
                               >
