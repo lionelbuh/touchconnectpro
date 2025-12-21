@@ -5549,6 +5549,9 @@ function getStripeClient() {
     console.log("[STRIPE] No STRIPE_SECRET_KEY found");
     return null;
   }
+  // Debug: Log key prefix to verify test vs live mode
+  const keyPrefix = stripeSecretKey.substring(0, 12);
+  console.log("[STRIPE] Using key prefix:", keyPrefix);
   return new Stripe(stripeSecretKey, { apiVersion: "2024-12-18.acacia" });
 }
 
