@@ -3334,6 +3334,7 @@ export default function DashboardEntrepreneur() {
       <Dialog 
         open={showContactModal && !!selectedCoachForContact} 
         onOpenChange={(open) => {
+          console.log("[Dialog] onOpenChange called with:", open);
           if (!open) {
             setShowContactModal(false);
             setSelectedCoachForContact(null);
