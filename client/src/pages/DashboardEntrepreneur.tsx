@@ -1963,8 +1963,12 @@ export default function DashboardEntrepreneur() {
                               <Button
                                 variant="outline"
                                 size="sm"
+                                type="button"
                                 className="w-full border-cyan-300 text-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/30"
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  console.log("[Contact] Button clicked, coach:", coach.id);
                                   setSelectedCoachForContact(coach);
                                   setShowContactModal(true);
                                 }}
