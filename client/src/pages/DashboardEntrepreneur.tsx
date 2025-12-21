@@ -1963,9 +1963,14 @@ export default function DashboardEntrepreneur() {
                                 variant="outline"
                                 size="sm"
                                 className="w-full border-cyan-300 text-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/30"
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  console.log("[Get in Touch] Button clicked for coach:", coach.id, coach.full_name, coach.email);
+                                  console.log("[Get in Touch] Setting modal state...");
                                   setSelectedCoachForContact(coach);
                                   setShowContactModal(true);
+                                  console.log("[Get in Touch] Modal should now be visible");
                                 }}
                                 data-testid={`button-contact-coach-${coach.id}`}
                               >
