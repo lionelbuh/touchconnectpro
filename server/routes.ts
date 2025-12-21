@@ -493,6 +493,192 @@ export async function registerRoutes(
     return res.json({ test: "bypass", timestamp: Date.now() });
   });
 
+  // ============================================
+  // SEO ENDPOINTS
+  // ============================================
+
+  // Dynamic sitemap.xml
+  app.get("/sitemap.xml", async (_req, res) => {
+    try {
+      const baseUrl = "https://www.touchconnectpro.com";
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Static pages
+      const staticPages = [
+        { url: "/", priority: "1.0", changefreq: "weekly" },
+        { url: "/coaches", priority: "0.9", changefreq: "daily" },
+        { url: "/mentors", priority: "0.9", changefreq: "daily" },
+        { url: "/login", priority: "0.5", changefreq: "monthly" },
+        { url: "/signup", priority: "0.6", changefreq: "monthly" },
+        { url: "/apply/entrepreneur", priority: "0.8", changefreq: "monthly" },
+        { url: "/apply/mentor", priority: "0.7", changefreq: "monthly" },
+        { url: "/apply/coach", priority: "0.7", changefreq: "monthly" },
+        { url: "/apply/investor", priority: "0.7", changefreq: "monthly" },
+      ];
+
+      let urls = staticPages.map(page => `
+    <url>
+      <loc>${baseUrl}${page.url}</loc>
+      <lastmod>${today}</lastmod>
+      <changefreq>${page.changefreq}</changefreq>
+      <priority>${page.priority}</priority>
+    </url>`).join('');
+
+      // Dynamic mentor/coach pages from database
+      const client = getSupabaseClient();
+      if (client) {
+        // Fetch approved mentors
+        const { data: mentors } = await (client
+          .from("mentor_applications")
+          .select("id, full_name")
+          .eq("status", "approved") as any);
+        
+        if (mentors) {
+          mentors.forEach((mentor: any) => {
+            const slug = mentor.full_name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            urls += `
+    <url>
+      <loc>${baseUrl}/mentors/${slug}</loc>
+      <lastmod>${today}</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.8</priority>
+    </url>`;
+          });
+        }
+
+        // Fetch approved coaches
+        const { data: coaches } = await (client
+          .from("coach_applications")
+          .select("id, full_name")
+          .eq("status", "approved") as any);
+        
+        if (coaches) {
+          coaches.forEach((coach: any) => {
+            const slug = coach.full_name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            urls += `
+    <url>
+      <loc>${baseUrl}/coaches/${slug}</loc>
+      <lastmod>${today}</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.8</priority>
+    </url>`;
+          });
+        }
+      }
+
+      const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}
+</urlset>`;
+
+      res.header("Content-Type", "application/xml");
+      return res.send(sitemap);
+    } catch (error: any) {
+      console.error("[SITEMAP] Error:", error.message);
+      return res.status(500).send("Error generating sitemap");
+    }
+  });
+
+  // JSON-LD structured data for mentor profile
+  app.get("/api/seo/mentor-schema/:mentorId", async (req, res) => {
+    try {
+      const { mentorId } = req.params;
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { data: mentor, error } = await (client
+        .from("mentor_applications")
+        .select("*")
+        .eq("id", mentorId)
+        .single() as any);
+
+      if (error || !mentor) {
+        return res.status(404).json({ error: "Mentor not found" });
+      }
+
+      const slug = mentor.full_name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      
+      const schema = {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": mentor.full_name,
+        "jobTitle": `${mentor.specialty || 'Startup'} Mentor for Startups`,
+        "worksFor": {
+          "@type": "Organization",
+          "name": "TouchConnectPro"
+        },
+        "url": `https://www.touchconnectpro.com/mentors/${slug}`,
+        "description": `Connect with ${mentor.full_name}, an experienced ${mentor.specialty || 'startup'} mentor helping startup founders grow their businesses.`
+      };
+
+      return res.json(schema);
+    } catch (error: any) {
+      console.error("[SEO MENTOR SCHEMA] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // JSON-LD structured data for coach profile
+  app.get("/api/seo/coach-schema/:coachId", async (req, res) => {
+    try {
+      const { coachId } = req.params;
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { data: coach, error } = await (client
+        .from("coach_applications")
+        .select("*")
+        .eq("id", coachId)
+        .single() as any);
+
+      if (error || !coach) {
+        return res.status(404).json({ error: "Coach not found" });
+      }
+
+      const slug = coach.full_name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      
+      const schema = {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": coach.full_name,
+        "jobTitle": `${coach.specialty || 'Business'} Coach for Startups`,
+        "worksFor": {
+          "@type": "Organization",
+          "name": "TouchConnectPro"
+        },
+        "url": `https://www.touchconnectpro.com/coaches/${slug}`,
+        "description": `Connect with ${coach.full_name}, an experienced ${coach.specialty || 'business'} coach helping startup founders grow their businesses.`
+      };
+
+      return res.json(schema);
+    } catch (error: any) {
+      console.error("[SEO COACH SCHEMA] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Organization schema for homepage
+  app.get("/api/seo/organization-schema", (_req, res) => {
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "TouchConnectPro",
+      "url": "https://www.touchconnectpro.com",
+      "logo": "https://www.touchconnectpro.com/assets/logo.png",
+      "description": "Online mentorship platform connecting startup founders with experienced mentors, coaches, and investors.",
+      "sameAs": [],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "email": "hello@touchconnectpro.com"
+      }
+    };
+    return res.json(schema);
+  });
+
   // AI: Rephrase entrepreneur answers
   app.post("/api/ai/rephrase", async (req, res) => {
     console.log("[AI REPHRASE] Processing request...");
