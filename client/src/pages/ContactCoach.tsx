@@ -225,6 +225,22 @@ export default function ContactCoach() {
               />
             </div>
 
+            {!userEmail && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-lg">
+                <p className="text-sm text-red-800 dark:text-red-200">
+                  <strong>Login Required:</strong> You need to be logged in as an entrepreneur to send a message.
+                </p>
+                <Button 
+                  className="mt-2" 
+                  variant="outline" 
+                  onClick={() => navigate("/auth")}
+                  data-testid="button-login"
+                >
+                  Go to Login
+                </Button>
+              </div>
+            )}
+
             <div className="flex gap-3 pt-2">
               <Button
                 variant="outline"
@@ -237,7 +253,7 @@ export default function ContactCoach() {
               <Button
                 className="flex-1 bg-cyan-600 hover:bg-cyan-700"
                 onClick={handleSend}
-                disabled={sending || !message.trim()}
+                disabled={sending || !message.trim() || !userEmail}
                 data-testid="button-send"
               >
                 {sending ? (
