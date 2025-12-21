@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -3330,82 +3331,90 @@ export default function DashboardEntrepreneur() {
         </div>
       )}
 
-      {/* One-Time Contact Modal - Using Dialog for portal rendering */}
-      <Dialog 
-        open={showContactModal && !!selectedCoachForContact} 
-        onOpenChange={(open) => {
-          console.log("[Dialog] onOpenChange called with:", open);
-          if (!open) {
-            setShowContactModal(false);
-            setSelectedCoachForContact(null);
-            setContactMessage("");
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-lg" data-testid="modal-contact-coach">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Send className="h-5 w-5 text-cyan-600" />
-              Contact {selectedCoachForContact?.full_name}
-            </DialogTitle>
-            <DialogDescription>
-              Send a one-time message to introduce yourself
-            </DialogDescription>
-          </DialogHeader>
+      {/* One-Time Contact Modal - Using createPortal for guaranteed rendering */}
+      {showContactModal && selectedCoachForContact && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+          data-testid="modal-contact-coach"
+        >
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50"
+            onClick={() => {
+              setShowContactModal(false);
+              setSelectedCoachForContact(null);
+              setContactMessage("");
+            }}
+          />
           
-          <div className="space-y-4">
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 rounded-lg">
-              <p className="text-sm text-amber-800 dark:text-amber-200">
-                <strong>One-time messaging:</strong> You can send one initial message to this coach. 
-                The coach may send one reply. After that, the conversation closes. 
-                To continue working together, book their services through the platform.
-              </p>
+          {/* Modal Content */}
+          <div className="relative bg-white dark:bg-slate-900 rounded-lg shadow-xl max-w-lg w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-2 mb-2">
+              <Send className="h-5 w-5 text-cyan-600" />
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                Contact {selectedCoachForContact?.full_name}
+              </h2>
             </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Send a one-time message to introduce yourself
+            </p>
             
-            <div>
-              <label className="text-sm font-medium text-slate-900 dark:text-white block mb-2">
-                Your Message
-              </label>
-              <textarea
-                rows={5}
-                placeholder="Introduce yourself and explain what you'd like to discuss with this coach..."
-                value={contactMessage}
-                onChange={(e) => setContactMessage(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20 focus:outline-none"
-                data-testid="input-contact-message"
-              />
-            </div>
-            
-            <div className="flex gap-3 pt-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  setShowContactModal(false);
-                  setSelectedCoachForContact(null);
-                  setContactMessage("");
-                }}
-                data-testid="button-cancel-contact"
-              >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1 bg-cyan-600 hover:bg-cyan-700"
-                onClick={handleSendContactRequest}
-                disabled={sendingContact || !contactMessage.trim()}
-                data-testid="button-send-contact"
-              >
-                {sendingContact ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Send className="h-4 w-4 mr-2" />
-                )}
-                Send Message
-              </Button>
+            <div className="space-y-4">
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 rounded-lg">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  <strong>One-time messaging:</strong> You can send one initial message to this coach. 
+                  The coach may send one reply. After that, the conversation closes. 
+                  To continue working together, book their services through the platform.
+                </p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-slate-900 dark:text-white block mb-2">
+                  Your Message
+                </label>
+                <textarea
+                  rows={5}
+                  placeholder="Introduce yourself and explain what you'd like to discuss with this coach..."
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20 focus:outline-none"
+                  data-testid="input-contact-message"
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setShowContactModal(false);
+                    setSelectedCoachForContact(null);
+                    setContactMessage("");
+                  }}
+                  data-testid="button-cancel-contact"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 bg-cyan-600 hover:bg-cyan-700"
+                  onClick={handleSendContactRequest}
+                  disabled={sendingContact || !contactMessage.trim()}
+                  data-testid="button-send-contact"
+                >
+                  {sendingContact ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Send className="h-4 w-4 mr-2" />
+                  )}
+                  Send Message
+                </Button>
+              </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
