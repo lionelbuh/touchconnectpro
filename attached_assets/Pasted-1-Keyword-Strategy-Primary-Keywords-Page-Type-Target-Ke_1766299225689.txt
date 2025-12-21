@@ -1,0 +1,161 @@
+1️⃣ Keyword Strategy
+Primary Keywords
+Page Type	Target Keywords	Notes
+Homepage	“startup mentorship platform”, “find a business mentor online”, “entrepreneur coaching platform”	Focus on brand + service
+Mentor Category Pages	“Marketing mentor for startups”, “Tech mentor for entrepreneurs”, “US-based startup mentors”	Include mentor specialty + location if possible
+Blog	Long-tail keywords targeting educational intent	Examples below
+Secondary Keywords
+
+“how to find a mentor for my startup”
+
+“entrepreneur mentorship online”
+
+“startup growth coach”
+
+“startup founder advice”
+
+“mentor for early-stage startup”
+
+Long-Tail Blog Topics
+Blog Topic	Target Keyword	Suggested H2s
+How to choose the right mentor for your startup	“how to find a mentor for my startup”	H2: Why mentorship matters, H2: 5 steps to choose a mentor, H2: Common mistakes
+Top 10 tips for early-stage startup founders	“startup founder advice”	H2: Planning your business, H2: Marketing strategies, H2: Fundraising tips
+How mentorship accelerates startup growth	“startup mentorship online”	H2: Benefits of mentorship, H2: Case studies, H2: How to get started
+2️⃣ Page Structure & Templates
+Homepage
+
+Title: “TouchConnectPro – Online Mentorship Platform for Startup Founders”
+
+Meta Description: “Connect with experienced startup mentors online. Personalized guidance, flexible sessions, and expert advice for entrepreneurs.”
+
+H1: “Find the Right Mentor to Grow Your Startup”
+
+H2 Ideas:
+
+How TouchConnectPro Works
+
+Featured Mentors
+
+Success Stories / Testimonials
+
+Join as a Mentor / Get Started
+
+Mentor Profile Page Template
+
+URL Structure: /mentors/{mentor-name}
+
+Title: {Mentor Name} – {Expertise} Mentor for Startups | TouchConnectPro
+
+Meta Description: Connect with {Mentor Name}, an expert in {Expertise}. Schedule a mentorship session to accelerate your startup growth.
+
+H1: {Mentor Name} – Startup Mentor
+
+H2 Sections:
+
+Expertise Areas (keywords)
+
+About the Mentor
+
+Mentorship Approach
+
+Booking & Availability
+
+Internal Linking: Link each mentor’s expertise keywords to corresponding category pages.
+
+Mentor Category Pages
+
+URL: /mentors/{category} (e.g., /mentors/marketing)
+
+Title: {Category} Mentors for Startups | TouchConnectPro
+
+Meta Description: Browse our {Category} mentors and find the perfect coach for your startup. Personalized guidance and online sessions.
+
+H1: {Category} Mentors for Startups
+
+H2 Sections:
+
+Featured Mentors
+
+How a {Category} Mentor Can Help
+
+Book a Session
+
+3️⃣ Blog Content Guidelines for AI Tool
+
+Structure for AI-generated blog posts:
+
+Title: ≤ 60 characters, include main keyword
+
+Meta Description: ≤ 160 characters
+
+H1: Repeat main keyword naturally
+
+H2/H3: Include secondary/long-tail keywords
+
+Content: Minimum 700–1200 words, informative, actionable
+
+CTA: At least one CTA linking to mentor signup pages
+
+Internal Linking: Each blog post should link to 2–3 relevant mentor profiles or category pages.
+
+4️⃣ Technical SEO
+
+Sitemap: /sitemap.xml
+
+Robots.txt: Allow crawling of all pages
+
+Structured Data: Implement JSON-LD schema for:
+
+Mentor Profiles (Person + Organization)
+
+Blog Articles (Article)
+
+Reviews (Review)
+
+Events (if mentorship sessions are bookable)
+
+Example Structured Data for Mentor Profile (JSON-LD):
+
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Kaan Akkanat",
+  "jobTitle": "Marketing Mentor for Startups",
+  "worksFor": {
+    "@type": "Organization",
+    "name": "TouchConnectPro"
+  },
+  "url": "https://touchconnectpro.com/mentors/kaan-akkanat",
+  "sameAs": ["LinkedIn URL if available"],
+  "description": "Connect with Kaan Akkanat, an experienced marketing mentor helping startup founders grow their businesses."
+}
+
+5️⃣ Off-Page SEO Guidelines
+
+Backlinks: Encourage mentors to link to their TouchConnectPro profile.
+
+Guest Posts & PR: Publish startup guides on tech/startup blogs.
+
+Social Media Sharing: Blog posts and mentor profiles should be shareable.
+
+Community Engagement: Share insights in LinkedIn groups, startup forums, and communities.
+
+6️⃣ Tracking & Analytics
+
+Google Search Console: Track indexed pages & keyword performance
+
+Google Analytics: Track traffic, user engagement, mentor page signups
+
+Keyword Ranking: Use tools like Ahrefs, SEMrush, or free Rank Tracker
+
+7️⃣ Developer Implementation Notes
+
+CMS Integration: AI tool can generate content and directly push it to CMS.
+
+Auto-fill meta & schema: Use templates above for each page type.
+
+Internal linking automation: Map mentor expertise → category pages.
+
+Blog generation: AI tool generates drafts with H1/H2/H3 and meta descriptions.
+
+Content approval: Optional human review before publishing.
