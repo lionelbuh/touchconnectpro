@@ -3342,23 +3342,21 @@ export default function DashboardEntrepreneur() {
       )}
 
       {/* One-Time Contact Modal - Using createPortal for guaranteed rendering */}
-      {showContactModal && selectedCoachForContact && (() => {
-        console.log("[Portal] About to render portal to document.body");
-        return createPortal(
+      {showContactModal && selectedCoachForContact && createPortal(
+        <div 
+          className="fixed inset-0 flex items-center justify-center"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999, backgroundColor: 'rgba(0,0,0,0.5)' }}
+          data-testid="modal-contact-coach"
+        >
+          {/* Backdrop */}
           <div 
-            className="fixed inset-0 z-[9999] flex items-center justify-center"
-            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)' }}
-            data-testid="modal-contact-coach"
-          >
-            {/* Backdrop */}
-            <div 
-              className="absolute inset-0"
-              onClick={() => {
-                setShowContactModal(false);
-                setSelectedCoachForContact(null);
-                setContactMessage("");
-              }}
-            />
+            className="absolute inset-0"
+            onClick={() => {
+              setShowContactModal(false);
+              setSelectedCoachForContact(null);
+              setContactMessage("");
+            }}
+          />
           
           {/* Modal Content */}
           <div className="relative bg-white dark:bg-slate-900 rounded-lg shadow-xl max-w-lg w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
@@ -3426,8 +3424,7 @@ export default function DashboardEntrepreneur() {
           </div>
         </div>,
         document.body
-      );
-      })()}
+      )}
     </div>
   );
 }
