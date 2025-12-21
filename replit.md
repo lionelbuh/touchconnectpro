@@ -38,6 +38,11 @@ The platform uses a component-based approach with a responsive, mobile-first des
 -   **Stripe Connect for Coach Marketplace**: Facilitates payments to coaches with a 20% platform fee via destination charges. Coaches onboard through a standard Stripe Connect flow.
 -   **Admin Earnings Tab**: Provides a comprehensive view of revenue from coach marketplace and subscriptions.
 -   **One-Time Coach Contact Requests**: Entrepreneurs can send one initial contact message per coach via "Get in Touch" button. Coaches can send one reply, then the conversation closes. All interactions trigger email notifications to coach, entrepreneur, and admin. Table: `coach_contact_requests` in Supabase. Endpoints: POST `/api/coach-contact-requests`, POST `/api/coach-contact-requests/:id/reply`, GET `/api/coaches/:coachId/contact-requests`, GET `/api/entrepreneurs/:email/contact-requests`, GET `/api/admin/contact-requests`, GET `/api/coach-contact-requests/check`.
+-   **SEO Optimization**: Comprehensive SEO implementation including:
+    - Enhanced meta tags (Open Graph, Twitter Cards, keywords, canonical URL)
+    - Dynamic sitemap.xml at `/sitemap.xml` with static pages + approved mentors/coaches
+    - robots.txt at `/robots.txt` with sitemap reference
+    - JSON-LD structured data endpoints: `/api/seo/organization-schema`, `/api/seo/mentor-schema/:mentorId`, `/api/seo/coach-schema/:coachId`
 
 ## External Dependencies
 
