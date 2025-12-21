@@ -760,7 +760,7 @@ async function sendMessageNotificationEmail(recipientEmail, recipientName, sende
           <p>You have received a new message from <strong>${senderName}</strong> on TouchConnectPro.</p>
           
           <div class="message-box">
-            <p style="margin: 0; color: #64748b; font-size: 14px;"><strong>From:</strong> ${senderName} (${senderEmail})</p>
+            <p style="margin: 0; color: #64748b; font-size: 14px;"><strong>From:</strong> ${senderName}</p>
             <p style="margin: 15px 0 0 0;">${preview}</p>
           </div>
           

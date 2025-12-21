@@ -84,7 +84,7 @@ export default function ContactCoach() {
           coachName: coach.full_name,
           coachEmail: coach.email,
           entrepreneurEmail: userEmail,
-          entrepreneurName: userName || userEmail,
+          entrepreneurName: userName || "An Entrepreneur",
           message: message.trim()
         })
       });
