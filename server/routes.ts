@@ -2771,6 +2771,11 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Contact request not found" });
       }
 
+      // Verify the replying coach owns this request
+      if (coachEmail && request.coach_email && coachEmail !== request.coach_email) {
+        return res.status(403).json({ error: "You are not authorized to reply to this request" });
+      }
+
       if (request.status === 'replied' || request.status === 'closed') {
         return res.status(400).json({ error: "This conversation has already been replied to or closed" });
       }

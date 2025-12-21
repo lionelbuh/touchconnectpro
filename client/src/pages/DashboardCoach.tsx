@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail, User, FileText, Upload, CreditCard, CheckCircle2, ExternalLink } from "lucide-react";
+import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail, User, FileText, Upload, CreditCard, CheckCircle2, ExternalLink, Check, Send, Reply } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -131,6 +131,13 @@ export default function DashboardCoach() {
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [stripeStatus, setStripeStatus] = useState<StripeConnectStatus | null>(null);
   const [loadingStripe, setLoadingStripe] = useState(false);
+  
+  // Contact requests state
+  const [contactRequests, setContactRequests] = useState<any[]>([]);
+  const [loadingContactRequests, setLoadingContactRequests] = useState(false);
+  const [replyingToRequest, setReplyingToRequest] = useState<string | null>(null);
+  const [replyMessage, setReplyMessage] = useState("");
+  const [sendingReply, setSendingReply] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -275,6 +282,63 @@ export default function DashboardCoach() {
     }
     loadStripeStatus();
   }, [profile?.id]);
+
+  // Load contact requests from entrepreneurs
+  useEffect(() => {
+    async function loadContactRequests() {
+      if (!profile?.id) return;
+      setLoadingContactRequests(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/coaches/${profile.id}/contact-requests`);
+        if (response.ok) {
+          const data = await response.json();
+          setContactRequests(data.requests || []);
+        }
+      } catch (error) {
+        console.error("Error loading contact requests:", error);
+      } finally {
+        setLoadingContactRequests(false);
+      }
+    }
+    loadContactRequests();
+  }, [profile?.id]);
+
+  // Handle reply to contact request
+  const handleReplyToRequest = async (requestId: string) => {
+    if (!replyMessage.trim()) return;
+    
+    setSendingReply(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/coach-contact-requests/${requestId}/reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reply: replyMessage.trim(),
+          coachEmail: profile?.email
+        })
+      });
+      
+      if (response.ok) {
+        toast.success("Reply sent successfully!");
+        setReplyingToRequest(null);
+        setReplyMessage("");
+        // Reload contact requests to update UI
+        const refreshResponse = await fetch(`${API_BASE_URL}/api/coaches/${profile?.id}/contact-requests`);
+        if (refreshResponse.ok) {
+          const data = await refreshResponse.json();
+          setContactRequests(data.requests || []);
+        }
+      } else {
+        const data = await response.json();
+        toast.error(data.error || "Failed to send reply");
+      }
+    } catch (error) {
+      console.error("Error sending reply:", error);
+      toast.error("Failed to send reply");
+    } finally {
+      setSendingReply(false);
+    }
+  };
 
   // Handle Stripe return URL and refresh status
   useEffect(() => {
@@ -923,11 +987,133 @@ export default function DashboardCoach() {
 
           {/* Entrepreneurs Tab */}
           {activeTab === "entrepreneurs" && (
-            <div>
-              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">My Entrepreneurs</h1>
-              <p className="text-muted-foreground mb-8">View entrepreneurs who have engaged your coaching services.</p>
+            <div className="space-y-8">
+              {/* Contact Requests Section */}
+              <div>
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Contact Requests</h1>
+                <p className="text-muted-foreground mb-4">One-time messages from entrepreneurs interested in your coaching.</p>
+                
+                {loadingContactRequests ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-cyan-500" />
+                  </div>
+                ) : contactRequests.length > 0 ? (
+                  <div className="space-y-4">
+                    {contactRequests.map((request: any) => (
+                      <Card key={request.id} className={`border-l-4 ${request.status === 'closed' ? 'border-l-green-500' : 'border-l-cyan-500'}`} data-testid={`card-contact-request-${request.id}`}>
+                        <CardContent className="pt-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-10 w-10 bg-cyan-500">
+                                <AvatarFallback className="text-white">
+                                  {(request.entrepreneur_name || 'E').substring(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-semibold text-slate-900 dark:text-white">{request.entrepreneur_name}</p>
+                                <p className="text-sm text-muted-foreground">{request.entrepreneur_email}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge className={request.status === 'closed' ? 'bg-green-600' : request.status === 'pending' ? 'bg-amber-500' : 'bg-slate-500'}>
+                                {request.status === 'closed' ? 'Replied' : request.status === 'pending' ? 'Awaiting Reply' : request.status}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(request.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Original Message */}
+                          <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg mb-3">
+                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Message</p>
+                            <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{request.message}</p>
+                          </div>
+                          
+                          {/* Reply Section */}
+                          {request.status === 'closed' && request.reply ? (
+                            <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                              <p className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase mb-1 flex items-center gap-1">
+                                <Check className="h-3 w-3" /> Your Reply
+                              </p>
+                              <p className="text-sm text-green-800 dark:text-green-200 whitespace-pre-wrap">{request.reply}</p>
+                            </div>
+                          ) : request.status === 'pending' && (
+                            replyingToRequest === request.id ? (
+                              <div className="space-y-3">
+                                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-2 rounded-lg">
+                                  <p className="text-xs text-amber-800 dark:text-amber-200">
+                                    <strong>One-time reply:</strong> After you send this reply, the conversation will close. Make it count!
+                                  </p>
+                                </div>
+                                <textarea
+                                  rows={3}
+                                  placeholder="Write your reply..."
+                                  value={replyMessage}
+                                  onChange={(e) => setReplyMessage(e.target.value)}
+                                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20 focus:outline-none"
+                                  data-testid={`input-reply-${request.id}`}
+                                />
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setReplyingToRequest(null);
+                                      setReplyMessage("");
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    className="bg-cyan-600 hover:bg-cyan-700"
+                                    onClick={() => handleReplyToRequest(request.id)}
+                                    disabled={sendingReply || !replyMessage.trim()}
+                                    data-testid={`button-send-reply-${request.id}`}
+                                  >
+                                    {sendingReply ? (
+                                      <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                                    ) : (
+                                      <Send className="h-4 w-4 mr-1" />
+                                    )}
+                                    Send Reply
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-cyan-300 text-cyan-700 hover:bg-cyan-50"
+                                onClick={() => setReplyingToRequest(request.id)}
+                                data-testid={`button-reply-${request.id}`}
+                              >
+                                <Reply className="h-4 w-4 mr-2" />
+                                Reply to this message
+                              </Button>
+                            )
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="text-center py-8">
+                    <CardContent>
+                      <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                      <p className="text-muted-foreground">No contact requests yet. When entrepreneurs reach out, their messages will appear here.</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
 
-              {loadingClients ? (
+              {/* Clients Section */}
+              <div>
+                <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-2">My Clients</h2>
+                <p className="text-muted-foreground mb-4">Entrepreneurs who have purchased your coaching services.</p>
+
+                {loadingClients ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
                 </div>
@@ -968,6 +1154,7 @@ export default function DashboardCoach() {
                   </CardContent>
                 </Card>
               )}
+              </div>
             </div>
           )}
 

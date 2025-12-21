@@ -76,6 +76,71 @@ export default function DashboardEntrepreneur() {
   const [mentorAssignmentId, setMentorAssignmentId] = useState<string | null>(null);
   const [purchasingCoach, setPurchasingCoach] = useState<{ coachId: string; serviceType: string } | null>(null);
   
+  // One-time contact request state
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [selectedCoachForContact, setSelectedCoachForContact] = useState<any>(null);
+  const [contactMessage, setContactMessage] = useState("");
+  const [sendingContact, setSendingContact] = useState(false);
+  const [contactedCoaches, setContactedCoaches] = useState<Record<string, { status: string; reply?: string }>>({});
+  const [myContactRequests, setMyContactRequests] = useState<any[]>([]);
+
+  // Load contact requests for the entrepreneur
+  const loadContactRequests = async () => {
+    if (!userEmail) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/entrepreneurs/${encodeURIComponent(userEmail)}/contact-requests`);
+      if (response.ok) {
+        const data = await response.json();
+        setMyContactRequests(data.requests || []);
+        // Build a map of contacted coaches for quick lookup
+        const contactMap: Record<string, { status: string; reply?: string }> = {};
+        (data.requests || []).forEach((req: any) => {
+          contactMap[req.coach_id] = { status: req.status, reply: req.reply };
+        });
+        setContactedCoaches(contactMap);
+      }
+    } catch (err) {
+      console.error("Error loading contact requests:", err);
+    }
+  };
+
+  const handleSendContactRequest = async () => {
+    if (!selectedCoachForContact || !contactMessage.trim()) return;
+    
+    setSendingContact(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/coach-contact-requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coachId: selectedCoachForContact.id,
+          coachName: selectedCoachForContact.full_name,
+          coachEmail: selectedCoachForContact.email,
+          entrepreneurEmail: userEmail,
+          entrepreneurName: profileData.fullName,
+          message: contactMessage.trim()
+        })
+      });
+      
+      if (response.ok) {
+        toast.success("Message sent! The coach will receive your contact request.");
+        setShowContactModal(false);
+        setContactMessage("");
+        setSelectedCoachForContact(null);
+        // Reload contact requests to update UI
+        loadContactRequests();
+      } else {
+        const data = await response.json();
+        toast.error(data.error || "Failed to send message");
+      }
+    } catch (err) {
+      console.error("Error sending contact request:", err);
+      toast.error("Failed to send message");
+    } finally {
+      setSendingContact(false);
+    }
+  };
+  
   const handleCoachPurchase = async (coachId: string, serviceType: 'intro' | 'session' | 'monthly', coachName: string) => {
     if (!userEmail) {
       toast.error("Please log in to purchase coaching services");
@@ -478,6 +543,13 @@ export default function DashboardEntrepreneur() {
       }
     }
     loadMeetings();
+  }, [userEmail]);
+
+  // Load coach contact requests
+  useEffect(() => {
+    if (userEmail) {
+      loadContactRequests();
+    }
   }, [userEmail]);
 
   // Load coach purchases
@@ -1866,6 +1938,42 @@ export default function DashboardEntrepreneur() {
                               return <span className="text-lg font-bold text-purple-600">${coach.hourly_rate}/hr</span>;
                             })()}
                           </div>
+                          
+                          {/* One-time contact button */}
+                          <div className="pt-3 border-t mt-3">
+                            {contactedCoaches[coach.id] ? (
+                              <div className="space-y-2">
+                                {contactedCoaches[coach.id].status === 'closed' && contactedCoaches[coach.id].reply ? (
+                                  <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                                    <p className="text-xs font-semibold text-green-700 dark:text-green-300 mb-1 flex items-center gap-1">
+                                      <Check className="h-3 w-3" /> Coach replied:
+                                    </p>
+                                    <p className="text-sm text-green-800 dark:text-green-200">{contactedCoaches[coach.id].reply}</p>
+                                  </div>
+                                ) : (
+                                  <div className="bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg">
+                                    <p className="text-xs text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                                      <Send className="h-3 w-3" /> Message sent - awaiting reply
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full border-cyan-300 text-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/30"
+                                onClick={() => {
+                                  setSelectedCoachForContact(coach);
+                                  setShowContactModal(true);
+                                }}
+                                data-testid={`button-contact-coach-${coach.id}`}
+                              >
+                                <Send className="h-3 w-3 mr-2" />
+                                Get in Touch (One-time message)
+                              </Button>
+                            )}
+                          </div>
                         </CardContent>
                       </Card>
                     )})}
@@ -3212,6 +3320,90 @@ export default function DashboardEntrepreneur() {
                   </div>
                 ))
               )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* One-Time Contact Modal */}
+      {showContactModal && selectedCoachForContact && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-testid="modal-contact-coach">
+          <Card className="w-full max-w-lg bg-white dark:bg-slate-900 shadow-xl">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Send className="h-5 w-5 text-cyan-600" />
+                    Contact {selectedCoachForContact.full_name}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Send a one-time message to introduce yourself
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowContactModal(false);
+                    setSelectedCoachForContact(null);
+                    setContactMessage("");
+                  }}
+                  data-testid="button-close-contact"
+                >
+                  ✕
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 rounded-lg">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  <strong>One-time messaging:</strong> You can send one initial message to this coach. 
+                  The coach may send one reply. After that, the conversation closes. 
+                  To continue working together, book their services through the platform.
+                </p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-slate-900 dark:text-white block mb-2">
+                  Your Message
+                </label>
+                <textarea
+                  rows={5}
+                  placeholder="Introduce yourself and explain what you'd like to discuss with this coach..."
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20 focus:outline-none"
+                  data-testid="input-contact-message"
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setShowContactModal(false);
+                    setSelectedCoachForContact(null);
+                    setContactMessage("");
+                  }}
+                  data-testid="button-cancel-contact"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 bg-cyan-600 hover:bg-cyan-700"
+                  onClick={handleSendContactRequest}
+                  disabled={sendingContact || !contactMessage.trim()}
+                  data-testid="button-send-contact"
+                >
+                  {sendingContact ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Send className="h-4 w-4 mr-2" />
+                  )}
+                  Send Message
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

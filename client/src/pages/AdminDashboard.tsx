@@ -163,6 +163,8 @@ export default function AdminDashboard() {
   }>({ subscriptions: [], totals: { totalRevenue: 0, count: 0 } });
   const [loadingEarnings, setLoadingEarnings] = useState(false);
   const [earningsTab, setEarningsTab] = useState<"coach" | "subscription">("coach");
+  const [adminContactRequests, setAdminContactRequests] = useState<any[]>([]);
+  const [loadingContactRequests, setLoadingContactRequests] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -390,6 +392,20 @@ export default function AdminDashboard() {
         }
       } catch (err) {
         console.error("Error fetching subscription revenue:", err);
+      }
+
+      // Load coach contact requests for admin
+      try {
+        setLoadingContactRequests(true);
+        const contactResponse = await fetch(`${API_BASE_URL}/api/admin/contact-requests`);
+        if (contactResponse.ok) {
+          const data = await contactResponse.json();
+          setAdminContactRequests(data.requests || []);
+        }
+      } catch (err) {
+        console.error("Error fetching contact requests:", err);
+      } finally {
+        setLoadingContactRequests(false);
       }
     };
 
@@ -3749,6 +3765,81 @@ export default function AdminDashboard() {
                       )}
                     </div>
                   </div>
+                  )}
+                </div>
+
+                {/* Coach Contact Requests Section */}
+                <div className="mt-8">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-cyan-600" />
+                    Coach Contact Requests
+                    {adminContactRequests.filter((r: any) => r.status === 'pending').length > 0 && (
+                      <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full">
+                        {adminContactRequests.filter((r: any) => r.status === 'pending').length} Pending
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">One-time contact messages between entrepreneurs and coaches</p>
+                  
+                  {loadingContactRequests ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-cyan-500" />
+                    </div>
+                  ) : adminContactRequests.length === 0 ? (
+                    <Card>
+                      <CardContent className="text-center py-8">
+                        <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                        <p className="text-muted-foreground">No contact requests yet</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-3">
+                      {adminContactRequests.map((request: any) => (
+                        <Card 
+                          key={request.id} 
+                          className={`border-l-4 ${request.status === 'closed' ? 'border-l-green-500' : 'border-l-amber-500'}`}
+                          data-testid={`card-admin-contact-${request.id}`}
+                        >
+                          <CardContent className="pt-4 pb-4">
+                            <div className="flex flex-wrap items-start justify-between gap-4 mb-3">
+                              <div className="flex items-center gap-3">
+                                <div className="text-sm">
+                                  <span className="font-semibold text-emerald-700 dark:text-emerald-400">{request.entrepreneur_name}</span>
+                                  <span className="text-muted-foreground mx-2">→</span>
+                                  <span className="font-semibold text-cyan-700 dark:text-cyan-400">{request.coach_name}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge className={request.status === 'closed' ? 'bg-green-600' : 'bg-amber-500'}>
+                                  {request.status === 'closed' ? 'Replied' : 'Pending'}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(request.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="text-xs text-muted-foreground mb-2">
+                              {request.entrepreneur_email} → {request.coach_email}
+                            </div>
+                            
+                            <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg mb-2">
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Initial Message</p>
+                              <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{request.message}</p>
+                            </div>
+                            
+                            {request.status === 'closed' && request.reply && (
+                              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                                <p className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase mb-1 flex items-center gap-1">
+                                  <Check className="h-3 w-3" /> Coach Reply ({new Date(request.replied_at).toLocaleDateString()})
+                                </p>
+                                <p className="text-sm text-green-800 dark:text-green-200 whitespace-pre-wrap">{request.reply}</p>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>

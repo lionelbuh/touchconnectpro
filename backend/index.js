@@ -2080,6 +2080,292 @@ app.get("/api/admin/subscription-revenue", async (req, res) => {
   }
 });
 
+// ===== COACH CONTACT REQUESTS (One-Time Messaging) =====
+
+// Send a one-time contact request from entrepreneur to coach
+app.post("/api/coach-contact-requests", async (req, res) => {
+  try {
+    const { coachId, coachName, coachEmail, entrepreneurEmail, entrepreneurName, message } = req.body;
+
+    if (!coachId || !entrepreneurEmail || !message) {
+      return res.status(400).json({ error: "Coach ID, entrepreneur email, and message are required" });
+    }
+
+    // Check if entrepreneur has already sent a request to this coach
+    const { data: existingRequest } = await supabase
+      .from("coach_contact_requests")
+      .select("id, status")
+      .eq("coach_id", coachId)
+      .eq("entrepreneur_email", entrepreneurEmail)
+      .single();
+
+    if (existingRequest) {
+      return res.status(400).json({ 
+        error: "You have already sent a message to this coach. Only one initial message is allowed per coach." 
+      });
+    }
+
+    // Create the contact request
+    const { data, error } = await supabase
+      .from("coach_contact_requests")
+      .insert({
+        coach_id: coachId,
+        coach_name: coachName || 'Coach',
+        coach_email: coachEmail,
+        entrepreneur_email: entrepreneurEmail,
+        entrepreneur_name: entrepreneurName || 'Entrepreneur',
+        message: message,
+        status: 'pending'
+      })
+      .select();
+
+    if (error) {
+      console.error("[POST /api/coach-contact-requests] Error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    // Send email notification to coach
+    try {
+      if (coachEmail) {
+        await sendEmail(
+          coachEmail,
+          `New Contact Request from ${entrepreneurName || 'An Entrepreneur'}`,
+          `<h2>New Contact Request</h2>
+          <p><strong>${entrepreneurName || 'An entrepreneur'}</strong> would like to connect with you on TouchConnectPro.</p>
+          <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Message:</strong></p>
+            <p style="white-space: pre-wrap;">${message}</p>
+          </div>
+          <p><em>This is a one-time contact request. You may send one reply to continue the conversation.</em></p>
+          <p>Log in to your dashboard to respond.</p>`
+        );
+      }
+    } catch (emailError) {
+      console.error("[POST /api/coach-contact-requests] Email error:", emailError);
+    }
+
+    // Send copy to admin
+    try {
+      const adminEmail = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
+      await sendEmail(
+        adminEmail,
+        `[Admin] New Coach Contact Request: ${entrepreneurName} → ${coachName}`,
+        `<h2>New Coach Contact Request</h2>
+        <p><strong>From:</strong> ${entrepreneurName} (${entrepreneurEmail})</p>
+        <p><strong>To Coach:</strong> ${coachName} (${coachEmail})</p>
+        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p><strong>Message:</strong></p>
+          <p style="white-space: pre-wrap;">${message}</p>
+        </div>`
+      );
+    } catch (emailError) {
+      console.error("[POST /api/coach-contact-requests] Admin email error:", emailError);
+    }
+
+    console.log("[POST /api/coach-contact-requests] Request created:", data?.[0]?.id);
+    return res.json({ success: true, request: data?.[0] });
+  } catch (error) {
+    console.error("[POST /api/coach-contact-requests] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Coach replies to a contact request (one-time reply)
+app.post("/api/coach-contact-requests/:id/reply", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reply, coachEmail } = req.body;
+
+    if (!reply) {
+      return res.status(400).json({ error: "Reply message is required" });
+    }
+
+    // Get the request
+    const { data: request, error: fetchError } = await supabase
+      .from("coach_contact_requests")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !request) {
+      return res.status(404).json({ error: "Contact request not found" });
+    }
+
+    // Verify the replying coach owns this request
+    if (coachEmail && request.coach_email && coachEmail !== request.coach_email) {
+      return res.status(403).json({ error: "You are not authorized to reply to this request" });
+    }
+
+    if (request.status === 'replied' || request.status === 'closed') {
+      return res.status(400).json({ error: "This conversation has already been replied to or closed" });
+    }
+
+    // Update the request with the reply
+    const { data, error } = await supabase
+      .from("coach_contact_requests")
+      .update({
+        reply: reply,
+        replied_at: new Date().toISOString(),
+        status: 'closed'
+      })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.error("[POST /api/coach-contact-requests/:id/reply] Error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    // Send email notification to entrepreneur
+    try {
+      if (request.entrepreneur_email) {
+        await sendEmail(
+          request.entrepreneur_email,
+          `Reply from ${request.coach_name || 'Coach'}`,
+          `<h2>Reply from ${request.coach_name || 'Your Coach'}</h2>
+          <p><strong>${request.coach_name}</strong> has replied to your contact request.</p>
+          <div style="background: #e8f4e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Your original message:</strong></p>
+            <p style="white-space: pre-wrap;">${request.message}</p>
+          </div>
+          <div style="background: #e8f0f8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Coach's reply:</strong></p>
+            <p style="white-space: pre-wrap;">${reply}</p>
+          </div>
+          <p><em>This was a one-time contact. To continue working with this coach, consider booking their services through the platform.</em></p>`
+        );
+      }
+    } catch (emailError) {
+      console.error("[POST /api/coach-contact-requests/:id/reply] Email error:", emailError);
+    }
+
+    // Send copy to admin
+    try {
+      const adminEmail = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
+      await sendEmail(
+        adminEmail,
+        `[Admin] Coach Reply: ${request.coach_name} → ${request.entrepreneur_name}`,
+        `<h2>Coach Replied to Contact Request</h2>
+        <p><strong>Coach:</strong> ${request.coach_name} (${request.coach_email})</p>
+        <p><strong>To Entrepreneur:</strong> ${request.entrepreneur_name} (${request.entrepreneur_email})</p>
+        <div style="background: #e8f4e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p><strong>Original message:</strong></p>
+          <p style="white-space: pre-wrap;">${request.message}</p>
+        </div>
+        <div style="background: #e8f0f8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p><strong>Coach's reply:</strong></p>
+          <p style="white-space: pre-wrap;">${reply}</p>
+        </div>
+        <p><em>Conversation is now closed.</em></p>`
+      );
+    } catch (emailError) {
+      console.error("[POST /api/coach-contact-requests/:id/reply] Admin email error:", emailError);
+    }
+
+    console.log("[POST /api/coach-contact-requests/:id/reply] Reply sent for request:", id);
+    return res.json({ success: true, request: data?.[0] });
+  } catch (error) {
+    console.error("[POST /api/coach-contact-requests/:id/reply] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get contact requests for a coach
+app.get("/api/coaches/:coachId/contact-requests", async (req, res) => {
+  try {
+    const { coachId } = req.params;
+
+    const { data: requests, error } = await supabase
+      .from("coach_contact_requests")
+      .select("*")
+      .eq("coach_id", coachId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[GET /api/coaches/:coachId/contact-requests] Error:", error);
+      return res.json({ requests: [] });
+    }
+
+    return res.json({ requests: requests || [] });
+  } catch (error) {
+    console.error("[GET /api/coaches/:coachId/contact-requests] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get contact requests sent by an entrepreneur
+app.get("/api/entrepreneurs/:email/contact-requests", async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    const { data: requests, error } = await supabase
+      .from("coach_contact_requests")
+      .select("*")
+      .eq("entrepreneur_email", decodeURIComponent(email))
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[GET /api/entrepreneurs/:email/contact-requests] Error:", error);
+      return res.json({ requests: [] });
+    }
+
+    return res.json({ requests: requests || [] });
+  } catch (error) {
+    console.error("[GET /api/entrepreneurs/:email/contact-requests] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all contact requests for admin
+app.get("/api/admin/contact-requests", async (req, res) => {
+  try {
+    const { data: requests, error } = await supabase
+      .from("coach_contact_requests")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[GET /api/admin/contact-requests] Error:", error);
+      return res.json({ requests: [] });
+    }
+
+    return res.json({ requests: requests || [] });
+  } catch (error) {
+    console.error("[GET /api/admin/contact-requests] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Check if entrepreneur has already contacted a specific coach
+app.get("/api/coach-contact-requests/check", async (req, res) => {
+  try {
+    const { coachId, entrepreneurEmail } = req.query;
+    
+    if (!coachId || !entrepreneurEmail) {
+      return res.status(400).json({ error: "Coach ID and entrepreneur email are required" });
+    }
+
+    const { data: existingRequest, error } = await supabase
+      .from("coach_contact_requests")
+      .select("id, status")
+      .eq("coach_id", coachId)
+      .eq("entrepreneur_email", entrepreneurEmail)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error("[GET /api/coach-contact-requests/check] Error:", error);
+    }
+
+    return res.json({ 
+      hasContacted: !!existingRequest, 
+      status: existingRequest?.status || null 
+    });
+  } catch (error) {
+    console.error("[GET /api/coach-contact-requests/check] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.patch("/api/coaches/:id", async (req, res) => {
   try {
     const { id } = req.params;
