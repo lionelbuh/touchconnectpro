@@ -1011,7 +1011,7 @@ export default function DashboardCoach() {
                               </Avatar>
                               <div>
                                 <p className="font-semibold text-slate-900 dark:text-white">{request.entrepreneur_name}</p>
-                                <p className="text-sm text-muted-foreground">{request.entrepreneur_email}</p>
+                                <p className="text-sm text-muted-foreground">Entrepreneur</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
