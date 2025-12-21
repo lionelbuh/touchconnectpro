@@ -1502,7 +1502,7 @@ export default function AdminDashboard() {
                               onClick={() => setExpandedProposal({...expandedProposal, [app.id]: !isProposalExpanded})}
                               data-testid={`button-expand-proposal-${actualIdx}`}
                             >
-                              {isProposalExpanded ? "▼" : "▶"} Idea Proposal (43 Questions)
+                              {isProposalExpanded ? "▼" : "▶"} Idea Proposal (42 Questions)
                             </Button>
                             {isProposalExpanded && app.ideaReview && (
                               <div className="mt-4 space-y-3 max-h-96 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-4 rounded">
@@ -2442,7 +2442,7 @@ export default function AdminDashboard() {
                                 onClick={() => setExpandedProposal(prev => ({ ...prev, [`member-${app.id}`]: !prev[`member-${app.id}`] }))}
                                 data-testid={`button-toggle-proposal-member-${idx}`}
                               >
-                                {expandedProposal[`member-${app.id}`] ? "▼" : "▶"} Idea Proposal (43 Questions)
+                                {expandedProposal[`member-${app.id}`] ? "▼" : "▶"} Idea Proposal (42 Questions)
                               </Button>
                               {expandedProposal[`member-${app.id}`] && app.ideaReview && (
                                 <div className="mt-4 space-y-3 max-h-96 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-4 rounded">
@@ -2703,7 +2703,7 @@ export default function AdminDashboard() {
                                     onClick={() => setExpandedProposal(prev => ({ ...prev, [`rejected-${app.id}`]: !prev[`rejected-${app.id}`] }))}
                                     data-testid={`button-toggle-proposal-rejected-${idx}`}
                                   >
-                                    {expandedProposal[`rejected-${app.id}`] ? "▼" : "▶"} Idea Proposal (43 Questions)
+                                    {expandedProposal[`rejected-${app.id}`] ? "▼" : "▶"} Idea Proposal (42 Questions)
                                   </Button>
                                   {expandedProposal[`rejected-${app.id}`] && app.ideaReview && (
                                     <div className="mt-4 space-y-3 max-h-96 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-4 rounded">
