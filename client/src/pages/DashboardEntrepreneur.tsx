@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 
 export default function DashboardEntrepreneur() {
+  const [, navigate] = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [showReview, setShowReview] = useState(false);
   const [showAIReview, setShowAIReview] = useState(false);
@@ -1974,14 +1975,8 @@ export default function DashboardEntrepreneur() {
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  console.log("[Contact] Button clicked, coach:", coach.id);
-                                  console.log("[Contact] Setting state - coach object:", coach);
-                                  setSelectedCoachForContact(coach);
-                                  setShowContactModal(true);
-                                  console.log("[Contact] State set - showContactModal should be true now");
-                                  setTimeout(() => {
-                                    console.log("[Contact] After 100ms - checking if modal rendered");
-                                  }, 100);
+                                  console.log("[Contact] Navigating to contact page for coach:", coach.id);
+                                  navigate(`/contact-coach/${coach.id}`);
                                 }}
                                 data-testid={`button-contact-coach-${coach.id}`}
                               >
