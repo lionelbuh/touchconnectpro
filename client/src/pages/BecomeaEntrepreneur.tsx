@@ -35,7 +35,7 @@ const US_STATES = [
   "Wisconsin", "Wyoming", "District of Columbia"
 ];
 
-// Mock AI responses - All 43 Questions
+// Mock AI responses - All 42 Questions
 const generateAIReview = (formData: any) => {
   return {
     problem: formData.problem || "Problem not provided",
@@ -66,7 +66,6 @@ const generateAIReview = (formData: any) => {
     hasDemo: formData.hasDemo || "Demo status not specified",
     existingFeatures: formData.existingFeatures || "Feature roadmap pending",
     featuresToBuild: formData.featuresToBuild || "Build priority list pending",
-    linkedinWebsite: formData.linkedinWebsite || "Professional profile not provided",
     foundedBefore: formData.foundedBefore || "Entrepreneurial experience level unclear",
     soloOrCoFounders: formData.soloOrCoFounders || "Team composition not specified",
     personalSkills: formData.personalSkills || "Founder skills profile pending",
@@ -794,7 +793,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <Sparkles className="h-6 w-6 text-cyan-600" />
-                        <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">AI Review of Your Idea - All 43 Questions</h2>
+                        <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">AI Review of Your Idea - All 42 Questions</h2>
                       </div>
                       <p className="text-slate-600 dark:text-slate-400">Here's a review of all your answers. Edit any section if you'd like to refine it before building your business plan.</p>
                     </div>
