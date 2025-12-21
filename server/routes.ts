@@ -2638,6 +2638,18 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Coach ID, entrepreneur email, and message are required" });
       }
 
+      // Block messages containing email addresses or URLs
+      const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+      const urlPattern = /(?:https?:\/\/|www\.)[^\s]+|[a-zA-Z0-9-]+\.(com|org|net|io|co|app|dev|me|info|biz|xyz)[^\s]*/i;
+      
+      if (emailPattern.test(message)) {
+        return res.status(400).json({ error: "Please do not include email addresses in your message. Use the platform to communicate." });
+      }
+      
+      if (urlPattern.test(message)) {
+        return res.status(400).json({ error: "Please do not include website links in your message. Use the platform to communicate." });
+      }
+
       // Check if entrepreneur has already sent a request to this coach
       const { data: existingRequest, error: checkError } = await (client
         .from("coach_contact_requests")
@@ -2671,7 +2683,7 @@ export async function registerRoutes(
         return res.status(400).json({ error: error.message });
       }
 
-      // Send email notification to coach
+      // Send email notification to coach (no email addresses shown, just names)
       try {
         const resendConfig = await getResendClient();
         
@@ -2691,7 +2703,7 @@ export async function registerRoutes(
               <p>Log in to your dashboard to respond.</p>
             `
           });
-          console.log("[POST /api/coach-contact-requests] Email sent to coach:", coachEmail);
+          console.log("[POST /api/coach-contact-requests] Email sent to coach");
         } else {
           console.log("[POST /api/coach-contact-requests] Resend not configured, skipping coach email");
         }
@@ -2699,7 +2711,7 @@ export async function registerRoutes(
         console.error("[POST /api/coach-contact-requests] Email error:", emailError);
       }
 
-      // Send copy to admin
+      // Send copy to admin (names only, no emails shown)
       try {
         const resendConfig = await getResendClient();
         const adminEmail = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
@@ -2711,15 +2723,15 @@ export async function registerRoutes(
             subject: `[Admin] New Coach Contact Request: ${entrepreneurName} → ${coachName}`,
             html: `
               <h2>New Coach Contact Request</h2>
-              <p><strong>From:</strong> ${entrepreneurName} (${entrepreneurEmail})</p>
-              <p><strong>To Coach:</strong> ${coachName} (${coachEmail})</p>
+              <p><strong>From:</strong> ${entrepreneurName}</p>
+              <p><strong>To Coach:</strong> ${coachName}</p>
               <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
                 <p><strong>Message:</strong></p>
                 <p style="white-space: pre-wrap;">${message}</p>
               </div>
             `
           });
-          console.log("[POST /api/coach-contact-requests] Email sent to admin:", adminEmail);
+          console.log("[POST /api/coach-contact-requests] Email sent to admin");
         }
       } catch (emailError) {
         console.error("[POST /api/coach-contact-requests] Admin email error:", emailError);
@@ -2741,6 +2753,18 @@ export async function registerRoutes(
 
       if (!reply) {
         return res.status(400).json({ error: "Reply message is required" });
+      }
+
+      // Block replies containing email addresses or URLs
+      const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+      const urlPattern = /(?:https?:\/\/|www\.)[^\s]+|[a-zA-Z0-9-]+\.(com|org|net|io|co|app|dev|me|info|biz|xyz)[^\s]*/i;
+      
+      if (emailPattern.test(reply)) {
+        return res.status(400).json({ error: "Please do not include email addresses in your reply. Use the platform to communicate." });
+      }
+      
+      if (urlPattern.test(reply)) {
+        return res.status(400).json({ error: "Please do not include website links in your reply. Use the platform to communicate." });
       }
 
       const client = getSupabaseClient();
@@ -2784,7 +2808,7 @@ export async function registerRoutes(
         return res.status(400).json({ error: error.message });
       }
 
-      // Send email notification to entrepreneur
+      // Send email notification to entrepreneur (names only, no emails shown)
       try {
         const resendConfig = await getResendClient();
         
@@ -2807,7 +2831,7 @@ export async function registerRoutes(
               <p><em>This was a one-time contact. To continue working with this coach, consider booking their services through the platform.</em></p>
             `
           });
-          console.log("[POST /api/coach-contact-requests/:id/reply] Email sent to entrepreneur:", request.entrepreneur_email);
+          console.log("[POST /api/coach-contact-requests/:id/reply] Email sent to entrepreneur");
         } else {
           console.log("[POST /api/coach-contact-requests/:id/reply] Resend not configured, skipping entrepreneur email");
         }
@@ -2815,7 +2839,7 @@ export async function registerRoutes(
         console.error("[POST /api/coach-contact-requests/:id/reply] Email error:", emailError);
       }
 
-      // Send copy to admin
+      // Send copy to admin (names only, no emails shown)
       try {
         const resendConfig = await getResendClient();
         const adminEmail = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
@@ -2827,8 +2851,8 @@ export async function registerRoutes(
             subject: `[Admin] Coach Reply: ${request.coach_name} → ${request.entrepreneur_name}`,
             html: `
               <h2>Coach Replied to Contact Request</h2>
-              <p><strong>Coach:</strong> ${request.coach_name} (${request.coach_email})</p>
-              <p><strong>To Entrepreneur:</strong> ${request.entrepreneur_name} (${request.entrepreneur_email})</p>
+              <p><strong>Coach:</strong> ${request.coach_name}</p>
+              <p><strong>To Entrepreneur:</strong> ${request.entrepreneur_name}</p>
               <div style="background: #e8f4e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
                 <p><strong>Original message:</strong></p>
                 <p style="white-space: pre-wrap;">${request.message}</p>
@@ -2840,7 +2864,7 @@ export async function registerRoutes(
               <p><em>Conversation is now closed.</em></p>
             `
           });
-          console.log("[POST /api/coach-contact-requests/:id/reply] Email sent to admin:", adminEmail);
+          console.log("[POST /api/coach-contact-requests/:id/reply] Email sent to admin");
         }
       } catch (emailError) {
         console.error("[POST /api/coach-contact-requests/:id/reply] Admin email error:", emailError);
