@@ -120,7 +120,7 @@ export default function ContactCoach() {
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Coach Not Found</h2>
             <p className="text-muted-foreground mb-4">The coach you're looking for doesn't exist or is no longer available.</p>
-            <Button onClick={() => navigate("/dashboard/entrepreneur")} data-testid="button-back-dashboard">
+            <Button onClick={() => navigate("/dashboard-entrepreneur")} data-testid="button-back-dashboard">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
@@ -141,7 +141,7 @@ export default function ContactCoach() {
               You have already sent a message to {coach.full_name}. 
               One-time messaging allows only one initial contact per coach.
             </p>
-            <Button onClick={() => navigate("/dashboard/entrepreneur")} data-testid="button-back-dashboard">
+            <Button onClick={() => navigate("/dashboard-entrepreneur")} data-testid="button-back-dashboard">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
@@ -162,7 +162,7 @@ export default function ContactCoach() {
               Your message has been sent to {coach.full_name}. 
               They may send you one reply. You can view any responses in your dashboard.
             </p>
-            <Button onClick={() => navigate("/dashboard/entrepreneur")} data-testid="button-back-dashboard">
+            <Button onClick={() => navigate("/dashboard-entrepreneur")} data-testid="button-back-dashboard">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
@@ -177,7 +177,7 @@ export default function ContactCoach() {
       <div className="max-w-2xl mx-auto pt-8">
         <Button 
           variant="ghost" 
-          onClick={() => navigate("/dashboard/entrepreneur")}
+          onClick={() => navigate("/dashboard-entrepreneur")}
           className="mb-6"
           data-testid="button-back"
         >
@@ -245,7 +245,7 @@ export default function ContactCoach() {
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => navigate("/dashboard/entrepreneur")}
+                onClick={() => navigate("/dashboard-entrepreneur")}
                 data-testid="button-cancel"
               >
                 Cancel

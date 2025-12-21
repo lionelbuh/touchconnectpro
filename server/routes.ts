@@ -2673,32 +2673,27 @@ export async function registerRoutes(
 
       // Send email notification to coach
       try {
-        const resendApiKey = process.env.RESEND_API_KEY;
-        const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+        const resendConfig = await getResendClient();
         
-        if (resendApiKey && coachEmail) {
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${resendApiKey}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              from: fromEmail,
-              to: coachEmail,
-              subject: `New Contact Request from ${entrepreneurName || 'An Entrepreneur'}`,
-              html: `
-                <h2>New Contact Request</h2>
-                <p><strong>${entrepreneurName || 'An entrepreneur'}</strong> would like to connect with you on TouchConnectPro.</p>
-                <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                  <p><strong>Message:</strong></p>
-                  <p style="white-space: pre-wrap;">${message}</p>
-                </div>
-                <p><em>This is a one-time contact request. You may send one reply to continue the conversation.</em></p>
-                <p>Log in to your dashboard to respond.</p>
-              `
-            })
+        if (resendConfig && coachEmail) {
+          await resendConfig.client.emails.send({
+            from: resendConfig.fromEmail,
+            to: coachEmail,
+            subject: `New Contact Request from ${entrepreneurName || 'An Entrepreneur'}`,
+            html: `
+              <h2>New Contact Request</h2>
+              <p><strong>${entrepreneurName || 'An entrepreneur'}</strong> would like to connect with you on TouchConnectPro.</p>
+              <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Message:</strong></p>
+                <p style="white-space: pre-wrap;">${message}</p>
+              </div>
+              <p><em>This is a one-time contact request. You may send one reply to continue the conversation.</em></p>
+              <p>Log in to your dashboard to respond.</p>
+            `
           });
+          console.log("[POST /api/coach-contact-requests] Email sent to coach:", coachEmail);
+        } else {
+          console.log("[POST /api/coach-contact-requests] Resend not configured, skipping coach email");
         }
       } catch (emailError) {
         console.error("[POST /api/coach-contact-requests] Email error:", emailError);
@@ -2706,32 +2701,25 @@ export async function registerRoutes(
 
       // Send copy to admin
       try {
-        const resendApiKey = process.env.RESEND_API_KEY;
-        const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+        const resendConfig = await getResendClient();
         const adminEmail = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
         
-        if (resendApiKey) {
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${resendApiKey}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              from: fromEmail,
-              to: adminEmail,
-              subject: `[Admin] New Coach Contact Request: ${entrepreneurName} → ${coachName}`,
-              html: `
-                <h2>New Coach Contact Request</h2>
-                <p><strong>From:</strong> ${entrepreneurName} (${entrepreneurEmail})</p>
-                <p><strong>To Coach:</strong> ${coachName} (${coachEmail})</p>
-                <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                  <p><strong>Message:</strong></p>
-                  <p style="white-space: pre-wrap;">${message}</p>
-                </div>
-              `
-            })
+        if (resendConfig) {
+          await resendConfig.client.emails.send({
+            from: resendConfig.fromEmail,
+            to: adminEmail,
+            subject: `[Admin] New Coach Contact Request: ${entrepreneurName} → ${coachName}`,
+            html: `
+              <h2>New Coach Contact Request</h2>
+              <p><strong>From:</strong> ${entrepreneurName} (${entrepreneurEmail})</p>
+              <p><strong>To Coach:</strong> ${coachName} (${coachEmail})</p>
+              <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Message:</strong></p>
+                <p style="white-space: pre-wrap;">${message}</p>
+              </div>
+            `
           });
+          console.log("[POST /api/coach-contact-requests] Email sent to admin:", adminEmail);
         }
       } catch (emailError) {
         console.error("[POST /api/coach-contact-requests] Admin email error:", emailError);
@@ -2798,35 +2786,30 @@ export async function registerRoutes(
 
       // Send email notification to entrepreneur
       try {
-        const resendApiKey = process.env.RESEND_API_KEY;
-        const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+        const resendConfig = await getResendClient();
         
-        if (resendApiKey && request.entrepreneur_email) {
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${resendApiKey}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              from: fromEmail,
-              to: request.entrepreneur_email,
-              subject: `Reply from ${request.coach_name || 'Coach'}`,
-              html: `
-                <h2>Reply from ${request.coach_name || 'Your Coach'}</h2>
-                <p><strong>${request.coach_name}</strong> has replied to your contact request.</p>
-                <div style="background: #e8f4e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                  <p><strong>Your original message:</strong></p>
-                  <p style="white-space: pre-wrap;">${request.message}</p>
-                </div>
-                <div style="background: #e8f0f8; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                  <p><strong>Coach's reply:</strong></p>
-                  <p style="white-space: pre-wrap;">${reply}</p>
-                </div>
-                <p><em>This was a one-time contact. To continue working with this coach, consider booking their services through the platform.</em></p>
-              `
-            })
+        if (resendConfig && request.entrepreneur_email) {
+          await resendConfig.client.emails.send({
+            from: resendConfig.fromEmail,
+            to: request.entrepreneur_email,
+            subject: `Reply from ${request.coach_name || 'Coach'}`,
+            html: `
+              <h2>Reply from ${request.coach_name || 'Your Coach'}</h2>
+              <p><strong>${request.coach_name}</strong> has replied to your contact request.</p>
+              <div style="background: #e8f4e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Your original message:</strong></p>
+                <p style="white-space: pre-wrap;">${request.message}</p>
+              </div>
+              <div style="background: #e8f0f8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Coach's reply:</strong></p>
+                <p style="white-space: pre-wrap;">${reply}</p>
+              </div>
+              <p><em>This was a one-time contact. To continue working with this coach, consider booking their services through the platform.</em></p>
+            `
           });
+          console.log("[POST /api/coach-contact-requests/:id/reply] Email sent to entrepreneur:", request.entrepreneur_email);
+        } else {
+          console.log("[POST /api/coach-contact-requests/:id/reply] Resend not configured, skipping entrepreneur email");
         }
       } catch (emailError) {
         console.error("[POST /api/coach-contact-requests/:id/reply] Email error:", emailError);
@@ -2834,37 +2817,30 @@ export async function registerRoutes(
 
       // Send copy to admin
       try {
-        const resendApiKey = process.env.RESEND_API_KEY;
-        const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+        const resendConfig = await getResendClient();
         const adminEmail = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
         
-        if (resendApiKey) {
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${resendApiKey}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              from: fromEmail,
-              to: adminEmail,
-              subject: `[Admin] Coach Reply: ${request.coach_name} → ${request.entrepreneur_name}`,
-              html: `
-                <h2>Coach Replied to Contact Request</h2>
-                <p><strong>Coach:</strong> ${request.coach_name} (${request.coach_email})</p>
-                <p><strong>To Entrepreneur:</strong> ${request.entrepreneur_name} (${request.entrepreneur_email})</p>
-                <div style="background: #e8f4e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                  <p><strong>Original message:</strong></p>
-                  <p style="white-space: pre-wrap;">${request.message}</p>
-                </div>
-                <div style="background: #e8f0f8; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                  <p><strong>Coach's reply:</strong></p>
-                  <p style="white-space: pre-wrap;">${reply}</p>
-                </div>
-                <p><em>Conversation is now closed.</em></p>
-              `
-            })
+        if (resendConfig) {
+          await resendConfig.client.emails.send({
+            from: resendConfig.fromEmail,
+            to: adminEmail,
+            subject: `[Admin] Coach Reply: ${request.coach_name} → ${request.entrepreneur_name}`,
+            html: `
+              <h2>Coach Replied to Contact Request</h2>
+              <p><strong>Coach:</strong> ${request.coach_name} (${request.coach_email})</p>
+              <p><strong>To Entrepreneur:</strong> ${request.entrepreneur_name} (${request.entrepreneur_email})</p>
+              <div style="background: #e8f4e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Original message:</strong></p>
+                <p style="white-space: pre-wrap;">${request.message}</p>
+              </div>
+              <div style="background: #e8f0f8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Coach's reply:</strong></p>
+                <p style="white-space: pre-wrap;">${reply}</p>
+              </div>
+              <p><em>Conversation is now closed.</em></p>
+            `
           });
+          console.log("[POST /api/coach-contact-requests/:id/reply] Email sent to admin:", adminEmail);
         }
       } catch (emailError) {
         console.error("[POST /api/coach-contact-requests/:id/reply] Admin email error:", emailError);
