@@ -626,8 +626,12 @@ export default function DashboardEntrepreneur() {
 
   useEffect(() => {
     if (activeTab === "messages" && userEmail) {
+      // Include all admin email aliases
+      const adminEmails = ["admin@touchconnectpro.com", "buhler.lionel+admin@gmail.com"];
+      const isAdminEmail = (email: string) => adminEmails.some(ae => ae.toLowerCase() === email?.toLowerCase());
+      
       const adminMessagesToMark = messages
-        .filter((m: any) => m.to_email === userEmail && m.from_email === "admin@touchconnectpro.com" && !entrepreneurReadMessageIds.includes(m.id))
+        .filter((m: any) => m.to_email === userEmail && isAdminEmail(m.from_email) && !entrepreneurReadMessageIds.includes(m.id))
         .map((m: any) => m.id);
       if (adminMessagesToMark.length > 0) {
         const combined = [...entrepreneurReadMessageIds, ...adminMessagesToMark];
@@ -2004,9 +2008,13 @@ export default function DashboardEntrepreneur() {
             {activeTab === "messages" && (() => {
               // Include system messages in admin section if no mentor assigned
               const hasNoMentor = !mentorData?.mentor?.email;
+              // Include all admin email aliases for proper message filtering
+              const adminEmails = ["admin@touchconnectpro.com", "buhler.lionel+admin@gmail.com"];
+              const isAdminEmail = (email: string) => adminEmails.some(ae => ae.toLowerCase() === email?.toLowerCase());
+              
               const adminMsgs = messages.filter((m: any) => 
-                m.from_email === "admin@touchconnectpro.com" || 
-                m.to_email === "admin@touchconnectpro.com" ||
+                isAdminEmail(m.from_email) || 
+                isAdminEmail(m.to_email) ||
                 (hasNoMentor && m.from_email === "system@touchconnectpro.com")
               );
               const adminUnread = adminMsgs.filter((m: any) => 
