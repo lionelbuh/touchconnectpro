@@ -5577,10 +5577,21 @@ app.post("/api/stripe/create-checkout-session", async (req, res) => {
 
     console.log("[STRIPE] Creating session for:", email, "entrepreneur:", entrepreneurId);
 
+    // Create or retrieve customer first (required for Accounts V2 in test mode)
+    let customer;
+    const existingCustomers = await stripe.customers.list({ email: email, limit: 1 });
+    if (existingCustomers.data.length > 0) {
+      customer = existingCustomers.data[0];
+      console.log("[STRIPE] Found existing customer:", customer.id);
+    } else {
+      customer = await stripe.customers.create({ email: email });
+      console.log("[STRIPE] Created new customer:", customer.id);
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
-      customer_email: email,
+      customer: customer.id,
       line_items: [
         {
           price_data: {
@@ -6266,6 +6277,17 @@ app.post("/api/stripe/connect/checkout", async (req, res) => {
 
     const baseUrl = process.env.FRONTEND_URL || "https://www.touchconnectpro.com";
 
+    // Create or retrieve customer first (required for Accounts V2 in test mode)
+    let customer;
+    const existingCustomers = await stripe.customers.list({ email: entrepreneurEmail, limit: 1 });
+    if (existingCustomers.data.length > 0) {
+      customer = existingCustomers.data[0];
+      console.log("[STRIPE CONNECT CHECKOUT] Found existing customer:", customer.id);
+    } else {
+      customer = await stripe.customers.create({ email: entrepreneurEmail });
+      console.log("[STRIPE CONNECT CHECKOUT] Created new customer:", customer.id);
+    }
+
     // All coach purchases are one-time payments (including monthly/course)
     // This simplifies Stripe Connect destination charges
     const sessionConfig = {
@@ -6283,7 +6305,7 @@ app.post("/api/stripe/connect/checkout", async (req, res) => {
           quantity: 1,
         },
       ],
-      customer_email: entrepreneurEmail,
+      customer: customer.id,
       metadata: {
         coach_id: coachId,
         coach_name: coach.full_name,
