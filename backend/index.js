@@ -5552,7 +5552,8 @@ function getStripeClient() {
   // Debug: Log key prefix to verify test vs live mode
   const keyPrefix = stripeSecretKey.substring(0, 12);
   console.log("[STRIPE] Using key prefix:", keyPrefix);
-  return new Stripe(stripeSecretKey, { apiVersion: "2024-12-18.acacia" });
+  // Use stable API version (2023-10-16) to avoid Accounts V2 test mode restrictions
+  return new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
 }
 
 // Create Stripe Checkout Session
