@@ -947,7 +947,7 @@ export default function DashboardEntrepreneur() {
           email: userEmail,
           entrepreneurId: entrepreneurData?.id,
           successUrl: `${window.location.origin}/entrepreneur-dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${window.location.origin}/entrepreneur-dashboard`
+          cancelUrl: `${window.location.origin}/login`
         })
       });
       
