@@ -946,7 +946,8 @@ export default function DashboardEntrepreneur() {
         body: JSON.stringify({
           email: userEmail,
           entrepreneurId: entrepreneurData?.id,
-          cancelUrl: "https://touchconnectpro.com/login"
+          successUrl: `${window.location.origin}/entrepreneur-dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${window.location.origin}/entrepreneur-dashboard`
         })
       });
       

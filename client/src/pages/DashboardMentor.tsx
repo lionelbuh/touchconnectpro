@@ -754,7 +754,7 @@ export default function DashboardMentor() {
                                       onClick={() => setExpandedProposal({...expandedProposal, [`member-${member.id}`]: !isProposalExpanded})}
                                       data-testid={`button-expand-proposal-${member.id}`}
                                     >
-                                      {isProposalExpanded ? "▼" : "▶"} Idea Proposal (43 Questions)
+                                      {isProposalExpanded ? "▼" : "▶"} Idea Proposal (42 Questions)
                                     </Button>
                                     {isProposalExpanded && member.ideaReview && (
                                       <div className="mt-3 space-y-2 max-h-64 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-3 rounded text-xs">
