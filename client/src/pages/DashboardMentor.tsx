@@ -1159,8 +1159,12 @@ export default function DashboardMentor() {
           {activeTab === "messages" && (() => {
             const allEntrepreneurs = portfolios.flatMap(p => p.members);
             
+            // Include all admin email aliases for proper message filtering
+            const adminEmails = ["admin@touchconnectpro.com", "buhler.lionel+admin@gmail.com"];
+            const isAdminEmail = (email: string) => adminEmails.some(ae => ae.toLowerCase() === email?.toLowerCase());
+            
             const adminMsgs = adminMessages.filter((m: any) => 
-              m.from_email === "admin@touchconnectpro.com" || m.to_email === "admin@touchconnectpro.com"
+              isAdminEmail(m.from_email) || isAdminEmail(m.to_email)
             );
             const adminUnread = adminMsgs.filter((m: any) => 
               m.to_email === mentorProfile.email && !m.is_read
