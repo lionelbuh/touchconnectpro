@@ -227,20 +227,19 @@ export default function DashboardEntrepreneur() {
     hasDemo: "",
     existingFeatures: "",
     featuresToBuild: "",
-    // Questions 29-34: Founder Profile
-    linkedinWebsite: "",
+    // Questions 29-33: Founder Profile (LinkedIn collected in Step 0)
     foundedBefore: "",
     soloOrCoFounders: "",
     personalSkills: "",
     missingSkills: "",
     timePerWeek: "",
-    // Questions 35-39: Funding
+    // Questions 34-38: Funding
     personalInvestment: "",
     externalFunding: "",
     fundingNeeded: "",
     fundingUseCase: "",
     investorType: "",
-    // Questions 40-43: Next Steps & Help Needed
+    // Questions 39-42: Next Steps & Help Needed
     nextSteps: "",
     currentObstacle: "",
     mentorHelp: "",
@@ -729,10 +728,9 @@ export default function DashboardEntrepreneur() {
       description: "Tell us about yourself",
       icon: Users,
       fields: [
-        { key: "linkedinWebsite", label: "29. LinkedIn profile or website?" },
-        { key: "foundedBefore", label: "30. Have you founded or launched a startup before?" },
-        { key: "soloOrCoFounders", label: "31. Solo or with co-founders?" },
-        { key: "personalSkills", label: "32. What skills do you personally bring?" }
+        { key: "foundedBefore", label: "29. Have you founded or launched a startup before?" },
+        { key: "soloOrCoFounders", label: "30. Solo or with co-founders?" },
+        { key: "personalSkills", label: "31. What skills do you personally bring?" }
       ]
     },
     {
@@ -740,8 +738,8 @@ export default function DashboardEntrepreneur() {
       description: "More about your team",
       icon: Users,
       fields: [
-        { key: "missingSkills", label: "33. What skills are missing from your team?" },
-        { key: "timePerWeek", label: "34. How much time per week can you dedicate?" }
+        { key: "missingSkills", label: "32. What skills are missing from your team?" },
+        { key: "timePerWeek", label: "33. How much time per week can you dedicate?" }
       ]
     },
     {
@@ -749,11 +747,11 @@ export default function DashboardEntrepreneur() {
       description: "Tell us about funding",
       icon: Target,
       fields: [
-        { key: "personalInvestment", label: "35. Have you invested personal money?" },
-        { key: "externalFunding", label: "36. Have you received any external funding?" },
-        { key: "fundingNeeded", label: "37. How much funding do you think you need now?" },
-        { key: "fundingUseCase", label: "38. What would funding be used for?" },
-        { key: "investorType", label: "39. What type of investors are you looking for?" }
+        { key: "personalInvestment", label: "34. Have you invested personal money?" },
+        { key: "externalFunding", label: "35. Have you received any external funding?" },
+        { key: "fundingNeeded", label: "36. How much funding do you think you need now?" },
+        { key: "fundingUseCase", label: "37. What would funding be used for?" },
+        { key: "investorType", label: "38. What type of investors are you looking for?" }
       ]
     },
     {
@@ -761,10 +759,10 @@ export default function DashboardEntrepreneur() {
       description: "What's next for you?",
       icon: Target,
       fields: [
-        { key: "nextSteps", label: "40. What are the next 3 steps you plan to take?" },
-        { key: "currentObstacle", label: "41. What is your biggest current obstacle?" },
-        { key: "mentorHelp", label: "42. What help do you need from mentors?" },
-        { key: "technicalExpertHelp", label: "43. What help do you need from technical experts?" }
+        { key: "nextSteps", label: "39. What are the next 3 steps you plan to take?" },
+        { key: "currentObstacle", label: "40. What is your biggest current obstacle?" },
+        { key: "mentorHelp", label: "41. What help do you need from mentors?" },
+        { key: "technicalExpertHelp", label: "42. What help do you need from technical experts?" }
       ]
     }
   ];
