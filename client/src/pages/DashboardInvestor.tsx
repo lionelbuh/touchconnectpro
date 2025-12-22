@@ -209,11 +209,15 @@ export default function DashboardInvestor() {
     loadMeetings();
   }, [profile?.id]);
 
+  // Include all admin email aliases
+  const adminEmails = ["admin@touchconnectpro.com", "buhler.lionel+admin@gmail.com"];
+  const isAdminEmail = (email: string) => adminEmails.some(ae => ae.toLowerCase() === email?.toLowerCase());
+
   // Mark admin messages as read when viewing messages tab
   useEffect(() => {
     if (activeTab === "messages" && profile?.email) {
       const adminMessagesToMark = adminMessages
-        .filter((m: any) => m.to_email === profile.email && m.from_email === "admin@touchconnectpro.com" && !investorReadMessageIds.includes(m.id))
+        .filter((m: any) => m.to_email === profile.email && isAdminEmail(m.from_email) && !investorReadMessageIds.includes(m.id))
         .map((m: any) => m.id);
       
       if (adminMessagesToMark.length > 0) {
@@ -226,7 +230,7 @@ export default function DashboardInvestor() {
 
   // Calculate unread message count
   const unreadMessageCount = adminMessages.filter(
-    (m: any) => m.to_email === profile?.email && m.from_email === "admin@touchconnectpro.com" && !investorReadMessageIds.includes(m.id)
+    (m: any) => m.to_email === profile?.email && isAdminEmail(m.from_email) && !investorReadMessageIds.includes(m.id)
   ).length;
 
   // Calculate unread notes count
@@ -902,11 +906,11 @@ export default function DashboardInvestor() {
                       {[...adminMessages].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => (
                           <div 
                             key={msg.id} 
-                            className={`p-4 rounded-lg ${msg.from_email === "admin@touchconnectpro.com" ? "bg-amber-50 dark:bg-amber-950/30 border-l-4 border-l-amber-500" : "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400"}`}
+                            className={`p-4 rounded-lg ${isAdminEmail(msg.from_email) ? "bg-amber-50 dark:bg-amber-950/30 border-l-4 border-l-amber-500" : "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400"}`}
                           >
                             <div className="flex justify-between items-start mb-2">
-                              <span className={`font-semibold ${msg.from_email === "admin@touchconnectpro.com" ? "text-amber-700 dark:text-amber-400" : "text-slate-700 dark:text-slate-300"}`}>
-                                {msg.from_email === "admin@touchconnectpro.com" ? "From Admin" : "You"}
+                              <span className={`font-semibold ${isAdminEmail(msg.from_email) ? "text-amber-700 dark:text-amber-400" : "text-slate-700 dark:text-slate-300"}`}>
+                                {isAdminEmail(msg.from_email) ? "From Admin" : "You"}
                               </span>
                               <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
                             </div>

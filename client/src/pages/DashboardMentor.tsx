@@ -197,11 +197,15 @@ export default function DashboardMentor() {
     loadMessages();
   }, [mentorProfile.email]);
 
+  // Include all admin email aliases
+  const adminEmails = ["admin@touchconnectpro.com", "buhler.lionel+admin@gmail.com"];
+  const isAdminEmail = (email: string) => adminEmails.some(ae => ae.toLowerCase() === email?.toLowerCase());
+
   // Mark admin messages as read when viewing messages tab
   useEffect(() => {
     if (activeTab === "messages" && mentorProfile.email) {
       const adminMessagesToMark = adminMessages
-        .filter((m: any) => m.to_email === mentorProfile.email && m.from_email === "admin@touchconnectpro.com" && !mentorReadMessageIds.includes(m.id))
+        .filter((m: any) => m.to_email === mentorProfile.email && isAdminEmail(m.from_email) && !mentorReadMessageIds.includes(m.id))
         .map((m: any) => m.id);
       
       if (adminMessagesToMark.length > 0) {
@@ -222,7 +226,7 @@ export default function DashboardMentor() {
   const unreadFromMentees = adminMessages.filter(
     (m: any) => m.to_email === mentorProfile.email && 
                 !m.is_read && 
-                m.from_email !== "admin@touchconnectpro.com" &&
+                !isAdminEmail(m.from_email) &&
                 m.from_email !== "system@touchconnectpro.com"
   ).length;
 
