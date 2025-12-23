@@ -5040,6 +5040,89 @@ export async function registerRoutes(
         const session = event.data.object as any;
         const coachId = session.metadata?.coach_id;
         
+        // Handle membership subscription (entrepreneurEmail in metadata, no coachId)
+        const membershipEmail = session.metadata?.entrepreneurEmail;
+        if (!coachId && membershipEmail && session.payment_status === "paid") {
+          console.log("[STRIPE WEBHOOK DEV] ========== MEMBERSHIP PAYMENT ==========");
+          console.log("[STRIPE WEBHOOK DEV] Entrepreneur email:", membershipEmail);
+          console.log("[STRIPE WEBHOOK DEV] Customer ID:", session.customer);
+          console.log("[STRIPE WEBHOOK DEV] Subscription:", session.subscription);
+          
+          const client = getSupabaseClient();
+          if (client) {
+            try {
+              // Update payment_status only - admin will manually approve after assigning mentor
+              const { data: updateData, error: updateError } = await (client
+                .from("ideas")
+                .update({
+                  payment_status: "paid",
+                  stripe_customer_id: session.customer || '',
+                  stripe_subscription_id: session.subscription || '',
+                  payment_date: new Date().toISOString()
+                })
+                .ilike("entrepreneur_email", membershipEmail)
+                .select() as any);
+              
+              if (updateError) {
+                console.error("[STRIPE WEBHOOK DEV] Error updating payment status:", updateError);
+              } else {
+                console.log("[STRIPE WEBHOOK DEV] Payment status updated for:", membershipEmail, "Status remains pre-approved for admin review");
+                
+                // Send notification emails
+                const entrepreneurName = updateData?.[0]?.entrepreneur_name || "Entrepreneur";
+                const resendData = await getResendClient();
+                if (resendData) {
+                  const { client: resendClient, fromEmail } = resendData;
+                  
+                  // Email to entrepreneur
+                  try {
+                    await resendClient.emails.send({
+                      from: fromEmail,
+                      to: membershipEmail,
+                      subject: "Payment Received - TouchConnectPro Membership",
+                      html: `
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                          <h2>Payment Confirmed!</h2>
+                          <p>Hi ${entrepreneurName},</p>
+                          <p>Your $49/month membership payment has been received. A mentor will be assigned to you shortly.</p>
+                          <p>You'll receive a notification once your mentor is ready to connect with you.</p>
+                          <p>Best regards,<br>The TouchConnectPro Team</p>
+                        </div>
+                      `
+                    });
+                    console.log("[STRIPE WEBHOOK DEV] Payment confirmation email sent to:", membershipEmail);
+                  } catch (e: any) {
+                    console.error("[STRIPE WEBHOOK DEV] Error sending entrepreneur email:", e.message);
+                  }
+                  
+                  // Email to admin
+                  try {
+                    await resendClient.emails.send({
+                      from: fromEmail,
+                      to: ADMIN_EMAIL,
+                      subject: `New Paid Member: ${entrepreneurName}`,
+                      html: `
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                          <h2>New Membership Payment</h2>
+                          <p><strong>Entrepreneur:</strong> ${entrepreneurName}</p>
+                          <p><strong>Email:</strong> ${membershipEmail}</p>
+                          <p><strong>Status:</strong> Payment received, awaiting mentor assignment</p>
+                          <p>Please assign a mentor to this entrepreneur in the admin dashboard.</p>
+                        </div>
+                      `
+                    });
+                    console.log("[STRIPE WEBHOOK DEV] Admin notification sent for payment from:", membershipEmail);
+                  } catch (e: any) {
+                    console.error("[STRIPE WEBHOOK DEV] Error sending admin email:", e.message);
+                  }
+                }
+              }
+            } catch (dbError: any) {
+              console.error("[STRIPE WEBHOOK DEV] Database error:", dbError.message);
+            }
+          }
+        }
+        
         // Handle coach service purchase
         if (coachId && session.payment_status === "paid") {
           console.log("[STRIPE WEBHOOK DEV] ========== COACH PURCHASE ==========");
