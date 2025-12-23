@@ -915,7 +915,7 @@ export async function registerRoutes(
       const { id } = req.params;
       const { status } = req.body;
 
-      if (!["approved", "rejected", "pre-approved"].includes(status)) {
+      if (!["approved", "rejected", "pre-approved", "terminated"].includes(status)) {
         return res.status(400).json({ error: "Invalid status" });
       }
 
@@ -1139,7 +1139,7 @@ export async function registerRoutes(
       const { id } = req.params;
       const { status } = req.body;
 
-      if (!["approved", "rejected"].includes(status)) {
+      if (!["approved", "rejected", "pre-approved", "terminated"].includes(status)) {
         return res.status(400).json({ error: "Invalid status" });
       }
 
