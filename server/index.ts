@@ -96,7 +96,40 @@ app.post(
       }
 
       const { uuid } = req.params;
+      
+      // Parse the event to handle custom business logic
+      const event = JSON.parse(req.body.toString());
+      console.log('[STRIPE WEBHOOK] Event type:', event.type);
+      
+      // Process with Replit connector
       await WebhookHandlers.processWebhook(req.body as Buffer, sig, uuid);
+      
+      // Handle custom business logic after connector processes
+      if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        console.log('[STRIPE WEBHOOK] Checkout session completed for:', session.customer_email);
+        console.log('[STRIPE WEBHOOK] Customer ID:', session.customer);
+        console.log('[STRIPE WEBHOOK] Subscription:', session.subscription);
+        
+        if (session.customer_email && session.payment_status === 'paid') {
+          await WebhookHandlers.handleCheckoutCompleted(
+            session.customer_email,
+            session.customer || '',
+            session.subscription || ''
+          );
+        }
+      } else if (event.type === 'invoice.payment_failed') {
+        const invoice = event.data.object;
+        if (invoice.customer) {
+          await WebhookHandlers.handlePaymentFailed(invoice.customer);
+        }
+      } else if (event.type === 'customer.subscription.deleted') {
+        const subscription = event.data.object;
+        if (subscription.customer) {
+          await WebhookHandlers.handleSubscriptionCancelled(subscription.customer);
+        }
+      }
+      
       res.status(200).json({ received: true });
     } catch (error: any) {
       console.error('[STRIPE WEBHOOK] Error:', error.message);
