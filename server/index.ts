@@ -107,14 +107,22 @@ app.post(
       // Handle custom business logic after connector processes
       if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
-        // Get email from metadata - check both 'entrepreneurEmail' and 'email' keys, fallback to customer_email
-        const entrepreneurEmail = session.metadata?.entrepreneurEmail || session.metadata?.email || session.customer_email;
+        const coachId = session.metadata?.coach_id;
+        
+        // Get email from metadata - check all possible keys including underscore variant
+        const entrepreneurEmail = session.metadata?.entrepreneurEmail || session.metadata?.entrepreneur_email || session.metadata?.email || session.customer_email;
         console.log('[STRIPE WEBHOOK] Checkout session completed for:', entrepreneurEmail);
         console.log('[STRIPE WEBHOOK] Customer ID:', session.customer);
         console.log('[STRIPE WEBHOOK] Subscription:', session.subscription);
         console.log('[STRIPE WEBHOOK] Metadata:', JSON.stringify(session.metadata));
         
-        if (entrepreneurEmail && session.payment_status === 'paid') {
+        // Check if this is a coach purchase (has coach_id in metadata)
+        if (coachId && session.payment_status === 'paid') {
+          console.log('[STRIPE WEBHOOK] ========== COACH PURCHASE ==========');
+          await WebhookHandlers.handleCoachPurchase(session);
+        }
+        // Otherwise handle as membership payment
+        else if (entrepreneurEmail && session.payment_status === 'paid' && !coachId) {
           await WebhookHandlers.handleCheckoutCompleted(
             entrepreneurEmail,
             session.customer || '',
