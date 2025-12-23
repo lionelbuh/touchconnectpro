@@ -1314,7 +1314,7 @@ app.patch("/api/ideas/:id", async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!["approved", "rejected", "pre-approved"].includes(status)) {
+    if (!["approved", "rejected", "pre-approved", "terminated"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
 
@@ -1632,7 +1632,7 @@ app.patch("/api/mentors/:id", async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!["approved", "rejected"].includes(status)) {
+    if (!["approved", "rejected", "pre-approved", "terminated"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
 
@@ -2597,7 +2597,7 @@ app.patch("/api/coaches/:id", async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!["approved", "rejected"].includes(status)) {
+    if (!["approved", "rejected", "pre-approved", "terminated"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
 
@@ -3232,7 +3232,7 @@ app.patch("/api/investors/:id", async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!["approved", "rejected"].includes(status)) {
+    if (!["approved", "rejected", "pre-approved", "terminated"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
 

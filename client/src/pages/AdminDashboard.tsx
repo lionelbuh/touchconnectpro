@@ -18,7 +18,7 @@ interface MentorApplication {
   bio: string;
   expertise: string;
   experience: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "pre-approved" | "terminated";
   submittedAt: string;
   country?: string;
   state?: string;
@@ -39,7 +39,7 @@ interface CoachApplication {
   hourlyRate: string;
   specializations?: string[];
   profileImage?: string | null;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "pre-approved" | "terminated";
   submittedAt: string;
   country?: string;
   state?: string;
@@ -58,7 +58,7 @@ interface InvestorApplication {
   investmentFocus: string;
   investmentPreference: string;
   investmentAmount: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "pre-approved" | "terminated";
   submittedAt: string;
   country?: string;
   state?: string;
@@ -73,7 +73,7 @@ interface EntrepreneurApplication {
   ideaName: string;
   problem: string;
   solution: string;
-  status: "pending" | "approved" | "rejected" | "submitted" | "pre-approved";
+  status: "pending" | "approved" | "rejected" | "submitted" | "pre-approved" | "terminated";
   submittedAt: string;
   id: string;
   ideaReview?: any;
@@ -1130,6 +1130,112 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error("Error pre-approving entrepreneur:", err);
       toast.error("Failed to pre-approve entrepreneur");
+    }
+  };
+
+  // Generic handler to revert approved member to pre-approved
+  const handleRevertToPreApproved = async (type: "entrepreneur" | "mentor" | "coach" | "investor", id: string, name: string) => {
+    try {
+      const endpoint = type === "entrepreneur" ? "ideas" : type === "mentor" ? "mentors" : type === "coach" ? "coaches" : "investors";
+      const response = await fetch(`${API_BASE_URL}/api/${endpoint}/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "pre-approved" })
+      });
+      
+      if (response.ok) {
+        toast.success(`${name} has been reverted to Pre-Approved status.`);
+        // Reload the applications
+        if (type === "entrepreneur") {
+          const res = await fetch(`${API_BASE_URL}/api/ideas`);
+          if (res.ok) {
+            const data = await res.json();
+            setEntrepreneurApplications(data || []);
+            setApprovedEntrepreneurs((data || []).filter((app: any) => app.status === "approved"));
+          }
+        } else if (type === "mentor") {
+          const res = await fetch(`${API_BASE_URL}/api/mentors`);
+          if (res.ok) {
+            const data = await res.json();
+            setMentorApplications(data || []);
+            setApprovedMentors((data || []).filter((m: any) => m.status === "approved"));
+          }
+        } else if (type === "coach") {
+          const res = await fetch(`${API_BASE_URL}/api/coaches`);
+          if (res.ok) {
+            const data = await res.json();
+            setCoachApplications(data.coaches || data || []);
+            setApprovedCoaches((data.coaches || data || []).filter((c: any) => c.status === "approved"));
+          }
+        } else if (type === "investor") {
+          const res = await fetch(`${API_BASE_URL}/api/investors`);
+          if (res.ok) {
+            const data = await res.json();
+            setInvestorApplications(data.investors || data || []);
+            setApprovedInvestors((data.investors || data || []).filter((i: any) => i.status === "approved"));
+          }
+        }
+      } else {
+        toast.error("Failed to revert status");
+      }
+    } catch (err) {
+      console.error("Error reverting to pre-approved:", err);
+      toast.error("Error reverting status");
+    }
+  };
+
+  // Generic handler to terminate a member
+  const handleTerminateMember = async (type: "entrepreneur" | "mentor" | "coach" | "investor", id: string, name: string) => {
+    if (!confirm(`Are you sure you want to terminate ${name}'s membership? This action will permanently end their access.`)) {
+      return;
+    }
+    
+    try {
+      const endpoint = type === "entrepreneur" ? "ideas" : type === "mentor" ? "mentors" : type === "coach" ? "coaches" : "investors";
+      const response = await fetch(`${API_BASE_URL}/api/${endpoint}/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "terminated" })
+      });
+      
+      if (response.ok) {
+        toast.success(`${name}'s membership has been terminated.`);
+        // Reload the applications
+        if (type === "entrepreneur") {
+          const res = await fetch(`${API_BASE_URL}/api/ideas`);
+          if (res.ok) {
+            const data = await res.json();
+            setEntrepreneurApplications(data || []);
+            setApprovedEntrepreneurs((data || []).filter((app: any) => app.status === "approved"));
+          }
+        } else if (type === "mentor") {
+          const res = await fetch(`${API_BASE_URL}/api/mentors`);
+          if (res.ok) {
+            const data = await res.json();
+            setMentorApplications(data || []);
+            setApprovedMentors((data || []).filter((m: any) => m.status === "approved"));
+          }
+        } else if (type === "coach") {
+          const res = await fetch(`${API_BASE_URL}/api/coaches`);
+          if (res.ok) {
+            const data = await res.json();
+            setCoachApplications(data.coaches || data || []);
+            setApprovedCoaches((data.coaches || data || []).filter((c: any) => c.status === "approved"));
+          }
+        } else if (type === "investor") {
+          const res = await fetch(`${API_BASE_URL}/api/investors`);
+          if (res.ok) {
+            const data = await res.json();
+            setInvestorApplications(data.investors || data || []);
+            setApprovedInvestors((data.investors || data || []).filter((i: any) => i.status === "approved"));
+          }
+        }
+      } else {
+        toast.error("Failed to terminate membership");
+      }
+    } catch (err) {
+      console.error("Error terminating member:", err);
+      toast.error("Error terminating membership");
     }
   };
 
@@ -3875,9 +3981,10 @@ export default function AdminDashboard() {
                                     {isDisabled ? "Inactive" : "Active"}
                                   </span>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 flex-wrap">
+                                  <Button variant="outline" onClick={() => handleRevertToPreApproved("entrepreneur", entrepreneur.id, entrepreneur.fullName)} data-testid={`button-revert-entrepreneur-${idx}`} size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50">Revert to Pre-Approved</Button>
                                   <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("entrepreneur", entrepreneur.id)} data-testid={`button-toggle-entrepreneur-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
-                                  <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-entrepreneur-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                  <Button variant="outline" onClick={() => handleTerminateMember("entrepreneur", entrepreneur.id, entrepreneur.fullName)} data-testid={`button-terminate-entrepreneur-${idx}`} size="sm" className="text-red-700 border-red-300 hover:bg-red-50">Terminate</Button>
                                 </div>
                               </div>
                             </CardContent>
@@ -3913,9 +4020,10 @@ export default function AdminDashboard() {
                                     {isDisabled ? "Inactive" : "Active"}
                                   </span>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 flex-wrap">
+                                  <Button variant="outline" onClick={() => handleRevertToPreApproved("mentor", mentor.id, mentor.fullName)} data-testid={`button-revert-mentor-${idx}`} size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50">Revert to Pre-Approved</Button>
                                   <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("mentor", mentor.id)} data-testid={`button-toggle-mentor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
-                                  <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-mentor-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                  <Button variant="outline" onClick={() => handleTerminateMember("mentor", mentor.id, mentor.fullName)} data-testid={`button-terminate-mentor-${idx}`} size="sm" className="text-red-700 border-red-300 hover:bg-red-50">Terminate</Button>
                                 </div>
                               </div>
                             </CardContent>
@@ -3951,9 +4059,10 @@ export default function AdminDashboard() {
                                     {isDisabled ? "Inactive" : "Active"}
                                   </span>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 flex-wrap">
+                                  <Button variant="outline" onClick={() => handleRevertToPreApproved("coach", coach.id, coach.fullName)} data-testid={`button-revert-coach-${idx}`} size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50">Revert to Pre-Approved</Button>
                                   <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("coach", coach.id)} data-testid={`button-toggle-coach-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
-                                  <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-coach-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                  <Button variant="outline" onClick={() => handleTerminateMember("coach", coach.id, coach.fullName)} data-testid={`button-terminate-coach-${idx}`} size="sm" className="text-red-700 border-red-300 hover:bg-red-50">Terminate</Button>
                                 </div>
                               </div>
                             </CardContent>
@@ -3989,9 +4098,10 @@ export default function AdminDashboard() {
                                     {isDisabled ? "Inactive" : "Active"}
                                   </span>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 flex-wrap">
+                                  <Button variant="outline" onClick={() => handleRevertToPreApproved("investor", investor.id, investor.fullName)} data-testid={`button-revert-investor-${idx}`} size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50">Revert to Pre-Approved</Button>
                                   <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("investor", investor.id)} data-testid={`button-toggle-investor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
-                                  <Button variant="ghost" className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" data-testid={`button-delete-investor-${idx}`} size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                  <Button variant="outline" onClick={() => handleTerminateMember("investor", investor.id, investor.fullName)} data-testid={`button-terminate-investor-${idx}`} size="sm" className="text-red-700 border-red-300 hover:bg-red-50">Terminate</Button>
                                 </div>
                               </div>
                             </CardContent>
