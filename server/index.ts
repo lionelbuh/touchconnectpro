@@ -107,16 +107,21 @@ app.post(
       // Handle custom business logic after connector processes
       if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
-        console.log('[STRIPE WEBHOOK] Checkout session completed for:', session.customer_email);
+        // Get email from metadata (where we store it) or customer_email as fallback
+        const entrepreneurEmail = session.metadata?.entrepreneurEmail || session.customer_email;
+        console.log('[STRIPE WEBHOOK] Checkout session completed for:', entrepreneurEmail);
         console.log('[STRIPE WEBHOOK] Customer ID:', session.customer);
         console.log('[STRIPE WEBHOOK] Subscription:', session.subscription);
+        console.log('[STRIPE WEBHOOK] Metadata:', JSON.stringify(session.metadata));
         
-        if (session.customer_email && session.payment_status === 'paid') {
+        if (entrepreneurEmail && session.payment_status === 'paid') {
           await WebhookHandlers.handleCheckoutCompleted(
-            session.customer_email,
+            entrepreneurEmail,
             session.customer || '',
             session.subscription || ''
           );
+        } else {
+          console.log('[STRIPE WEBHOOK] Skipping - no email or not paid. Email:', entrepreneurEmail, 'Status:', session.payment_status);
         }
       } else if (event.type === 'invoice.payment_failed') {
         const invoice = event.data.object;
