@@ -157,4 +157,161 @@ export class WebhookHandlers {
       })
       .eq("stripe_customer_id", customerId);
   }
+
+  static async handleCoachPurchase(session: any): Promise<void> {
+    const coachId = session.metadata?.coach_id;
+    const serviceType = session.metadata?.service_type || 'session';
+    const entrepreneurEmail = session.metadata?.entrepreneur_email || session.customer_email;
+    const entrepreneurName = session.metadata?.entrepreneur_name || 'Entrepreneur';
+    const coachName = session.metadata?.coach_name || 'Coach';
+    const amountTotal = session.amount_total || 0;
+    const platformFee = Math.round(amountTotal * 0.20);
+    const coachEarnings = amountTotal - platformFee;
+    
+    console.log("[STRIPE WEBHOOK] Coach ID:", coachId);
+    console.log("[STRIPE WEBHOOK] Entrepreneur:", entrepreneurEmail);
+    console.log("[STRIPE WEBHOOK] Service type:", serviceType);
+    console.log("[STRIPE WEBHOOK] Amount:", amountTotal);
+    
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      console.error("[STRIPE WEBHOOK] Supabase client not available");
+      return;
+    }
+    
+    // Idempotency guard: check if this session was already processed
+    const { data: existingPurchase } = await supabase
+      .from("coach_purchases")
+      .select("id")
+      .eq("stripe_session_id", session.id)
+      .single();
+    
+    if (existingPurchase) {
+      console.log("[STRIPE WEBHOOK] Duplicate event - session already processed:", session.id);
+      return;
+    }
+    
+    // Get service name based on type
+    let serviceName = 'Coaching Session';
+    if (serviceType === 'intro') serviceName = '15 Minutes Introductory Call';
+    else if (serviceType === 'monthly') serviceName = 'Monthly Coaching / Full Course';
+    
+    // Save purchase to coach_purchases table
+    try {
+      const { error: insertError } = await supabase
+        .from("coach_purchases")
+        .insert({
+          coach_id: coachId,
+          coach_name: coachName,
+          entrepreneur_email: entrepreneurEmail,
+          entrepreneur_name: entrepreneurName,
+          service_type: serviceType,
+          service_name: serviceName,
+          amount: amountTotal,
+          platform_fee: platformFee,
+          coach_earnings: coachEarnings,
+          stripe_session_id: session.id,
+          status: 'completed'
+        });
+      
+      if (insertError) {
+        console.error("[STRIPE WEBHOOK] Error saving coach purchase:", insertError);
+      } else {
+        console.log("[STRIPE WEBHOOK] Coach purchase saved successfully");
+      }
+    } catch (dbError: any) {
+      console.error("[STRIPE WEBHOOK] Database error:", dbError.message);
+    }
+    
+    // Get coach email for notification
+    try {
+      const { data: coach } = await supabase
+        .from("coach_applications")
+        .select("email")
+        .eq("id", coachId)
+        .single();
+      
+      const coachEmail = coach?.email;
+      
+      // Get Resend client for sending emails
+      const resendData = await getResendClient();
+      if (resendData) {
+        const { client: resendClient, fromEmail } = resendData;
+        
+        // Send email to entrepreneur
+        if (entrepreneurEmail) {
+          try {
+            await resendClient.emails.send({
+              from: fromEmail,
+              to: entrepreneurEmail,
+              subject: `Coaching Service Purchased - ${coachName}`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <h2>Purchase Confirmed!</h2>
+                  <p>Hi ${entrepreneurName},</p>
+                  <p>Your purchase of <strong>${serviceName}</strong> with <strong>${coachName}</strong> has been confirmed.</p>
+                  <p><strong>Amount Paid:</strong> $${(amountTotal / 100).toFixed(2)}</p>
+                  <p>The coach will be notified and will reach out to you shortly to schedule your session.</p>
+                  <p>Best regards,<br>The TouchConnectPro Team</p>
+                </div>
+              `
+            });
+            console.log("[STRIPE WEBHOOK] Purchase confirmation email sent to entrepreneur:", entrepreneurEmail);
+          } catch (e: any) {
+            console.error("[STRIPE WEBHOOK] Error sending entrepreneur email:", e.message);
+          }
+        }
+        
+        // Send email to coach
+        if (coachEmail) {
+          try {
+            await resendClient.emails.send({
+              from: fromEmail,
+              to: coachEmail,
+              subject: `New Booking: ${serviceName}`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <h2>New Coaching Booking!</h2>
+                  <p>Hi ${coachName},</p>
+                  <p>You have a new booking for <strong>${serviceName}</strong>.</p>
+                  <p><strong>Client:</strong> ${entrepreneurName}</p>
+                  <p><strong>Your Earnings:</strong> $${(coachEarnings / 100).toFixed(2)} (after 20% platform fee)</p>
+                  <p>Please reach out to your client to schedule the session.</p>
+                  <p>Best regards,<br>The TouchConnectPro Team</p>
+                </div>
+              `
+            });
+            console.log("[STRIPE WEBHOOK] Booking notification email sent to coach:", coachEmail);
+          } catch (e: any) {
+            console.error("[STRIPE WEBHOOK] Error sending coach email:", e.message);
+          }
+        }
+        
+        // Send email to admin
+        try {
+          await resendClient.emails.send({
+            from: fromEmail,
+            to: ADMIN_EMAIL,
+            subject: `New Coach Marketplace Sale: ${coachName}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2>New Coach Marketplace Sale</h2>
+                <p><strong>Coach:</strong> ${coachName}</p>
+                <p><strong>Client:</strong> ${entrepreneurName} (${entrepreneurEmail})</p>
+                <p><strong>Service:</strong> ${serviceName}</p>
+                <p><strong>Total Amount:</strong> $${(amountTotal / 100).toFixed(2)}</p>
+                <p><strong>Platform Fee (20%):</strong> $${(platformFee / 100).toFixed(2)}</p>
+                <p><strong>Coach Earnings:</strong> $${(coachEarnings / 100).toFixed(2)}</p>
+              </div>
+            `
+          });
+          console.log("[STRIPE WEBHOOK] Admin notification sent for coach purchase");
+        } catch (e: any) {
+          console.error("[STRIPE WEBHOOK] Error sending admin email:", e.message);
+        }
+      }
+    } catch (e: any) {
+      console.error("[STRIPE WEBHOOK] Error getting coach email:", e.message);
+    }
+  }
 }
