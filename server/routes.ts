@@ -5040,8 +5040,8 @@ export async function registerRoutes(
         const session = event.data.object as any;
         const coachId = session.metadata?.coach_id;
         
-        // Handle membership subscription (entrepreneurEmail in metadata, no coachId)
-        const membershipEmail = session.metadata?.entrepreneurEmail;
+        // Handle membership subscription (entrepreneurEmail or email in metadata, no coachId)
+        const membershipEmail = session.metadata?.entrepreneurEmail || session.metadata?.email;
         if (!coachId && membershipEmail && session.payment_status === "paid") {
           console.log("[STRIPE WEBHOOK DEV] ========== MEMBERSHIP PAYMENT ==========");
           console.log("[STRIPE WEBHOOK DEV] Entrepreneur email:", membershipEmail);

@@ -107,8 +107,8 @@ app.post(
       // Handle custom business logic after connector processes
       if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
-        // Get email from metadata (where we store it) or customer_email as fallback
-        const entrepreneurEmail = session.metadata?.entrepreneurEmail || session.customer_email;
+        // Get email from metadata - check both 'entrepreneurEmail' and 'email' keys, fallback to customer_email
+        const entrepreneurEmail = session.metadata?.entrepreneurEmail || session.metadata?.email || session.customer_email;
         console.log('[STRIPE WEBHOOK] Checkout session completed for:', entrepreneurEmail);
         console.log('[STRIPE WEBHOOK] Customer ID:', session.customer);
         console.log('[STRIPE WEBHOOK] Subscription:', session.subscription);

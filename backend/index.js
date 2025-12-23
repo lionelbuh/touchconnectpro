@@ -5847,7 +5847,7 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
       // Get email from metadata (where we store it during checkout) or customer_email as fallback
-      const entrepreneurEmail = session.metadata?.entrepreneurEmail || session.customer_email;
+      const entrepreneurEmail = session.metadata?.entrepreneurEmail || session.metadata?.email || session.customer_email;
       const coachId = session.metadata?.coach_id;
       
       // Handle entrepreneur membership payment - only set payment_status, admin manually approves
