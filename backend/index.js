@@ -5852,9 +5852,10 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
       
       // Handle entrepreneur membership payment - only set payment_status, admin manually approves
       if (entrepreneurEmail && !coachId && session.payment_status === "paid") {
+        console.log("[STRIPE WEBHOOK] ========== MEMBERSHIP PAYMENT ==========");
         console.log("[STRIPE WEBHOOK] Updating payment_status for entrepreneur:", entrepreneurEmail);
         console.log("[STRIPE WEBHOOK] Metadata:", JSON.stringify(session.metadata));
-        const { error: updateError } = await supabase
+        const { data: updateData, error: updateError } = await supabase
           .from("ideas")
           .update({ 
             payment_status: "paid",
@@ -5862,13 +5863,63 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
             stripe_subscription_id: session.subscription,
             payment_date: new Date().toISOString()
           })
-          .ilike("entrepreneur_email", entrepreneurEmail);
+          .ilike("entrepreneur_email", entrepreneurEmail)
+          .select();
         
         if (updateError) {
           console.error("[STRIPE WEBHOOK] Error updating payment status:", updateError);
         } else {
           console.log("[STRIPE WEBHOOK] Payment status updated to 'paid' for:", entrepreneurEmail);
           console.log("[STRIPE WEBHOOK] Status remains pre-approved - admin will manually approve after mentor assignment");
+          
+          // Send notification emails
+          const entrepreneurName = updateData?.[0]?.entrepreneur_name || "Entrepreneur";
+          const resendData = await getResendClient();
+          if (resendData) {
+            const { client: resendClient, fromEmail } = resendData;
+            
+            // Email to entrepreneur
+            try {
+              await resendClient.emails.send({
+                from: fromEmail,
+                to: entrepreneurEmail,
+                subject: "Payment Received - TouchConnectPro Membership",
+                html: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2>Payment Confirmed!</h2>
+                    <p>Hi ${entrepreneurName},</p>
+                    <p>Your $49/month membership payment has been received. A mentor will be assigned to you shortly.</p>
+                    <p>You'll receive a notification once your mentor is ready to connect with you.</p>
+                    <p>Best regards,<br>The TouchConnectPro Team</p>
+                  </div>
+                `
+              });
+              console.log("[STRIPE WEBHOOK] Payment confirmation email sent to:", entrepreneurEmail);
+            } catch (emailError) {
+              console.error("[STRIPE WEBHOOK] Error sending entrepreneur email:", emailError.message);
+            }
+            
+            // Email to admin
+            try {
+              await resendClient.emails.send({
+                from: fromEmail,
+                to: ADMIN_EMAIL,
+                subject: `New Paid Member: ${entrepreneurName}`,
+                html: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2>New Membership Payment</h2>
+                    <p><strong>Entrepreneur:</strong> ${entrepreneurName}</p>
+                    <p><strong>Email:</strong> ${entrepreneurEmail}</p>
+                    <p><strong>Status:</strong> Payment received, awaiting mentor assignment</p>
+                    <p>Please assign a mentor to this entrepreneur in the admin dashboard.</p>
+                  </div>
+                `
+              });
+              console.log("[STRIPE WEBHOOK] Admin notification sent for payment from:", entrepreneurEmail);
+            } catch (emailError) {
+              console.error("[STRIPE WEBHOOK] Error sending admin email:", emailError.message);
+            }
+          }
         }
       }
       
