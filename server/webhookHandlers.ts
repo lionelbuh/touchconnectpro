@@ -46,14 +46,14 @@ export class WebhookHandlers {
       return;
     }
 
+    // Only update payment_status to "paid" - admin will manually approve and assign mentor
     const { data, error } = await supabase
       .from("ideas")
       .update({
         payment_status: "paid",
         stripe_customer_id: customerId,
         stripe_subscription_id: subscriptionId,
-        payment_date: new Date().toISOString(),
-        status: "approved"
+        payment_date: new Date().toISOString()
       })
       .ilike("entrepreneur_email", customerEmail);
     
@@ -61,6 +61,7 @@ export class WebhookHandlers {
       console.error("[STRIPE WEBHOOK] Error updating idea:", error);
     } else {
       console.log("[STRIPE WEBHOOK] Updated idea payment status to paid for:", customerEmail);
+      console.log("[STRIPE WEBHOOK] Status remains pre-approved - admin will manually approve after mentor assignment");
     }
   }
 

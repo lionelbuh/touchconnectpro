@@ -4932,14 +4932,14 @@ export async function registerRoutes(
         return res.status(500).json({ error: "Database not configured" });
       }
 
+      // Only update payment_status - admin will manually approve after assigning mentor
       const { data, error } = await (client
         .from("ideas")
         .update({
           payment_status: "paid",
           stripe_customer_id: customer.id,
           stripe_subscription_id: subscription.id,
-          payment_date: new Date().toISOString(),
-          status: "approved"
+          payment_date: new Date().toISOString()
         })
         .ilike("entrepreneur_email", entrepreneurEmail)
         .select() as any);
@@ -4992,7 +4992,7 @@ export async function registerRoutes(
         console.error("[STRIPE CONFIRM] Failed to send admin notification:", msgError.message);
       }
 
-      return res.json({ success: true, paymentStatus: "paid", applicationStatus: "approved", emailSent: emailResult.success });
+      return res.json({ success: true, paymentStatus: "paid", applicationStatus: "pre-approved", emailSent: emailResult.success });
     } catch (error: any) {
       console.error("[STRIPE CONFIRM] Error:", error.message);
       return res.status(500).json({ error: error.message });

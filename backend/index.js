@@ -5685,16 +5685,21 @@ app.post("/api/stripe/confirm-payment", async (req, res) => {
     const email = session.metadata?.email || session.customer_email;
 
     if (entrepreneurId) {
-      // Update entrepreneur status to approved
+      // Update payment_status only - admin will manually approve after assigning mentor
       const { error: updateError } = await supabase
         .from("ideas")
-        .update({ status: "approved" })
+        .update({ 
+          payment_status: "paid",
+          stripe_customer_id: session.customer,
+          stripe_subscription_id: session.subscription,
+          payment_date: new Date().toISOString()
+        })
         .eq("id", entrepreneurId);
 
       if (updateError) {
-        console.error("[STRIPE] Error updating entrepreneur status:", updateError);
+        console.error("[STRIPE] Error updating payment status:", updateError);
       } else {
-        console.log("[STRIPE] Entrepreneur", entrepreneurId, "status updated to approved");
+        console.log("[STRIPE] Entrepreneur", entrepreneurId, "payment_status updated to paid (status remains pre-approved)");
       }
 
       // Send welcome email
@@ -5841,16 +5846,30 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
-      const entrepreneurId = session.metadata?.entrepreneurId;
+      // Get email from metadata (where we store it during checkout) or customer_email as fallback
+      const entrepreneurEmail = session.metadata?.entrepreneurEmail || session.customer_email;
       const coachId = session.metadata?.coach_id;
       
-      // Handle entrepreneur membership payment
-      if (entrepreneurId && session.payment_status === "paid") {
-        console.log("[STRIPE WEBHOOK] Updating entrepreneur", entrepreneurId, "to approved");
-        await supabase
+      // Handle entrepreneur membership payment - only set payment_status, admin manually approves
+      if (entrepreneurEmail && !coachId && session.payment_status === "paid") {
+        console.log("[STRIPE WEBHOOK] Updating payment_status for entrepreneur:", entrepreneurEmail);
+        console.log("[STRIPE WEBHOOK] Metadata:", JSON.stringify(session.metadata));
+        const { error: updateError } = await supabase
           .from("ideas")
-          .update({ status: "approved" })
-          .eq("id", entrepreneurId);
+          .update({ 
+            payment_status: "paid",
+            stripe_customer_id: session.customer,
+            stripe_subscription_id: session.subscription,
+            payment_date: new Date().toISOString()
+          })
+          .ilike("entrepreneur_email", entrepreneurEmail);
+        
+        if (updateError) {
+          console.error("[STRIPE WEBHOOK] Error updating payment status:", updateError);
+        } else {
+          console.log("[STRIPE WEBHOOK] Payment status updated to 'paid' for:", entrepreneurEmail);
+          console.log("[STRIPE WEBHOOK] Status remains pre-approved - admin will manually approve after mentor assignment");
+        }
       }
       
       // Handle coach service purchase
