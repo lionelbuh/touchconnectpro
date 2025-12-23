@@ -5,15 +5,61 @@ import { Resend } from 'resend';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
 
 async function getResendClient() {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.log("[WEBHOOK] RESEND_API_KEY not configured");
+  // First try direct RESEND_API_KEY (for production deployments like Render)
+  if (process.env.RESEND_API_KEY) {
+    console.log("[WEBHOOK] Using RESEND_API_KEY environment variable");
+    return {
+      client: new Resend(process.env.RESEND_API_KEY),
+      fromEmail: process.env.RESEND_FROM_EMAIL || "hello@touchconnectpro.com"
+    };
+  }
+
+  // Fallback to Replit connectors (for development on Replit)
+  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
+  const xReplitToken = process.env.REPL_IDENTITY 
+    ? 'repl ' + process.env.REPL_IDENTITY 
+    : process.env.WEB_REPL_RENEWAL 
+    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
+    : null;
+
+  if (!xReplitToken || !hostname) {
+    console.log("[WEBHOOK] No RESEND_API_KEY and no Replit connector available");
     return null;
   }
-  return {
-    client: new Resend(apiKey),
-    fromEmail: process.env.RESEND_FROM_EMAIL || "TouchConnectPro <notifications@touchconnectpro.com>"
-  };
+
+  try {
+    const response = await fetch(
+      'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=resend',
+      {
+        headers: {
+          'Accept': 'application/json',
+          'X_REPLIT_TOKEN': xReplitToken
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.log("[WEBHOOK] Failed to fetch Resend connection settings");
+      return null;
+    }
+
+    const connections = await response.json();
+    const connectionSettings = connections?.items?.[0];
+
+    if (!connectionSettings?.settings?.api_key) {
+      console.log("[WEBHOOK] No API key found in Resend connection settings");
+      return null;
+    }
+
+    console.log("[WEBHOOK] Using Resend via Replit connector");
+    return {
+      client: new Resend(connectionSettings.settings.api_key),
+      fromEmail: connectionSettings.settings.from_email || "hello@touchconnectpro.com"
+    };
+  } catch (error) {
+    console.error("[WEBHOOK] Error getting Resend client:", error);
+    return null;
+  }
 }
 
 function getSupabaseClient() {
