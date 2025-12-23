@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply, ShoppingCart, CreditCard } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, CheckCircle, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply, ShoppingCart, CreditCard } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
@@ -43,6 +43,7 @@ export default function DashboardEntrepreneur() {
   const [userEmail, setUserEmail] = useState<string>("");
   const [isAccountDisabled, setIsAccountDisabled] = useState(false);
   const [isPreApproved, setIsPreApproved] = useState(false);
+  const [hasPaid, setHasPaid] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -376,6 +377,7 @@ export default function DashboardEntrepreneur() {
             // Check if account is disabled
             setIsAccountDisabled(data.is_disabled === true);
             setIsPreApproved(data.status === "pre-approved");
+            setHasPaid(data.payment_status === "paid");
             
             // Set form data from application
             if (data.data) {
@@ -450,6 +452,7 @@ export default function DashboardEntrepreneur() {
                 // Check if account is disabled
                 setIsAccountDisabled(data.is_disabled === true);
                 setIsPreApproved(data.status === "pre-approved");
+                setHasPaid(data.payment_status === "paid");
                 
                 // Set form data from application
                 if (data.data) {
@@ -948,8 +951,8 @@ export default function DashboardEntrepreneur() {
         body: JSON.stringify({
           email: userEmail,
           entrepreneurId: entrepreneurData?.id,
-          successUrl: `${window.location.origin}/entrepreneur-dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${window.location.origin}/login`
+          successUrl: `${window.location.origin}/login?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${window.location.origin}/login?payment=cancelled`
         })
       });
       
@@ -1325,7 +1328,7 @@ export default function DashboardEntrepreneur() {
             {/* Overview Tab */}
             {activeTab === "overview" && (
               <div>
-                {isPreApproved && (
+                {isPreApproved && !hasPaid && (
                   <Card className="mb-6 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
                     <CardContent className="pt-6 pb-6">
                       <div className="flex items-start gap-4">
@@ -1350,6 +1353,20 @@ export default function DashboardEntrepreneur() {
                               </>
                             )}
                           </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {isPreApproved && hasPaid && (
+                  <Card className="mb-6 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-800">
+                    <CardContent className="pt-6 pb-6">
+                      <div className="flex items-start gap-4">
+                        <CheckCircle className="h-6 w-6 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-emerald-800 dark:text-emerald-300 mb-1">Payment Received - Awaiting Mentor Assignment</h3>
+                          <p className="text-emerald-700 dark:text-emerald-400">Thank you for your payment! Your membership is now active. Our team will review your business plan and add your idea to a mentor's portfolio. You will be notified once a mentor has been assigned to guide you on your entrepreneurial journey.</p>
                         </div>
                       </div>
                     </CardContent>
@@ -1386,11 +1403,11 @@ export default function DashboardEntrepreneur() {
                       <CardTitle className="text-sm font-medium text-muted-foreground">Current Stage</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : isPreApproved ? "text-amber-600" : ""}`}>
-                        {isAccountDisabled ? "Disabled Member" : isPreApproved ? "Pre-Approved" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
+                      <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : (isPreApproved && !hasPaid) ? "text-amber-600" : (isPreApproved && hasPaid) ? "text-emerald-600" : ""}`}>
+                        {isAccountDisabled ? "Disabled Member" : (isPreApproved && !hasPaid) ? "Pre-Approved" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {isAccountDisabled ? "Contact admin to reactivate" : isPreApproved ? "Awaiting membership payment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
+                        {isAccountDisabled ? "Contact admin to reactivate" : (isPreApproved && !hasPaid) ? "Awaiting membership payment" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
                       </p>
                     </CardContent>
                   </Card>
