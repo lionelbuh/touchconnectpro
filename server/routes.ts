@@ -1770,7 +1770,7 @@ export async function registerRoutes(
                         <p>Keep up the great work on your entrepreneurial journey!</p>
                         
                         <p style="text-align: center;">
-                          <a href="${FRONTEND_URL}/entrepreneur-dashboard" class="button">View Your Dashboard</a>
+                          <a href="${FRONTEND_URL}/dashboard-entrepreneur" class="button">View Your Dashboard</a>
                         </p>
                         
                         <p>Best regards,<br>The TouchConnectPro Team</p>

@@ -948,8 +948,8 @@ export default function DashboardEntrepreneur() {
         body: JSON.stringify({
           email: userEmail,
           entrepreneurId: entrepreneurData?.id,
-          successUrl: `${window.location.origin}/entrepreneur-dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${window.location.origin}/login`
+          successUrl: `${window.location.origin}/login?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${window.location.origin}/login?payment=cancelled`
         })
       });
       
