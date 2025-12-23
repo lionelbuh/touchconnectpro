@@ -5572,7 +5572,12 @@ app.post("/api/stripe/create-checkout-session", async (req, res) => {
   }
 
   try {
-    const baseUrl = process.env.FRONTEND_URL || "https://touchconnectpro.com";
+    // Use REPLIT_DEV_DOMAIN for development, otherwise FRONTEND_URL or production domain
+    const replitDevDomain = process.env.REPLIT_DEV_DOMAIN;
+    const baseUrl = replitDevDomain 
+      ? `https://${replitDevDomain}` 
+      : (process.env.FRONTEND_URL || "https://touchconnectpro.com");
+    console.log("[STRIPE] Using baseUrl for redirects:", baseUrl);
     const finalSuccessUrl = successUrl || `${baseUrl}/login?payment=success&session_id={CHECKOUT_SESSION_ID}`;
     const finalCancelUrl = cancelUrl || `${baseUrl}/login?payment=cancelled`;
 
