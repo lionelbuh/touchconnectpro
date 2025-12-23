@@ -5573,8 +5573,8 @@ app.post("/api/stripe/create-checkout-session", async (req, res) => {
 
   try {
     const baseUrl = process.env.FRONTEND_URL || "https://touchconnectpro.com";
-    const finalSuccessUrl = successUrl || `${baseUrl}/entrepreneur-dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`;
-    const finalCancelUrl = cancelUrl || `${baseUrl}/entrepreneur-dashboard?payment=cancelled`;
+    const finalSuccessUrl = successUrl || `${baseUrl}/login?payment=success&session_id={CHECKOUT_SESSION_ID}`;
+    const finalCancelUrl = cancelUrl || `${baseUrl}/login?payment=cancelled`;
 
     console.log("[STRIPE] Creating session for:", email, "entrepreneur:", entrepreneurId);
 
