@@ -414,7 +414,11 @@ export default function DashboardCoach() {
 
   // Handle Stripe onboarding
   const handleStripeOnboarding = async () => {
-    if (!profile?.id) return;
+    console.log("[STRIPE ONBOARDING] Button clicked, profile:", profile?.id, "API_BASE_URL:", API_BASE_URL);
+    if (!profile?.id) {
+      console.log("[STRIPE ONBOARDING] No profile ID, returning early");
+      return;
+    }
     setLoadingStripe(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/stripe/connect/account-link/${profile.id}`);
