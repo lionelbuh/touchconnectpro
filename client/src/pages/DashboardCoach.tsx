@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail, User, FileText, Upload, CreditCard, CheckCircle2, ExternalLink, Check, Send, Reply } from "lucide-react";
+import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail, User, FileText, Upload, CreditCard, CheckCircle2, ExternalLink, Check, Send, Reply, Edit } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -141,6 +141,45 @@ export default function DashboardCoach() {
   
   // Profile edit mode state
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [originalProfileValues, setOriginalProfileValues] = useState<{
+    expertise: string[];
+    focusAreas: string;
+    introCallRate: string;
+    sessionRate: string;
+    monthlyRate: string;
+    linkedin: string;
+    bio: string;
+    profileImage: string;
+  } | null>(null);
+
+  const enterEditMode = () => {
+    setOriginalProfileValues({
+      expertise,
+      focusAreas,
+      introCallRate,
+      sessionRate,
+      monthlyRate,
+      linkedin,
+      bio,
+      profileImage
+    });
+    setIsEditingProfile(true);
+  };
+
+  const cancelEditMode = () => {
+    if (originalProfileValues) {
+      setExpertise(originalProfileValues.expertise);
+      setFocusAreas(originalProfileValues.focusAreas);
+      setIntroCallRate(originalProfileValues.introCallRate);
+      setSessionRate(originalProfileValues.sessionRate);
+      setMonthlyRate(originalProfileValues.monthlyRate);
+      setLinkedin(originalProfileValues.linkedin);
+      setBio(originalProfileValues.bio);
+      setProfileImage(originalProfileValues.profileImage);
+    }
+    setIsEditingProfile(false);
+    setOriginalProfileValues(null);
+  };
 
   const handleLogout = async () => {
     try {
@@ -431,12 +470,12 @@ export default function DashboardCoach() {
     setExpertise(expertise.filter(e => e !== item));
   };
 
-  const handleSave = async () => {
-    if (!profile?.id) return;
+  const handleSave = async (): Promise<boolean> => {
+    if (!profile?.id) return false;
 
     if (expertise.length === 0) {
       toast.error("Please select at least one area of expertise");
-      return;
+      return false;
     }
 
     setSaving(true);
@@ -459,13 +498,24 @@ export default function DashboardCoach() {
 
       if (response.ok) {
         toast.success("Profile updated successfully!");
+        return true;
       } else {
         toast.error("Failed to update profile");
+        return false;
       }
     } catch (error) {
       toast.error("Error saving profile");
+      return false;
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveAndExitEdit = async () => {
+    const success = await handleSave();
+    if (success) {
+      setIsEditingProfile(false);
+      setOriginalProfileValues(null);
     }
   };
 
@@ -655,19 +705,44 @@ export default function DashboardCoach() {
               <p className="text-muted-foreground mt-2">
                 {profile?.is_disabled 
                   ? "Your profile is currently in view-only mode."
-                  : "Manage your coaching profile and start helping entrepreneurs."}
+                  : isEditingProfile 
+                    ? "Edit your coaching profile details below."
+                    : "View your coaching profile. Click Edit to make changes."}
               </p>
             </div>
             {!profile?.is_disabled && (
-              <Button 
-                onClick={handleSave} 
-                disabled={saving}
-                className="bg-cyan-600 hover:bg-cyan-700"
-                data-testid="button-save-profile"
-              >
-                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                Save Changes
-              </Button>
+              <div className="flex gap-2">
+                {isEditingProfile ? (
+                  <>
+                    <Button 
+                      variant="outline"
+                      onClick={cancelEditMode}
+                      disabled={saving}
+                      data-testid="button-cancel-edit"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleSaveAndExitEdit} 
+                      disabled={saving}
+                      className="bg-cyan-600 hover:bg-cyan-700"
+                      data-testid="button-save-profile"
+                    >
+                      {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                      Save Changes
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    onClick={enterEditMode}
+                    className="bg-cyan-600 hover:bg-cyan-700"
+                    data-testid="button-edit-profile"
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Profile
+                  </Button>
+                )}
+              </div>
             )}
           </header>
 
@@ -686,7 +761,7 @@ export default function DashboardCoach() {
                     {expertise.map(item => (
                       <Badge key={item} variant="secondary" className="bg-cyan-200 dark:bg-cyan-900 text-cyan-900 dark:text-cyan-100 flex items-center gap-2 pr-1">
                         {item}
-                        {!profile?.is_disabled && (
+                        {isEditingProfile && !profile?.is_disabled && (
                           <button
                             onClick={() => removeExpertise(item)}
                             className="hover:text-cyan-700 dark:hover:text-cyan-300"
@@ -699,20 +774,25 @@ export default function DashboardCoach() {
                     ))}
                   </div>
                 )}
-                <select 
-                  multiple
-                  value={expertise}
-                  onChange={(e) => handleExpertiseChange(e.target.selectedOptions)}
-                  disabled={profile?.is_disabled}
-                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                  data-testid="select-coach-expertise"
-                  style={{ minHeight: "120px" }}
-                >
-                  {EXPERTISE_OPTIONS.map(option => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{profile?.is_disabled ? "View only" : "Hold Ctrl/Cmd to select multiple options"}</p>
+                {isEditingProfile && !profile?.is_disabled ? (
+                  <>
+                    <select 
+                      multiple
+                      value={expertise}
+                      onChange={(e) => handleExpertiseChange(e.target.selectedOptions)}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                      data-testid="select-coach-expertise"
+                      style={{ minHeight: "120px" }}
+                    >
+                      {EXPERTISE_OPTIONS.map(option => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Hold Ctrl/Cmd to select multiple options</p>
+                  </>
+                ) : (
+                  expertise.length === 0 && <p className="text-slate-500 italic">No expertise selected</p>
+                )}
               </CardContent>
             </Card>
 
@@ -725,53 +805,67 @@ export default function DashboardCoach() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">You keep 80%, we keep 20%</p>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">15 Minutes Introductory Call</label>
-                    <div className="flex gap-2">
-                      <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
-                      <input 
-                        type="number" 
-                        value={introCallRate}
-                        onChange={(e) => setIntroCallRate(e.target.value)}
-                        placeholder="25"
-                        disabled={profile?.is_disabled}
-                        className={`flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                        data-testid="input-coach-introcall-rate"
-                      />
+                {isEditingProfile && !profile?.is_disabled ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">15 Minutes Introductory Call</label>
+                      <div className="flex gap-2">
+                        <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
+                        <input 
+                          type="number" 
+                          value={introCallRate}
+                          onChange={(e) => setIntroCallRate(e.target.value)}
+                          placeholder="25"
+                          className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                          data-testid="input-coach-introcall-rate"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Per Session</label>
+                      <div className="flex gap-2">
+                        <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
+                        <input 
+                          type="number" 
+                          value={sessionRate}
+                          onChange={(e) => setSessionRate(e.target.value)}
+                          placeholder="150"
+                          className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                          data-testid="input-coach-session-rate"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Per Month / Full Courses</label>
+                      <div className="flex gap-2">
+                        <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
+                        <input 
+                          type="number" 
+                          value={monthlyRate}
+                          onChange={(e) => setMonthlyRate(e.target.value)}
+                          placeholder="500"
+                          className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                          data-testid="input-coach-monthly-rate"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Per Session</label>
-                    <div className="flex gap-2">
-                      <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
-                      <input 
-                        type="number" 
-                        value={sessionRate}
-                        onChange={(e) => setSessionRate(e.target.value)}
-                        placeholder="150"
-                        disabled={profile?.is_disabled}
-                        className={`flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                        data-testid="input-coach-session-rate"
-                      />
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-slate-600 dark:text-slate-400">15 Min Intro Call:</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{introCallRate ? `$${introCallRate}` : "Not set"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-slate-600 dark:text-slate-400">Per Session:</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{sessionRate ? `$${sessionRate}` : "Not set"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-slate-600 dark:text-slate-400">Monthly/Course:</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{monthlyRate ? `$${monthlyRate}` : "Not set"}</span>
                     </div>
                   </div>
-                  <div>
-                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Per Month / Full Courses</label>
-                    <div className="flex gap-2">
-                      <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
-                      <input 
-                        type="number" 
-                        value={monthlyRate}
-                        onChange={(e) => setMonthlyRate(e.target.value)}
-                        placeholder="500"
-                        disabled={profile?.is_disabled}
-                        className={`flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                        data-testid="input-coach-monthly-rate"
-                      />
-                    </div>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
@@ -784,15 +878,22 @@ export default function DashboardCoach() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">Your LinkedIn profile URL</p>
-                <input
-                  type="url"
-                  value={linkedin}
-                  onChange={(e) => setLinkedin(e.target.value)}
-                  placeholder="https://linkedin.com/in/..."
-                  disabled={profile?.is_disabled}
-                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                  data-testid="input-linkedin"
-                />
+                {isEditingProfile && !profile?.is_disabled ? (
+                  <input
+                    type="url"
+                    value={linkedin}
+                    onChange={(e) => setLinkedin(e.target.value)}
+                    placeholder="https://linkedin.com/in/..."
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                    data-testid="input-linkedin"
+                  />
+                ) : (
+                  linkedin ? (
+                    <a href={linkedin} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline break-all">{linkedin}</a>
+                  ) : (
+                    <p className="text-slate-500 italic">No LinkedIn profile set</p>
+                  )
+                )}
               </CardContent>
             </Card>
 
@@ -805,18 +906,25 @@ export default function DashboardCoach() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">Topics you help entrepreneurs with</p>
-                <select 
-                  value={focusAreas}
-                  onChange={(e) => setFocusAreas(e.target.value)}
-                  disabled={profile?.is_disabled}
-                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                  data-testid="select-focus-areas"
-                >
-                  <option value="">Select a focus area...</option>
-                  {FOCUS_AREAS_OPTIONS.map((area) => (
-                    <option key={area} value={area}>{area}</option>
-                  ))}
-                </select>
+                {isEditingProfile && !profile?.is_disabled ? (
+                  <select 
+                    value={focusAreas}
+                    onChange={(e) => setFocusAreas(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                    data-testid="select-focus-areas"
+                  >
+                    <option value="">Select a focus area...</option>
+                    {FOCUS_AREAS_OPTIONS.map((area) => (
+                      <option key={area} value={area}>{area}</option>
+                    ))}
+                  </select>
+                ) : (
+                  focusAreas ? (
+                    <Badge variant="secondary" className="bg-cyan-200 dark:bg-cyan-900 text-cyan-900 dark:text-cyan-100">{focusAreas}</Badge>
+                  ) : (
+                    <p className="text-slate-500 italic">No focus area selected</p>
+                  )
+                )}
               </CardContent>
             </Card>
 
@@ -829,15 +937,22 @@ export default function DashboardCoach() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">Tell entrepreneurs about yourself</p>
-                <textarea 
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Share your background, experience, and what makes you a great coach..."
-                  rows={4}
-                  disabled={profile?.is_disabled}
-                  className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 ${profile?.is_disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                  data-testid="textarea-bio"
-                />
+                {isEditingProfile && !profile?.is_disabled ? (
+                  <textarea 
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Share your background, experience, and what makes you a great coach..."
+                    rows={4}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                    data-testid="textarea-bio"
+                  />
+                ) : (
+                  bio ? (
+                    <p className="text-slate-900 dark:text-white whitespace-pre-wrap">{bio}</p>
+                  ) : (
+                    <p className="text-slate-500 italic">No bio added yet</p>
+                  )
+                )}
               </CardContent>
             </Card>
 
@@ -849,7 +964,7 @@ export default function DashboardCoach() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">Upload a professional photo</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{isEditingProfile ? "Upload a professional photo" : "Your profile photo"}</p>
                 <div className="flex items-center gap-4">
                   <div className="w-20 h-20 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-2xl overflow-hidden border-2 border-cyan-300 dark:border-cyan-700">
                     {profileImage ? (
@@ -858,31 +973,33 @@ export default function DashboardCoach() {
                       <User className="h-10 w-10 text-cyan-600" />
                     )}
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                      id="coach-profile-upload"
-                      className="hidden"
-                      onChange={handleImageUpload}
-                      disabled={profile?.is_disabled || uploadingImage}
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={() => document.getElementById("coach-profile-upload")?.click()}
-                      disabled={profile?.is_disabled || uploadingImage}
-                      className="text-sm"
-                      data-testid="button-upload-photo"
-                    >
-                      {uploadingImage ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Upload className="mr-2 h-4 w-4" />
-                      )}
-                      {uploadingImage ? "Uploading..." : "Upload Photo"}
-                    </Button>
-                    <p className="text-xs text-slate-500">Max 5MB. JPG, PNG, GIF, WebP</p>
-                  </div>
+                  {isEditingProfile && !profile?.is_disabled && (
+                    <div className="flex flex-col gap-2">
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                        id="coach-profile-upload"
+                        className="hidden"
+                        onChange={handleImageUpload}
+                        disabled={uploadingImage}
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={() => document.getElementById("coach-profile-upload")?.click()}
+                        disabled={uploadingImage}
+                        className="text-sm"
+                        data-testid="button-upload-photo"
+                      >
+                        {uploadingImage ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="mr-2 h-4 w-4" />
+                        )}
+                        {uploadingImage ? "Uploading..." : "Upload Photo"}
+                      </Button>
+                      <p className="text-xs text-slate-500">Max 5MB. JPG, PNG, GIF, WebP</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
