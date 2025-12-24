@@ -3558,14 +3558,18 @@ app.get("/api/coaches/approved", async (req, res) => {
       .from("coach_applications")
       .select("*")
       .eq("status", "approved")
+      .or("is_disabled.is.null,is_disabled.eq.false")
       .order("created_at", { ascending: false });
 
     if (error) {
+      console.error("[GET /api/coaches/approved] Error:", error);
       return res.status(400).json({ error: error.message });
     }
 
+    console.log("[GET /api/coaches/approved] Returning", data?.length || 0, "coaches");
     return res.json(data || []);
   } catch (error) {
+    console.error("[GET /api/coaches/approved] Error:", error);
     return res.status(500).json({ error: error.message });
   }
 });

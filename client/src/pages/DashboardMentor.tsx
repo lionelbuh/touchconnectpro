@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
@@ -1078,7 +1079,7 @@ export default function DashboardMentor() {
                   {approvedCoaches.map((coach) => {
                     const rating = coachRatings[coach.id];
                     return (
-                      <Card key={coach.id} className="border-l-4 border-l-purple-500" data-testid={`card-coach-${coach.id}`}>
+                      <Card key={coach.id} className={`border-l-4 ${!coach.stripe_account_id ? 'border-l-gray-400 opacity-80' : 'border-l-purple-500'}`} data-testid={`card-coach-${coach.id}`}>
                         <CardHeader>
                           <div className="flex items-start gap-4">
                             <Avatar className="h-12 w-12 border-2 border-purple-200">
@@ -1091,7 +1092,14 @@ export default function DashboardMentor() {
                             </Avatar>
                             <div className="flex-1">
                               <div className="flex items-center justify-between">
-                                <CardTitle className="text-lg">{coach.full_name}</CardTitle>
+                                <div className="flex items-center gap-2">
+                                  <CardTitle className="text-lg">{coach.full_name}</CardTitle>
+                                  {!coach.stripe_account_id && (
+                                    <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 text-xs px-2 py-0.5">
+                                      Coming Soon
+                                    </Badge>
+                                  )}
+                                </div>
                                 <div className="flex items-center gap-1 px-2 py-1">
                                   {rating ? (
                                     <>
