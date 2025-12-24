@@ -2408,7 +2408,7 @@ export async function registerRoutes(
         .from("coach_applications")
         .select("*")
         .eq("status", "approved")
-        .eq("is_disabled", false)
+        .or("is_disabled.is.null,is_disabled.eq.false")
         .order("created_at", { ascending: false }) as any);
 
       if (error) {

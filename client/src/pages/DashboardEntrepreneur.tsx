@@ -1837,20 +1837,29 @@ export default function DashboardEntrepreneur() {
                       .map((coach) => {
                       const rating = coachRatings[coach.id];
                       return (
-                      <Card key={coach.id} className="border-l-4 border-l-purple-500" data-testid={`card-coach-${coach.id}`}>
+                      <Card key={coach.id} className={`border-l-4 ${!coach.stripe_account_id ? 'border-l-gray-400 opacity-80' : 'border-l-purple-500'}`} data-testid={`card-coach-${coach.id}`}>
                         <CardHeader>
                           <div className="flex items-start gap-4">
-                            <Avatar className="h-12 w-12 border-2 border-purple-200">
-                              {coach.profile_image && (
-                                <AvatarImage src={coach.profile_image} alt={coach.full_name} />
-                              )}
-                              <AvatarFallback className="bg-purple-500 text-white">
-                                {coach.full_name?.substring(0, 2).toUpperCase() || "CO"}
-                              </AvatarFallback>
-                            </Avatar>
+                            <div className="relative">
+                              <Avatar className="h-12 w-12 border-2 border-purple-200">
+                                {coach.profile_image && (
+                                  <AvatarImage src={coach.profile_image} alt={coach.full_name} />
+                                )}
+                                <AvatarFallback className="bg-purple-500 text-white">
+                                  {coach.full_name?.substring(0, 2).toUpperCase() || "CO"}
+                                </AvatarFallback>
+                              </Avatar>
+                            </div>
                             <div className="flex-1">
                               <div className="flex items-center justify-between">
-                                <CardTitle className="text-lg">{coach.full_name}</CardTitle>
+                                <div className="flex items-center gap-2">
+                                  <CardTitle className="text-lg">{coach.full_name}</CardTitle>
+                                  {!coach.stripe_account_id && (
+                                    <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 text-xs px-2 py-0.5">
+                                      Coming Soon
+                                    </Badge>
+                                  )}
+                                </div>
                                 <button
                                   className="flex items-center gap-1 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-2 py-1 rounded-md cursor-pointer transition-colors"
                                   onClick={async () => {
@@ -1900,15 +1909,16 @@ export default function DashboardEntrepreneur() {
                                 const rates = JSON.parse(coach.hourly_rate);
                                 if (rates.introCallRate && rates.sessionRate && rates.monthlyRate) {
                                   const isPurchasing = purchasingCoach?.coachId === coach.id;
+                                  const canPurchase = !!coach.stripe_account_id;
                                   return (
                                     <div className="space-y-3">
                                       <div className="grid grid-cols-3 gap-2">
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          className="border-purple-300 text-purple-700 hover:bg-purple-50 flex flex-col h-auto py-2"
-                                          onClick={() => handleCoachPurchase(coach.id, 'intro', coach.full_name)}
-                                          disabled={isPurchasing}
+                                          className={`flex flex-col h-auto py-2 ${canPurchase ? 'border-purple-300 text-purple-700 hover:bg-purple-50' : 'border-gray-300 text-gray-400 cursor-not-allowed'}`}
+                                          onClick={() => canPurchase && handleCoachPurchase(coach.id, 'intro', coach.full_name)}
+                                          disabled={isPurchasing || !canPurchase}
                                           data-testid={`button-purchase-intro-${coach.id}`}
                                         >
                                           {isPurchasing && purchasingCoach?.serviceType === 'intro' ? (
@@ -1923,9 +1933,9 @@ export default function DashboardEntrepreneur() {
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          className="border-purple-300 text-purple-700 hover:bg-purple-50 flex flex-col h-auto py-2"
-                                          onClick={() => handleCoachPurchase(coach.id, 'session', coach.full_name)}
-                                          disabled={isPurchasing}
+                                          className={`flex flex-col h-auto py-2 ${canPurchase ? 'border-purple-300 text-purple-700 hover:bg-purple-50' : 'border-gray-300 text-gray-400 cursor-not-allowed'}`}
+                                          onClick={() => canPurchase && handleCoachPurchase(coach.id, 'session', coach.full_name)}
+                                          disabled={isPurchasing || !canPurchase}
                                           data-testid={`button-purchase-session-${coach.id}`}
                                         >
                                           {isPurchasing && purchasingCoach?.serviceType === 'session' ? (
@@ -1940,9 +1950,9 @@ export default function DashboardEntrepreneur() {
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          className="border-purple-300 text-purple-700 hover:bg-purple-50 flex flex-col h-auto py-2"
-                                          onClick={() => handleCoachPurchase(coach.id, 'monthly', coach.full_name)}
-                                          disabled={isPurchasing}
+                                          className={`flex flex-col h-auto py-2 ${canPurchase ? 'border-purple-300 text-purple-700 hover:bg-purple-50' : 'border-gray-300 text-gray-400 cursor-not-allowed'}`}
+                                          onClick={() => canPurchase && handleCoachPurchase(coach.id, 'monthly', coach.full_name)}
+                                          disabled={isPurchasing || !canPurchase}
                                           data-testid={`button-purchase-monthly-${coach.id}`}
                                         >
                                           {isPurchasing && purchasingCoach?.serviceType === 'monthly' ? (
@@ -1956,8 +1966,14 @@ export default function DashboardEntrepreneur() {
                                         </Button>
                                       </div>
                                       <p className="text-xs text-muted-foreground text-center">
-                                        <CreditCard className="inline h-3 w-3 mr-1" />
-                                        Secure checkout via Stripe
+                                        {canPurchase ? (
+                                          <>
+                                            <CreditCard className="inline h-3 w-3 mr-1" />
+                                            Secure checkout via Stripe
+                                          </>
+                                        ) : (
+                                          <span className="text-amber-600">Coach is setting up payments</span>
+                                        )}
                                       </p>
                                     </div>
                                   );
