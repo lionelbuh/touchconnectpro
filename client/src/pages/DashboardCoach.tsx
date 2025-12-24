@@ -138,6 +138,9 @@ export default function DashboardCoach() {
   const [replyingToRequest, setReplyingToRequest] = useState<string | null>(null);
   const [replyMessage, setReplyMessage] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
+  
+  // Profile edit mode state
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   const handleLogout = async () => {
     try {
