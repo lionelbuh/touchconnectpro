@@ -502,7 +502,26 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                   <span className="font-medium">Mentor Payment Estimate</span>
                 </div>
                 <p className="text-slate-600 dark:text-slate-400">
-                  At {inputs.mentorPayoutRate}% of ${inputs.subscriptionPrice}, each new entrepreneur generates a one-time mentor payment of <span className="font-semibold text-indigo-600">${((inputs.mentorPayoutRate / 100) * inputs.subscriptionPrice).toFixed(2)}</span> for their first 30-minute onboarding call.
+                  At {inputs.mentorPayoutRate}% of ${inputs.subscriptionPrice}, each new entrepreneur generates <span className="font-semibold text-indigo-600">${((inputs.mentorPayoutRate / 100) * inputs.subscriptionPrice).toFixed(2)}/month</span>.
+                </p>
+              </div>
+              <InputSlider
+                label="Mentor Welcome Call Payment"
+                value={inputs.mentorWelcomeCallPayment}
+                onChange={(v) => updateInput("mentorWelcomeCallPayment", v)}
+                min={0}
+                max={60}
+                step={5}
+                prefix="$"
+                tooltip="One-time payment to mentor for the first 30-minute welcome call with each new entrepreneur"
+              />
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Info className="h-4 w-4" />
+                  <span className="font-medium">Welcome Call Cost</span>
+                </div>
+                <p className="text-slate-600 dark:text-slate-400">
+                  Each new entrepreneur triggers a one-time <span className="font-semibold text-indigo-600">${inputs.mentorWelcomeCallPayment}</span> payment to their assigned mentor for the first 30-minute onboarding call.
                 </p>
               </div>
               <InputSlider

@@ -30,6 +30,7 @@ export interface CalculatorInputs {
   avgCoachingSpendPerUser: number;
   platformCommissionRate: number;
   mentorPayoutRate: number;
+  mentorWelcomeCallPayment: number;
   includeCoachingRevenue: boolean;
 }
 
@@ -89,6 +90,7 @@ export const defaultInternalInputs: CalculatorInputs = {
   avgCoachingSpendPerUser: 200,
   platformCommissionRate: 20,
   mentorPayoutRate: 50,
+  mentorWelcomeCallPayment: 30,
   includeCoachingRevenue: true,
 };
 
@@ -110,6 +112,7 @@ export const defaultPublicInputs: CalculatorInputs = {
   avgCoachingSpendPerUser: 200,
   platformCommissionRate: 20,
   mentorPayoutRate: 50,
+  mentorWelcomeCallPayment: 30,
   includeCoachingRevenue: false,
 };
 
@@ -327,7 +330,8 @@ export function calculateAll(inputs: CalculatorInputs): CalculatorOutputs {
   
   const mentorSubscriptionExpense = calculateMentorSubscriptionExpense(subscriptionRevenue, inputs.mentorPayoutRate);
   const mentorCommissionExpense = calculateMentorCommissionExpense(coachingCommissionRevenue, inputs.mentorPayoutRate);
-  const totalMentorExpenses = calculateTotalMentorExpenses(mentorSubscriptionExpense, mentorCommissionExpense);
+  const mentorWelcomeCallCost = newMembersPerMonth * (inputs.mentorWelcomeCallPayment || 0);
+  const totalMentorExpenses = calculateTotalMentorExpenses(mentorSubscriptionExpense, mentorCommissionExpense) + mentorWelcomeCallCost;
   
   const stripeFees = calculateStripeFees(subscriptionRevenue, grossCoachingGMV, activeMembers, coachingBuyers, inputs.stripePercentage, inputs.stripeFixedFee);
   const variableCosts = calculateVariableCosts(activeMembers, inputs.variableCostPerUser);
@@ -389,7 +393,8 @@ export function generate36MonthProjections(inputs: CalculatorInputs): MonthlyPro
     
     const mentorSubExpense = calculateMentorSubscriptionExpense(subscriptionRevenue, inputs.mentorPayoutRate);
     const mentorCommExpense = calculateMentorCommissionExpense(coachingCommissionRevenue, inputs.mentorPayoutRate);
-    const mentorExpenses = calculateTotalMentorExpenses(mentorSubExpense, mentorCommExpense);
+    const mentorWelcomeCallCost = newSubscribersPerMonth * (inputs.mentorWelcomeCallPayment || 0);
+    const mentorExpenses = calculateTotalMentorExpenses(mentorSubExpense, mentorCommExpense) + mentorWelcomeCallCost;
     
     const stripeFees = calculateStripeFees(subscriptionRevenue, grossCoachingGMV, activeSubscribers, coachingBuyers, inputs.stripePercentage, inputs.stripeFixedFee);
     const variableCosts = calculateVariableCosts(activeSubscribers, inputs.variableCostPerUser);
