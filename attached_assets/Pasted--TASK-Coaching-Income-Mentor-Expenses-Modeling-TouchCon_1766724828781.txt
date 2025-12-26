@@ -1,0 +1,123 @@
+📌 TASK — Coaching Income & Mentor Expenses Modeling (TouchConnectPro)
+Context
+
+TouchConnectPro is a SaaS + marketplace platform with:
+
+Subscription revenue
+
+Coaching services commission revenue
+
+Mentor payouts treated as expenses, not revenue reduction
+
+For accounting and modeling purposes:
+👉 100% of platform income is TouchConnectPro revenue
+👉 Payments to mentors are recorded as expenses (COGS)
+
+1️⃣ Coaching Income (Revenue)
+
+Some subscribers purchase coaching services through the platform.
+
+Assumptions (Editable in Internal Mode)
+
+Coaching adoption rate: 20% of active subscribers
+
+Average coaching spend per buyer: $200 / month
+
+Platform commission: 20%
+
+Logic
+
+TouchConnectPro earns 20% commission on coaching GMV
+
+This commission is 100% platform revenue
+
+The remaining 80% of GMV paid to coaches is not revenue and should not be included in income
+
+Formulas
+coachingBuyers =
+  activeSubscribers * coachingAdoptionRate
+
+grossCoachingGMV =
+  coachingBuyers * avgCoachingSpendPerUser
+
+coachingCommissionRevenue =
+  grossCoachingGMV * platformCommissionRate
+
+2️⃣ Mentor Expenses (Cost of Services)
+
+Mentors are compensated based on platform revenue.
+
+Expense Rules
+
+Mentors receive:
+
+50% of subscription revenue
+
+50% of coaching commission revenue
+
+These payouts must be modeled as expenses (COGS).
+
+Formulas
+mentorSubscriptionExpense =
+  subscriptionRevenue * 0.50
+
+mentorCommissionExpense =
+  coachingCommissionRevenue * 0.50
+
+totalMentorExpenses =
+  mentorSubscriptionExpense +
+  mentorCommissionExpense
+
+3️⃣ Revenue vs Costs (Important Rule)
+
+Do NOT subtract mentor payouts from revenue
+
+Revenue must stay at 100%
+
+Mentor payments appear only in the costs section
+
+4️⃣ Display Requirements
+Internal (Founder) Mode
+
+Show:
+
+Subscription revenue
+
+Coaching commission revenue
+
+Total revenue
+
+Mentor expenses (separate line)
+
+Stripe fees
+
+Net profit and margin
+
+Public (Marketing) Mode
+
+Mentor expenses hidden or summarized
+
+Simplified “platform revenue estimate”
+
+All assumptions locked
+
+✅ Success Criteria
+
+The calculator must clearly distinguish:
+
+Platform revenue
+
+Mentor expenses
+
+Net profit
+
+And must never:
+❌ Mix GMV with revenue
+❌ Reduce revenue by mentor payouts
+
+Key Accounting Principle
+
+Revenue = income
+Mentor payouts = cost of delivering the service
+
+This distinction is critical and must be respected throughout the calculator logic.

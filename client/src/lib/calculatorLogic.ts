@@ -6,6 +6,10 @@
  * both internal and public modes.
  * 
  * Key formulas are based on standard SaaS unit economics.
+ * 
+ * ACCOUNTING PRINCIPLE:
+ * - Revenue = 100% of platform income (subscriptions + coaching commission)
+ * - Mentor payouts = Cost of services (COGS), NOT revenue reduction
  */
 
 export interface CalculatorInputs {
@@ -18,13 +22,24 @@ export interface CalculatorInputs {
   fixedMonthlyCosts: number;
   variableCostPerUser: number;
   monthlyMarketingSpend: number;
+  coachingAdoptionRate: number;
+  avgCoachingSpendPerUser: number;
+  platformCommissionRate: number;
+  mentorPayoutRate: number;
 }
 
 export interface CalculatorOutputs {
   newMembersPerMonth: number;
   avgLifetimeMonths: number;
   activeMembers: number;
-  mrr: number;
+  subscriptionRevenue: number;
+  coachingBuyers: number;
+  grossCoachingGMV: number;
+  coachingCommissionRevenue: number;
+  totalRevenue: number;
+  mentorSubscriptionExpense: number;
+  mentorCommissionExpense: number;
+  totalMentorExpenses: number;
   stripeFees: number;
   variableCosts: number;
   totalCosts: number;
@@ -45,6 +60,10 @@ export const defaultInternalInputs: CalculatorInputs = {
   fixedMonthlyCosts: 500,
   variableCostPerUser: 2,
   monthlyMarketingSpend: 1000,
+  coachingAdoptionRate: 20,
+  avgCoachingSpendPerUser: 200,
+  platformCommissionRate: 20,
+  mentorPayoutRate: 50,
 };
 
 /**
@@ -61,7 +80,44 @@ export const defaultPublicInputs: CalculatorInputs = {
   fixedMonthlyCosts: 300,
   variableCostPerUser: 1.5,
   monthlyMarketingSpend: 500,
+  coachingAdoptionRate: 20,
+  avgCoachingSpendPerUser: 200,
+  platformCommissionRate: 20,
+  mentorPayoutRate: 50,
 };
+
+const STORAGE_KEY_INTERNAL = 'tcp_calculator_internal';
+const STORAGE_KEY_PUBLIC = 'tcp_calculator_public';
+
+/**
+ * Save inputs to localStorage
+ */
+export function saveInputs(inputs: CalculatorInputs, mode: 'internal' | 'public'): void {
+  try {
+    const key = mode === 'internal' ? STORAGE_KEY_INTERNAL : STORAGE_KEY_PUBLIC;
+    localStorage.setItem(key, JSON.stringify(inputs));
+  } catch (e) {
+    console.error('Failed to save calculator inputs:', e);
+  }
+}
+
+/**
+ * Load inputs from localStorage
+ */
+export function loadInputs(mode: 'internal' | 'public'): CalculatorInputs | null {
+  try {
+    const key = mode === 'internal' ? STORAGE_KEY_INTERNAL : STORAGE_KEY_PUBLIC;
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const defaults = mode === 'internal' ? defaultInternalInputs : defaultPublicInputs;
+      return { ...defaults, ...parsed };
+    }
+  } catch (e) {
+    console.error('Failed to load calculator inputs:', e);
+  }
+  return null;
+}
 
 /**
  * Calculate new members acquired per month
@@ -91,29 +147,95 @@ export function calculateActiveMembers(newMembers: number, avgLifetimeMonths: nu
 }
 
 /**
- * Calculate Monthly Recurring Revenue
+ * Calculate subscription revenue (MRR from subscriptions)
  * Formula: activeMembers * subscriptionPrice
  */
-export function calculateMRR(activeMembers: number, subscriptionPrice: number): number {
+export function calculateSubscriptionRevenue(activeMembers: number, subscriptionPrice: number): number {
   return activeMembers * subscriptionPrice;
 }
 
 /**
+ * Calculate coaching buyers
+ * Formula: activeMembers * (coachingAdoptionRate / 100)
+ */
+export function calculateCoachingBuyers(activeMembers: number, coachingAdoptionRate: number): number {
+  return Math.round(activeMembers * (coachingAdoptionRate / 100));
+}
+
+/**
+ * Calculate gross coaching GMV (total coaching spend through platform)
+ * Formula: coachingBuyers * avgCoachingSpendPerUser
+ */
+export function calculateGrossCoachingGMV(coachingBuyers: number, avgCoachingSpendPerUser: number): number {
+  return coachingBuyers * avgCoachingSpendPerUser;
+}
+
+/**
+ * Calculate coaching commission revenue (platform's 20% cut)
+ * Formula: grossCoachingGMV * (platformCommissionRate / 100)
+ * NOTE: This is 100% platform revenue. The 80% paid to coaches is NOT revenue.
+ */
+export function calculateCoachingCommissionRevenue(grossCoachingGMV: number, platformCommissionRate: number): number {
+  return grossCoachingGMV * (platformCommissionRate / 100);
+}
+
+/**
+ * Calculate total platform revenue
+ * Formula: subscriptionRevenue + coachingCommissionRevenue
+ */
+export function calculateTotalRevenue(subscriptionRevenue: number, coachingCommissionRevenue: number): number {
+  return subscriptionRevenue + coachingCommissionRevenue;
+}
+
+/**
+ * Calculate mentor expense from subscriptions
+ * Formula: subscriptionRevenue * (mentorPayoutRate / 100)
+ * Mentors receive 50% of subscription revenue as compensation
+ */
+export function calculateMentorSubscriptionExpense(subscriptionRevenue: number, mentorPayoutRate: number): number {
+  return subscriptionRevenue * (mentorPayoutRate / 100);
+}
+
+/**
+ * Calculate mentor expense from coaching commission
+ * Formula: coachingCommissionRevenue * (mentorPayoutRate / 100)
+ * Mentors receive 50% of coaching commission as compensation
+ */
+export function calculateMentorCommissionExpense(coachingCommissionRevenue: number, mentorPayoutRate: number): number {
+  return coachingCommissionRevenue * (mentorPayoutRate / 100);
+}
+
+/**
+ * Calculate total mentor expenses (COGS)
+ * Formula: mentorSubscriptionExpense + mentorCommissionExpense
+ */
+export function calculateTotalMentorExpenses(mentorSubscriptionExpense: number, mentorCommissionExpense: number): number {
+  return mentorSubscriptionExpense + mentorCommissionExpense;
+}
+
+/**
  * Calculate total Stripe payment processing fees
- * Formula: (MRR * stripePercentage/100) + (activeMembers * stripeFixedFee)
  * 
- * Stripe charges both a percentage fee and a fixed fee per transaction.
- * We assume one transaction per member per month.
+ * IMPORTANT: Stripe fees are calculated on the FULL processed volume:
+ * - Subscription payments: full amount processed
+ * - Coaching payments: FULL GMV processed (not just platform commission)
+ * 
+ * Formula: ((subscriptionRevenue + grossCoachingGMV) * stripePercentage/100) 
+ *          + (activeMembers * stripeFixedFee) + (coachingBuyers * stripeFixedFee)
  */
 export function calculateStripeFees(
-  mrr: number,
+  subscriptionRevenue: number,
+  grossCoachingGMV: number,
   activeMembers: number,
+  coachingBuyers: number,
   stripePercentage: number,
   stripeFixedFee: number
 ): number {
-  const percentageFee = mrr * (stripePercentage / 100);
-  const fixedFees = activeMembers * stripeFixedFee;
-  return percentageFee + fixedFees;
+  const totalProcessedVolume = subscriptionRevenue + grossCoachingGMV;
+  const percentageFee = totalProcessedVolume * (stripePercentage / 100);
+  const subscriptionFees = activeMembers * stripeFixedFee;
+  const coachingFees = coachingBuyers * stripeFixedFee;
+  return percentageFee + subscriptionFees + coachingFees;
 }
 
 /**
@@ -128,33 +250,34 @@ export function calculateVariableCosts(activeMembers: number, variableCostPerUse
 
 /**
  * Calculate total monthly costs
- * Formula: stripeFees + fixedMonthlyCosts + variableCosts + marketingSpend
+ * Formula: mentorExpenses + stripeFees + fixedMonthlyCosts + variableCosts + marketingSpend
  */
 export function calculateTotalCosts(
+  mentorExpenses: number,
   stripeFees: number,
   fixedMonthlyCosts: number,
   variableCosts: number,
   marketingSpend: number
 ): number {
-  return stripeFees + fixedMonthlyCosts + variableCosts + marketingSpend;
+  return mentorExpenses + stripeFees + fixedMonthlyCosts + variableCosts + marketingSpend;
 }
 
 /**
  * Calculate net profit
- * Formula: MRR - totalCosts
+ * Formula: totalRevenue - totalCosts
  */
-export function calculateNetProfit(mrr: number, totalCosts: number): number {
-  return mrr - totalCosts;
+export function calculateNetProfit(totalRevenue: number, totalCosts: number): number {
+  return totalRevenue - totalCosts;
 }
 
 /**
  * Calculate net margin percentage
- * Formula: (netProfit / MRR) * 100
- * Returns 0 if MRR is 0 to avoid division by zero
+ * Formula: (netProfit / totalRevenue) * 100
+ * Returns 0 if totalRevenue is 0 to avoid division by zero
  */
-export function calculateNetMargin(netProfit: number, mrr: number): number {
-  if (mrr <= 0) return 0;
-  return (netProfit / mrr) * 100;
+export function calculateNetMargin(netProfit: number, totalRevenue: number): number {
+  if (totalRevenue <= 0) return 0;
+  return (netProfit / totalRevenue) * 100;
 }
 
 /**
@@ -165,18 +288,37 @@ export function calculateAll(inputs: CalculatorInputs): CalculatorOutputs {
   const newMembersPerMonth = calculateNewMembers(inputs.monthlyVisitors, inputs.conversionRate);
   const avgLifetimeMonths = calculateAvgLifetimeMonths(inputs.monthlyChurnRate);
   const activeMembers = calculateActiveMembers(newMembersPerMonth, avgLifetimeMonths);
-  const mrr = calculateMRR(activeMembers, inputs.subscriptionPrice);
-  const stripeFees = calculateStripeFees(mrr, activeMembers, inputs.stripePercentage, inputs.stripeFixedFee);
+  
+  const subscriptionRevenue = calculateSubscriptionRevenue(activeMembers, inputs.subscriptionPrice);
+  
+  const coachingBuyers = calculateCoachingBuyers(activeMembers, inputs.coachingAdoptionRate);
+  const grossCoachingGMV = calculateGrossCoachingGMV(coachingBuyers, inputs.avgCoachingSpendPerUser);
+  const coachingCommissionRevenue = calculateCoachingCommissionRevenue(grossCoachingGMV, inputs.platformCommissionRate);
+  
+  const totalRevenue = calculateTotalRevenue(subscriptionRevenue, coachingCommissionRevenue);
+  
+  const mentorSubscriptionExpense = calculateMentorSubscriptionExpense(subscriptionRevenue, inputs.mentorPayoutRate);
+  const mentorCommissionExpense = calculateMentorCommissionExpense(coachingCommissionRevenue, inputs.mentorPayoutRate);
+  const totalMentorExpenses = calculateTotalMentorExpenses(mentorSubscriptionExpense, mentorCommissionExpense);
+  
+  const stripeFees = calculateStripeFees(subscriptionRevenue, grossCoachingGMV, activeMembers, coachingBuyers, inputs.stripePercentage, inputs.stripeFixedFee);
   const variableCosts = calculateVariableCosts(activeMembers, inputs.variableCostPerUser);
-  const totalCosts = calculateTotalCosts(stripeFees, inputs.fixedMonthlyCosts, variableCosts, inputs.monthlyMarketingSpend);
-  const netProfit = calculateNetProfit(mrr, totalCosts);
-  const netMargin = calculateNetMargin(netProfit, mrr);
+  const totalCosts = calculateTotalCosts(totalMentorExpenses, stripeFees, inputs.fixedMonthlyCosts, variableCosts, inputs.monthlyMarketingSpend);
+  const netProfit = calculateNetProfit(totalRevenue, totalCosts);
+  const netMargin = calculateNetMargin(netProfit, totalRevenue);
 
   return {
     newMembersPerMonth,
     avgLifetimeMonths,
     activeMembers,
-    mrr,
+    subscriptionRevenue,
+    coachingBuyers,
+    grossCoachingGMV,
+    coachingCommissionRevenue,
+    totalRevenue,
+    mentorSubscriptionExpense,
+    mentorCommissionExpense,
+    totalMentorExpenses,
     stripeFees,
     variableCosts,
     totalCosts,

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,6 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import {
   Calculator,
   Users,
@@ -19,6 +18,9 @@ import {
   ChevronLeft,
   Info,
   Lock,
+  GraduationCap,
+  UserCheck,
+  Save,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import {
@@ -30,6 +32,8 @@ import {
   formatCurrency,
   formatPercentage,
   formatNumber,
+  saveInputs,
+  loadInputs,
 } from "@/lib/calculatorLogic";
 
 type CalculatorMode = "internal" | "public";
@@ -95,7 +99,7 @@ interface SummaryCardProps {
   value: string;
   subtitle?: string;
   icon: React.ReactNode;
-  variant?: "default" | "success" | "warning" | "danger";
+  variant?: "default" | "success" | "warning" | "danger" | "info";
 }
 
 function SummaryCard({ title, value, subtitle, icon, variant = "default" }: SummaryCardProps) {
@@ -104,6 +108,7 @@ function SummaryCard({ title, value, subtitle, icon, variant = "default" }: Summ
     success: "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800",
     warning: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800",
     danger: "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800",
+    info: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800",
   };
 
   const iconStyles = {
@@ -111,6 +116,7 @@ function SummaryCard({ title, value, subtitle, icon, variant = "default" }: Summ
     success: "text-green-600 dark:text-green-400",
     warning: "text-amber-600 dark:text-amber-400",
     danger: "text-red-600 dark:text-red-400",
+    info: "text-blue-600 dark:text-blue-400",
   };
 
   return (
@@ -134,14 +140,34 @@ function SummaryCard({ title, value, subtitle, icon, variant = "default" }: Summ
 export default function RevenueCalculator() {
   const [mode, setMode] = useState<CalculatorMode>("internal");
   const [inputs, setInputs] = useState<CalculatorInputs>(defaultInternalInputs);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const saved = loadInputs(mode);
+    if (saved) {
+      setInputs(saved);
+    } else {
+      setInputs(mode === "internal" ? defaultInternalInputs : defaultPublicInputs);
+    }
+    setLoaded(true);
+  }, [mode]);
+
+  useEffect(() => {
+    if (loaded) {
+      saveInputs(inputs, mode);
+    }
+  }, [inputs, mode, loaded]);
 
   const handleModeChange = (newMode: CalculatorMode) => {
     setMode(newMode);
-    setInputs(newMode === "internal" ? defaultInternalInputs : defaultPublicInputs);
   };
 
   const updateInput = (key: keyof CalculatorInputs, value: number) => {
     setInputs(prev => ({ ...prev, [key]: value }));
+  };
+
+  const resetToDefaults = () => {
+    setInputs(mode === "internal" ? defaultInternalInputs : defaultPublicInputs);
   };
 
   const outputs: CalculatorOutputs = useMemo(() => calculateAll(inputs), [inputs]);
@@ -175,19 +201,28 @@ export default function RevenueCalculator() {
               </p>
             </div>
 
-            <Tabs value={mode} onValueChange={(v) => handleModeChange(v as CalculatorMode)}>
-              <TabsList className="grid w-full grid-cols-2" data-testid="tabs-mode">
-                <TabsTrigger value="internal" data-testid="tab-internal">
-                  <Lock className="mr-2 h-4 w-4" />
-                  Founder View
-                </TabsTrigger>
-                <TabsTrigger value="public" data-testid="tab-public">
-                  <Target className="mr-2 h-4 w-4" />
-                  Public View
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <div className="flex items-center gap-3">
+              <Tabs value={mode} onValueChange={(v) => handleModeChange(v as CalculatorMode)}>
+                <TabsList className="grid w-full grid-cols-2" data-testid="tabs-mode">
+                  <TabsTrigger value="internal" data-testid="tab-internal">
+                    <Lock className="mr-2 h-4 w-4" />
+                    Founder View
+                  </TabsTrigger>
+                  <TabsTrigger value="public" data-testid="tab-public">
+                    <Target className="mr-2 h-4 w-4" />
+                    Public View
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <Button variant="outline" size="sm" onClick={resetToDefaults} data-testid="button-reset">
+                Reset
+              </Button>
+            </div>
           </div>
+
+          <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+            <Save className="h-3 w-3" /> Your settings are automatically saved
+          </p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -263,6 +298,85 @@ export default function RevenueCalculator() {
 
             {!isPublic && (
               <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <GraduationCap className="h-5 w-5 text-cyan-600" />
+                      Coaching Marketplace
+                    </CardTitle>
+                    <CardDescription>
+                      Revenue from coaching services (platform earns commission)
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <InputSlider
+                      label="Coaching Adoption Rate"
+                      value={inputs.coachingAdoptionRate}
+                      onChange={(v) => updateInput("coachingAdoptionRate", v)}
+                      min={0}
+                      max={50}
+                      step={1}
+                      suffix="%"
+                      tooltip="Percentage of subscribers who purchase coaching"
+                    />
+                    <InputSlider
+                      label="Avg Coaching Spend"
+                      value={inputs.avgCoachingSpendPerUser}
+                      onChange={(v) => updateInput("avgCoachingSpendPerUser", v)}
+                      min={50}
+                      max={500}
+                      step={10}
+                      prefix="$"
+                      suffix="/mo"
+                      tooltip="Average monthly spend per coaching buyer"
+                    />
+                    <InputSlider
+                      label="Platform Commission"
+                      value={inputs.platformCommissionRate}
+                      onChange={(v) => updateInput("platformCommissionRate", v)}
+                      min={10}
+                      max={30}
+                      step={1}
+                      suffix="%"
+                      tooltip="Platform's cut of coaching GMV (coaches get the rest)"
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <UserCheck className="h-5 w-5 text-indigo-600" />
+                      Mentor Compensation
+                    </CardTitle>
+                    <CardDescription>
+                      Mentor payouts as cost of services (COGS)
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <InputSlider
+                      label="Mentor Payout Rate"
+                      value={inputs.mentorPayoutRate}
+                      onChange={(v) => updateInput("mentorPayoutRate", v)}
+                      min={0}
+                      max={70}
+                      step={5}
+                      suffix="%"
+                      tooltip="Percentage of revenue paid to mentors"
+                    />
+                    <div className="text-xs text-muted-foreground bg-slate-100 dark:bg-slate-800 p-3 rounded-lg">
+                      <p className="font-medium mb-1">Mentor Expense Breakdown:</p>
+                      <ul className="space-y-1">
+                        <li>• From subscriptions: {formatCurrency(outputs.mentorSubscriptionExpense)}</li>
+                        <li>• From coaching commission: {formatCurrency(outputs.mentorCommissionExpense)}</li>
+                        <li className="font-semibold pt-1 border-t border-slate-200 dark:border-slate-700">
+                          Total: {formatCurrency(outputs.totalMentorExpenses)}
+                        </li>
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -358,10 +472,30 @@ export default function RevenueCalculator() {
                 icon={<Users className="h-5 w-5" />}
               />
 
+              {!isPublic && (
+                <>
+                  <SummaryCard
+                    title="Subscription Revenue"
+                    value={formatCurrency(outputs.subscriptionRevenue)}
+                    subtitle={`${formatCurrency(inputs.subscriptionPrice)}/user × ${formatNumber(outputs.activeMembers)} users`}
+                    icon={<DollarSign className="h-5 w-5" />}
+                    variant="success"
+                  />
+
+                  <SummaryCard
+                    title="Coaching Commission"
+                    value={formatCurrency(outputs.coachingCommissionRevenue)}
+                    subtitle={`${formatNumber(outputs.coachingBuyers)} buyers × ${inputs.platformCommissionRate}% of GMV`}
+                    icon={<GraduationCap className="h-5 w-5" />}
+                    variant="info"
+                  />
+                </>
+              )}
+
               <SummaryCard
-                title="Monthly Revenue (MRR)"
-                value={formatCurrency(outputs.mrr)}
-                subtitle={`${formatCurrency(inputs.subscriptionPrice)}/user × ${formatNumber(outputs.activeMembers)} users`}
+                title="Total Revenue"
+                value={formatCurrency(outputs.totalRevenue)}
+                subtitle={isPublic ? "Monthly recurring revenue" : "Subscriptions + Coaching Commission"}
                 icon={<DollarSign className="h-5 w-5" />}
                 variant="success"
               />
@@ -369,10 +503,10 @@ export default function RevenueCalculator() {
               {!isPublic && (
                 <>
                   <SummaryCard
-                    title="Payment Fees"
-                    value={formatCurrency(outputs.stripeFees)}
-                    subtitle={`${formatPercentage(inputs.stripePercentage)} + ${formatCurrency(inputs.stripeFixedFee)}/txn`}
-                    icon={<CreditCard className="h-5 w-5" />}
+                    title="Mentor Expenses"
+                    value={formatCurrency(outputs.totalMentorExpenses)}
+                    subtitle={`${inputs.mentorPayoutRate}% of revenue (COGS)`}
+                    icon={<UserCheck className="h-5 w-5" />}
                     variant="warning"
                   />
 
@@ -380,6 +514,10 @@ export default function RevenueCalculator() {
                     <CardContent className="p-4">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Cost Breakdown</p>
                       <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Mentor Payouts</span>
+                          <span>{formatCurrency(outputs.totalMentorExpenses)}</span>
+                        </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Stripe Fees</span>
                           <span>{formatCurrency(outputs.stripeFees)}</span>
@@ -447,12 +585,12 @@ export default function RevenueCalculator() {
               {!isPublic && (
                 <Card>
                   <CardContent className="p-4">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">MRR vs Costs vs Profit</p>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Revenue vs Costs vs Profit</p>
                     <div className="h-48">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                           data={[
-                            { name: "Revenue", value: outputs.mrr, fill: "#10b981" },
+                            { name: "Revenue", value: outputs.totalRevenue, fill: "#10b981" },
                             { name: "Costs", value: outputs.totalCosts, fill: "#f59e0b" },
                             { name: outputs.netProfit >= 0 ? "Profit" : "Loss", value: outputs.netProfit, fill: outputs.netProfit >= 0 ? "#22c55e" : "#ef4444" },
                           ]}
@@ -471,7 +609,7 @@ export default function RevenueCalculator() {
                           />
                           <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                             {[
-                              { name: "Revenue", value: outputs.mrr, fill: "#10b981" },
+                              { name: "Revenue", value: outputs.totalRevenue, fill: "#10b981" },
                               { name: "Costs", value: outputs.totalCosts, fill: "#f59e0b" },
                               { name: outputs.netProfit >= 0 ? "Profit" : "Loss", value: outputs.netProfit, fill: outputs.netProfit >= 0 ? "#22c55e" : "#ef4444" },
                             ].map((entry, index) => (
@@ -491,7 +629,7 @@ export default function RevenueCalculator() {
                     <p className="text-sm text-muted-foreground mb-3">
                       Ready to build your SaaS business?
                     </p>
-                    <Link href="/apply-entrepreneur">
+                    <Link href="/become-entrepreneur">
                       <Button className="w-full bg-emerald-600 hover:bg-emerald-700" data-testid="button-cta-apply">
                         Build This with TouchConnectPro
                       </Button>
@@ -514,6 +652,7 @@ export default function RevenueCalculator() {
                     <li>• LTV:CAC ratio: {outputs.newMembersPerMonth > 0 && inputs.monthlyMarketingSpend > 0
                       ? `${((outputs.avgLifetimeMonths * inputs.subscriptionPrice) / (inputs.monthlyMarketingSpend / outputs.newMembersPerMonth)).toFixed(1)}:1`
                       : "N/A"}</li>
+                    <li>• Coaching GMV: {formatCurrency(outputs.grossCoachingGMV)} ({formatNumber(outputs.coachingBuyers)} buyers)</li>
                   </ul>
                 </div>
               )}
