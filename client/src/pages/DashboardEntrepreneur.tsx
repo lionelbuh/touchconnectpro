@@ -508,10 +508,15 @@ export default function DashboardEntrepreneur() {
         }
         
         // Fetch approved coaches
+        console.log("[DashboardEntrepreneur] Fetching approved coaches...");
         const coachesResponse = await fetch(`${API_BASE_URL}/api/coaches/approved`);
+        console.log("[DashboardEntrepreneur] Coaches response status:", coachesResponse.status);
         if (coachesResponse.ok) {
           const coachesData = await coachesResponse.json();
+          console.log("[DashboardEntrepreneur] Coaches data received:", coachesData.length, "coaches");
           setApprovedCoaches(coachesData);
+        } else {
+          console.error("[DashboardEntrepreneur] Failed to fetch coaches:", coachesResponse.status);
         }
         
         // Fetch coach ratings
