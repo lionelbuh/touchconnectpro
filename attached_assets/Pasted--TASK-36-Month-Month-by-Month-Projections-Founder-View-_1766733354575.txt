@@ -1,0 +1,166 @@
+📌 TASK — 36-Month Month-by-Month Projections (Founder View Only)
+Context & Intent
+
+TouchConnectPro’s revenue calculator must support long-term SaaS planning.
+
+The goal is not forecasting marketing growth, but projecting unit economics over time using constant assumptions.
+
+This feature is:
+
+Required in Founder view
+
+Explicitly excluded from Public view
+
+1️⃣ Scope Rules
+
+Founder mode only
+
+Frontend only
+
+Same calculation logic as Month 1
+
+No backend, no persistence required
+
+Assumptions remain constant unless user changes inputs
+
+2️⃣ Projection Logic (Core Requirement)
+
+The projection runs month by month for 36 months.
+
+Each month:
+
+Start with previous month’s active subscribers
+
+Add new subscribers
+
+Remove churned subscribers
+
+Recalculate all revenue and cost metrics
+
+Subscriber Evolution
+newSubscribers =
+  monthlyVisitors * conversionRate
+
+churnedSubscribers =
+  previousActiveSubscribers * churnRate
+
+activeSubscribers[month] =
+  previousActiveSubscribers
+  + newSubscribers
+  - churnedSubscribers
+
+3️⃣ Monthly Calculations (Per Month)
+
+For each month, compute:
+
+Subscription revenue
+
+Coaching commission revenue
+
+Total revenue
+
+Mentor expenses (50% of revenue components)
+
+Stripe fees
+
+Fixed costs
+
+Variable costs
+
+Marketing costs
+
+Total costs
+
+Net profit
+
+Net margin %
+
+⚠️ Use the same formulas already defined for Month 1.
+
+4️⃣ Presentation Requirements (Founder UX)
+A. Month Selector
+
+Slider or dropdown:
+
+Month 1 → Month 36
+
+Selecting a month updates all displayed values
+
+B. Summary Cards (Always Visible)
+
+Active subscribers
+
+Total revenue
+
+Total costs
+
+Net profit
+
+Net margin %
+
+C. Charts (Line Charts)
+
+Include the following charts:
+
+Active subscribers over time
+
+Revenue vs costs over time
+
+Net profit over time
+
+Defaults:
+
+36-month range
+
+Optional toggle: 12 / 24 / 36 months
+
+D. Detailed Table (Optional, Collapsible)
+Month	Subscribers	Revenue	Costs	Profit
+
+Collapsed by default
+
+Optional CSV export
+
+5️⃣ Public Mode Constraint (Critical)
+
+Public mode must:
+
+❌ NOT show month-by-month projections
+
+❌ NOT show long-term growth curves
+
+❌ NOT expose margins or cost structure
+
+Public mode may show:
+
+A single monthly snapshot
+
+A simple estimate with disclaimer
+
+6️⃣ Disclaimers (Founder Mode)
+
+Display a small note:
+
+“Projections assume constant traffic, conversion, churn, and pricing. This is a planning tool, not a forecast.”
+
+7️⃣ Success Criteria
+
+The founder must be able to:
+
+Scrub month-by-month
+
+See when the business becomes profitable
+
+Understand how churn impacts long-term sustainability
+
+Use this as an investor-grade planning tool
+
+🧠 Design Principle (Do Not Break)
+
+One calculator
+
+One logic
+
+Two views (Founder / Public)
+
+Time projection only in Founder view

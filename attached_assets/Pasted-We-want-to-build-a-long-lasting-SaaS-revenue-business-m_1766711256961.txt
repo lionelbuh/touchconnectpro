@@ -1,0 +1,257 @@
+We want to build a long-lasting SaaS revenue & business model calculator for TouchConnectPro.
+
+This is not a one-off feature.
+It is intended to be:
+
+A founder decision tool
+
+A trusted unit-economics reference
+
+Later, a public marketing & lead-gen asset
+
+Because of this, the calculator must be:
+
+Accurate
+
+Maintainable
+
+Based on first-principle SaaS economics
+
+Built once, reused for years
+
+🧠 Core Product Decision (Important)
+
+👉 Do NOT build two separate calculators.
+
+Instead:
+
+Build one calculator
+
+With two modes:
+
+internal (founder / private)
+
+public (marketing / simplified)
+
+Both modes must:
+
+Use the exact same calculation logic
+
+Differ only in:
+
+Which inputs are visible
+
+Which values are editable vs fixed
+
+Copy/labels and CTA
+
+This avoids:
+
+Double maintenance
+
+Conflicting numbers
+
+Technical debt
+
+🏗 Architecture Overview
+Frontend Only
+
+No backend
+
+No authentication
+
+No persistence required (optional LocalStorage)
+
+Recommended Stack
+
+React + TypeScript (or Next.js page)
+
+Tailwind CSS
+
+Optional: Recharts / Chart.js
+
+🧩 Component Structure (Suggested)
+RevenueCalculator
+├── InputsPanel
+│   ├── TrafficInputs
+│   ├── PricingInputs
+│   ├── CostInputs
+│   └── Mode-based visibility
+├── Calculations (pure functions)
+├── SummaryCards
+│   ├── Active Members
+│   ├── MRR
+│   ├── Total Costs
+│   ├── Net Profit
+│   └── Margin %
+└── OptionalChart
+
+
+All calculations must live in pure functions (no UI coupling).
+
+🔁 Modes Definition
+1️⃣ Internal Mode (mode="internal")
+
+Audience: Founder / Admin
+Purpose: Financial modeling, pricing decisions, investors
+
+Editable Inputs
+
+Monthly website visitors
+
+Conversion rate (%)
+
+Subscription price ($/month)
+
+Monthly churn rate (%)
+
+Stripe % fee
+
+Stripe fixed fee per transaction
+
+Fixed monthly costs (infra, tools, email, etc.)
+
+Variable cost per active user (AI, support, scaling)
+
+Monthly marketing spend
+
+Visible Outputs
+
+New members per month
+
+Average customer lifetime (months)
+
+Active paying members
+
+MRR
+
+Stripe fees
+
+Total monthly costs (full breakdown)
+
+Net profit
+
+Net margin %
+
+2️⃣ Public Mode (mode="public")
+
+Audience: Prospects / visitors
+Purpose: Education, trust, lead generation
+
+Editable Inputs
+
+Monthly visitors
+
+Conversion rate
+
+Subscription price
+
+Fixed / Hidden Values
+
+Churn rate → fixed realistic default
+
+Stripe fees → assumed
+
+Costs → grouped into “Platform costs”
+
+No detailed cost breakdown shown
+
+Visible Outputs
+
+Estimated monthly revenue
+
+Estimated profit (or profit range)
+
+Active members (optional)
+
+CTA button:
+
+“Build this with TouchConnectPro”
+
+⚠️ Public mode should never look like a promise, only an estimate.
+
+🧮 Required Calculations (Single Source of Truth)
+newMembers = visitors * conversionRate
+
+avgLifetimeMonths = 1 / churnRate
+
+activeMembers = newMembers * avgLifetimeMonths
+
+MRR = activeMembers * subscriptionPrice
+
+stripeFees =
+  (MRR * stripePercentage) +
+  (activeMembers * stripeFixedFee)
+
+variableCosts = activeMembers * variableCostPerUser
+
+totalCosts =
+  stripeFees +
+  fixedMonthlyCosts +
+  variableCosts +
+  marketingSpend
+
+netProfit = MRR - totalCosts
+
+netMargin = netProfit / MRR
+
+
+These formulas must be:
+
+Commented
+
+Reused in both modes
+
+Never duplicated
+
+🎨 UX Expectations
+
+Clean SaaS UI
+
+Sliders + numeric inputs
+
+Instant recalculation (no button needed)
+
+Summary cards clearly highlighting:
+
+MRR
+
+Costs
+
+Profit
+
+Margin
+
+Optional:
+
+Simple MRR vs Costs chart
+
+🧭 Long-Term Thinking (Why This Matters)
+
+This calculator should:
+
+Still make sense in 3–5 years
+
+Survive pricing changes
+
+Survive feature changes
+
+Be trusted as a reference
+
+So:
+
+Avoid hardcoding product-specific assumptions
+
+Keep inputs generic
+
+Separate logic from presentation
+
+✅ Success Criteria
+
+A founder should be able to answer in 30 seconds:
+
+“If I get X visitors, convert at X%, charge X$/month — is this business profitable?”
+
+And later, a visitor should think:
+
+“This platform understands real business economics.”

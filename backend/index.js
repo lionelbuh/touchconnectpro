@@ -2519,6 +2519,54 @@ app.get("/api/coaches/:coachId/contact-requests", async (req, res) => {
   }
 });
 
+// Get all approved coaches - MUST be BEFORE /api/coaches/:coachId to avoid route conflict
+app.get("/api/coaches/approved", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .select("*")
+      .eq("status", "approved")
+      .or("is_disabled.is.null,is_disabled.eq.false")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[GET /api/coaches/approved] Error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log("[GET /api/coaches/approved] Returning", data?.length || 0, "coaches");
+    return res.json(data || []);
+  } catch (error) {
+    console.error("[GET /api/coaches/approved] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get single coach by ID (public profile) - MUST BE AFTER all other /api/coaches/* routes
+app.get("/api/coaches/:coachId", async (req, res) => {
+  try {
+    const { coachId } = req.params;
+    
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .select("*")
+      .eq("id", coachId)
+      .eq("status", "approved")
+      .or("is_disabled.is.null,is_disabled.eq.false")
+      .single();
+
+    if (error) {
+      console.error("[GET /api/coaches/:coachId] Error:", error);
+      return res.status(404).json({ error: "Coach not found" });
+    }
+
+    return res.json(data);
+  } catch (error) {
+    console.error("[GET /api/coaches/:coachId] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // Get contact requests sent by an entrepreneur
 app.get("/api/entrepreneurs/:email/contact-requests", async (req, res) => {
   try {
@@ -3547,29 +3595,6 @@ app.post("/api/set-password", async (req, res) => {
     return res.json({ success: true, message: "Password set successfully" });
   } catch (error) {
     console.error("[SET PASSWORD ERROR]:", error);
-    return res.status(500).json({ error: error.message });
-  }
-});
-
-// Get all approved coaches
-app.get("/api/coaches/approved", async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from("coach_applications")
-      .select("*")
-      .eq("status", "approved")
-      .or("is_disabled.is.null,is_disabled.eq.false")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("[GET /api/coaches/approved] Error:", error);
-      return res.status(400).json({ error: error.message });
-    }
-
-    console.log("[GET /api/coaches/approved] Returning", data?.length || 0, "coaches");
-    return res.json(data || []);
-  } catch (error) {
-    console.error("[GET /api/coaches/approved] Error:", error);
     return res.status(500).json({ error: error.message });
   }
 });

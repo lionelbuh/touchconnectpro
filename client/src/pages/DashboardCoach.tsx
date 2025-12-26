@@ -389,7 +389,7 @@ export default function DashboardCoach() {
     
     if (stripeParam === 'success' || stripeParam === 'refresh') {
       // Refresh Stripe status after returning from onboarding
-      async function refreshStripeStatus() {
+      const refreshStripeStatus = async () => {
         if (!profile?.id) return;
         try {
           const response = await fetch(`${API_BASE_URL}/api/stripe/connect/account-status/${profile.id}`);
@@ -403,7 +403,7 @@ export default function DashboardCoach() {
         } catch (error) {
           console.error("Error refreshing Stripe status:", error);
         }
-      }
+      };
       
       refreshStripeStatus();
       
@@ -737,14 +737,29 @@ export default function DashboardCoach() {
                     </Button>
                   </>
                 ) : (
-                  <Button 
-                    onClick={enterEditMode}
-                    className="bg-cyan-600 hover:bg-cyan-700"
-                    data-testid="button-edit-profile"
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit Profile
-                  </Button>
+                  <>
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        const url = `${window.location.origin}/coach/${profile?.id}`;
+                        navigator.clipboard.writeText(url);
+                        toast.success("Profile link copied! Share it to attract clients.");
+                        window.open(`/coach/${profile?.id}`, '_blank');
+                      }}
+                      data-testid="button-view-public-profile"
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      View Public Profile
+                    </Button>
+                    <Button 
+                      onClick={enterEditMode}
+                      className="bg-cyan-600 hover:bg-cyan-700"
+                      data-testid="button-edit-profile"
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit Profile
+                    </Button>
+                  </>
                 )}
               </div>
             )}

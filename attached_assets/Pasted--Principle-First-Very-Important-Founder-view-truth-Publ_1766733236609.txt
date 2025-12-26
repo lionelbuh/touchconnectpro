@@ -1,0 +1,202 @@
+🎭 Principle First (Very Important)
+
+Founder view = truth
+
+Public view = education + motivation (not promises)
+
+Public users should understand the model, not see your internal margins.
+
+🌍 PUBLIC VIEW (Marketing / Lead-Gen)
+🎯 Goal
+
+Help visitors understand the business potential
+
+Build trust and credibility
+
+Encourage sign-up or contact
+
+Avoid exposing sensitive unit economics
+
+✅ Inputs (Editable)
+
+Only inputs a user can easily relate to:
+
+Monthly website visitors
+
+Conversion rate (%)
+
+Subscription price ($/month)
+
+(Optional, advanced toggle: “Include coaching revenue estimate”)
+
+🔒 Hidden / Fixed (Not Editable)
+
+Use reasonable defaults internally:
+
+Churn rate
+
+Coaching adoption rate (e.g. 20%)
+
+Average coaching spend ($200)
+
+Platform commission (20%)
+
+Mentor revenue share (50%)
+
+Stripe fees
+
+Infrastructure costs
+
+👉 These are your business know-how.
+
+📊 Outputs (Visible)
+
+Keep outputs high-level:
+
+Estimated active members
+
+Estimated monthly platform revenue
+
+Estimated monthly profit range (optional)
+
+Simple visual (Revenue vs Costs)
+
+Avoid:
+❌ Exact margins
+❌ Cost breakdowns
+❌ Mentor payouts
+
+📣 Copy & CTA
+
+Label clearly:
+
+“Estimates only — real results depend on execution.”
+
+CTA:
+
+“Build this business with TouchConnectPro”
+or
+“See how TouchConnectPro helps you reach these numbers”
+
+🧠 Why This Works
+
+Educates without committing
+
+Avoids legal / trust issues
+
+Positions you as thoughtful, not hype-driven
+
+🔐 FOUNDER VIEW (Internal / Admin)
+🎯 Goal
+
+Make real decisions
+
+Validate pricing and incentives
+
+Understand sustainability
+
+Prepare investor conversations
+
+✅ Inputs (All Editable)
+
+Everything must be adjustable:
+
+Growth
+
+Visitors
+
+Conversion rate
+
+Churn
+
+Pricing & Revenue
+
+Subscription price
+
+Coaching adoption rate
+
+Avg coaching spend
+
+Platform commission %
+
+Costs
+
+Mentor payout %
+
+Stripe % + fixed fee
+
+Fixed platform costs
+
+Variable cost per user
+
+Marketing spend
+
+📊 Outputs (Full Transparency)
+
+Show everything:
+
+Revenue
+
+Subscription revenue
+
+Coaching commission revenue
+
+Total revenue
+
+Costs
+
+Mentor expenses (separate line)
+
+Stripe fees
+
+Fixed costs
+
+Variable costs
+
+Marketing
+
+Profitability
+
+Net profit
+
+Net margin %
+
+Cost ratios
+
+🧾 Optional Founder Extras
+
+Break-even point
+
+Revenue per subscriber
+
+Profit per subscriber
+
+Scenario presets (low / base / aggressive)
+
+🧩 Side-by-Side Summary
+Element	Public View	Founder View
+Inputs	Few	All
+Costs visible	❌	✅
+Mentor payouts	❌	✅
+Profit precision	Range	Exact
+Assumptions editable	❌	✅
+CTA	✅	❌
+Decision making	❌	✅
+🛠 Implementation Tip (Tell Your AI Developer)
+
+Build one calculator with a mode flag:
+public or founder
+
+The mode only controls visibility and editability, not calculation logic.
+
+🧠 Founder Advice (Very Honest)
+
+If someone asks:
+
+“Why don’t you show full margins publicly?”
+
+The correct answer is:
+
+“Because we want people to understand the opportunity, not reverse-engineer our business.”
+
+That’s normal. That’s smart.

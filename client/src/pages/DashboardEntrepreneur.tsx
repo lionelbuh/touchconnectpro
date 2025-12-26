@@ -508,10 +508,15 @@ export default function DashboardEntrepreneur() {
         }
         
         // Fetch approved coaches
+        console.log("[DashboardEntrepreneur] Fetching approved coaches...");
         const coachesResponse = await fetch(`${API_BASE_URL}/api/coaches/approved`);
+        console.log("[DashboardEntrepreneur] Coaches response status:", coachesResponse.status);
         if (coachesResponse.ok) {
           const coachesData = await coachesResponse.json();
+          console.log("[DashboardEntrepreneur] Coaches data received:", coachesData.length, "coaches");
           setApprovedCoaches(coachesData);
+        } else {
+          console.error("[DashboardEntrepreneur] Failed to fetch coaches:", coachesResponse.status);
         }
         
         // Fetch coach ratings
@@ -561,6 +566,11 @@ export default function DashboardEntrepreneur() {
       loadContactRequests();
     }
   }, [userEmail]);
+
+  // Debug: Log coaches state when it changes
+  useEffect(() => {
+    console.log("[COACHES STATE] approvedCoaches:", approvedCoaches.length, "isAccountDisabled:", isAccountDisabled, "isPreApproved:", isPreApproved);
+  }, [approvedCoaches, isAccountDisabled, isPreApproved]);
 
   // Load coach purchases
   useEffect(() => {
@@ -1827,7 +1837,7 @@ export default function DashboardEntrepreneur() {
                     </CardContent>
                   </Card>
                 ) : approvedCoaches.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 gap-6">
                     {approvedCoaches
                       .filter((coach) => {
                         if (selectedSpecializations.length === 0) return true;
@@ -1837,59 +1847,69 @@ export default function DashboardEntrepreneur() {
                       .map((coach) => {
                       const rating = coachRatings[coach.id];
                       return (
-                      <Card key={coach.id} className={`border-l-4 ${!coach.stripe_account_id ? 'border-l-gray-400 opacity-80' : 'border-l-purple-500'}`} data-testid={`card-coach-${coach.id}`}>
-                        <CardHeader>
-                          <div className="flex items-start gap-4">
-                            <div className="relative">
-                              <Avatar className="h-12 w-12 border-2 border-purple-200">
-                                {coach.profile_image && (
-                                  <AvatarImage src={coach.profile_image} alt={coach.full_name} />
+                      <Card key={coach.id} className={`border-l-4 ${!coach.stripe_account_id ? 'border-l-gray-400 opacity-80' : 'border-l-purple-500'} overflow-hidden`} data-testid={`card-coach-${coach.id}`}>
+                        <div className="flex flex-col md:flex-row">
+                          <div className="md:w-48 lg:w-56 flex-shrink-0 bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 p-6 flex flex-col items-center justify-center">
+                            <Avatar className="h-24 w-24 md:h-28 md:w-28 lg:h-32 lg:w-32 border-4 border-white dark:border-slate-800 shadow-lg">
+                              {coach.profile_image && (
+                                <AvatarImage src={coach.profile_image} alt={coach.full_name} className="object-cover" />
+                              )}
+                              <AvatarFallback className="bg-purple-500 text-white text-2xl md:text-3xl">
+                                {coach.full_name?.substring(0, 2).toUpperCase() || "CO"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <button
+                              className="mt-3 flex items-center gap-1 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 px-3 py-1.5 rounded-full cursor-pointer transition-colors bg-white/80 dark:bg-slate-800/80"
+                              onClick={async () => {
+                                setSelectedCoachForReviews(coach);
+                                try {
+                                  const response = await fetch(`${API_BASE_URL}/api/coach-ratings/${coach.id}/reviews`);
+                                  if (response.ok) {
+                                    const data = await response.json();
+                                    setCoachReviews(data.reviews || []);
+                                  }
+                                } catch (error) {
+                                  console.error("Error fetching reviews:", error);
+                                }
+                                setShowReviewsModal(true);
+                              }}
+                              data-testid={`rating-coach-${coach.id}`}
+                            >
+                              {rating ? (
+                                <>
+                                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                  <span className="text-sm font-semibold">{rating.averageRating}</span>
+                                  <span className="text-xs text-muted-foreground">({rating.totalRatings})</span>
+                                </>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">No ratings yet</span>
+                              )}
+                            </button>
+                          </div>
+                          <div className="flex-1">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <CardTitle className="text-xl">{coach.full_name}</CardTitle>
+                                {!coach.stripe_account_id && (
+                                  <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 text-xs px-2 py-0.5">
+                                    Coming Soon
+                                  </Badge>
                                 )}
-                                <AvatarFallback className="bg-purple-500 text-white">
-                                  {coach.full_name?.substring(0, 2).toUpperCase() || "CO"}
-                                </AvatarFallback>
-                              </Avatar>
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <CardTitle className="text-lg">{coach.full_name}</CardTitle>
-                                  {!coach.stripe_account_id && (
-                                    <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 text-xs px-2 py-0.5">
-                                      Coming Soon
-                                    </Badge>
-                                  )}
-                                </div>
-                                <button
-                                  className="flex items-center gap-1 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-2 py-1 rounded-md cursor-pointer transition-colors"
-                                  onClick={async () => {
-                                    setSelectedCoachForReviews(coach);
-                                    try {
-                                      const response = await fetch(`${API_BASE_URL}/api/coach-ratings/${coach.id}/reviews`);
-                                      if (response.ok) {
-                                        const data = await response.json();
-                                        setCoachReviews(data.reviews || []);
-                                      }
-                                    } catch (error) {
-                                      console.error("Error fetching reviews:", error);
-                                    }
-                                    setShowReviewsModal(true);
-                                  }}
-                                  data-testid={`rating-coach-${coach.id}`}
-                                >
-                                  {rating ? (
-                                    <>
-                                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                      <span className="text-sm font-semibold">{rating.averageRating}</span>
-                                      <span className="text-xs text-muted-foreground underline">({rating.totalRatings} reviews)</span>
-                                    </>
-                                  ) : (
-                                    <span className="text-xs text-muted-foreground">No ratings yet</span>
-                                  )}
-                                </button>
                               </div>
-                              <p className="text-sm text-muted-foreground">{coach.expertise}</p>
+                              <p className="text-sm text-muted-foreground mt-1">{coach.expertise}</p>
                             </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="hidden md:flex border-purple-300 text-purple-700 hover:bg-purple-50"
+                              onClick={() => navigate(`/coach/${coach.id}`)}
+                              data-testid={`button-view-profile-${coach.id}`}
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              View Profile
+                            </Button>
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-3">
@@ -2021,7 +2041,20 @@ export default function DashboardEntrepreneur() {
                               </Button>
                             )}
                           </div>
+                          {/* Mobile view profile button */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full md:hidden border-purple-300 text-purple-700 hover:bg-purple-50 mt-2"
+                            onClick={() => navigate(`/coach/${coach.id}`)}
+                            data-testid={`button-view-profile-mobile-${coach.id}`}
+                          >
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            View Full Profile
+                          </Button>
                         </CardContent>
+                          </div>
+                        </div>
                       </Card>
                     )})}
                   </div>
