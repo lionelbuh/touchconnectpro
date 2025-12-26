@@ -374,7 +374,7 @@ export default function CoachProfile() {
               </Button>
               <Button 
                 className="bg-purple-600 hover:bg-purple-700"
-                onClick={() => navigate("/apply")}
+                onClick={() => navigate("/become-entrepreneur")}
                 data-testid="button-register-entrepreneur"
               >
                 <UserPlus className="mr-2 h-4 w-4" />
@@ -418,14 +418,25 @@ export default function CoachProfile() {
           </Card>
         )}
 
-        <div className="mt-8 text-center">
-          <p className="text-muted-foreground mb-4">Want to become a coach on TouchConnectPro?</p>
-          <Link href="/become-coach">
-            <Button variant="outline" data-testid="button-become-coach">
-              <GraduationCap className="mr-2 h-4 w-4" />
-              Apply to Become a Coach
-            </Button>
-          </Link>
+        <div className="mt-8 text-center space-y-6">
+          <div>
+            <p className="text-muted-foreground mb-4">Want to grow your startup with a personal mentor and expert coaches?</p>
+            <Link href="/become-entrepreneur">
+              <Button className="bg-purple-600 hover:bg-purple-700" data-testid="button-become-entrepreneur">
+                <UserPlus className="mr-2 h-4 w-4" />
+                Join as an Entrepreneur
+              </Button>
+            </Link>
+          </div>
+          <div className="border-t pt-6">
+            <p className="text-muted-foreground mb-4">Want to become a coach on TouchConnectPro?</p>
+            <Link href="/become-coach">
+              <Button variant="outline" data-testid="button-become-coach">
+                <GraduationCap className="mr-2 h-4 w-4" />
+                Apply to Become a Coach
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
