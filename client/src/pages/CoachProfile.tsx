@@ -374,7 +374,7 @@ export default function CoachProfile() {
               </Button>
               <Button 
                 className="bg-purple-600 hover:bg-purple-700"
-                onClick={() => navigate("/apply")}
+                onClick={() => navigate("/become-entrepreneur")}
                 data-testid="button-register-entrepreneur"
               >
                 <UserPlus className="mr-2 h-4 w-4" />
@@ -421,7 +421,7 @@ export default function CoachProfile() {
         <div className="mt-8 text-center space-y-6">
           <div>
             <p className="text-muted-foreground mb-4">Want to grow your startup with a personal mentor and expert coaches?</p>
-            <Link href="/apply">
+            <Link href="/become-entrepreneur">
               <Button className="bg-purple-600 hover:bg-purple-700" data-testid="button-become-entrepreneur">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Join as an Entrepreneur
