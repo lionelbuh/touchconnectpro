@@ -10,6 +10,10 @@
  * ACCOUNTING PRINCIPLE:
  * - Revenue = 100% of platform income (subscriptions + coaching commission)
  * - Mentor payouts = Cost of services (COGS), NOT revenue reduction
+ * 
+ * VIEW PRINCIPLES:
+ * - Founder view = truth (full transparency for decision making)
+ * - Public view = education + motivation (not promises, no internal margins)
  */
 
 export interface CalculatorInputs {
@@ -26,6 +30,7 @@ export interface CalculatorInputs {
   avgCoachingSpendPerUser: number;
   platformCommissionRate: number;
   mentorPayoutRate: number;
+  includeCoachingRevenue: boolean;
 }
 
 export interface CalculatorOutputs {
@@ -42,6 +47,26 @@ export interface CalculatorOutputs {
   totalMentorExpenses: number;
   stripeFees: number;
   variableCosts: number;
+  totalCosts: number;
+  netProfit: number;
+  netMargin: number;
+}
+
+export interface MonthlyProjection {
+  month: number;
+  activeSubscribers: number;
+  newSubscribers: number;
+  churnedSubscribers: number;
+  subscriptionRevenue: number;
+  coachingBuyers: number;
+  grossCoachingGMV: number;
+  coachingCommissionRevenue: number;
+  totalRevenue: number;
+  mentorExpenses: number;
+  stripeFees: number;
+  fixedCosts: number;
+  variableCosts: number;
+  marketingCosts: number;
   totalCosts: number;
   netProfit: number;
   netMargin: number;
@@ -64,11 +89,12 @@ export const defaultInternalInputs: CalculatorInputs = {
   avgCoachingSpendPerUser: 200,
   platformCommissionRate: 20,
   mentorPayoutRate: 50,
+  includeCoachingRevenue: true,
 };
 
 /**
  * Default values for public mode (simplified marketing view)
- * Some values are fixed and hidden from users
+ * Uses reasonable defaults internally - these are your business know-how
  */
 export const defaultPublicInputs: CalculatorInputs = {
   monthlyVisitors: 5000,
@@ -84,6 +110,7 @@ export const defaultPublicInputs: CalculatorInputs = {
   avgCoachingSpendPerUser: 200,
   platformCommissionRate: 20,
   mentorPayoutRate: 50,
+  includeCoachingRevenue: false,
 };
 
 const STORAGE_KEY_INTERNAL = 'tcp_calculator_internal';
@@ -291,9 +318,10 @@ export function calculateAll(inputs: CalculatorInputs): CalculatorOutputs {
   
   const subscriptionRevenue = calculateSubscriptionRevenue(activeMembers, inputs.subscriptionPrice);
   
-  const coachingBuyers = calculateCoachingBuyers(activeMembers, inputs.coachingAdoptionRate);
-  const grossCoachingGMV = calculateGrossCoachingGMV(coachingBuyers, inputs.avgCoachingSpendPerUser);
-  const coachingCommissionRevenue = calculateCoachingCommissionRevenue(grossCoachingGMV, inputs.platformCommissionRate);
+  const includeCoaching = inputs.includeCoachingRevenue !== false;
+  const coachingBuyers = includeCoaching ? calculateCoachingBuyers(activeMembers, inputs.coachingAdoptionRate) : 0;
+  const grossCoachingGMV = includeCoaching ? calculateGrossCoachingGMV(coachingBuyers, inputs.avgCoachingSpendPerUser) : 0;
+  const coachingCommissionRevenue = includeCoaching ? calculateCoachingCommissionRevenue(grossCoachingGMV, inputs.platformCommissionRate) : 0;
   
   const totalRevenue = calculateTotalRevenue(subscriptionRevenue, coachingCommissionRevenue);
   
@@ -325,6 +353,87 @@ export function calculateAll(inputs: CalculatorInputs): CalculatorOutputs {
     netProfit,
     netMargin,
   };
+}
+
+/**
+ * Generate 36-month projections
+ * 
+ * Each month:
+ * - Start with previous month's active subscribers
+ * - Add new subscribers (constant based on inputs)
+ * - Remove churned subscribers (based on previous active count)
+ * - Recalculate all revenue and cost metrics
+ * 
+ * This uses the same formulas as Month 1, with subscriber evolution.
+ * Honors includeCoachingRevenue flag for consistency with calculateAll.
+ */
+export function generate36MonthProjections(inputs: CalculatorInputs): MonthlyProjection[] {
+  const projections: MonthlyProjection[] = [];
+  const newSubscribersPerMonth = calculateNewMembers(inputs.monthlyVisitors, inputs.conversionRate);
+  const churnRate = inputs.monthlyChurnRate / 100;
+  const includeCoaching = inputs.includeCoachingRevenue !== false;
+  
+  let previousActiveSubscribers = 0;
+  
+  for (let month = 1; month <= 36; month++) {
+    const churnedSubscribers = Math.round(previousActiveSubscribers * churnRate);
+    const activeSubscribers = Math.max(0, previousActiveSubscribers + newSubscribersPerMonth - churnedSubscribers);
+    
+    const subscriptionRevenue = calculateSubscriptionRevenue(activeSubscribers, inputs.subscriptionPrice);
+    
+    const coachingBuyers = includeCoaching ? calculateCoachingBuyers(activeSubscribers, inputs.coachingAdoptionRate) : 0;
+    const grossCoachingGMV = includeCoaching ? calculateGrossCoachingGMV(coachingBuyers, inputs.avgCoachingSpendPerUser) : 0;
+    const coachingCommissionRevenue = includeCoaching ? calculateCoachingCommissionRevenue(grossCoachingGMV, inputs.platformCommissionRate) : 0;
+    
+    const totalRevenue = calculateTotalRevenue(subscriptionRevenue, coachingCommissionRevenue);
+    
+    const mentorSubExpense = calculateMentorSubscriptionExpense(subscriptionRevenue, inputs.mentorPayoutRate);
+    const mentorCommExpense = calculateMentorCommissionExpense(coachingCommissionRevenue, inputs.mentorPayoutRate);
+    const mentorExpenses = calculateTotalMentorExpenses(mentorSubExpense, mentorCommExpense);
+    
+    const stripeFees = calculateStripeFees(subscriptionRevenue, grossCoachingGMV, activeSubscribers, coachingBuyers, inputs.stripePercentage, inputs.stripeFixedFee);
+    const variableCosts = calculateVariableCosts(activeSubscribers, inputs.variableCostPerUser);
+    const totalCosts = calculateTotalCosts(mentorExpenses, stripeFees, inputs.fixedMonthlyCosts, variableCosts, inputs.monthlyMarketingSpend);
+    
+    const netProfit = calculateNetProfit(totalRevenue, totalCosts);
+    const netMargin = calculateNetMargin(netProfit, totalRevenue);
+    
+    projections.push({
+      month,
+      activeSubscribers,
+      newSubscribers: newSubscribersPerMonth,
+      churnedSubscribers,
+      subscriptionRevenue,
+      coachingBuyers,
+      grossCoachingGMV,
+      coachingCommissionRevenue,
+      totalRevenue,
+      mentorExpenses,
+      stripeFees,
+      fixedCosts: inputs.fixedMonthlyCosts,
+      variableCosts,
+      marketingCosts: inputs.monthlyMarketingSpend,
+      totalCosts,
+      netProfit,
+      netMargin,
+    });
+    
+    previousActiveSubscribers = activeSubscribers;
+  }
+  
+  return projections;
+}
+
+/**
+ * Find the break-even month (first month with positive profit)
+ */
+export function findBreakEvenMonth(projections: MonthlyProjection[]): number | null {
+  for (const p of projections) {
+    if (p.netProfit > 0) {
+      return p.month;
+    }
+  }
+  return null;
 }
 
 /**

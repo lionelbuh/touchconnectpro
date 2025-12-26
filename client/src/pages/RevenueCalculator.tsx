@@ -6,6 +6,8 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Calculator,
   Users,
@@ -16,17 +18,28 @@ import {
   Target,
   BarChart3,
   ChevronLeft,
+  ChevronDown,
+  ChevronUp,
   Info,
   Lock,
   GraduationCap,
   UserCheck,
   Save,
+  Calendar,
+  Table,
+  Download,
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { 
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
+  Tooltip, ResponsiveContainer, Cell, Legend, ReferenceLine 
+} from "recharts";
 import {
   CalculatorInputs,
   CalculatorOutputs,
+  MonthlyProjection,
   calculateAll,
+  generate36MonthProjections,
+  findBreakEvenMonth,
   defaultInternalInputs,
   defaultPublicInputs,
   formatCurrency,
@@ -37,6 +50,7 @@ import {
 } from "@/lib/calculatorLogic";
 
 type CalculatorMode = "internal" | "public";
+type ProjectionRange = 12 | 24 | 36;
 
 interface InputSliderProps {
   label: string;
@@ -137,6 +151,566 @@ function SummaryCard({ title, value, subtitle, icon, variant = "default" }: Summ
   );
 }
 
+function PublicView({ inputs, outputs, updateInput }: { 
+  inputs: CalculatorInputs; 
+  outputs: CalculatorOutputs;
+  updateInput: (key: keyof CalculatorInputs, value: number | boolean) => void;
+}) {
+  const isProfitable = outputs.netProfit > 0;
+  const profitIndicator = outputs.netMargin >= 20 ? "Strong" : outputs.netMargin >= 10 ? "Moderate" : outputs.netMargin >= 0 ? "Low" : "Negative";
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calculator className="h-5 w-5 text-emerald-600" />
+            Estimate Your Business Potential
+          </CardTitle>
+          <CardDescription>
+            See what's possible when you build with TouchConnectPro
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <InputSlider
+            label="Monthly Website Visitors"
+            value={inputs.monthlyVisitors}
+            onChange={(v) => updateInput("monthlyVisitors", v)}
+            min={100}
+            max={50000}
+            step={100}
+            tooltip="How many people visit your website each month"
+          />
+          <InputSlider
+            label="Conversion Rate"
+            value={inputs.conversionRate}
+            onChange={(v) => updateInput("conversionRate", v)}
+            min={0.5}
+            max={10}
+            step={0.5}
+            suffix="%"
+            tooltip="What percentage become paying customers"
+          />
+          <InputSlider
+            label="Monthly Subscription Price"
+            value={inputs.subscriptionPrice}
+            onChange={(v) => updateInput("subscriptionPrice", v)}
+            min={19}
+            max={199}
+            step={5}
+            prefix="$"
+            tooltip="How much you charge per month"
+          />
+          
+          <div className="flex items-center justify-between pt-2 border-t">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="include-coaching" className="text-sm font-medium">
+                Include Coaching Revenue
+              </Label>
+              <span className="text-xs text-muted-foreground">(Advanced)</span>
+            </div>
+            <Switch
+              id="include-coaching"
+              checked={inputs.includeCoachingRevenue}
+              onCheckedChange={(checked) => updateInput("includeCoachingRevenue", checked)}
+              data-testid="switch-include-coaching"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <SummaryCard
+          title="Estimated Active Members"
+          value={formatNumber(outputs.activeMembers)}
+          subtitle="Paying subscribers"
+          icon={<Users className="h-5 w-5" />}
+        />
+        
+        <SummaryCard
+          title="Monthly Platform Revenue"
+          value={formatCurrency(outputs.totalRevenue)}
+          subtitle={inputs.includeCoachingRevenue ? "Subscriptions + Coaching" : "From subscriptions"}
+          icon={<DollarSign className="h-5 w-5" />}
+          variant="success"
+        />
+      </div>
+
+      <Card className={`border ${isProfitable ? 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900'}`}>
+        <CardContent className="p-6 text-center">
+          <p className="text-sm text-muted-foreground mb-2">Profit Potential</p>
+          <p className={`text-3xl font-bold ${isProfitable ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-600'}`}>
+            {profitIndicator}
+          </p>
+          <p className="text-xs text-muted-foreground mt-3">
+            {isProfitable 
+              ? "This model shows positive unit economics" 
+              : "Adjust your inputs to improve profitability"}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800">
+        <CardContent className="p-6 text-center space-y-4">
+          <p className="text-muted-foreground">
+            Ready to build this business?
+          </p>
+          <Link href="/become-entrepreneur">
+            <Button size="lg" className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700" data-testid="button-cta-apply">
+              Build This with TouchConnectPro
+            </Button>
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            Estimates only — real results depend on execution
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function FounderView({ inputs, outputs, updateInput, resetToDefaults }: { 
+  inputs: CalculatorInputs; 
+  outputs: CalculatorOutputs;
+  updateInput: (key: keyof CalculatorInputs, value: number | boolean) => void;
+  resetToDefaults: () => void;
+}) {
+  const [selectedMonth, setSelectedMonth] = useState(12);
+  const [projectionRange, setProjectionRange] = useState<ProjectionRange>(36);
+  const [showTable, setShowTable] = useState(false);
+  
+  const projections = useMemo(() => generate36MonthProjections(inputs), [inputs]);
+  const displayedProjections = projections.slice(0, projectionRange);
+  const currentProjection = projections[selectedMonth - 1];
+  const breakEvenMonth = findBreakEvenMonth(projections);
+
+  const profitVariant = currentProjection.netProfit >= 0 ? "success" : "danger";
+  const marginVariant = currentProjection.netMargin >= 20 ? "success" : currentProjection.netMargin >= 0 ? "warning" : "danger";
+
+  const exportToCSV = () => {
+    const headers = ["Month", "Subscribers", "New", "Churned", "Revenue", "Costs", "Profit", "Margin"];
+    const rows = projections.map(p => [
+      p.month,
+      p.activeSubscribers,
+      p.newSubscribers,
+      p.churnedSubscribers,
+      Math.round(p.totalRevenue),
+      Math.round(p.totalCosts),
+      Math.round(p.netProfit),
+      `${p.netMargin.toFixed(1)}%`
+    ]);
+    
+    const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "tcp-projections.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-blue-600" />
+                Growth Assumptions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <InputSlider
+                label="Monthly Website Visitors"
+                value={inputs.monthlyVisitors}
+                onChange={(v) => updateInput("monthlyVisitors", v)}
+                min={100}
+                max={100000}
+                step={100}
+              />
+              <InputSlider
+                label="Conversion Rate"
+                value={inputs.conversionRate}
+                onChange={(v) => updateInput("conversionRate", v)}
+                min={0.1}
+                max={10}
+                step={0.1}
+                suffix="%"
+              />
+              <InputSlider
+                label="Monthly Churn Rate"
+                value={inputs.monthlyChurnRate}
+                onChange={(v) => updateInput("monthlyChurnRate", v)}
+                min={1}
+                max={20}
+                step={0.5}
+                suffix="%"
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5 text-green-600" />
+                Pricing & Revenue
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <InputSlider
+                label="Subscription Price"
+                value={inputs.subscriptionPrice}
+                onChange={(v) => updateInput("subscriptionPrice", v)}
+                min={9}
+                max={299}
+                step={1}
+                prefix="$"
+                suffix="/mo"
+              />
+              <InputSlider
+                label="Coaching Adoption Rate"
+                value={inputs.coachingAdoptionRate}
+                onChange={(v) => updateInput("coachingAdoptionRate", v)}
+                min={0}
+                max={50}
+                step={1}
+                suffix="%"
+              />
+              <InputSlider
+                label="Avg Coaching Spend"
+                value={inputs.avgCoachingSpendPerUser}
+                onChange={(v) => updateInput("avgCoachingSpendPerUser", v)}
+                min={50}
+                max={500}
+                step={10}
+                prefix="$"
+                suffix="/mo"
+              />
+              <InputSlider
+                label="Platform Commission"
+                value={inputs.platformCommissionRate}
+                onChange={(v) => updateInput("platformCommissionRate", v)}
+                min={10}
+                max={30}
+                step={1}
+                suffix="%"
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserCheck className="h-5 w-5 text-indigo-600" />
+                Costs
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <InputSlider
+                label="Mentor Payout Rate"
+                value={inputs.mentorPayoutRate}
+                onChange={(v) => updateInput("mentorPayoutRate", v)}
+                min={0}
+                max={70}
+                step={5}
+                suffix="%"
+              />
+              <InputSlider
+                label="Stripe Percentage Fee"
+                value={inputs.stripePercentage}
+                onChange={(v) => updateInput("stripePercentage", v)}
+                min={1}
+                max={5}
+                step={0.1}
+                suffix="%"
+              />
+              <InputSlider
+                label="Stripe Fixed Fee"
+                value={inputs.stripeFixedFee}
+                onChange={(v) => updateInput("stripeFixedFee", v)}
+                min={0}
+                max={1}
+                step={0.05}
+                prefix="$"
+              />
+              <InputSlider
+                label="Fixed Monthly Costs"
+                value={inputs.fixedMonthlyCosts}
+                onChange={(v) => updateInput("fixedMonthlyCosts", v)}
+                min={0}
+                max={5000}
+                step={50}
+                prefix="$"
+              />
+              <InputSlider
+                label="Variable Cost per User"
+                value={inputs.variableCostPerUser}
+                onChange={(v) => updateInput("variableCostPerUser", v)}
+                min={0}
+                max={20}
+                step={0.5}
+                prefix="$"
+              />
+              <InputSlider
+                label="Monthly Marketing Spend"
+                value={inputs.monthlyMarketingSpend}
+                onChange={(v) => updateInput("monthlyMarketingSpend", v)}
+                min={0}
+                max={10000}
+                step={100}
+                prefix="$"
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-4">
+          <div className="sticky top-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-emerald-600" />
+                Month {selectedMonth}
+              </h2>
+              <Button variant="outline" size="sm" onClick={resetToDefaults} data-testid="button-reset">
+                Reset
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm">Select Month</Label>
+              <Slider
+                value={[selectedMonth]}
+                onValueChange={([v]) => setSelectedMonth(v)}
+                min={1}
+                max={36}
+                step={1}
+                className="cursor-pointer"
+                data-testid="slider-month"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Month 1</span>
+                <span>Month 36</span>
+              </div>
+            </div>
+
+            <SummaryCard
+              title="Active Subscribers"
+              value={formatNumber(currentProjection.activeSubscribers)}
+              subtitle={`+${formatNumber(currentProjection.newSubscribers)} new, -${formatNumber(currentProjection.churnedSubscribers)} churned`}
+              icon={<Users className="h-5 w-5" />}
+            />
+
+            <SummaryCard
+              title="Total Revenue"
+              value={formatCurrency(currentProjection.totalRevenue)}
+              subtitle={inputs.includeCoachingRevenue !== false 
+                ? `Subs: ${formatCurrency(currentProjection.subscriptionRevenue)} + Coaching: ${formatCurrency(currentProjection.coachingCommissionRevenue)}`
+                : `From subscriptions`}
+              icon={<DollarSign className="h-5 w-5" />}
+              variant="success"
+            />
+
+            <Card className="bg-slate-50 dark:bg-slate-900 border">
+              <CardContent className="p-4">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Cost Breakdown</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Mentor Payouts</span>
+                    <span>{formatCurrency(currentProjection.mentorExpenses)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Stripe Fees</span>
+                    <span>{formatCurrency(currentProjection.stripeFees)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Fixed Costs</span>
+                    <span>{formatCurrency(currentProjection.fixedCosts)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Variable Costs</span>
+                    <span>{formatCurrency(currentProjection.variableCosts)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Marketing</span>
+                    <span>{formatCurrency(currentProjection.marketingCosts)}</span>
+                  </div>
+                  <div className="flex justify-between font-semibold pt-2 border-t">
+                    <span>Total Costs</span>
+                    <span>{formatCurrency(currentProjection.totalCosts)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <SummaryCard
+              title="Net Profit"
+              value={formatCurrency(currentProjection.netProfit)}
+              subtitle={currentProjection.netProfit >= 0 ? "Monthly profit" : "Monthly loss"}
+              icon={currentProjection.netProfit >= 0 ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
+              variant={profitVariant}
+            />
+
+            <SummaryCard
+              title="Net Margin"
+              value={formatPercentage(currentProjection.netMargin)}
+              icon={<BarChart3 className="h-5 w-5" />}
+              variant={marginVariant}
+            />
+
+            {breakEvenMonth && (
+              <div className="text-sm p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                <p className="font-medium text-emerald-700 dark:text-emerald-400">
+                  Break-even: Month {breakEvenMonth}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+              36-Month Projections
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Tabs value={projectionRange.toString()} onValueChange={(v) => setProjectionRange(parseInt(v) as ProjectionRange)}>
+                <TabsList className="h-8">
+                  <TabsTrigger value="12" className="text-xs px-2">12m</TabsTrigger>
+                  <TabsTrigger value="24" className="text-xs px-2">24m</TabsTrigger>
+                  <TabsTrigger value="36" className="text-xs px-2">36m</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <h4 className="text-sm font-medium mb-3">Active Subscribers</h4>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={displayedProjections} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11 }} tickFormatter={(v) => `M${v}`} />
+                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => formatNumber(v)} />
+                  <Tooltip 
+                    formatter={(value: number) => formatNumber(value)}
+                    labelFormatter={(label) => `Month ${label}`}
+                  />
+                  <Line type="monotone" dataKey="activeSubscribers" stroke="#3b82f6" strokeWidth={2} dot={false} name="Subscribers" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium mb-3">Revenue vs Costs</h4>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={displayedProjections} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11 }} tickFormatter={(v) => `M${v}`} />
+                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip 
+                    formatter={(value: number) => formatCurrency(value)}
+                    labelFormatter={(label) => `Month ${label}`}
+                  />
+                  <Legend />
+                  <Line type="monotone" dataKey="totalRevenue" stroke="#10b981" strokeWidth={2} dot={false} name="Revenue" />
+                  <Line type="monotone" dataKey="totalCosts" stroke="#f59e0b" strokeWidth={2} dot={false} name="Costs" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium mb-3">Net Profit</h4>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={displayedProjections} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11 }} tickFormatter={(v) => `M${v}`} />
+                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip 
+                    formatter={(value: number) => formatCurrency(value)}
+                    labelFormatter={(label) => `Month ${label}`}
+                  />
+                  <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                  <Line 
+                    type="monotone" 
+                    dataKey="netProfit" 
+                    stroke="#22c55e" 
+                    strokeWidth={2} 
+                    dot={false} 
+                    name="Profit"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <Collapsible open={showTable} onOpenChange={setShowTable}>
+            <div className="flex items-center justify-between">
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2" data-testid="button-toggle-table">
+                  <Table className="h-4 w-4" />
+                  {showTable ? "Hide" : "Show"} Detailed Table
+                  {showTable ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <Button variant="outline" size="sm" onClick={exportToCSV} className="gap-2" data-testid="button-export-csv">
+                <Download className="h-4 w-4" />
+                Export CSV
+              </Button>
+            </div>
+            <CollapsibleContent className="mt-4">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 px-2">Month</th>
+                      <th className="text-right py-2 px-2">Subscribers</th>
+                      <th className="text-right py-2 px-2">Revenue</th>
+                      <th className="text-right py-2 px-2">Costs</th>
+                      <th className="text-right py-2 px-2">Profit</th>
+                      <th className="text-right py-2 px-2">Margin</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {projections.map((p) => (
+                      <tr 
+                        key={p.month} 
+                        className={`border-b hover:bg-slate-50 dark:hover:bg-slate-800 ${p.month === selectedMonth ? 'bg-blue-50 dark:bg-blue-950/30' : ''}`}
+                      >
+                        <td className="py-2 px-2">{p.month}</td>
+                        <td className="text-right py-2 px-2">{formatNumber(p.activeSubscribers)}</td>
+                        <td className="text-right py-2 px-2 text-green-600">{formatCurrency(p.totalRevenue)}</td>
+                        <td className="text-right py-2 px-2 text-amber-600">{formatCurrency(p.totalCosts)}</td>
+                        <td className={`text-right py-2 px-2 ${p.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {formatCurrency(p.netProfit)}
+                        </td>
+                        <td className="text-right py-2 px-2">{formatPercentage(p.netMargin)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+
+          <p className="text-xs text-muted-foreground text-center">
+            Projections assume constant traffic, conversion, churn, and pricing. This is a planning tool, not a forecast.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function RevenueCalculator() {
   const [mode, setMode] = useState<CalculatorMode>("internal");
   const [inputs, setInputs] = useState<CalculatorInputs>(defaultInternalInputs);
@@ -162,7 +736,7 @@ export default function RevenueCalculator() {
     setMode(newMode);
   };
 
-  const updateInput = (key: keyof CalculatorInputs, value: number) => {
+  const updateInput = (key: keyof CalculatorInputs, value: number | boolean) => {
     setInputs(prev => ({ ...prev, [key]: value }));
   };
 
@@ -173,8 +747,6 @@ export default function RevenueCalculator() {
   const outputs: CalculatorOutputs = useMemo(() => calculateAll(inputs), [inputs]);
 
   const isPublic = mode === "public";
-  const profitVariant = outputs.netProfit >= 0 ? "success" : "danger";
-  const marginVariant = outputs.netMargin >= 20 ? "success" : outputs.netMargin >= 0 ? "warning" : "danger";
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
@@ -191,12 +763,12 @@ export default function RevenueCalculator() {
             <div>
               <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white flex items-center gap-3">
                 <Calculator className="h-8 w-8 text-emerald-600" />
-                SaaS Revenue Calculator
+                {isPublic ? "Business Opportunity Calculator" : "SaaS Revenue Calculator"}
               </h1>
               <p className="text-muted-foreground mt-2">
                 {isPublic 
-                  ? "Estimate your potential monthly revenue and profit"
-                  : "Model your unit economics and make data-driven pricing decisions"
+                  ? "Understand what's possible when you build with TouchConnectPro"
+                  : "Model your unit economics and make data-driven decisions"
                 }
               </p>
             </div>
@@ -214,9 +786,11 @@ export default function RevenueCalculator() {
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
-              <Button variant="outline" size="sm" onClick={resetToDefaults} data-testid="button-reset">
-                Reset
-              </Button>
+              {isPublic && (
+                <Button variant="outline" size="sm" onClick={resetToDefaults} data-testid="button-reset">
+                  Reset
+                </Button>
+              )}
             </div>
           </div>
 
@@ -225,440 +799,11 @@ export default function RevenueCalculator() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-blue-600" />
-                  Traffic & Conversion
-                </CardTitle>
-                <CardDescription>
-                  How many visitors and what percentage convert to paying customers
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <InputSlider
-                  label="Monthly Website Visitors"
-                  value={inputs.monthlyVisitors}
-                  onChange={(v) => updateInput("monthlyVisitors", v)}
-                  min={100}
-                  max={100000}
-                  step={100}
-                  tooltip="Total unique visitors to your website per month"
-                />
-                <InputSlider
-                  label="Conversion Rate"
-                  value={inputs.conversionRate}
-                  onChange={(v) => updateInput("conversionRate", v)}
-                  min={0.1}
-                  max={10}
-                  step={0.1}
-                  suffix="%"
-                  tooltip="Percentage of visitors who become paying customers"
-                />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-green-600" />
-                  Pricing & Retention
-                </CardTitle>
-                <CardDescription>
-                  Your subscription pricing and customer retention metrics
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <InputSlider
-                  label="Subscription Price"
-                  value={inputs.subscriptionPrice}
-                  onChange={(v) => updateInput("subscriptionPrice", v)}
-                  min={9}
-                  max={299}
-                  step={1}
-                  prefix="$"
-                  suffix="/mo"
-                  tooltip="Monthly subscription price per customer"
-                />
-                <InputSlider
-                  label="Monthly Churn Rate"
-                  value={inputs.monthlyChurnRate}
-                  onChange={(v) => updateInput("monthlyChurnRate", v)}
-                  min={1}
-                  max={20}
-                  step={0.5}
-                  suffix="%"
-                  tooltip="Percentage of customers who cancel each month"
-                  locked={isPublic}
-                />
-              </CardContent>
-            </Card>
-
-            {!isPublic && (
-              <>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <GraduationCap className="h-5 w-5 text-cyan-600" />
-                      Coaching Marketplace
-                    </CardTitle>
-                    <CardDescription>
-                      Revenue from coaching services (platform earns commission)
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <InputSlider
-                      label="Coaching Adoption Rate"
-                      value={inputs.coachingAdoptionRate}
-                      onChange={(v) => updateInput("coachingAdoptionRate", v)}
-                      min={0}
-                      max={50}
-                      step={1}
-                      suffix="%"
-                      tooltip="Percentage of subscribers who purchase coaching"
-                    />
-                    <InputSlider
-                      label="Avg Coaching Spend"
-                      value={inputs.avgCoachingSpendPerUser}
-                      onChange={(v) => updateInput("avgCoachingSpendPerUser", v)}
-                      min={50}
-                      max={500}
-                      step={10}
-                      prefix="$"
-                      suffix="/mo"
-                      tooltip="Average monthly spend per coaching buyer"
-                    />
-                    <InputSlider
-                      label="Platform Commission"
-                      value={inputs.platformCommissionRate}
-                      onChange={(v) => updateInput("platformCommissionRate", v)}
-                      min={10}
-                      max={30}
-                      step={1}
-                      suffix="%"
-                      tooltip="Platform's cut of coaching GMV (coaches get the rest)"
-                    />
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <UserCheck className="h-5 w-5 text-indigo-600" />
-                      Mentor Compensation
-                    </CardTitle>
-                    <CardDescription>
-                      Mentor payouts as cost of services (COGS)
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <InputSlider
-                      label="Mentor Payout Rate"
-                      value={inputs.mentorPayoutRate}
-                      onChange={(v) => updateInput("mentorPayoutRate", v)}
-                      min={0}
-                      max={70}
-                      step={5}
-                      suffix="%"
-                      tooltip="Percentage of revenue paid to mentors"
-                    />
-                    <div className="text-xs text-muted-foreground bg-slate-100 dark:bg-slate-800 p-3 rounded-lg">
-                      <p className="font-medium mb-1">Mentor Expense Breakdown:</p>
-                      <ul className="space-y-1">
-                        <li>• From subscriptions: {formatCurrency(outputs.mentorSubscriptionExpense)}</li>
-                        <li>• From coaching commission: {formatCurrency(outputs.mentorCommissionExpense)}</li>
-                        <li className="font-semibold pt-1 border-t border-slate-200 dark:border-slate-700">
-                          Total: {formatCurrency(outputs.totalMentorExpenses)}
-                        </li>
-                      </ul>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CreditCard className="h-5 w-5 text-purple-600" />
-                      Payment Processing
-                    </CardTitle>
-                    <CardDescription>
-                      Stripe fees for processing payments
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <InputSlider
-                      label="Stripe Percentage Fee"
-                      value={inputs.stripePercentage}
-                      onChange={(v) => updateInput("stripePercentage", v)}
-                      min={1}
-                      max={5}
-                      step={0.1}
-                      suffix="%"
-                      tooltip="Stripe's percentage fee (typically 2.9%)"
-                    />
-                    <InputSlider
-                      label="Stripe Fixed Fee"
-                      value={inputs.stripeFixedFee}
-                      onChange={(v) => updateInput("stripeFixedFee", v)}
-                      min={0}
-                      max={1}
-                      step={0.05}
-                      prefix="$"
-                      tooltip="Stripe's fixed fee per transaction (typically $0.30)"
-                    />
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5 text-orange-600" />
-                      Operating Costs
-                    </CardTitle>
-                    <CardDescription>
-                      Fixed and variable costs to run your business
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <InputSlider
-                      label="Fixed Monthly Costs"
-                      value={inputs.fixedMonthlyCosts}
-                      onChange={(v) => updateInput("fixedMonthlyCosts", v)}
-                      min={0}
-                      max={5000}
-                      step={50}
-                      prefix="$"
-                      tooltip="Infrastructure, tools, email services, etc."
-                    />
-                    <InputSlider
-                      label="Variable Cost per User"
-                      value={inputs.variableCostPerUser}
-                      onChange={(v) => updateInput("variableCostPerUser", v)}
-                      min={0}
-                      max={20}
-                      step={0.5}
-                      prefix="$"
-                      tooltip="AI API costs, support, scaling costs per active user"
-                    />
-                    <InputSlider
-                      label="Monthly Marketing Spend"
-                      value={inputs.monthlyMarketingSpend}
-                      onChange={(v) => updateInput("monthlyMarketingSpend", v)}
-                      min={0}
-                      max={10000}
-                      step={100}
-                      prefix="$"
-                      tooltip="Paid advertising, content marketing, etc."
-                    />
-                  </CardContent>
-                </Card>
-              </>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            <div className="sticky top-4 space-y-4">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-emerald-600" />
-                {isPublic ? "Your Estimated Revenue" : "Financial Summary"}
-              </h2>
-
-              <SummaryCard
-                title="Active Members"
-                value={formatNumber(outputs.activeMembers)}
-                subtitle={`${formatNumber(outputs.newMembersPerMonth)} new/month`}
-                icon={<Users className="h-5 w-5" />}
-              />
-
-              {!isPublic && (
-                <>
-                  <SummaryCard
-                    title="Subscription Revenue"
-                    value={formatCurrency(outputs.subscriptionRevenue)}
-                    subtitle={`${formatCurrency(inputs.subscriptionPrice)}/user × ${formatNumber(outputs.activeMembers)} users`}
-                    icon={<DollarSign className="h-5 w-5" />}
-                    variant="success"
-                  />
-
-                  <SummaryCard
-                    title="Coaching Commission"
-                    value={formatCurrency(outputs.coachingCommissionRevenue)}
-                    subtitle={`${formatNumber(outputs.coachingBuyers)} buyers × ${inputs.platformCommissionRate}% of GMV`}
-                    icon={<GraduationCap className="h-5 w-5" />}
-                    variant="info"
-                  />
-                </>
-              )}
-
-              <SummaryCard
-                title="Total Revenue"
-                value={formatCurrency(outputs.totalRevenue)}
-                subtitle={isPublic ? "Monthly recurring revenue" : "Subscriptions + Coaching Commission"}
-                icon={<DollarSign className="h-5 w-5" />}
-                variant="success"
-              />
-
-              {!isPublic && (
-                <>
-                  <SummaryCard
-                    title="Mentor Expenses"
-                    value={formatCurrency(outputs.totalMentorExpenses)}
-                    subtitle={`${inputs.mentorPayoutRate}% of revenue (COGS)`}
-                    icon={<UserCheck className="h-5 w-5" />}
-                    variant="warning"
-                  />
-
-                  <Card className="bg-slate-50 dark:bg-slate-900 border">
-                    <CardContent className="p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Cost Breakdown</p>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Mentor Payouts</span>
-                          <span>{formatCurrency(outputs.totalMentorExpenses)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Stripe Fees</span>
-                          <span>{formatCurrency(outputs.stripeFees)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Fixed Costs</span>
-                          <span>{formatCurrency(inputs.fixedMonthlyCosts)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Variable Costs</span>
-                          <span>{formatCurrency(outputs.variableCosts)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Marketing</span>
-                          <span>{formatCurrency(inputs.monthlyMarketingSpend)}</span>
-                        </div>
-                        <div className="flex justify-between font-semibold pt-2 border-t">
-                          <span>Total Costs</span>
-                          <span>{formatCurrency(outputs.totalCosts)}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </>
-              )}
-
-              {isPublic && (
-                <SummaryCard
-                  title="Platform Costs"
-                  value={formatCurrency(outputs.totalCosts)}
-                  subtitle="Estimated operating expenses"
-                  icon={<TrendingDown className="h-5 w-5" />}
-                  variant="warning"
-                />
-              )}
-
-              <SummaryCard
-                title="Net Profit"
-                value={formatCurrency(outputs.netProfit)}
-                subtitle={outputs.netProfit >= 0 ? "Monthly profit after all costs" : "Monthly loss"}
-                icon={outputs.netProfit >= 0 ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
-                variant={profitVariant}
-              />
-
-              <SummaryCard
-                title="Net Margin"
-                value={formatPercentage(outputs.netMargin)}
-                subtitle={outputs.netMargin >= 20 ? "Healthy margin" : outputs.netMargin >= 0 ? "Low margin" : "Negative margin"}
-                icon={<BarChart3 className="h-5 w-5" />}
-                variant={marginVariant}
-              />
-
-              {!isPublic && (
-                <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
-                  <CardContent className="p-4">
-                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-2">Customer Lifetime</p>
-                    <p className="text-2xl font-bold">{outputs.avgLifetimeMonths.toFixed(1)} months</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      LTV: {formatCurrency(outputs.avgLifetimeMonths * inputs.subscriptionPrice)}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {!isPublic && (
-                <Card>
-                  <CardContent className="p-4">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Revenue vs Costs vs Profit</p>
-                    <div className="h-48">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={[
-                            { name: "Revenue", value: outputs.totalRevenue, fill: "#10b981" },
-                            { name: "Costs", value: outputs.totalCosts, fill: "#f59e0b" },
-                            { name: outputs.netProfit >= 0 ? "Profit" : "Loss", value: outputs.netProfit, fill: outputs.netProfit >= 0 ? "#22c55e" : "#ef4444" },
-                          ]}
-                          margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                          <YAxis 
-                            tick={{ fontSize: 11 }} 
-                            tickFormatter={(v) => v >= 0 ? `$${(v / 1000).toFixed(0)}k` : `-$${(Math.abs(v) / 1000).toFixed(0)}k`}
-                            domain={['auto', 'auto']}
-                          />
-                          <Tooltip 
-                            formatter={(value: number) => [formatCurrency(Math.abs(value)), value < 0 ? "Loss" : ""]}
-                            contentStyle={{ fontSize: 12 }}
-                          />
-                          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                            {[
-                              { name: "Revenue", value: outputs.totalRevenue, fill: "#10b981" },
-                              { name: "Costs", value: outputs.totalCosts, fill: "#f59e0b" },
-                              { name: outputs.netProfit >= 0 ? "Profit" : "Loss", value: outputs.netProfit, fill: outputs.netProfit >= 0 ? "#22c55e" : "#ef4444" },
-                            ].map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.fill} />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {isPublic && (
-                <Card className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800">
-                  <CardContent className="p-4 text-center">
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Ready to build your SaaS business?
-                    </p>
-                    <Link href="/become-entrepreneur">
-                      <Button className="w-full bg-emerald-600 hover:bg-emerald-700" data-testid="button-cta-apply">
-                        Build This with TouchConnectPro
-                      </Button>
-                    </Link>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      *Estimates are for illustration only
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {!isPublic && (
-                <div className="text-xs text-muted-foreground p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                  <p className="font-medium mb-1">💡 Quick Insights</p>
-                  <ul className="space-y-1">
-                    <li>• Break-even at {inputs.subscriptionPrice > 0 ? formatNumber(Math.ceil(outputs.totalCosts / inputs.subscriptionPrice)) : "N/A"} subscribers</li>
-                    <li>• CAC payback: {outputs.newMembersPerMonth > 0 && inputs.subscriptionPrice > 0 
-                      ? `${(inputs.monthlyMarketingSpend / outputs.newMembersPerMonth / inputs.subscriptionPrice).toFixed(1)} months`
-                      : "N/A"}</li>
-                    <li>• LTV:CAC ratio: {outputs.newMembersPerMonth > 0 && inputs.monthlyMarketingSpend > 0
-                      ? `${((outputs.avgLifetimeMonths * inputs.subscriptionPrice) / (inputs.monthlyMarketingSpend / outputs.newMembersPerMonth)).toFixed(1)}:1`
-                      : "N/A"}</li>
-                    <li>• Coaching GMV: {formatCurrency(outputs.grossCoachingGMV)} ({formatNumber(outputs.coachingBuyers)} buyers)</li>
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        {isPublic ? (
+          <PublicView inputs={inputs} outputs={outputs} updateInput={updateInput} />
+        ) : (
+          <FounderView inputs={inputs} outputs={outputs} updateInput={updateInput} resetToDefaults={resetToDefaults} />
+        )}
       </div>
     </div>
   );
