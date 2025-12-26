@@ -400,6 +400,7 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 min={100}
                 max={100000}
                 step={100}
+                tooltip="Unique visitors to your website each month"
               />
               <InputSlider
                 label="Conversion Rate"
@@ -409,6 +410,7 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 max={10}
                 step={0.1}
                 suffix="%"
+                tooltip="Percentage of visitors who become paying subscribers"
               />
               <InputSlider
                 label="Monthly Churn Rate"
@@ -418,6 +420,7 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 max={20}
                 step={0.5}
                 suffix="%"
+                tooltip="Percentage of subscribers who cancel each month"
               />
             </CardContent>
           </Card>
@@ -439,6 +442,7 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 step={1}
                 prefix="$"
                 suffix="/mo"
+                tooltip="How much you charge per month for membership"
               />
               <InputSlider
                 label="Coaching Adoption Rate"
@@ -448,6 +452,7 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 max={50}
                 step={1}
                 suffix="%"
+                tooltip="Percentage of subscribers who purchase coaching services"
               />
               <InputSlider
                 label="Avg Coaching Spend"
@@ -458,6 +463,7 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 step={10}
                 prefix="$"
                 suffix="/mo"
+                tooltip="Average monthly spending on coaching per user who buys coaching"
               />
               <InputSlider
                 label="Platform Commission"
@@ -467,6 +473,7 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 max={30}
                 step={1}
                 suffix="%"
+                tooltip="Percentage of coaching fees kept by the platform (coaches keep the rest)"
               />
             </CardContent>
           </Card>
@@ -487,7 +494,17 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 max={70}
                 step={5}
                 suffix="%"
+                tooltip="Percentage of subscription revenue paid to mentors as COGS"
               />
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Info className="h-4 w-4" />
+                  <span className="font-medium">Mentor Payment Estimate</span>
+                </div>
+                <p className="text-slate-600 dark:text-slate-400">
+                  At {inputs.mentorPayoutRate}% of ${inputs.subscriptionPrice}, each new entrepreneur generates a one-time mentor payment of <span className="font-semibold text-indigo-600">${((inputs.mentorPayoutRate / 100) * inputs.subscriptionPrice).toFixed(2)}</span> for their first 30-minute onboarding call.
+                </p>
+              </div>
               <InputSlider
                 label="Stripe Percentage Fee"
                 value={inputs.stripePercentage}
@@ -496,6 +513,7 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 max={5}
                 step={0.1}
                 suffix="%"
+                tooltip="Stripe's percentage fee on each transaction (typically 2.9%)"
               />
               <InputSlider
                 label="Stripe Fixed Fee"
@@ -505,6 +523,7 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 max={1}
                 step={0.05}
                 prefix="$"
+                tooltip="Stripe's fixed fee per transaction (typically $0.30)"
               />
               <InputSlider
                 label="Fixed Monthly Costs"
@@ -514,6 +533,7 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 max={5000}
                 step={50}
                 prefix="$"
+                tooltip="Monthly expenses regardless of user count (hosting, tools, etc.)"
               />
               <InputSlider
                 label="Variable Cost per User"
@@ -523,6 +543,7 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 max={20}
                 step={0.5}
                 prefix="$"
+                tooltip="Cost that scales with each active user (support, infrastructure)"
               />
               <InputSlider
                 label="Monthly Marketing Spend"
@@ -532,6 +553,7 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 max={10000}
                 step={100}
                 prefix="$"
+                tooltip="Monthly budget for advertising, content, and promotions"
               />
             </CardContent>
           </Card>
