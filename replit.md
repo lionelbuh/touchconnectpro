@@ -44,8 +44,12 @@ The platform uses a component-based approach with a responsive, mobile-first des
     - robots.txt at `/robots.txt` with sitemap reference
     - JSON-LD structured data endpoints: `/api/seo/organization-schema`, `/api/seo/mentor-schema/:mentorId`, `/api/seo/coach-schema/:coachId`
 -   **SaaS Revenue Calculator**: A frontend-only financial modeling tool at `/calculator` with two modes:
-    - **Internal (Founder View)**: Full control over all inputs including traffic, conversion, pricing, churn, Stripe fees, fixed/variable costs, and marketing spend. Displays complete cost breakdown, MRR vs Costs chart, and quick insights (break-even, CAC payback, LTV:CAC ratio).
+    - **Internal (Founder View)**: Full control over all inputs including traffic, conversion, pricing, churn, Stripe fees, fixed/variable costs, marketing spend, coaching marketplace settings, and mentor compensation. Displays complete cost breakdown, Revenue vs Costs chart, and quick insights (break-even, CAC payback, LTV:CAC ratio, coaching GMV).
     - **Public (Marketing View)**: Simplified version with some values locked/hidden, showing estimated revenue and profit with a CTA to apply.
+    - **Coaching Marketplace Income**: Models coaching adoption rate, average spend per user, and platform commission (default 20%). GMV and commission revenue tracked separately.
+    - **Mentor Compensation**: Mentor payouts modeled as COGS (default 50% of subscription + coaching commission revenue). Revenue stays at 100% platform income; mentor payouts appear only in costs.
+    - **Stripe Fee Accuracy**: Stripe percentage fees calculated on full processed volume (subscriptions + gross coaching GMV), not just platform revenue.
+    - **localStorage Persistence**: Inputs saved per mode (internal vs public) with separate storage keys. Settings persist between sessions.
     - Pure calculation logic in `client/src/lib/calculatorLogic.ts` ensures single source of truth for all SaaS unit economics formulas.
     - No backend required - all calculations happen client-side with instant recalculation.
 
