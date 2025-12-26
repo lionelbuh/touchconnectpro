@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { 
   GraduationCap, Star, ChevronLeft, Send, CreditCard, Loader2, 
-  Share2, Copy, Check, ExternalLink, Calendar, MessageCircle
+  Share2, Copy, Check, ExternalLink, Calendar, MessageCircle, UserPlus
 } from "lucide-react";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -38,11 +39,26 @@ interface Review {
 
 export default function CoachProfile() {
   const { coachId } = useParams<{ coachId: string }>();
+  const [, navigate] = useLocation();
   const [coach, setCoach] = useState<CoachData | null>(null);
   const [loading, setLoading] = useState(true);
   const [rating, setRating] = useState<CoachRating | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [copied, setCopied] = useState(false);
+  const [showRegisterDialog, setShowRegisterDialog] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const profileData = localStorage.getItem("tcp_profileData");
+    if (profileData) {
+      try {
+        const profile = JSON.parse(profileData);
+        if (profile.email) {
+          setIsLoggedIn(true);
+        }
+      } catch {}
+    }
+  }, []);
 
   useEffect(() => {
     const fetchCoach = async () => {
@@ -307,15 +323,66 @@ export default function CoachProfile() {
             )}
 
             <div className="pt-4 border-t">
-              <Link href={`/contact-coach/${coach.id}`}>
-                <Button variant="outline" size="lg" className="w-full md:w-auto border-cyan-300 text-cyan-700 hover:bg-cyan-50" data-testid="button-contact-coach">
+              {isLoggedIn ? (
+                <Link href={`/contact-coach/${coach.id}`}>
+                  <Button variant="outline" size="lg" className="w-full md:w-auto border-cyan-300 text-cyan-700 hover:bg-cyan-50" data-testid="button-contact-coach">
+                    <Send className="mr-2 h-4 w-4" />
+                    Send a Message
+                  </Button>
+                </Link>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="w-full md:w-auto border-cyan-300 text-cyan-700 hover:bg-cyan-50" 
+                  onClick={() => setShowRegisterDialog(true)}
+                  data-testid="button-contact-coach"
+                >
                   <Send className="mr-2 h-4 w-4" />
                   Send a Message
                 </Button>
-              </Link>
+              )}
             </div>
           </CardContent>
         </Card>
+
+        <Dialog open={showRegisterDialog} onOpenChange={setShowRegisterDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <UserPlus className="h-5 w-5 text-purple-600" />
+                Join TouchConnectPro
+              </DialogTitle>
+              <DialogDescription>
+                To contact this coach, you need to register as an entrepreneur on TouchConnectPro. It's free to join and takes just a minute.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <p className="text-sm text-muted-foreground">
+                As a registered entrepreneur, you can:
+              </p>
+              <ul className="list-disc list-inside text-sm space-y-1 text-slate-600 dark:text-slate-300">
+                <li>Connect with expert coaches like {coach.full_name}</li>
+                <li>Get matched with mentors for your startup</li>
+                <li>Access AI-powered business planning tools</li>
+                <li>Book coaching sessions and receive guidance</li>
+              </ul>
+            </div>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setShowRegisterDialog(false)}>
+                Maybe Later
+              </Button>
+              <Button 
+                className="bg-purple-600 hover:bg-purple-700"
+                onClick={() => navigate("/apply")}
+                data-testid="button-register-entrepreneur"
+              >
+                <UserPlus className="mr-2 h-4 w-4" />
+                Register as Entrepreneur
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {reviews.length > 0 && (
           <Card className="mt-6">
