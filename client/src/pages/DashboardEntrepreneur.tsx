@@ -567,6 +567,11 @@ export default function DashboardEntrepreneur() {
     }
   }, [userEmail]);
 
+  // Debug: Log coaches state when it changes
+  useEffect(() => {
+    console.log("[COACHES STATE] approvedCoaches:", approvedCoaches.length, "isAccountDisabled:", isAccountDisabled, "isPreApproved:", isPreApproved);
+  }, [approvedCoaches, isAccountDisabled, isPreApproved]);
+
   // Load coach purchases
   useEffect(() => {
     async function loadPurchases() {
