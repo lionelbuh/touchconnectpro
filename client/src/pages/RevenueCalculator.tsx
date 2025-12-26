@@ -156,19 +156,23 @@ function PublicView({ inputs, outputs, updateInput }: {
   outputs: CalculatorOutputs;
   updateInput: (key: keyof CalculatorInputs, value: number | boolean) => void;
 }) {
-  const isProfitable = outputs.netProfit > 0;
-  const profitIndicator = outputs.netMargin >= 20 ? "Strong" : outputs.netMargin >= 10 ? "Moderate" : outputs.netMargin >= 0 ? "Low" : "Negative";
+  const projections = useMemo(() => generate36MonthProjections(inputs), [inputs]);
+  const month1 = projections[0];
+  const chartData = projections.slice(0, 24).map(p => ({
+    month: `M${p.month}`,
+    subscribers: p.activeSubscribers,
+  }));
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calculator className="h-5 w-5 text-emerald-600" />
-            Estimate Your Business Potential
+            <Calculator className="h-5 w-5 text-slate-600" />
+            SaaS Revenue Calculator
           </CardTitle>
           <CardDescription>
-            See what's possible when you build with TouchConnectPro
+            Understand how subscription-based platforms scale over time
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -207,7 +211,7 @@ function PublicView({ inputs, outputs, updateInput }: {
               <Label htmlFor="include-coaching" className="text-sm font-medium">
                 Include Coaching Revenue
               </Label>
-              <span className="text-xs text-muted-foreground">(Advanced)</span>
+              <span className="text-xs text-muted-foreground">(Optional)</span>
             </div>
             <Switch
               id="include-coaching"
@@ -216,52 +220,119 @@ function PublicView({ inputs, outputs, updateInput }: {
               data-testid="switch-include-coaching"
             />
           </div>
+          {inputs.includeCoachingRevenue && (
+            <p className="text-xs text-muted-foreground bg-slate-50 dark:bg-slate-900 p-2 rounded">
+              Coaching revenue assumes 20% of members purchase coaching at an average of $200/month, with a 20% platform commission.
+            </p>
+          )}
         </CardContent>
       </Card>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <SummaryCard
-          title="Estimated Active Members"
-          value={formatNumber(outputs.activeMembers)}
-          subtitle="Paying subscribers"
-          icon={<Users className="h-5 w-5" />}
-        />
-        
-        <SummaryCard
-          title="Monthly Platform Revenue"
-          value={formatCurrency(outputs.totalRevenue)}
-          subtitle={inputs.includeCoachingRevenue ? "Subscriptions + Coaching" : "From subscriptions"}
-          icon={<DollarSign className="h-5 w-5" />}
-          variant="success"
-        />
-      </div>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-blue-600" />
+            Month 1 Estimate
+          </CardTitle>
+          <CardDescription>Based on new subscribers acquired this month</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4 border border-blue-100 dark:border-blue-900">
+              <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">New Paying Members</p>
+              <p className="text-3xl font-bold mt-1 text-slate-900 dark:text-white">{formatNumber(month1.newSubscribers)}</p>
+              <p className="text-xs text-muted-foreground mt-1">subscribers in month 1</p>
+            </div>
+            <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4 border border-blue-100 dark:border-blue-900">
+              <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">Platform Revenue</p>
+              <p className="text-3xl font-bold mt-1 text-slate-900 dark:text-white">{formatCurrency(month1.totalRevenue)}</p>
+              <p className="text-xs text-muted-foreground mt-1">{inputs.includeCoachingRevenue ? "subscriptions + coaching" : "from subscriptions"}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      <Card className={`border ${isProfitable ? 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900'}`}>
-        <CardContent className="p-6 text-center">
-          <p className="text-sm text-muted-foreground mb-2">Profit Potential</p>
-          <p className={`text-3xl font-bold ${isProfitable ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-600'}`}>
-            {profitIndicator}
-          </p>
-          <p className="text-xs text-muted-foreground mt-3">
-            {isProfitable 
-              ? "This model shows positive unit economics" 
-              : "Adjust your inputs to improve profitability"}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-emerald-600" />
+            Steady-State Monthly Estimate
+          </CardTitle>
+          <CardDescription>Assumes consistent traffic, conversion, and average retention over time</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-4 border border-emerald-100 dark:border-emerald-900">
+              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Active Paying Members</p>
+              <p className="text-3xl font-bold mt-1 text-slate-900 dark:text-white">{formatNumber(outputs.activeMembers)}</p>
+              <p className="text-xs text-muted-foreground mt-1">at equilibrium</p>
+            </div>
+            <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-4 border border-emerald-100 dark:border-emerald-900">
+              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Monthly Platform Revenue</p>
+              <p className="text-3xl font-bold mt-1 text-slate-900 dark:text-white">{formatCurrency(outputs.totalRevenue)}</p>
+              <p className="text-xs text-muted-foreground mt-1">{inputs.includeCoachingRevenue ? "subscriptions + coaching" : "from subscriptions"}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-slate-600" />
+            Subscriber Growth Over Time
+          </CardTitle>
+          <CardDescription>Illustrative growth under constant assumptions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis 
+                  dataKey="month" 
+                  tick={{ fontSize: 10 }} 
+                  tickLine={false}
+                  interval={5}
+                />
+                <YAxis 
+                  tick={{ fontSize: 10 }} 
+                  tickLine={false}
+                  tickFormatter={(v) => formatNumber(v)}
+                  width={50}
+                />
+                <Tooltip 
+                  formatter={(value: number) => [formatNumber(value), "Active Subscribers"]}
+                  labelFormatter={(label) => `Month ${label.replace('M', '')}`}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="subscribers" 
+                  stroke="#64748b" 
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="text-xs text-muted-foreground text-center mt-3">
+            This estimate illustrates how subscription-based platforms typically scale over time.
           </p>
         </CardContent>
       </Card>
 
-      <Card className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800">
+      <Card className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700">
         <CardContent className="p-6 text-center space-y-4">
           <p className="text-muted-foreground">
-            Ready to build this business?
+            Want to learn more about building a SaaS business?
           </p>
           <Link href="/become-entrepreneur">
-            <Button size="lg" className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700" data-testid="button-cta-apply">
-              Build This with TouchConnectPro
+            <Button size="lg" className="w-full md:w-auto" data-testid="button-cta-apply">
+              Apply to TouchConnectPro
             </Button>
           </Link>
           <p className="text-xs text-muted-foreground">
-            Estimates only — real results depend on execution
+            These estimates are for educational purposes only. Actual results depend on execution, market conditions, and many other factors.
           </p>
         </CardContent>
       </Card>

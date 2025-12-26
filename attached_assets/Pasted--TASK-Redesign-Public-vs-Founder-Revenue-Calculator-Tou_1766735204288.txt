@@ -1,0 +1,191 @@
+📌 TASK — Redesign Public vs Founder Revenue Calculator (TouchConnectPro)
+Objective
+
+Redesign the revenue calculator to be credible, educational, and durable (usable for years), not promotional or hype-driven.
+
+The calculator must have two clearly separated views:
+
+Public View (for visitors)
+
+Founder View (internal, private)
+
+1️⃣ Public View — What to Build
+🎯 Purpose
+
+Educate visitors and build trust by explaining how a SaaS + coaching marketplace works, without exposing margins, costs, or sensitive assumptions.
+
+This view should not try to sell profit.
+
+🔹 Public Inputs (Keep Simple)
+
+Monthly website visitors
+
+Conversion rate (%)
+
+Monthly subscription price ($)
+
+Optional toggle: “Include coaching revenue”
+→ Uses fixed assumptions (not editable)
+
+🔹 Public Outputs (With Time Context)
+
+❗ All numbers must include time framing (no raw large numbers).
+
+Section A — Month 1 Estimate
+
+Show:
+
+New paying members (Month 1)
+
+Estimated platform revenue (Month 1)
+
+Add small helper text:
+
+Based on new subscribers acquired this month
+
+Section B — Steady-State Monthly Estimate
+
+Show:
+
+Estimated active paying members (steady-state)
+
+Estimated monthly platform revenue
+
+Helper text:
+
+Assumes consistent traffic, conversion, and average retention over time
+
+🔹 Visuals (Optional but Recommended)
+
+One simple line chart:
+
+X-axis: Months
+
+Y-axis: Active subscribers
+
+Label clearly:
+
+Illustrative growth under constant assumptions
+
+No “hockey stick”, no exaggerated scaling.
+
+🔹 Copy Rules (Very Important)
+
+Remove all:
+
+“Profit potential: Strong”
+
+“Positive unit economics”
+
+Any promotional language
+
+Replace with neutral copy:
+
+This estimate illustrates how subscription-based platforms typically scale over time.
+
+🔹 What Must NOT Appear in Public View
+
+❌ Costs
+❌ Mentor payouts
+❌ Profit margins
+❌ Stripe fees
+❌ 3-year financial tables
+❌ Editable coaching assumptions
+
+2️⃣ Founder View — What to Build
+🎯 Purpose
+
+Give the founder full financial visibility for decision-making.
+
+This view can be gated (login, admin, or internal only).
+
+🔹 Founder Inputs (Fully Editable)
+
+Visitor growth
+
+Conversion rate
+
+Subscription price
+
+Coaching adoption rate (default 20%)
+
+Avg coaching spend per buyer ($200)
+
+Platform commission (20%)
+
+Retention / churn
+
+Stripe fees
+
+Tooling costs
+
+🔹 Founder Outputs (Detailed)
+
+Subscription revenue
+
+Coaching commission revenue
+
+Total platform revenue (100%)
+
+Mentor expenses:
+
+50% of subscription revenue
+
+50% of coaching commission revenue
+
+Other operating costs
+
+Net profit
+
+Profit margin (%)
+
+🔹 Time-Based Views (Required)
+
+Provide:
+
+Monthly view
+
+12-month view
+
+36-month view (3 years)
+
+Suggested presentation:
+
+Table (Month × Metrics)
+
+Chart toggle:
+
+Revenue
+
+Costs
+
+Net profit
+
+3️⃣ Accounting Rule (Must Be Respected)
+
+Platform revenue is always shown at 100%.
+Mentor payouts are recorded strictly as expenses, never as revenue reduction.
+
+This rule must be applied consistently across all calculations.
+
+4️⃣ UX Guidance
+
+Public view = simple, explanatory, confidence-building
+
+Founder view = analytical, precise, decision-oriented
+
+No duplicated complexity in public view
+
+No marketing language in financial outputs
+
+✅ Success Criteria
+
+The calculator should:
+
+Make smart visitors trust the platform
+
+Help founders understand sustainability
+
+Still make sense 3–5 years from now
+
+Avoid any appearance of exaggerated or misleading financial claims
