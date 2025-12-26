@@ -31,6 +31,7 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import BusinessPlan from "@/pages/BusinessPlan";
 import RateCoach from "@/pages/RateCoach";
 import ContactCoach from "@/pages/ContactCoach";
+import CoachProfile from "@/pages/CoachProfile";
 import RevenueCalculator from "@/pages/RevenueCalculator";
 import { TestForm } from "@/pages/TestForm";
 import NotFound from "@/pages/not-found";
@@ -75,6 +76,7 @@ function Router() {
         <Route path="/business-plan" component={BusinessPlan} />
         <Route path="/rate-coach" component={RateCoach} />
         <Route path="/contact-coach/:coachId" component={ContactCoach} />
+        <Route path="/coach/:coachId" component={CoachProfile} />
         <Route path="/calculator" component={RevenueCalculator} />
         <Route path="/test-form" component={TestForm} />
         <Route component={NotFound} />

@@ -2519,6 +2519,31 @@ app.get("/api/coaches/:coachId/contact-requests", async (req, res) => {
   }
 });
 
+// Get single coach by ID (public profile) - MUST BE AFTER all other /api/coaches/:coachId/* routes
+app.get("/api/coaches/:coachId", async (req, res) => {
+  try {
+    const { coachId } = req.params;
+    
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .select("*")
+      .eq("id", coachId)
+      .eq("status", "approved")
+      .or("is_disabled.is.null,is_disabled.eq.false")
+      .single();
+
+    if (error) {
+      console.error("[GET /api/coaches/:coachId] Error:", error);
+      return res.status(404).json({ error: "Coach not found" });
+    }
+
+    return res.json(data);
+  } catch (error) {
+    console.error("[GET /api/coaches/:coachId] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // Get contact requests sent by an entrepreneur
 app.get("/api/entrepreneurs/:email/contact-requests", async (req, res) => {
   try {
