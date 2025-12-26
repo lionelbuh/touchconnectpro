@@ -20,6 +20,7 @@ import {
   Info,
   Lock,
 } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import {
   CalculatorInputs,
   CalculatorOutputs,
@@ -443,6 +444,47 @@ export default function RevenueCalculator() {
                 </Card>
               )}
 
+              {!isPublic && (
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">MRR vs Costs vs Profit</p>
+                    <div className="h-48">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={[
+                            { name: "Revenue", value: outputs.mrr, fill: "#10b981" },
+                            { name: "Costs", value: outputs.totalCosts, fill: "#f59e0b" },
+                            { name: outputs.netProfit >= 0 ? "Profit" : "Loss", value: outputs.netProfit, fill: outputs.netProfit >= 0 ? "#22c55e" : "#ef4444" },
+                          ]}
+                          margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                          <YAxis 
+                            tick={{ fontSize: 11 }} 
+                            tickFormatter={(v) => v >= 0 ? `$${(v / 1000).toFixed(0)}k` : `-$${(Math.abs(v) / 1000).toFixed(0)}k`}
+                            domain={['auto', 'auto']}
+                          />
+                          <Tooltip 
+                            formatter={(value: number) => [formatCurrency(Math.abs(value)), value < 0 ? "Loss" : ""]}
+                            contentStyle={{ fontSize: 12 }}
+                          />
+                          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                            {[
+                              { name: "Revenue", value: outputs.mrr, fill: "#10b981" },
+                              { name: "Costs", value: outputs.totalCosts, fill: "#f59e0b" },
+                              { name: outputs.netProfit >= 0 ? "Profit" : "Loss", value: outputs.netProfit, fill: outputs.netProfit >= 0 ? "#22c55e" : "#ef4444" },
+                            ].map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {isPublic && (
                 <Card className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800">
                   <CardContent className="p-4 text-center">
@@ -465,9 +507,13 @@ export default function RevenueCalculator() {
                 <div className="text-xs text-muted-foreground p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <p className="font-medium mb-1">💡 Quick Insights</p>
                   <ul className="space-y-1">
-                    <li>• Break-even at {formatNumber(Math.ceil(outputs.totalCosts / inputs.subscriptionPrice))} subscribers</li>
-                    <li>• CAC payback: {(inputs.monthlyMarketingSpend / outputs.newMembersPerMonth / inputs.subscriptionPrice).toFixed(1)} months</li>
-                    <li>• LTV:CAC ratio: {((outputs.avgLifetimeMonths * inputs.subscriptionPrice) / (inputs.monthlyMarketingSpend / outputs.newMembersPerMonth)).toFixed(1)}:1</li>
+                    <li>• Break-even at {inputs.subscriptionPrice > 0 ? formatNumber(Math.ceil(outputs.totalCosts / inputs.subscriptionPrice)) : "N/A"} subscribers</li>
+                    <li>• CAC payback: {outputs.newMembersPerMonth > 0 && inputs.subscriptionPrice > 0 
+                      ? `${(inputs.monthlyMarketingSpend / outputs.newMembersPerMonth / inputs.subscriptionPrice).toFixed(1)} months`
+                      : "N/A"}</li>
+                    <li>• LTV:CAC ratio: {outputs.newMembersPerMonth > 0 && inputs.monthlyMarketingSpend > 0
+                      ? `${((outputs.avgLifetimeMonths * inputs.subscriptionPrice) / (inputs.monthlyMarketingSpend / outputs.newMembersPerMonth)).toFixed(1)}:1`
+                      : "N/A"}</li>
                   </ul>
                 </div>
               )}
