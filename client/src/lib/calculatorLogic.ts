@@ -18,14 +18,17 @@
 
 export interface CalculatorInputs {
   monthlyVisitors: number;
+  visitorGrowthRate: number;
   conversionRate: number;
   subscriptionPrice: number;
   monthlyChurnRate: number;
   stripePercentage: number;
   stripeFixedFee: number;
   fixedMonthlyCosts: number;
+  fixedCostsGrowthRate: number;
   variableCostPerUser: number;
   monthlyMarketingSpend: number;
+  marketingGrowthRate: number;
   coachingAdoptionRate: number;
   avgCoachingSpendPerUser: number;
   platformCommissionRate: number;
@@ -78,14 +81,17 @@ export interface MonthlyProjection {
  */
 export const defaultInternalInputs: CalculatorInputs = {
   monthlyVisitors: 10000,
+  visitorGrowthRate: 5,
   conversionRate: 2,
   subscriptionPrice: 49,
   monthlyChurnRate: 5,
   stripePercentage: 2.9,
   stripeFixedFee: 0.30,
   fixedMonthlyCosts: 500,
+  fixedCostsGrowthRate: 2,
   variableCostPerUser: 2,
   monthlyMarketingSpend: 1000,
+  marketingGrowthRate: 3,
   coachingAdoptionRate: 20,
   avgCoachingSpendPerUser: 200,
   platformCommissionRate: 20,
@@ -100,14 +106,17 @@ export const defaultInternalInputs: CalculatorInputs = {
  */
 export const defaultPublicInputs: CalculatorInputs = {
   monthlyVisitors: 5000,
+  visitorGrowthRate: 5,
   conversionRate: 3,
   subscriptionPrice: 49,
   monthlyChurnRate: 5,
   stripePercentage: 2.9,
   stripeFixedFee: 0.30,
   fixedMonthlyCosts: 300,
+  fixedCostsGrowthRate: 2,
   variableCostPerUser: 1.5,
   monthlyMarketingSpend: 500,
+  marketingGrowthRate: 3,
   coachingAdoptionRate: 20,
   avgCoachingSpendPerUser: 200,
   platformCommissionRate: 20,
