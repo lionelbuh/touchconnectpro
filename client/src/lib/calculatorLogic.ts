@@ -18,14 +18,17 @@
 
 export interface CalculatorInputs {
   monthlyVisitors: number;
+  visitorGrowthRate: number;
   conversionRate: number;
   subscriptionPrice: number;
   monthlyChurnRate: number;
   stripePercentage: number;
   stripeFixedFee: number;
   fixedMonthlyCosts: number;
+  fixedCostsGrowthRate: number;
   variableCostPerUser: number;
   monthlyMarketingSpend: number;
+  marketingGrowthRate: number;
   coachingAdoptionRate: number;
   avgCoachingSpendPerUser: number;
   platformCommissionRate: number;
@@ -78,14 +81,17 @@ export interface MonthlyProjection {
  */
 export const defaultInternalInputs: CalculatorInputs = {
   monthlyVisitors: 10000,
+  visitorGrowthRate: 5,
   conversionRate: 2,
   subscriptionPrice: 49,
   monthlyChurnRate: 5,
   stripePercentage: 2.9,
   stripeFixedFee: 0.30,
   fixedMonthlyCosts: 500,
+  fixedCostsGrowthRate: 2,
   variableCostPerUser: 2,
   monthlyMarketingSpend: 1000,
+  marketingGrowthRate: 3,
   coachingAdoptionRate: 20,
   avgCoachingSpendPerUser: 200,
   platformCommissionRate: 20,
@@ -100,14 +106,17 @@ export const defaultInternalInputs: CalculatorInputs = {
  */
 export const defaultPublicInputs: CalculatorInputs = {
   monthlyVisitors: 5000,
+  visitorGrowthRate: 5,
   conversionRate: 3,
   subscriptionPrice: 49,
   monthlyChurnRate: 5,
   stripePercentage: 2.9,
   stripeFixedFee: 0.30,
   fixedMonthlyCosts: 300,
+  fixedCostsGrowthRate: 2,
   variableCostPerUser: 1.5,
   monthlyMarketingSpend: 500,
+  marketingGrowthRate: 3,
   coachingAdoptionRate: 20,
   avgCoachingSpendPerUser: 200,
   platformCommissionRate: 20,
@@ -364,24 +373,33 @@ export function calculateAll(inputs: CalculatorInputs): CalculatorOutputs {
  * 
  * Each month:
  * - Start with previous month's active subscribers
- * - Add new subscribers (constant based on inputs)
+ * - Add new subscribers (grows with visitor growth rate)
  * - Remove churned subscribers (based on previous active count)
+ * - Fixed costs and marketing grow month-over-month
  * - Recalculate all revenue and cost metrics
  * 
- * This uses the same formulas as Month 1, with subscriber evolution.
+ * Growth rates compound: Month N = Month 1 × (1 + rate/100)^(N-1)
  * Honors includeCoachingRevenue flag for consistency with calculateAll.
  */
 export function generate36MonthProjections(inputs: CalculatorInputs): MonthlyProjection[] {
   const projections: MonthlyProjection[] = [];
-  const newSubscribersPerMonth = calculateNewMembers(inputs.monthlyVisitors, inputs.conversionRate);
   const churnRate = inputs.monthlyChurnRate / 100;
   const includeCoaching = inputs.includeCoachingRevenue !== false;
+  
+  const visitorGrowthMultiplier = 1 + (inputs.visitorGrowthRate || 0) / 100;
+  const fixedCostsGrowthMultiplier = 1 + (inputs.fixedCostsGrowthRate || 0) / 100;
+  const marketingGrowthMultiplier = 1 + (inputs.marketingGrowthRate || 0) / 100;
   
   let previousActiveSubscribers = 0;
   
   for (let month = 1; month <= 36; month++) {
+    const monthlyVisitors = Math.round(inputs.monthlyVisitors * Math.pow(visitorGrowthMultiplier, month - 1));
+    const monthlyFixedCosts = inputs.fixedMonthlyCosts * Math.pow(fixedCostsGrowthMultiplier, month - 1);
+    const monthlyMarketingSpend = inputs.monthlyMarketingSpend * Math.pow(marketingGrowthMultiplier, month - 1);
+    
+    const newSubscribersThisMonth = calculateNewMembers(monthlyVisitors, inputs.conversionRate);
     const churnedSubscribers = Math.round(previousActiveSubscribers * churnRate);
-    const activeSubscribers = Math.max(0, previousActiveSubscribers + newSubscribersPerMonth - churnedSubscribers);
+    const activeSubscribers = Math.max(0, previousActiveSubscribers + newSubscribersThisMonth - churnedSubscribers);
     
     const subscriptionRevenue = calculateSubscriptionRevenue(activeSubscribers, inputs.subscriptionPrice);
     
@@ -393,12 +411,12 @@ export function generate36MonthProjections(inputs: CalculatorInputs): MonthlyPro
     
     const mentorSubExpense = calculateMentorSubscriptionExpense(subscriptionRevenue, inputs.mentorPayoutRate);
     const mentorCommExpense = calculateMentorCommissionExpense(coachingCommissionRevenue, inputs.mentorPayoutRate);
-    const mentorWelcomeCallCost = newSubscribersPerMonth * (inputs.mentorWelcomeCallPayment || 0);
+    const mentorWelcomeCallCost = newSubscribersThisMonth * (inputs.mentorWelcomeCallPayment || 0);
     const mentorExpenses = calculateTotalMentorExpenses(mentorSubExpense, mentorCommExpense) + mentorWelcomeCallCost;
     
     const stripeFees = calculateStripeFees(subscriptionRevenue, grossCoachingGMV, activeSubscribers, coachingBuyers, inputs.stripePercentage, inputs.stripeFixedFee);
     const variableCosts = calculateVariableCosts(activeSubscribers, inputs.variableCostPerUser);
-    const totalCosts = calculateTotalCosts(mentorExpenses, stripeFees, inputs.fixedMonthlyCosts, variableCosts, inputs.monthlyMarketingSpend);
+    const totalCosts = calculateTotalCosts(mentorExpenses, stripeFees, monthlyFixedCosts, variableCosts, monthlyMarketingSpend);
     
     const netProfit = calculateNetProfit(totalRevenue, totalCosts);
     const netMargin = calculateNetMargin(netProfit, totalRevenue);
@@ -406,7 +424,7 @@ export function generate36MonthProjections(inputs: CalculatorInputs): MonthlyPro
     projections.push({
       month,
       activeSubscribers,
-      newSubscribers: newSubscribersPerMonth,
+      newSubscribers: newSubscribersThisMonth,
       churnedSubscribers,
       subscriptionRevenue,
       coachingBuyers,
@@ -415,9 +433,9 @@ export function generate36MonthProjections(inputs: CalculatorInputs): MonthlyPro
       totalRevenue,
       mentorExpenses,
       stripeFees,
-      fixedCosts: inputs.fixedMonthlyCosts,
+      fixedCosts: monthlyFixedCosts,
       variableCosts,
-      marketingCosts: inputs.monthlyMarketingSpend,
+      marketingCosts: monthlyMarketingSpend,
       totalCosts,
       netProfit,
       netMargin,

@@ -403,6 +403,16 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 tooltip="Unique visitors to your website each month"
               />
               <InputSlider
+                label="Visitor Growth Rate"
+                value={inputs.visitorGrowthRate}
+                onChange={(v) => updateInput("visitorGrowthRate", v)}
+                min={0}
+                max={30}
+                step={1}
+                suffix="%"
+                tooltip="Monthly growth rate for website visitors (compounds each month)"
+              />
+              <InputSlider
                 label="Conversion Rate"
                 value={inputs.conversionRate}
                 onChange={(v) => updateInput("conversionRate", v)}
@@ -555,6 +565,16 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 tooltip="Monthly expenses regardless of user count (hosting, tools, etc.)"
               />
               <InputSlider
+                label="Fixed Costs Growth Rate"
+                value={inputs.fixedCostsGrowthRate}
+                onChange={(v) => updateInput("fixedCostsGrowthRate", v)}
+                min={0}
+                max={20}
+                step={1}
+                suffix="%"
+                tooltip="Monthly growth rate for fixed costs (utilities, SaaS tools, salaries, etc.)"
+              />
+              <InputSlider
                 label="Variable Cost per User"
                 value={inputs.variableCostPerUser}
                 onChange={(v) => updateInput("variableCostPerUser", v)}
@@ -573,6 +593,16 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
                 step={100}
                 prefix="$"
                 tooltip="Monthly budget for advertising, content, and promotions"
+              />
+              <InputSlider
+                label="Marketing Growth Rate"
+                value={inputs.marketingGrowthRate}
+                onChange={(v) => updateInput("marketingGrowthRate", v)}
+                min={0}
+                max={30}
+                step={1}
+                suffix="%"
+                tooltip="Monthly growth rate for marketing budget as the business scales"
               />
             </CardContent>
           </Card>
