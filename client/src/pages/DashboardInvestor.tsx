@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { LayoutDashboard, TrendingUp, DollarSign, Target, Save, Loader2, Building2, Link as LinkIcon, LogOut, MessageSquare, AlertCircle, Calendar, Camera, FileText, Upload, Download, Paperclip, Reply, ChevronDown, Send, User } from "lucide-react";
+import { LayoutDashboard, TrendingUp, DollarSign, Target, Save, Loader2, Building2, Link as LinkIcon, LogOut, MessageSquare, AlertCircle, Calendar, Camera, FileText, Upload, Download, Paperclip, Reply, ChevronDown, Send, User, ClipboardCheck } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
+import MyAgreements from "@/components/MyAgreements";
 
 interface InvestorProfile {
   id: string;
@@ -77,7 +78,7 @@ export default function DashboardInvestor() {
   const [investmentAmount, setInvestmentAmount] = useState("");
   const [linkedin, setLinkedin] = useState("");
   const [profileImage, setProfileImage] = useState("");
-  const [activeTab, setActiveTab] = useState<"overview" | "messages" | "investments" | "meetings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "messages" | "investments" | "meetings" | "agreements">("overview");
   const [adminMessage, setAdminMessage] = useState("");
   const [adminMessages, setAdminMessages] = useState<any[]>([]);
   const [investorReadMessageIds, setInvestorReadMessageIds] = useState<string[]>([]);
@@ -486,6 +487,14 @@ export default function DashboardInvestor() {
               data-testid="button-meetings-tab"
             >
               <Calendar className="mr-2 h-4 w-4" /> My Meetings
+            </Button>
+            <Button 
+              variant={activeTab === "agreements" ? "secondary" : "ghost"} 
+              className="w-full justify-start font-medium text-slate-600"
+              onClick={() => setActiveTab("agreements")}
+              data-testid="button-agreements-tab"
+            >
+              <ClipboardCheck className="mr-2 h-4 w-4" /> My Agreements
             </Button>
           </nav>
           <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
@@ -1139,6 +1148,14 @@ export default function DashboardInvestor() {
                   </CardContent>
                 </Card>
               )}
+            </div>
+          )}
+
+          {/* Agreements Tab */}
+          {activeTab === "agreements" && (
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">My Agreements</h2>
+              {profile?.email && <MyAgreements userEmail={profile.email} />}
             </div>
           )}
         </div>

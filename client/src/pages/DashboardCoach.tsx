@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail, User, FileText, Upload, CreditCard, CheckCircle2, ExternalLink, Check, Send, Reply, Edit } from "lucide-react";
+import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail, User, FileText, Upload, CreditCard, CheckCircle2, ExternalLink, Check, Send, Reply, Edit, ClipboardCheck } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
+import MyAgreements from "@/components/MyAgreements";
 
 interface StripeConnectStatus {
   hasAccount: boolean;
@@ -121,7 +122,7 @@ export default function DashboardCoach() {
   const [bio, setBio] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "entrepreneurs" | "messages" | "earnings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "entrepreneurs" | "messages" | "earnings" | "agreements">("overview");
   const [adminMessage, setAdminMessage] = useState("");
   const [adminMessages, setAdminMessages] = useState<any[]>([]);
   const [coachReadMessageIds, setCoachReadMessageIds] = useState<string[]>([]);
@@ -626,6 +627,14 @@ export default function DashboardCoach() {
               data-testid="button-earnings-tab"
             >
               <DollarSign className="mr-2 h-4 w-4" /> Earnings
+            </Button>
+            <Button 
+              variant={activeTab === "agreements" ? "secondary" : "ghost"} 
+              className="w-full justify-start font-medium text-slate-600"
+              onClick={() => setActiveTab("agreements")}
+              data-testid="button-agreements-tab"
+            >
+              <ClipboardCheck className="mr-2 h-4 w-4" /> My Agreements
             </Button>
           </nav>
           <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
@@ -1408,6 +1417,14 @@ export default function DashboardCoach() {
               </div>
               </>
               )}
+            </div>
+          )}
+
+          {/* Agreements Tab */}
+          {activeTab === "agreements" && (
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">My Agreements</h2>
+              {profile?.email && <MyAgreements userEmail={profile.email} />}
             </div>
           )}
         </div>
