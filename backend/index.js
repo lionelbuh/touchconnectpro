@@ -6818,6 +6818,117 @@ app.get("/api/public/applications/:id", partnerApiAuth, async (req, res) => {
 
 // ============ END PUBLIC PARTNER API ============
 
+// ============================================
+// CONTRACT ACCEPTANCES
+// ============================================
+
+// POST /api/contract-acceptances - Save contract acceptance
+app.post("/api/contract-acceptances", async (req, res) => {
+  console.log("[POST /api/contract-acceptances] Saving contract acceptance");
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+
+    const { email, role, contractVersion, contractText, userAgent } = req.body;
+    const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+
+    if (!email || !role || !contractVersion || !contractText) {
+      return res.status(400).json({ error: "Missing required fields: email, role, contractVersion, contractText" });
+    }
+
+    const validRoles = ['coach', 'mentor', 'investor'];
+    if (!validRoles.includes(role.toLowerCase())) {
+      return res.status(400).json({ error: "Invalid role. Must be coach, mentor, or investor" });
+    }
+
+    const { data, error } = await supabase
+      .from("contract_acceptances")
+      .insert({
+        email,
+        role: role.toLowerCase(),
+        contract_version: contractVersion,
+        contract_text: contractText,
+        ip_address: ipAddress,
+        user_agent: userAgent || null,
+        accepted_at: new Date().toISOString()
+      })
+      .select();
+
+    if (error) {
+      console.error("[CONTRACT] Insert error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log("[CONTRACT] Saved for", email, role);
+    return res.status(201).json({ success: true, id: data?.[0]?.id });
+  } catch (error) {
+    console.error("[CONTRACT] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/contract-acceptances - Get all contract acceptances (admin)
+app.get("/api/contract-acceptances", async (req, res) => {
+  console.log("[GET /api/contract-acceptances] Fetching all contracts");
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+
+    const { role } = req.query;
+
+    let query = supabase
+      .from("contract_acceptances")
+      .select("*")
+      .order("accepted_at", { ascending: false });
+
+    if (role && role !== 'all') {
+      query = query.eq("role", role.toLowerCase());
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("[CONTRACT] Fetch error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json(data || []);
+  } catch (error) {
+    console.error("[CONTRACT] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/contract-acceptances/user/:email - Get user's contract acceptances
+app.get("/api/contract-acceptances/user/:email", async (req, res) => {
+  console.log("[GET /api/contract-acceptances/user] Fetching user contracts");
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+
+    const { email } = req.params;
+
+    const { data, error } = await supabase
+      .from("contract_acceptances")
+      .select("*")
+      .eq("email", email)
+      .order("accepted_at", { ascending: false });
+
+    if (error) {
+      console.error("[CONTRACT] Fetch error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json(data || []);
+  } catch (error) {
+    console.error("[CONTRACT] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
   console.log("SUPABASE_URL:", process.env.SUPABASE_URL ? "Loaded" : "MISSING");
