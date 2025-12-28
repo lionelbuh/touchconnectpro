@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileText, Loader2, CheckCircle2 } from "lucide-react";
+import { FileText, Loader2, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
 import { API_BASE_URL } from "@/config";
 
 interface ContractAcceptance {
@@ -24,6 +24,7 @@ interface MyAgreementsProps {
 export default function MyAgreements({ userEmail }: MyAgreementsProps) {
   const [contracts, setContracts] = useState<ContractAcceptance[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [expandedContract, setExpandedContract] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,14 +35,25 @@ export default function MyAgreements({ userEmail }: MyAgreementsProps) {
 
   const fetchContracts = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/api/contract-acceptances/user/${encodeURIComponent(userEmail)}`);
       if (response.ok) {
         const data = await response.json();
-        setContracts(data);
+        if (Array.isArray(data)) {
+          setContracts(data);
+        } else if (data.error) {
+          setError(data.error);
+        } else {
+          setContracts([]);
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.error || "Failed to fetch agreements");
       }
     } catch (error) {
       console.error("Error fetching contracts:", error);
+      setError("Unable to load agreements. Please try again.");
     }
     setLoading(false);
   };
@@ -57,6 +69,29 @@ export default function MyAgreements({ userEmail }: MyAgreementsProps) {
       <Card>
         <CardContent className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-slate-600" />
+            My Agreements
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-400" />
+            <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+            <Button variant="outline" onClick={fetchContracts} className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Try Again
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
