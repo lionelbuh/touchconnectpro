@@ -4,12 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText } from "lucide-react";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText, ClipboardCheck } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
 import { IDEA_PROPOSAL_QUESTIONS } from "@/lib/constants";
+import MyAgreements from "@/components/MyAgreements";
 
 interface MentorProfileData {
   id: string;
@@ -30,7 +31,7 @@ interface MentorProfileData {
 
 export default function DashboardMentor() {
   const [mentorStatus, setMentorStatus] = useState<"notApplied" | "pending" | "approved">("approved");
-  const [activeTab, setActiveTab] = useState<"overview" | "investors" | "portfolio" | "coaches" | "messages" | "meetings" | "profile">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "investors" | "portfolio" | "coaches" | "messages" | "meetings" | "profile" | "agreements">("overview");
   const [approvedInvestors, setApprovedInvestors] = useState<any[]>([]);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [selectedPortfolio, setSelectedPortfolio] = useState<number | null>(null);
@@ -544,6 +545,14 @@ export default function DashboardMentor() {
               data-testid="button-profile-tab"
             >
               <Settings className="mr-2 h-4 w-4" /> Profile
+            </Button>
+            <Button 
+              variant={activeTab === "agreements" ? "secondary" : "ghost"}
+              className="w-full justify-start font-medium text-slate-600"
+              onClick={() => setActiveTab("agreements")}
+              data-testid="button-agreements-tab"
+            >
+              <ClipboardCheck className="mr-2 h-4 w-4" /> My Agreements
             </Button>
           </nav>
           <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
@@ -2019,6 +2028,14 @@ export default function DashboardMentor() {
               )}
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Agreements Tab */}
+      {activeTab === "agreements" && (
+        <div className="p-8">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">My Agreements</h2>
+          {mentorProfile?.email && <MyAgreements userEmail={mentorProfile.email} />}
         </div>
       )}
     </div>

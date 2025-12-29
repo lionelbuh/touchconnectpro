@@ -93,8 +93,154 @@ interface User {
   status: "active" | "disabled";
 }
 
+interface ContractAcceptance {
+  id: string;
+  email: string;
+  role: string;
+  contract_version: string;
+  contract_text: string;
+  ip_address: string;
+  user_agent: string | null;
+  accepted_at: string;
+}
+
+function ContractsSection() {
+  const [contracts, setContracts] = useState<ContractAcceptance[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterRole, setFilterRole] = useState<string>("all");
+  const [expandedContract, setExpandedContract] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchContracts();
+  }, [filterRole]);
+
+  const fetchContracts = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/contract-acceptances${filterRole !== 'all' ? `?role=${filterRole}` : ''}`);
+      if (response.ok) {
+        const data = await response.json();
+        setContracts(data);
+      }
+    } catch (error) {
+      console.error("Error fetching contracts:", error);
+    }
+    setLoading(false);
+  };
+
+  const roleColors: Record<string, string> = {
+    coach: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
+    mentor: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
+    investor: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-slate-600" />
+              Contract Acceptances
+            </CardTitle>
+            <div className="flex gap-2">
+              <Button
+                variant={filterRole === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterRole("all")}
+              >
+                All ({contracts.length})
+              </Button>
+              <Button
+                variant={filterRole === "coach" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterRole("coach")}
+                className={filterRole === "coach" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
+              >
+                Coaches
+              </Button>
+              <Button
+                variant={filterRole === "mentor" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterRole("mentor")}
+                className={filterRole === "mentor" ? "bg-indigo-600 hover:bg-indigo-700" : ""}
+              >
+                Mentors
+              </Button>
+              <Button
+                variant={filterRole === "investor" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterRole("investor")}
+                className={filterRole === "investor" ? "bg-amber-600 hover:bg-amber-700" : ""}
+              >
+                Investors
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : contracts.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
+              <p>No contract acceptances yet</p>
+              <p className="text-sm">When coaches, mentors, or investors accept their agreements, they will appear here.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {contracts.map((contract) => (
+                <div 
+                  key={contract.id} 
+                  className="border rounded-lg p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  data-testid={`contract-row-${contract.id}`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Badge className={roleColors[contract.role] || "bg-gray-100 text-gray-800"}>
+                          {contract.role.charAt(0).toUpperCase() + contract.role.slice(1)}
+                        </Badge>
+                        <span className="font-medium text-slate-900 dark:text-white">{contract.email}</span>
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <p><span className="font-medium">Version:</span> {contract.contract_version}</p>
+                        <p><span className="font-medium">Accepted:</span> {new Date(contract.accepted_at).toLocaleString()}</p>
+                        <p><span className="font-medium">IP Address:</span> {contract.ip_address}</p>
+                        {contract.user_agent && (
+                          <p className="truncate max-w-xl"><span className="font-medium">Device:</span> {contract.user_agent.substring(0, 80)}...</p>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setExpandedContract(expandedContract === contract.id ? null : contract.id)}
+                    >
+                      {expandedContract === contract.id ? "Hide" : "View"} Contract
+                    </Button>
+                  </div>
+                  {expandedContract === contract.id && (
+                    <div className="mt-4 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg max-h-64 overflow-y-auto">
+                      <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans">
+                        {contract.contract_text}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings" | "earnings">("approvals");
+  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings" | "earnings" | "contracts">("approvals");
   const [activeMembersSubTab, setActiveMembersSubTab] = useState<"portfolio" | "messaging" | "management">("portfolio");
   const [activeApprovalsSubTab, setActiveApprovalsSubTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
   const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled">("entrepreneurs");
@@ -1460,6 +1606,14 @@ export default function AdminDashboard() {
                 ${earningsData.totals.platformFees.toFixed(0)}
               </Badge>
             )}
+          </Button>
+          <Button 
+            variant={activeTab === "contracts" ? "default" : "outline"}
+            onClick={() => setActiveTab("contracts")}
+            className={activeTab === "contracts" ? "bg-slate-600 hover:bg-slate-700" : ""}
+            data-testid="button-contracts-tab"
+          >
+            <FileText className="mr-2 h-4 w-4" /> Contracts
           </Button>
         </div>
 
@@ -4897,6 +5051,11 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Contracts Tab */}
+      {activeTab === "contracts" && (
+        <ContractsSection />
       )}
 
       {/* Earnings Tab */}

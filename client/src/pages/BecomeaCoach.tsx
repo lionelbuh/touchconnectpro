@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, TrendingUp, Mail, ArrowRight, CheckCircle, X } from "lucide-react";
+import { Check, Star, TrendingUp, Mail, ArrowRight, CheckCircle, X, FileText } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { API_BASE_URL } from "@/config";
+import { COACH_CONTRACT, CONTRACT_VERSION } from "@/lib/contracts";
 
 const COUNTRIES = [
   "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", 
@@ -95,6 +98,7 @@ export default function BecomeaCoach() {
     state: ""
   });
   const [submitted, setSubmitted] = useState(false);
+  const [contractAgreed, setContractAgreed] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
@@ -113,6 +117,10 @@ export default function BecomeaCoach() {
     if (!formData.fullName || !formData.email || !formData.bio || !Array.isArray(formData.expertise) || formData.expertise.length === 0 || !formData.focusAreas || !formData.introCallRate || !formData.sessionRate || !formData.monthlyRate || !formData.country) {
       alert("Please fill in all required fields including your bio, all rate types, and select at least one area of expertise");
       console.log("Validation failed", { fullName: formData.fullName, email: formData.email, bio: formData.bio, expertise: formData.expertise, focusAreas: formData.focusAreas, introCallRate: formData.introCallRate, sessionRate: formData.sessionRate, monthlyRate: formData.monthlyRate, country: formData.country });
+      return;
+    }
+    if (!contractAgreed) {
+      alert("Please read and agree to the Pre-Launch Coach Agreement to submit your application");
       return;
     }
     if (formData.country === "United States" && !formData.state) {
@@ -141,6 +149,18 @@ export default function BecomeaCoach() {
         throw new Error(errorData.error || "Failed to submit application");
       }
 
+      await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          role: "coach",
+          contractVersion: CONTRACT_VERSION,
+          contractText: COACH_CONTRACT,
+          userAgent: navigator.userAgent
+        }),
+      });
+
       console.log("Submit successful!");
       setSubmitted(true);
     } catch (error: any) {
@@ -153,6 +173,7 @@ export default function BecomeaCoach() {
     setSubmitted(false);
     setShowForm(false);
     setFormData({ fullName: "", email: "", linkedin: "", bio: "", expertise: [], focusAreas: "", introCallRate: "", sessionRate: "", monthlyRate: "", country: "", state: "" });
+    setContractAgreed(false);
   };
 
   return (
@@ -531,9 +552,35 @@ export default function BecomeaCoach() {
                       </div>
                     )}
 
+                    <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center gap-2 mb-4">
+                        <FileText className="h-5 w-5 text-cyan-600" />
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white">Pre-Launch Coach Agreement *</label>
+                      </div>
+                      <ScrollArea className="h-64 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
+                        <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans leading-relaxed">
+                          {COACH_CONTRACT}
+                        </pre>
+                      </ScrollArea>
+                      <div className="flex items-start gap-3 mt-4">
+                        <Checkbox
+                          id="contract-agreement"
+                          checked={contractAgreed}
+                          onCheckedChange={(checked) => setContractAgreed(checked === true)}
+                          data-testid="checkbox-coach-contract"
+                        />
+                        <label
+                          htmlFor="contract-agreement"
+                          className="text-sm text-slate-700 dark:text-slate-300 cursor-pointer leading-relaxed"
+                        >
+                          I have read and agree to the <span className="font-semibold text-cyan-600 dark:text-cyan-400">Pre-Launch Coach Agreement</span>
+                        </label>
+                      </div>
+                    </div>
+
                     <div className="flex gap-3 pt-6">
                       <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)} data-testid="button-cancel-coach-form">Cancel</Button>
-                      <Button type="submit" className="flex-1 bg-cyan-600 hover:bg-cyan-700" data-testid="button-submit-coach-form">Submit Application</Button>
+                      <Button type="submit" className="flex-1 bg-cyan-600 hover:bg-cyan-700" disabled={!contractAgreed} data-testid="button-submit-coach-form">Submit Application</Button>
                     </div>
                   </form>
                 )}

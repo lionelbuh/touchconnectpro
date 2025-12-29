@@ -1,0 +1,121 @@
+TouchConnectPro Pre-Launch Contracts – Integration Guide
+1️⃣ Add Contracts to Registration Forms
+
+For each role (Coach, Mentor, Investor):
+
+During registration, display the role-specific pre-launch contract (Coach / Mentor / Investor).
+
+Present it in full text inside a scrollable, readable box.
+
+Add a checkbox labeled:
+
+“I have read and agree to the Pre-Launch [Coach/Mentor/Investor] Agreement”
+
+Checkbox is required to submit the registration form.
+
+Optional: Add a “Download PDF” button so users can save a copy.
+
+2️⃣ Capture Acceptance Data
+
+When the user submits the form:
+
+Save the following fields in the database:
+
+user_id
+
+role (Coach / Mentor / Investor)
+
+contract_version (e.g., “2025-12-28 v1”)
+
+timestamp (exact date & time of agreement)
+
+ip_address (for legal record)
+
+user_agent (browser/device info, optional)
+
+contract_text (full text of the agreement at time of signing)
+
+Store in a separate table, e.g., user_contract_acceptances, linked to the user ID.
+
+Example Table Structure:
+
+Column	Type	Description
+id	integer	Auto increment
+user_id	integer	Reference to Users table
+role	string	Coach / Mentor / Investor
+contract_version	string	e.g., "Pre-Launch v1"
+timestamp	datetime	Exact acceptance time
+ip_address	string	Optional for legal verification
+contract_text	text	Full agreement at time of acceptance
+3️⃣ Store Contract Copies
+
+Database: Save the full text and metadata (see table above).
+
+File storage (optional): Generate a PDF copy of the agreement and save it with a unique filename, e.g.,
+contracts/user_{user_id}_{role}_{timestamp}.pdf.
+
+4️⃣ Display in Admin Dashboard
+
+Add a Contracts section in the admin dashboard:
+
+Filter by role (Coach / Mentor / Investor)
+
+Show:
+
+User name / email
+
+Role
+
+Contract version
+
+Timestamp of acceptance
+
+Download/View contract copy (PDF or HTML)
+
+Optional: Include search and sort by date, role, or user.
+
+5️⃣ Display in User Dashboard
+
+Add a “My Agreements” section for each user:
+
+List all agreements the user has signed
+
+Show:
+
+Contract version
+
+Role
+
+Timestamp of acceptance
+
+Include a “Download PDF” or “View Contract” button
+
+6️⃣ Version Control
+
+Each contract version should have a unique version ID.
+
+When updating contracts:
+
+Display the new version on next login/registration for new users
+
+Keep old versions stored for audit/legal purposes
+
+7️⃣ Security & Compliance
+
+Ensure all contract text and timestamps are immutable (or append-only).
+
+Keep audit logs of changes in case of disputes.
+
+Use SSL encryption for all transmissions of contracts.
+
+8️⃣ Optional Enhancements
+
+Auto-generate PDF contracts with user info (name, email, date/time) embedded.
+
+Send confirmation email to user with a copy of the signed contract.
+
+Add reminders in admin dashboard for users who haven’t accepted the latest version (future updates).
+
+✅ Summary
+
+Show role-specific contract at registration → checkbox consent → capture timestamp, IP, and full contract → store in DB and optionally as PDF → display in both user and admin dashboards → keep versions for audit.

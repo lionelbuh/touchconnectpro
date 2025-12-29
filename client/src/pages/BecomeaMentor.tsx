@@ -2,8 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Heart, Mail, ArrowRight, CheckCircle } from "lucide-react";
+import { Check, Star, Heart, Mail, ArrowRight, CheckCircle, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { API_BASE_URL } from "@/config";
+import { MENTOR_CONTRACT, CONTRACT_VERSION } from "@/lib/contracts";
 
 const COUNTRIES = [
   "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", 
@@ -44,8 +47,9 @@ export default function BecomeaMentor() {
     state: ""
   });
   const [submitted, setSubmitted] = useState(false);
+  const [contractAgreed, setContractAgreed] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -54,6 +58,10 @@ export default function BecomeaMentor() {
     e.preventDefault();
     if (!formData.fullName || !formData.email || !formData.bio || !formData.expertise || !formData.experience || !formData.country) {
       alert("Please fill in all required fields");
+      return;
+    }
+    if (!contractAgreed) {
+      alert("Please read and agree to the Pre-Launch Mentor Agreement to submit your application");
       return;
     }
     if (formData.country === "United States" && !formData.state) {
@@ -73,6 +81,18 @@ export default function BecomeaMentor() {
         throw new Error(errorData.error || "Failed to submit application");
       }
 
+      await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          role: "mentor",
+          contractVersion: CONTRACT_VERSION,
+          contractText: MENTOR_CONTRACT,
+          userAgent: navigator.userAgent
+        }),
+      });
+
       setSubmitted(true);
     } catch (error: any) {
       alert("Error submitting application: " + error.message);
@@ -84,6 +104,7 @@ export default function BecomeaMentor() {
     setSubmitted(false);
     setShowForm(false);
     setFormData({ fullName: "", email: "", linkedin: "", bio: "", expertise: "", experience: "", country: "", state: "" });
+    setContractAgreed(false);
   };
 
   return (
@@ -361,9 +382,35 @@ export default function BecomeaMentor() {
                       </div>
                     )}
 
+                    <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center gap-2 mb-4">
+                        <FileText className="h-5 w-5 text-indigo-600" />
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white">Pre-Launch Mentor Agreement *</label>
+                      </div>
+                      <ScrollArea className="h-64 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
+                        <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans leading-relaxed">
+                          {MENTOR_CONTRACT}
+                        </pre>
+                      </ScrollArea>
+                      <div className="flex items-start gap-3 mt-4">
+                        <Checkbox
+                          id="contract-agreement-mentor"
+                          checked={contractAgreed}
+                          onCheckedChange={(checked) => setContractAgreed(checked === true)}
+                          data-testid="checkbox-mentor-contract"
+                        />
+                        <label
+                          htmlFor="contract-agreement-mentor"
+                          className="text-sm text-slate-700 dark:text-slate-300 cursor-pointer leading-relaxed"
+                        >
+                          I have read and agree to the <span className="font-semibold text-indigo-600 dark:text-indigo-400">Pre-Launch Mentor Agreement</span>
+                        </label>
+                      </div>
+                    </div>
+
                     <div className="flex gap-3 pt-6">
                       <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>Cancel</Button>
-                      <Button type="submit" className="flex-1 bg-cyan-600 hover:bg-cyan-700" data-testid="button-submit-mentor-form">Submit Application</Button>
+                      <Button type="submit" className="flex-1 bg-cyan-600 hover:bg-cyan-700" disabled={!contractAgreed} data-testid="button-submit-mentor-form">Submit Application</Button>
                     </div>
                   </form>
                 )}
