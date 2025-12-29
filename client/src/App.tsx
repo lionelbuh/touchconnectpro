@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Layout from "@/components/Layout";
+import AdminProtectedRoute from "@/components/AdminProtectedRoute";
 import Home from "@/pages/Home";
 import IdeaSubmit from "@/pages/IdeaSubmit";
 import Dashboard from "@/pages/Dashboard";
@@ -20,6 +21,7 @@ import BecomeaEntrepreneur from "@/pages/BecomeaEntrepreneur";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import Login from "@/pages/Login";
+import AdminLogin from "@/pages/AdminLogin";
 import SetPassword from "@/pages/SetPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import DashboardEntrepreneur from "@/pages/DashboardEntrepreneur";
@@ -65,6 +67,7 @@ function Router() {
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms-of-service" component={TermsOfService} />
         <Route path="/login" component={Login} />
+        <Route path="/admin-login" component={AdminLogin} />
         <Route path="/set-password" component={SetPassword} />
         <Route path="/reset-password" component={ResetPassword} />
         <Route path="/dashboard-entrepreneur" component={DashboardEntrepreneur} />
@@ -72,12 +75,24 @@ function Router() {
         <Route path="/dashboard-mentor" component={DashboardMentor} />
         <Route path="/dashboard-investor" component={DashboardInvestor} />
         <Route path="/admin-mentor-approval" component={AdminMentorApproval} />
-        <Route path="/admin-dashboard" component={AdminDashboard} />
+        <Route path="/admin-dashboard">
+          {() => (
+            <AdminProtectedRoute>
+              <AdminDashboard />
+            </AdminProtectedRoute>
+          )}
+        </Route>
         <Route path="/business-plan" component={BusinessPlan} />
         <Route path="/rate-coach" component={RateCoach} />
         <Route path="/contact-coach/:coachId" component={ContactCoach} />
         <Route path="/coach/:coachId" component={CoachProfile} />
-        <Route path="/calculator" component={RevenueCalculator} />
+        <Route path="/calculator">
+          {() => (
+            <AdminProtectedRoute>
+              <RevenueCalculator />
+            </AdminProtectedRoute>
+          )}
+        </Route>
         <Route path="/test-form" component={TestForm} />
         <Route component={NotFound} />
       </Switch>
