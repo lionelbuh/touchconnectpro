@@ -84,6 +84,10 @@ export default function BecomeaCoach() {
     monthlyRate: string;
     country: string;
     state: string;
+    externalPlatform: string;
+    externalRating: string;
+    externalReviewCount: string;
+    externalProfileUrl: string;
   }>({
     fullName: "",
     email: "",
@@ -95,7 +99,11 @@ export default function BecomeaCoach() {
     sessionRate: "",
     monthlyRate: "",
     country: "",
-    state: ""
+    state: "",
+    externalPlatform: "",
+    externalRating: "",
+    externalReviewCount: "",
+    externalProfileUrl: ""
   });
   const [submitted, setSubmitted] = useState(false);
   const [contractAgreed, setContractAgreed] = useState(false);
@@ -119,6 +127,10 @@ export default function BecomeaCoach() {
       console.log("Validation failed", { fullName: formData.fullName, email: formData.email, bio: formData.bio, expertise: formData.expertise, focusAreas: formData.focusAreas, introCallRate: formData.introCallRate, sessionRate: formData.sessionRate, monthlyRate: formData.monthlyRate, country: formData.country });
       return;
     }
+    if (!formData.externalPlatform || !formData.externalRating || !formData.externalReviewCount || !formData.externalProfileUrl) {
+      alert("Please fill in all External Reputation fields. These are required for verification.");
+      return;
+    }
     if (!contractAgreed) {
       alert("Please read and agree to the Pre-Launch Coach Agreement to submit your application");
       return;
@@ -131,7 +143,14 @@ export default function BecomeaCoach() {
     try {
       const submitData = {
         ...formData,
-        expertise: formData.expertise.join(", ")
+        expertise: formData.expertise.join(", "),
+        externalReputation: {
+          platform_name: formData.externalPlatform,
+          average_rating: parseFloat(formData.externalRating) || 0,
+          review_count: parseInt(formData.externalReviewCount) || 0,
+          profile_url: formData.externalProfileUrl,
+          verified: false
+        }
       };
       console.log("Submitting to:", `${API_BASE_URL}/api/coaches`);
       console.log("Submit data:", submitData);
@@ -172,7 +191,7 @@ export default function BecomeaCoach() {
   const handleCloseModal = () => {
     setSubmitted(false);
     setShowForm(false);
-    setFormData({ fullName: "", email: "", linkedin: "", bio: "", expertise: [], focusAreas: "", introCallRate: "", sessionRate: "", monthlyRate: "", country: "", state: "" });
+    setFormData({ fullName: "", email: "", linkedin: "", bio: "", expertise: [], focusAreas: "", introCallRate: "", sessionRate: "", monthlyRate: "", country: "", state: "", externalPlatform: "", externalRating: "", externalReviewCount: "", externalProfileUrl: "" });
     setContractAgreed(false);
   };
 
@@ -551,6 +570,72 @@ export default function BecomeaCoach() {
                         </select>
                       </div>
                     )}
+
+                    <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Star className="h-5 w-5 text-amber-500" />
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white">External Reputation / Ratings *</label>
+                      </div>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                        External profile links are required so TouchConnectPro can verify your ratings. These links will never be shown publicly.
+                      </p>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Platform Name *</label>
+                          <Input
+                            name="externalPlatform"
+                            value={formData.externalPlatform}
+                            onChange={handleInputChange}
+                            placeholder="e.g., MentorCruise, Clarity.fm, GrowthMentor"
+                            className="bg-slate-50 dark:bg-slate-800/50"
+                            data-testid="input-coach-external-platform"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Average Rating *</label>
+                            <Input
+                              name="externalRating"
+                              type="number"
+                              step="0.1"
+                              min="1"
+                              max="5"
+                              value={formData.externalRating}
+                              onChange={handleInputChange}
+                              placeholder="e.g., 4.9"
+                              className="bg-slate-50 dark:bg-slate-800/50"
+                              data-testid="input-coach-external-rating"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Number of Reviews *</label>
+                            <Input
+                              name="externalReviewCount"
+                              type="number"
+                              min="1"
+                              value={formData.externalReviewCount}
+                              onChange={handleInputChange}
+                              placeholder="e.g., 37"
+                              className="bg-slate-50 dark:bg-slate-800/50"
+                              data-testid="input-coach-external-review-count"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">External Profile URL * (for verification only)</label>
+                          <Input
+                            name="externalProfileUrl"
+                            type="url"
+                            value={formData.externalProfileUrl}
+                            onChange={handleInputChange}
+                            placeholder="https://mentorcruise.com/mentor/yourname"
+                            className="bg-slate-50 dark:bg-slate-800/50"
+                            data-testid="input-coach-external-url"
+                          />
+                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">This link will never be shown to entrepreneurs - it's only for our team to verify your ratings.</p>
+                        </div>
+                      </div>
+                    </div>
 
                     <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
                       <div className="flex items-center gap-2 mb-4">

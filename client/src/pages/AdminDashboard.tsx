@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 import { API_BASE_URL } from "@/config";
 import { toast } from "sonner";
 import { IDEA_PROPOSAL_QUESTIONS } from "@/lib/constants";
+import { Switch } from "@/components/ui/switch";
 
 interface MentorApplication {
   id: string;
@@ -47,6 +48,16 @@ interface CoachApplication {
   rejection_reason?: string;
   updated_at?: string;
   is_resubmitted?: boolean;
+  externalReputation?: {
+    platform_name: string;
+    average_rating: number;
+    review_count: number;
+    profile_url: string;
+    verified: boolean;
+    verified_by_admin_id?: string | null;
+    verified_at?: string | null;
+    verification_notes?: string | null;
+  } | null;
 }
 
 interface InvestorApplication {
@@ -2377,6 +2388,64 @@ export default function AdminDashboard() {
                             <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
                             <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.focusAreas}</p>
                           </div>
+                          {app.externalReputation && (
+                            <div className="border border-amber-200 dark:border-amber-800 rounded-lg p-4 bg-amber-50/50 dark:bg-amber-900/10">
+                              <div className="flex items-center justify-between mb-3">
+                                <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase flex items-center gap-2">
+                                  <Star className="h-4 w-4" /> External Reputation
+                                </p>
+                                {app.externalReputation.verified ? (
+                                  <Badge className="bg-green-600">Verified</Badge>
+                                ) : (
+                                  <Badge className="bg-slate-500">Pending Verification</Badge>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                                <div>
+                                  <p className="text-xs text-slate-500">Platform</p>
+                                  <p className="font-medium">{app.externalReputation.platform_name}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-slate-500">Rating</p>
+                                  <p className="font-medium">{app.externalReputation.average_rating} ({app.externalReputation.review_count} reviews)</p>
+                                </div>
+                                <div className="col-span-2">
+                                  <p className="text-xs text-slate-500">Verification URL (Admin Only)</p>
+                                  <a href={app.externalReputation.profile_url} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline text-sm truncate block">{app.externalReputation.profile_url}</a>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 pt-3 border-t border-amber-200 dark:border-amber-700">
+                                <Switch
+                                  checked={app.externalReputation.verified || false}
+                                  onCheckedChange={async (checked) => {
+                                    try {
+                                      const response = await fetch(`${API_BASE_URL}/api/admin/coaches/${app.id}/verify-reputation`, {
+                                        method: "PUT",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ verified: checked, adminEmail: adminUser })
+                                      });
+                                      if (response.ok) {
+                                        setCoachApplications(prev => prev.map(c => 
+                                          c.id === app.id 
+                                            ? { ...c, externalReputation: { ...c.externalReputation, verified: checked, verified_at: checked ? new Date().toISOString() : null } }
+                                            : c
+                                        ));
+                                      }
+                                    } catch (err) {
+                                      console.error("Failed to update verification:", err);
+                                    }
+                                  }}
+                                  data-testid={`switch-verify-reputation-${actualIdx}`}
+                                />
+                                <label className="text-sm font-medium">
+                                  {app.externalReputation.verified ? "Externally verified by TouchConnectPro" : "Mark as verified"}
+                                </label>
+                              </div>
+                              {app.externalReputation.verified_at && (
+                                <p className="text-xs text-slate-500 mt-2">Verified on {new Date(app.externalReputation.verified_at).toLocaleDateString()}</p>
+                              )}
+                            </div>
+                          )}
                           <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700 relative z-10">
                             <Button 
                               type="button"

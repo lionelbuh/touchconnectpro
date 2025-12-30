@@ -1674,7 +1674,7 @@ app.patch("/api/mentors/:id", async (req, res) => {
 app.post("/api/coaches", async (req, res) => {
   console.log("[POST /api/coaches] Called");
   try {
-    const { fullName, email, linkedin, bio, expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, country, state, specializations } = req.body;
+    const { fullName, email, linkedin, bio, expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, country, state, specializations, externalReputation } = req.body;
 
     const ratesProvided = introCallRate && sessionRate && monthlyRate;
     const legacyRateProvided = hourlyRate;
@@ -1730,6 +1730,7 @@ app.post("/api/coaches", async (req, res) => {
             country,
             state: state || null,
             specializations: specializations || [],
+            external_reputation: externalReputation || null,
             status: "pending",
             is_resubmitted: true
           })
@@ -1760,6 +1761,7 @@ app.post("/api/coaches", async (req, res) => {
         country,
         state: state || null,
         specializations: specializations || [],
+        external_reputation: externalReputation || null,
         status: "submitted"
       })
       .select();
@@ -2045,6 +2047,85 @@ app.put("/api/coaches/profile/:id", async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
+    return res.json({ success: true, coach: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Update coach external reputation (resets verification)
+app.put("/api/coaches/:id/external-reputation", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { platform_name, average_rating, review_count, profile_url } = req.body;
+    
+    if (!platform_name || !average_rating || !review_count || !profile_url) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const externalReputation = {
+      platform_name,
+      average_rating: parseFloat(average_rating),
+      review_count: parseInt(review_count),
+      profile_url,
+      verified: false,
+      verified_by_admin_id: null,
+      verified_at: null
+    };
+
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .update({ external_reputation: externalReputation })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, coach: data?.[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Admin: Verify or unverify coach external reputation
+app.put("/api/admin/coaches/:id/verify-reputation", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { verified, adminEmail, notes } = req.body;
+    
+    // Get current external reputation
+    const { data: coach, error: fetchError } = await supabase
+      .from("coach_applications")
+      .select("external_reputation")
+      .eq("id", id)
+      .single();
+    
+    if (fetchError) {
+      return res.status(404).json({ error: "Coach not found" });
+    }
+    
+    const currentReputation = coach.external_reputation || {};
+    const updatedReputation = {
+      ...currentReputation,
+      verified: verified === true,
+      verified_by_admin_id: verified ? adminEmail : null,
+      verified_at: verified ? new Date().toISOString() : null,
+      verification_notes: notes || null
+    };
+
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .update({ external_reputation: updatedReputation })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log(`[ADMIN] External reputation ${verified ? 'verified' : 'unverified'} for coach ${id} by ${adminEmail}`);
     return res.json({ success: true, coach: data?.[0] });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -2536,7 +2617,15 @@ app.get("/api/coaches/approved", async (req, res) => {
     }
 
     console.log("[GET /api/coaches/approved] Returning", data?.length || 0, "coaches");
-    return res.json(data || []);
+    // Strip profile_url from external_reputation for privacy (admin-only field)
+    const safeData = (data || []).map(coach => {
+      if (coach.external_reputation) {
+        const { profile_url, ...safeReputation } = coach.external_reputation;
+        return { ...coach, external_reputation: safeReputation };
+      }
+      return coach;
+    });
+    return res.json(safeData);
   } catch (error) {
     console.error("[GET /api/coaches/approved] Error:", error);
     return res.status(500).json({ error: error.message });
@@ -2559,6 +2648,12 @@ app.get("/api/coaches/:coachId", async (req, res) => {
     if (error) {
       console.error("[GET /api/coaches/:coachId] Error:", error);
       return res.status(404).json({ error: "Coach not found" });
+    }
+
+    // Strip profile_url from external_reputation for privacy (admin-only field)
+    if (data.external_reputation) {
+      const { profile_url, ...safeReputation } = data.external_reputation;
+      data.external_reputation = safeReputation;
     }
 
     return res.json(data);

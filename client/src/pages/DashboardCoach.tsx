@@ -93,6 +93,15 @@ interface CoachProfile {
   is_disabled?: boolean;
   bio?: string | null;
   profile_image?: string | null;
+  external_reputation?: {
+    platform_name: string;
+    average_rating: number;
+    review_count: number;
+    profile_url: string;
+    verified: boolean;
+    verified_by_admin_id?: string | null;
+    verified_at?: string | null;
+  } | null;
 }
 
 function parseRates(hourlyRate: string): CoachRates {
@@ -152,6 +161,16 @@ export default function DashboardCoach() {
     bio: string;
     profileImage: string;
   } | null>(null);
+  
+  // External reputation state
+  const [externalPlatform, setExternalPlatform] = useState("");
+  const [externalRating, setExternalRating] = useState("");
+  const [externalReviewCount, setExternalReviewCount] = useState("");
+  const [externalProfileUrl, setExternalProfileUrl] = useState("");
+  const [externalVerified, setExternalVerified] = useState(false);
+  const [externalVerifiedAt, setExternalVerifiedAt] = useState<string | null>(null);
+  const [isEditingReputation, setIsEditingReputation] = useState(false);
+  const [savingReputation, setSavingReputation] = useState(false);
 
   const enterEditMode = () => {
     setOriginalProfileValues({
@@ -232,6 +251,15 @@ export default function DashboardCoach() {
           setLinkedin(data.linkedin || "");
           setBio(data.bio || "");
           setProfileImage(data.profile_image || "");
+          // Set external reputation
+          if (data.external_reputation) {
+            setExternalPlatform(data.external_reputation.platform_name || "");
+            setExternalRating(String(data.external_reputation.average_rating || ""));
+            setExternalReviewCount(String(data.external_reputation.review_count || ""));
+            setExternalProfileUrl(data.external_reputation.profile_url || "");
+            setExternalVerified(data.external_reputation.verified || false);
+            setExternalVerifiedAt(data.external_reputation.verified_at || null);
+          }
         }
       } catch (error) {
         console.error("Error loading profile:", error);
@@ -521,6 +549,42 @@ export default function DashboardCoach() {
     if (success) {
       setIsEditingProfile(false);
       setOriginalProfileValues(null);
+    }
+  };
+
+  const handleSaveReputation = async () => {
+    if (!profile?.id) return;
+    
+    if (!externalPlatform || !externalRating || !externalReviewCount || !externalProfileUrl) {
+      toast.error("Please fill in all external reputation fields");
+      return;
+    }
+    
+    setSavingReputation(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/coaches/${profile.id}/external-reputation`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          platform_name: externalPlatform,
+          average_rating: externalRating,
+          review_count: externalReviewCount,
+          profile_url: externalProfileUrl
+        })
+      });
+      
+      if (response.ok) {
+        setExternalVerified(false);
+        setExternalVerifiedAt(null);
+        setIsEditingReputation(false);
+        toast.success("External reputation updated! Verification has been reset and will be reviewed by our team.");
+      } else {
+        toast.error("Failed to update external reputation");
+      }
+    } catch (error) {
+      toast.error("Error saving external reputation");
+    } finally {
+      setSavingReputation(false);
     }
   };
 
@@ -952,6 +1016,164 @@ export default function DashboardCoach() {
                   ) : (
                     <p className="text-slate-500 italic">No focus area selected</p>
                   )
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20 md:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Star className="h-5 w-5 text-amber-600" />
+                  External Reputation
+                  {externalVerified && (
+                    <Badge className="bg-green-600 ml-2">Verified</Badge>
+                  )}
+                  {!externalVerified && externalPlatform && (
+                    <Badge className="bg-slate-500 ml-2">Pending Verification</Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Display your ratings from other coaching platforms. Updates reset verification status.
+                </p>
+                {isEditingReputation ? (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Platform Name *</label>
+                      <input
+                        type="text"
+                        value={externalPlatform}
+                        onChange={(e) => setExternalPlatform(e.target.value)}
+                        placeholder="e.g., MentorCruise, Clarity.fm"
+                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                        data-testid="input-external-platform"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Average Rating *</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="1"
+                          max="5"
+                          value={externalRating}
+                          onChange={(e) => setExternalRating(e.target.value)}
+                          placeholder="e.g., 4.9"
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                          data-testid="input-external-rating"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Number of Reviews *</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={externalReviewCount}
+                          onChange={(e) => setExternalReviewCount(e.target.value)}
+                          placeholder="e.g., 37"
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                          data-testid="input-external-review-count"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">External Profile URL * (for verification only)</label>
+                      <input
+                        type="url"
+                        value={externalProfileUrl}
+                        onChange={(e) => setExternalProfileUrl(e.target.value)}
+                        placeholder="https://mentorcruise.com/mentor/yourname"
+                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                        data-testid="input-external-url"
+                      />
+                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">This link is only used for verification and will never be shown publicly.</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsEditingReputation(false)}
+                        disabled={savingReputation}
+                        data-testid="button-cancel-reputation"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleSaveReputation}
+                        disabled={savingReputation}
+                        className="bg-amber-600 hover:bg-amber-700"
+                        data-testid="button-save-reputation"
+                      >
+                        {savingReputation ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        Save Changes
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {externalPlatform ? (
+                      <>
+                        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-amber-100 dark:border-amber-900">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="flex items-center gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`h-5 w-5 ${
+                                    i < Math.floor(parseFloat(externalRating) || 0)
+                                      ? "fill-amber-400 text-amber-400"
+                                      : "fill-slate-200 text-slate-300"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="font-bold text-lg">{externalRating}</span>
+                            <span className="text-muted-foreground">({externalReviewCount} reviews)</span>
+                          </div>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            Based on ratings from {externalPlatform}
+                          </p>
+                          {externalVerified && externalVerifiedAt && (
+                            <p className="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center gap-1">
+                              <Check className="h-3 w-3" />
+                              Verified by TouchConnectPro on {new Date(externalVerifiedAt).toLocaleDateString()}
+                            </p>
+                          )}
+                          {!externalVerified && (
+                            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                              Awaiting verification by our team
+                            </p>
+                          )}
+                        </div>
+                        {!profile?.is_disabled && (
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsEditingReputation(true)}
+                            className="border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                            data-testid="button-edit-reputation"
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Update Reputation Info
+                          </Button>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-4">
+                        <p className="text-slate-500 italic mb-4">No external reputation added yet</p>
+                        {!profile?.is_disabled && (
+                          <Button
+                            onClick={() => setIsEditingReputation(true)}
+                            className="bg-amber-600 hover:bg-amber-700"
+                            data-testid="button-add-reputation"
+                          >
+                            <Star className="mr-2 h-4 w-4" />
+                            Add External Reputation
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </CardContent>
             </Card>

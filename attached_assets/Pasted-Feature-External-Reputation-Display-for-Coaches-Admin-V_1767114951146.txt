@@ -1,0 +1,127 @@
+Feature: External Reputation Display for Coaches (Admin-Verified)
+Goal
+
+Allow coaches to display external reputation only after manual verification by TouchConnectPro admins, without exposing external links to entrepreneurs.
+
+1️⃣ Coach Registration / Onboarding
+Section: “External Reputation / Ratings”
+
+Required fields (NOT optional):
+
+Platform name (e.g. MentorCruise)
+
+Average rating (e.g. 4.9)
+
+Number of reviews (e.g. 37)
+
+External profile link
+
+Required for verification
+
+Never visible to entrepreneurs
+
+Helper text (important copy):
+
+“External profile links are required so TouchConnectPro can verify your ratings. These links will never be shown publicly.”
+
+2️⃣ Admin Panel (CRITICAL)
+New Admin Controls
+
+For each coach and each external platform:
+
+View:
+
+Platform name
+
+Rating
+
+Review count
+
+External profile link
+
+Manual checkbox / toggle:
+
+⬜ Externally verified by TouchConnectPro
+
+Optional:
+
+Verification notes (internal only)
+
+Verification date
+
+Admin user who verified
+
+Rules:
+
+The verification checkbox is OFF by default
+
+Only admins can toggle it ON or OFF
+
+Coaches cannot self-verify
+
+If unchecked:
+
+Stars may still display
+
+The “Externally verified by TouchConnectPro” badge does NOT appear
+
+3️⃣ Public Coach Profile (Entrepreneurs View)
+
+Visible elements ONLY:
+
+⭐⭐⭐⭐⭐ 4.9 (37 reviews)
+Based on self-reported ratings from MentorCruise
+
+✅ Externally verified by TouchConnectPro   ← ONLY if admin toggled ON
+
+
+Never visible publicly:
+
+External profile links
+
+Review text
+
+Reviewer names
+
+Platform URLs
+
+4️⃣ Coach Dashboard (Coach View)
+
+Coach sees:
+
+Submitted rating info
+
+Verification status:
+
+“Pending verification”
+
+“Verified by TouchConnectPro”
+
+Coach can:
+
+Edit rating / review count / platform
+
+Submit new links → resets verification to OFF
+
+5️⃣ Data Model (Suggested)
+"external_reputation": [
+  {
+    "platform_name": "MentorCruise",
+    "average_rating": 4.9,
+    "review_count": 37,
+    "profile_url": "internal_only",
+    "verified": false,
+    "verified_by_admin_id": null,
+    "verified_at": null
+  }
+]
+
+6️⃣ Why this matters (for the dev)
+
+Protects TouchConnectPro legally
+
+Prevents fake or inflated ratings
+
+Gives you full editorial control
+
+Builds real trust with entrepreneurs
