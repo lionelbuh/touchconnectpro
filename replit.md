@@ -56,6 +56,14 @@ The platform uses a component-based approach with a responsive, mobile-first des
     - **Design Principle**: One calculator, one logic (`client/src/lib/calculatorLogic.ts`), two views. Founder view = truth; Public view = education + motivation (not promises).
     - No backend required - all calculations happen client-side with instant recalculation.
 
+### Admin Authentication
+-   **Protected Routes**: `/admin-dashboard` and `/calculator` require admin login
+-   **Login URL**: `/admin-login` with email/password authentication
+-   **Session Duration**: 24 hours with token-based sessions
+-   **Tables**: `admin_users` (credentials), `admin_sessions` (active sessions)
+-   **First Admin**: buhler.lionel@gmail.com
+-   **Adding New Admins**: Use POST `/api/admin/create` with existing admin token
+
 ## External Dependencies
 
 1.  **Supabase**: Provides PostgreSQL database hosting, authentication, user management, real-time subscriptions, and storage for user-uploaded files (e.g., profile images).

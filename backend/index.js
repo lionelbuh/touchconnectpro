@@ -5,6 +5,7 @@ import { Resend } from "resend";
 import crypto from "crypto";
 import Stripe from "stripe";
 import OpenAI from "openai";
+import bcrypt from "bcryptjs";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -6925,6 +6926,243 @@ app.get("/api/contract-acceptances/user/:email", async (req, res) => {
     return res.json(data || []);
   } catch (error) {
     console.error("[CONTRACT] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
+// ADMIN AUTHENTICATION ENDPOINTS
+// ============================================
+
+// POST /api/admin/login - Admin login
+app.post("/api/admin/login", async (req, res) => {
+  console.log("[POST /api/admin/login] Admin login attempt");
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const { data: admin, error } = await supabase
+      .from("admin_users")
+      .select("*")
+      .eq("email", email.toLowerCase())
+      .single();
+
+    if (error || !admin) {
+      console.log("[ADMIN] Login failed - user not found:", email);
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    const passwordMatch = await bcrypt.compare(password, admin.password_hash);
+    if (!passwordMatch) {
+      console.log("[ADMIN] Login failed - wrong password:", email);
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    // Generate session token
+    const sessionToken = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Store session
+    const { error: sessionError } = await supabase
+      .from("admin_sessions")
+      .insert({
+        admin_id: admin.id,
+        token: sessionToken,
+        expires_at: expiresAt.toISOString()
+      });
+
+    if (sessionError) {
+      console.error("[ADMIN] Session creation error:", sessionError);
+      return res.status(500).json({ error: "Failed to create session" });
+    }
+
+    console.log("[ADMIN] Login successful:", email);
+    return res.json({
+      success: true,
+      token: sessionToken,
+      admin: {
+        id: admin.id,
+        email: admin.email,
+        name: admin.name
+      }
+    });
+  } catch (error) {
+    console.error("[ADMIN] Login error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/admin/verify - Verify admin session
+app.post("/api/admin/verify", async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(401).json({ valid: false });
+    }
+
+    const { data: session, error } = await supabase
+      .from("admin_sessions")
+      .select("*, admin_users(*)")
+      .eq("token", token)
+      .gt("expires_at", new Date().toISOString())
+      .single();
+
+    if (error || !session) {
+      return res.json({ valid: false });
+    }
+
+    return res.json({
+      valid: true,
+      admin: {
+        id: session.admin_users.id,
+        email: session.admin_users.email,
+        name: session.admin_users.name
+      }
+    });
+  } catch (error) {
+    console.error("[ADMIN] Verify error:", error.message);
+    return res.status(500).json({ valid: false });
+  }
+});
+
+// POST /api/admin/logout - Admin logout
+app.post("/api/admin/logout", async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+
+    const { token } = req.body;
+
+    if (token) {
+      await supabase
+        .from("admin_sessions")
+        .delete()
+        .eq("token", token);
+    }
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("[ADMIN] Logout error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/admin/create - Create new admin (requires existing admin token)
+app.post("/api/admin/create", async (req, res) => {
+  console.log("[POST /api/admin/create] Creating new admin");
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+
+    const { token, email, password, name } = req.body;
+
+    // Verify requesting user is an admin
+    const { data: session, error: sessionError } = await supabase
+      .from("admin_sessions")
+      .select("*, admin_users(*)")
+      .eq("token", token)
+      .gt("expires_at", new Date().toISOString())
+      .single();
+
+    if (sessionError || !session) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    // Check if admin already exists
+    const { data: existingAdmin } = await supabase
+      .from("admin_users")
+      .select("id")
+      .eq("email", email.toLowerCase())
+      .single();
+
+    if (existingAdmin) {
+      return res.status(400).json({ error: "Admin with this email already exists" });
+    }
+
+    // Hash password and create admin
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const { data: newAdmin, error: createError } = await supabase
+      .from("admin_users")
+      .insert({
+        email: email.toLowerCase(),
+        password_hash: passwordHash,
+        name: name || email.split("@")[0]
+      })
+      .select()
+      .single();
+
+    if (createError) {
+      console.error("[ADMIN] Create error:", createError);
+      return res.status(500).json({ error: "Failed to create admin" });
+    }
+
+    console.log("[ADMIN] New admin created:", email);
+    return res.json({
+      success: true,
+      admin: {
+        id: newAdmin.id,
+        email: newAdmin.email,
+        name: newAdmin.name
+      }
+    });
+  } catch (error) {
+    console.error("[ADMIN] Create error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/admin/list - List all admins (requires admin token)
+app.get("/api/admin/list", async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+
+    const token = req.headers.authorization?.replace("Bearer ", "");
+
+    // Verify requesting user is an admin
+    const { data: session, error: sessionError } = await supabase
+      .from("admin_sessions")
+      .select("*, admin_users(*)")
+      .eq("token", token)
+      .gt("expires_at", new Date().toISOString())
+      .single();
+
+    if (sessionError || !session) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { data: admins, error } = await supabase
+      .from("admin_users")
+      .select("id, email, name, created_at")
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.json(admins || []);
+  } catch (error) {
+    console.error("[ADMIN] List error:", error.message);
     return res.status(500).json({ error: error.message });
   }
 });
