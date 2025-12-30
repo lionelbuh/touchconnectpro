@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign } from "lucide-react";
+import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus } from "lucide-react";
+import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { API_BASE_URL } from "@/config";
@@ -240,7 +241,14 @@ function ContractsSection() {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings" | "earnings" | "contracts">("approvals");
+  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings" | "earnings" | "contracts" | "admins">("approvals");
+  const [, setLocation] = useLocation();
+  const [adminUsers, setAdminUsers] = useState<{id: string; email: string; name: string; created_at: string}[]>([]);
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [newAdminName, setNewAdminName] = useState("");
+  const [creatingAdmin, setCreatingAdmin] = useState(false);
+  const [loadingAdmins, setLoadingAdmins] = useState(false);
   const [activeMembersSubTab, setActiveMembersSubTab] = useState<"portfolio" | "messaging" | "management">("portfolio");
   const [activeApprovalsSubTab, setActiveApprovalsSubTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
   const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled">("entrepreneurs");
@@ -557,6 +565,60 @@ export default function AdminDashboard() {
 
     loadData();
   }, []);
+
+  const loadAdminUsers = async () => {
+    setLoadingAdmins(true);
+    try {
+      const token = localStorage.getItem("tcp_adminToken");
+      const response = await fetch(`${API_BASE_URL}/api/admin/list`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const admins = await response.json();
+        setAdminUsers(admins);
+      }
+    } catch (err) {
+      console.error("Error fetching admins:", err);
+    } finally {
+      setLoadingAdmins(false);
+    }
+  };
+
+  const handleCreateAdmin = async () => {
+    if (!newAdminEmail || !newAdminPassword) {
+      toast.error("Email and password are required");
+      return;
+    }
+    setCreatingAdmin(true);
+    try {
+      const token = localStorage.getItem("tcp_adminToken");
+      const response = await fetch(`${API_BASE_URL}/api/admin/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          email: newAdminEmail,
+          password: newAdminPassword,
+          name: newAdminName || newAdminEmail.split("@")[0]
+        })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        toast.success("Admin created successfully!");
+        setNewAdminEmail("");
+        setNewAdminPassword("");
+        setNewAdminName("");
+        loadAdminUsers();
+      } else {
+        toast.error(data.error || "Failed to create admin");
+      }
+    } catch (err) {
+      console.error("Error creating admin:", err);
+      toast.error("Failed to create admin");
+    } finally {
+      setCreatingAdmin(false);
+    }
+  };
 
   const handleApproveMentor = async (index: number) => {
     const mentor = mentorApplications[index];
@@ -1551,9 +1613,36 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <ShieldAlert className="h-8 w-8 text-red-600" />
-            <h1 className="text-4xl font-display font-bold text-slate-900 dark:text-white">Admin Dashboard</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 mb-4">
+              <ShieldAlert className="h-8 w-8 text-red-600" />
+              <h1 className="text-4xl font-display font-bold text-slate-900 dark:text-white">Admin Dashboard</h1>
+            </div>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                const token = localStorage.getItem("tcp_adminToken");
+                if (token) {
+                  try {
+                    await fetch(`${API_BASE_URL}/api/admin/logout`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ token })
+                    });
+                  } catch (e) {
+                    console.error("Logout error:", e);
+                  }
+                }
+                localStorage.removeItem("tcp_adminToken");
+                localStorage.removeItem("tcp_adminData");
+                setLocation("/admin-login");
+              }}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              data-testid="button-admin-logout"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
           </div>
           <p className="text-muted-foreground">Manage platform users, approvals, and communications</p>
         </div>
@@ -1614,6 +1703,17 @@ export default function AdminDashboard() {
             data-testid="button-contracts-tab"
           >
             <FileText className="mr-2 h-4 w-4" /> Contracts
+          </Button>
+          <Button 
+            variant={activeTab === "admins" ? "default" : "outline"}
+            onClick={() => {
+              setActiveTab("admins");
+              loadAdminUsers();
+            }}
+            className={activeTab === "admins" ? "bg-purple-600 hover:bg-purple-700" : ""}
+            data-testid="button-admins-tab"
+          >
+            <Shield className="mr-2 h-4 w-4" /> Admins
           </Button>
         </div>
 
@@ -5056,6 +5156,98 @@ export default function AdminDashboard() {
       {/* Contracts Tab */}
       {activeTab === "contracts" && (
         <ContractsSection />
+      )}
+
+      {/* Admins Tab */}
+      {activeTab === "admins" && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserPlus className="h-5 w-5 text-purple-600" />
+                Add New Admin
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Input
+                  placeholder="Email"
+                  type="email"
+                  value={newAdminEmail}
+                  onChange={(e) => setNewAdminEmail(e.target.value)}
+                  data-testid="input-new-admin-email"
+                />
+                <Input
+                  placeholder="Password"
+                  type="password"
+                  value={newAdminPassword}
+                  onChange={(e) => setNewAdminPassword(e.target.value)}
+                  data-testid="input-new-admin-password"
+                />
+                <Input
+                  placeholder="Name (optional)"
+                  value={newAdminName}
+                  onChange={(e) => setNewAdminName(e.target.value)}
+                  data-testid="input-new-admin-name"
+                />
+                <Button
+                  onClick={handleCreateAdmin}
+                  disabled={creatingAdmin || !newAdminEmail || !newAdminPassword}
+                  className="bg-purple-600 hover:bg-purple-700"
+                  data-testid="button-create-admin"
+                >
+                  {creatingAdmin ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="mr-2 h-4 w-4" />
+                  )}
+                  Add Admin
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-purple-600" />
+                Current Admins
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingAdmins ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+                </div>
+              ) : adminUsers.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No admins found</p>
+              ) : (
+                <div className="space-y-3">
+                  {adminUsers.map((admin) => (
+                    <div 
+                      key={admin.id} 
+                      className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg"
+                      data-testid={`admin-user-${admin.id}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                          <Shield className="h-5 w-5 text-purple-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-900 dark:text-white">{admin.name || admin.email}</p>
+                          <p className="text-sm text-muted-foreground">{admin.email}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Added {new Date(admin.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Earnings Tab */}
