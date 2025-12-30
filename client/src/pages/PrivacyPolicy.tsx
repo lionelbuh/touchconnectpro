@@ -1,207 +1,187 @@
 import { Mail } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "wouter";
 
 export default function PrivacyPolicy() {
   return (
     <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
-      {/* Hero Section */}
       <section className="py-16 bg-gradient-to-b from-slate-900/20 to-background">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 text-slate-900 dark:text-white">
-              Privacy Policy — TouchConnectPro
+              Privacy Policy
             </h1>
             <p className="text-lg text-slate-600 dark:text-slate-400">
-              Last Updated: 11/30/2025
-            </p>
-            <p className="text-slate-600 dark:text-slate-400 mt-2">
-              This Privacy Policy explains how TouchConnectPro ("we", "us", "our") collects, stores, uses, and protects your personal information when you access or interact with TouchConnectPro.com.
-            </p>
-            <p className="text-slate-600 dark:text-slate-400 mt-2 font-semibold">
-              Your privacy is important — and we keep your information safe, transparent, and only used for the purpose of delivering our services.
+              Last updated: December 30, 2025
             </p>
           </div>
         </div>
       </section>
 
-      {/* Main Content */}
       <section className="py-16">
         <div className="container mx-auto px-4 max-w-3xl">
           <div className="space-y-8">
-            {/* 1. Information We Collect */}
             <Card className="border-slate-200 dark:border-slate-700">
               <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">1. Information We Collect</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  We collect two types of data:
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">1. Introduction</h2>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                  TouchConnectPro ("we", "us", "our") respects your privacy. This Privacy Policy explains what personal data we collect, why we collect it, and how we use it when you use our website and services.
                 </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 dark:border-slate-700">
+              <CardContent className="p-8">
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">2. What data we collect</h2>
                 
                 <div className="mb-6">
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3">A) Information you provide directly</h3>
+                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3">a. Account & profile data</h3>
+                  <p className="text-slate-700 dark:text-slate-300 mb-2">When you create an account (coach or entrepreneur), we may collect:</p>
                   <ul className="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300 ml-2">
                     <li>Name</li>
                     <li>Email address</li>
-                    <li>Account details & onboarding information</li>
-                    <li>Information you share with mentors or during pitch building</li>
+                    <li>Profile information you choose to provide</li>
+                    <li>Login and authentication data</li>
                   </ul>
+                </div>
+
+                <div className="mb-6">
+                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3">b. Usage data</h3>
+                  <p className="text-slate-700 dark:text-slate-300 mb-2">We collect limited usage data to understand how our website is used, such as:</p>
+                  <ul className="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300 ml-2">
+                    <li>Pages visited</li>
+                    <li>Device and browser type</li>
+                    <li>Approximate location (country-level)</li>
+                  </ul>
+                  <p className="text-slate-600 dark:text-slate-400 mt-2 italic">
+                    This data is collected using Google Analytics, only after you give consent.
+                  </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3">B) Automatically collected technical data</h3>
+                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3">c. Communications</h3>
+                  <p className="text-slate-700 dark:text-slate-300 mb-2">If you contact us or receive emails from us, we may collect:</p>
                   <ul className="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300 ml-2">
-                    <li>Cookies and analytics tracking</li>
-                    <li>IP address, browser, device type</li>
-                    <li>Usage behavior to improve website performance</li>
+                    <li>Email address</li>
+                    <li>Message content</li>
+                    <li>Email delivery and open information (for transactional emails)</li>
                   </ul>
                 </div>
-
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mt-4 font-semibold">
-                  We collect only the data required to operate the platform and help you succeed.
-                </p>
               </CardContent>
             </Card>
 
-            {/* 2. How We Use Your Data */}
             <Card className="border-slate-200 dark:border-slate-700">
               <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">2. How We Use Your Data</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  Your data is used to:
-                </p>
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">3. How we use your data</h2>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">We use your data to:</p>
                 <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2 mb-4">
-                  <li>Create and manage your account</li>
-                  <li>Process membership payments</li>
-                  <li>Communicate onboarding, updates, and service information</li>
-                  <li>Match users with mentors/coaches where relevant</li>
-                  <li>Improve platform features, security, and user experience</li>
+                  <li>Provide and operate TouchConnectPro</li>
+                  <li>Authenticate users and secure accounts</li>
+                  <li>Improve our website and user experience</li>
+                  <li>Communicate with you about your account or our services</li>
+                  <li>Comply with legal obligations</li>
                 </ul>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">
-                  We do not sell your data — ever.
+                  We do not sell your personal data.
                 </p>
               </CardContent>
             </Card>
 
-            {/* 3. Third-Party Tools Involved */}
             <Card className="border-slate-200 dark:border-slate-700">
               <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">3. Third-Party Tools Involved</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
-                  To operate TouchConnectPro, we securely use trusted external services:
-                </p>
-                
-                <div className="overflow-x-auto mb-6">
-                  <table className="w-full text-sm text-slate-700 dark:text-slate-300">
-                    <thead>
-                      <tr className="border-b border-slate-300 dark:border-slate-600">
-                        <th className="text-left py-2 px-3 font-semibold">Tool</th>
-                        <th className="text-left py-2 px-3 font-semibold">Purpose</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <td className="py-2 px-3">Stripe</td>
-                        <td className="py-2 px-3">Payment processing</td>
-                      </tr>
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <td className="py-2 px-3">Mailchimp</td>
-                        <td className="py-2 px-3">Email updates & onboarding</td>
-                      </tr>
-                      <tr>
-                        <td className="py-2 px-3">Analytics/Cookies</td>
-                        <td className="py-2 px-3">Website performance & optimization</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  These providers may process your data only to perform their services — never to contact you independently or resell your information.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* 4. Data Protection & Security */}
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">4. Data Protection & Security</h2>
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">4. Third-party services we use</h2>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  We follow reasonable and standard industry measures to protect personal data from unauthorized access, manipulation, loss, or disclosure.
-                </p>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  While no digital system can guarantee 100% security, TouchConnectPro continuously monitors systems and will notify users if a data-related risk or breach ever occurs.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* 5. Cookies */}
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">5. Cookies</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  Cookies help us operate the platform, remember logins, and improve your experience.
-                </p>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  You may disable cookies in your browser at any time, but some features may not function correctly if disabled.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* 6. Your Rights Over Your Data */}
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">6. Your Rights Over Your Data</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  You may request at any time to:
+                  We use trusted third-party services to operate TouchConnectPro:
                 </p>
                 <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2 mb-4">
-                  <li>Access the information we hold about you</li>
-                  <li>Correct or update inaccurate details</li>
-                  <li>Request deletion of your personal data</li>
-                  <li>Opt-out of marketing or communications</li>
+                  <li><strong>Supabase</strong> – authentication and database</li>
+                  <li><strong>Google Analytics</strong> – website analytics (only with consent)</li>
+                  <li><strong>Render</strong> – hosting infrastructure</li>
+                  <li><strong>Senders</strong> – transactional email delivery</li>
                 </ul>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4 font-semibold">
-                  You remain in control of your privacy.
-                </p>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  To exercise any rights, contact us at:
-                </p>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mt-2 font-semibold">
-                  📩 hello@touchconnectpro.com
+                  These providers process data only as necessary to provide their services.
                 </p>
               </CardContent>
             </Card>
 
-            {/* 7. Data Retention */}
             <Card className="border-slate-200 dark:border-slate-700">
               <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">7. Data Retention</h2>
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">5. Cookies & tracking</h2>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">We use:</p>
+                <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2 mb-4">
+                  <li><strong>Essential cookies</strong> for login, security, and core functionality</li>
+                  <li><strong>Analytics cookies</strong> (Google Analytics) only if you consent</li>
+                </ul>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  We keep your information only as long as your account is active, or as required by law for accounting and security purposes. Data can be permanently deleted upon request unless retained by legal requirement.
+                  For more details, see our <Link href="/cookie-policy" className="text-cyan-600 hover:underline">Cookie Policy</Link>.
                 </p>
               </CardContent>
             </Card>
 
-            {/* 8. Changes to This Policy */}
             <Card className="border-slate-200 dark:border-slate-700">
               <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">8. Changes to This Policy</h2>
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">6. Data retention</h2>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  If we update how we use or protect data, we will revise this policy and update the date above. Continued use of the platform implies acceptance of the latest version.
+                  We keep your personal data only as long as necessary:
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2 mb-4">
+                  <li>While your account is active</li>
+                  <li>Or as required by law</li>
+                </ul>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                  You may request deletion of your account and data at any time.
                 </p>
               </CardContent>
             </Card>
 
-            {/* Questions or Concerns */}
+            <Card className="border-slate-200 dark:border-slate-700">
+              <CardContent className="p-8">
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">7. Your rights (GDPR)</h2>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
+                  If you are located in the EU or UK, you have the right to:
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2 mb-4">
+                  <li>Access your personal data</li>
+                  <li>Correct inaccurate data</li>
+                  <li>Request deletion of your data</li>
+                  <li>Withdraw consent for analytics cookies</li>
+                  <li>Object to certain processing</li>
+                </ul>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                  To exercise these rights, contact us at: <a href="mailto:hello@touchconnectpro.com" className="text-cyan-600 hover:underline">hello@touchconnectpro.com</a>
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 dark:border-slate-700">
+              <CardContent className="p-8">
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">8. Data security</h2>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                  We take reasonable technical and organizational measures to protect your data from unauthorized access, loss, or misuse.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 dark:border-slate-700">
+              <CardContent className="p-8">
+                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">9. Changes to this policy</h2>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                  We may update this Privacy Policy from time to time. Updates will be posted on this page with a new "Last updated" date.
+                </p>
+              </CardContent>
+            </Card>
+
             <Card className="border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
               <CardContent className="p-8">
                 <h2 className="text-2xl font-display font-bold mb-6 text-slate-900 dark:text-white flex items-center gap-2">
-                  <Mail className="h-6 w-6" /> Questions or Concerns?
+                  <Mail className="h-6 w-6" /> 10. Contact
                 </h2>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  We're here to help — contact us anytime:
+                  If you have questions about this Privacy Policy, contact us at:
                 </p>
                 <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                  📩 hello@touchconnectpro.com
+                  hello@touchconnectpro.com
                 </p>
               </CardContent>
             </Card>

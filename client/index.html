@@ -1,13 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-95BSNP3VKE"></script>
+    <!-- Google Consent Mode v2 - Default denied until user consents -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      
+      // Set default consent state - analytics OFF by default (GDPR compliant)
+      gtag('consent', 'default', {
+        'analytics_storage': 'denied',
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'wait_for_update': 500
+      });
+      
+      // Check for prior consent on page load
+      (function() {
+        var consent = localStorage.getItem('tcp_cookieConsent');
+        if (consent === 'accepted') {
+          gtag('consent', 'update', {
+            'analytics_storage': 'granted'
+          });
+        }
+      })();
+    </script>
+    <!-- Google tag (gtag.js) - loads but respects consent mode -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-95BSNP3VKE"></script>
+    <script>
       gtag('js', new Date());
-
       gtag('config', 'G-95BSNP3VKE');
     </script>
     <meta charset="UTF-8" />

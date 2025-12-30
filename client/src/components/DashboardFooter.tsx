@@ -32,6 +32,15 @@ export function DashboardFooter() {
           })}
         </div>
         <div className="text-center text-sm text-slate-500 dark:text-slate-400 py-4 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex justify-center gap-4 mb-2 flex-wrap">
+            <a href="/privacy-policy" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Privacy Policy</a>
+            <span>•</span>
+            <a href="/cookie-policy" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Cookie Policy</a>
+            <span>•</span>
+            <a href="/terms-of-service" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Terms of Service</a>
+            <span>•</span>
+            <button onClick={() => (window as any).openCookieSettings?.()} className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Cookie Settings</button>
+          </div>
           © {new Date().getFullYear()} TouchConnectPro. All rights reserved.
         </div>
       </div>

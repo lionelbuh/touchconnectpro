@@ -19,7 +19,9 @@ import BecomeaCoach from "@/pages/BecomeaCoach";
 import BecomeaInvestor from "@/pages/BecomeaInvestor";
 import BecomeaEntrepreneur from "@/pages/BecomeaEntrepreneur";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import CookiePolicy from "@/pages/CookiePolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 import Login from "@/pages/Login";
 import AdminLogin from "@/pages/AdminLogin";
 import SetPassword from "@/pages/SetPassword";
@@ -65,6 +67,7 @@ function Router() {
         <Route path="/become-coach" component={BecomeaCoach} />
         <Route path="/investors" component={BecomeaInvestor} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />
+        <Route path="/cookie-policy" component={CookiePolicy} />
         <Route path="/terms-of-service" component={TermsOfService} />
         <Route path="/login" component={Login} />
         <Route path="/admin-login" component={AdminLogin} />
@@ -106,6 +109,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <SonnerToaster position="top-center" richColors />
+        <CookieConsentBanner />
         <Router />
       </TooltipProvider>
     </QueryClientProvider>
