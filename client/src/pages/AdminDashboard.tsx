@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus } from "lucide-react";
+import { Check, CheckCircle, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus } from "lucide-react";
 import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
@@ -2328,6 +2328,73 @@ export default function AdminDashboard() {
             {/* Coach Approvals */}
             {activeApprovalsSubTab === "coaches" && (
             <div>
+              {/* Verified External Reputations Section */}
+              {(() => {
+                const verifiedCoaches = coachApplications.filter(
+                  c => c.status === "approved" && c.externalReputation?.verified
+                );
+                if (verifiedCoaches.length === 0) return null;
+                return (
+                  <div className="mb-8">
+                    <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                      Verified External Reputations ({verifiedCoaches.length})
+                    </h2>
+                    <Card className="border-green-200 dark:border-green-800">
+                      <CardContent className="pt-4">
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Coaches with externally verified ratings. Click links to spot-check verification sources.
+                        </p>
+                        <div className="divide-y divide-slate-200 dark:divide-slate-700">
+                          {verifiedCoaches.map((coach, idx) => (
+                            <div key={coach.id} className="py-3 flex items-center justify-between flex-wrap gap-2">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-sm font-bold overflow-hidden flex-shrink-0">
+                                  {coach.profileImage ? (
+                                    <img src={coach.profileImage} alt={coach.fullName} className="w-full h-full object-cover" />
+                                  ) : (
+                                    coach.fullName?.substring(0, 2).toUpperCase() || "CO"
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="font-medium text-slate-900 dark:text-white">{coach.fullName}</p>
+                                  <p className="text-xs text-muted-foreground">{coach.email}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4 flex-wrap">
+                                <div className="flex items-center gap-1">
+                                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                                  <span className="font-semibold">{coach.externalReputation?.average_rating}</span>
+                                  <span className="text-xs text-muted-foreground">({coach.externalReputation?.review_count} reviews)</span>
+                                  <span className="text-xs text-slate-500 ml-1">on {coach.externalReputation?.platform_name}</span>
+                                </div>
+                                {coach.externalReputation?.profile_url && (
+                                  <a 
+                                    href={coach.externalReputation.profile_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-cyan-600 hover:text-cyan-700 hover:underline text-sm flex items-center gap-1"
+                                    data-testid={`link-verify-url-${idx}`}
+                                  >
+                                    <ExternalLink className="h-3 w-3" />
+                                    Verify Link
+                                  </a>
+                                )}
+                                {coach.externalReputation?.verified_at && (
+                                  <span className="text-xs text-green-600 dark:text-green-400">
+                                    Verified {new Date(coach.externalReputation.verified_at).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                );
+              })()}
+              
               <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Coach Approvals</h2>
               {pendingCoachApplications.length === 0 ? (
                 <Card>
