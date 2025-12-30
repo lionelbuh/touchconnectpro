@@ -52,7 +52,7 @@ export default function WelcomePopup() {
           </h2>
           
           <p className="text-muted-foreground mb-6 leading-relaxed">
-            We're actively looking for our <span className="font-semibold text-cyan-600 dark:text-cyan-400">first mentors and coaches</span> to join our growing community. If you have experience guiding entrepreneurs, we'd love to hear from you!
+            We're actively looking for our <span className="font-semibold text-cyan-600 dark:text-cyan-400">first coaches</span> to join our growing community. If you have experience guiding entrepreneurs, we'd love to hear from you!
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3">
@@ -68,17 +68,17 @@ export default function WelcomePopup() {
               className="flex-1 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white"
               onClick={() => {
                 handleClose();
-                window.location.href = "/become-mentor";
+                window.location.href = "/become-coach";
               }}
-              data-testid="button-become-mentor"
+              data-testid="button-become-coach"
             >
               <Sparkles className="mr-2 h-4 w-4" />
-              Become a Mentor
+              Become a Coach
             </Button>
           </div>
 
           <p className="text-xs text-muted-foreground mt-4">
-            Or <a href="/become-coach" className="text-cyan-600 hover:underline" onClick={handleClose}>become a coach</a> to offer paid courses
+            Or <a href="/become-mentor" className="text-cyan-600 hover:underline" onClick={handleClose}>become a mentor</a> for our volunteer program
           </p>
         </CardContent>
       </Card>
