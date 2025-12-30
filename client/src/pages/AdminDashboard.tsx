@@ -2531,9 +2531,13 @@ export default function AdminDashboard() {
                                   checked={app.externalReputation.verified || false}
                                   onCheckedChange={async (checked) => {
                                     try {
+                                      const adminToken = localStorage.getItem("tcp_adminToken");
                                       const response = await fetch(`${API_BASE_URL}/api/admin/coaches/${app.id}/verify-reputation`, {
                                         method: "PUT",
-                                        headers: { "Content-Type": "application/json" },
+                                        headers: { 
+                                          "Content-Type": "application/json",
+                                          "Authorization": `Bearer ${adminToken}`
+                                        },
                                         body: JSON.stringify({ verified: checked, adminEmail: localStorage.getItem("tcp_adminEmail") || "admin" })
                                       });
                                       if (response.ok) {
@@ -3555,9 +3559,13 @@ export default function AdminDashboard() {
                                       checked={false}
                                       onCheckedChange={async (checked) => {
                                         const adminEmail = localStorage.getItem("tcp_adminEmail") || "admin";
+                                        const adminToken = localStorage.getItem("tcp_adminToken");
                                         const response = await fetch(`${API_BASE_URL}/api/admin/coaches/${app.id}/verify-reputation`, {
                                           method: "PUT",
-                                          headers: { "Content-Type": "application/json" },
+                                          headers: { 
+                                            "Content-Type": "application/json",
+                                            "Authorization": `Bearer ${adminToken}`
+                                          },
                                           body: JSON.stringify({ verified: checked, adminEmail })
                                         });
                                         if (response.ok) {
