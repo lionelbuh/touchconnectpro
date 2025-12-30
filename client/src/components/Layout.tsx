@@ -145,7 +145,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <h4 className="font-semibold mb-4">Legal</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/privacy-policy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/cookie-policy" className="hover:text-foreground transition-colors">Cookie Policy</Link></li>
               <li><Link href="/terms-of-service" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
+              <li><button onClick={() => window.openCookieSettings?.()} className="hover:text-foreground transition-colors text-left">Cookie Settings</button></li>
             </ul>
           </div>
         </div>

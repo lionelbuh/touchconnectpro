@@ -22,6 +22,13 @@ interface CoachData {
   hourly_rate: string;
   profile_image: string | null;
   stripe_account_id: string | null;
+  external_reputation?: {
+    platform_name: string;
+    average_rating: number;
+    review_count: number;
+    verified: boolean;
+    verified_at?: string | null;
+  } | null;
 }
 
 interface CoachRating {
@@ -225,6 +232,40 @@ export default function CoachProfile() {
               <div>
                 <h2 className="text-lg font-semibold mb-2">About</h2>
                 <p className="text-slate-700 dark:text-slate-300 whitespace-pre-line">{coach.bio}</p>
+              </div>
+            )}
+
+            {coach.external_reputation && (
+              <div className="bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-5 w-5 ${
+                          i < Math.floor(coach.external_reputation!.average_rating)
+                            ? "fill-amber-400 text-amber-400"
+                            : i < coach.external_reputation!.average_rating
+                            ? "fill-amber-200 text-amber-400"
+                            : "fill-slate-200 text-slate-300"
+                        }`}
+                      />
+                    ))}
+                    <span className="ml-2 font-bold text-lg">{coach.external_reputation.average_rating}</span>
+                    <span className="text-muted-foreground">({coach.external_reputation.review_count} reviews)</span>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+                  Based on self-reported ratings from {coach.external_reputation.platform_name}
+                </p>
+                {coach.external_reputation.verified && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Check className="h-4 w-4 text-green-600" />
+                    <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                      Externally verified by TouchConnectPro
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 

@@ -1919,6 +1919,38 @@ export default function DashboardEntrepreneur() {
                               <p className="text-sm text-slate-700 dark:text-slate-300 line-clamp-3">{coach.bio}</p>
                             </div>
                           )}
+                          
+                          {/* External Reputation Display */}
+                          {coach.external_reputation && coach.external_reputation.verified && (
+                            <div className="bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <div className="flex items-center gap-1">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      className={`h-4 w-4 ${
+                                        i < Math.floor(coach.external_reputation.average_rating)
+                                          ? "fill-amber-400 text-amber-400"
+                                          : i < coach.external_reputation.average_rating
+                                          ? "fill-amber-200 text-amber-400"
+                                          : "fill-slate-200 text-slate-300"
+                                      }`}
+                                    />
+                                  ))}
+                                  <span className="ml-1 font-bold text-sm">{coach.external_reputation.average_rating}</span>
+                                  <span className="text-xs text-muted-foreground">({coach.external_reputation.review_count} reviews)</span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                                Based on ratings from {coach.external_reputation.platform_name}
+                              </p>
+                              <div className="flex items-center gap-1 mt-1">
+                                <Check className="h-3 w-3 text-green-600" />
+                                <span className="text-xs font-medium text-green-700 dark:text-green-400">Verified by TouchConnectPro</span>
+                              </div>
+                            </div>
+                          )}
+                          
                           <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Areas of Expertise</p>
                             <p className="text-sm text-slate-700 dark:text-slate-300">{coach.focus_areas}</p>

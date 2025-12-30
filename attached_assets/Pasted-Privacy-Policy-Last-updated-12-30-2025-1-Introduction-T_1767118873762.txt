@@ -1,0 +1,118 @@
+Privacy Policy
+Last updated: 12.30.2025
+1. Introduction
+TouchConnectPro (“we”, “us”, “our”) respects your privacy. This Privacy Policy explains what personal data we collect, why we collect it, and how we use it when you use our website and services.
+________________________________________
+2. What data we collect
+a. Account & profile data
+When you create an account (coach or entrepreneur), we may collect:
+•	Name
+•	Email address
+•	Profile information you choose to provide
+•	Login and authentication data
+b. Usage data
+We collect limited usage data to understand how our website is used, such as:
+•	Pages visited
+•	Device and browser type
+•	Approximate location (country-level)
+This data is collected using Google Analytics, only after you give consent.
+c. Communications
+If you contact us or receive emails from us, we may collect:
+•	Email address
+•	Message content
+•	Email delivery and open information (for transactional emails)
+________________________________________
+3. How we use your data
+We use your data to:
+•	Provide and operate TouchConnectPro
+•	Authenticate users and secure accounts
+•	Improve our website and user experience
+•	Communicate with you about your account or our services
+•	Comply with legal obligations
+We do not sell your personal data.
+________________________________________
+4. Third-party services we use
+We use trusted third-party services to operate TouchConnectPro:
+•	Supabase – authentication and database
+•	Google Analytics – website analytics (only with consent)
+•	Render – hosting infrastructure
+•	Senders – transactional email delivery
+These providers process data only as necessary to provide their services.
+________________________________________
+5. Cookies & tracking
+We use:
+•	Essential cookies for login, security, and core functionality
+•	Analytics cookies (Google Analytics) only if you consent
+For more details, see our Cookie Policy.
+________________________________________
+6. Data retention
+We keep your personal data only as long as necessary:
+•	While your account is active
+•	Or as required by law
+You may request deletion of your account and data at any time.
+________________________________________
+7. Your rights (GDPR)
+If you are located in the EU or UK, you have the right to:
+•	Access your personal data
+•	Correct inaccurate data
+•	Request deletion of your data
+•	Withdraw consent for analytics cookies
+•	Object to certain processing
+To exercise these rights, contact us at:
+📧 [hello@touchconnectpro.com]
+________________________________________
+8. Data security
+We take reasonable technical and organizational measures to protect your data from unauthorized access, loss, or misuse.
+________________________________________
+9. Changes to this policy
+We may update this Privacy Policy from time to time. Updates will be posted on this page with a new “Last updated” date.
+________________________________________
+10. Contact
+If you have questions about this Privacy Policy, contact us at:
+📧 [hello@touchconnectpro.com]
+________________________________________
+________________________________________
+Cookie Policy
+Last updated: 12.30.2025
+1. What are cookies?
+Cookies are small text files stored on your device when you visit a website. They help websites function properly and understand how users interact with them.
+________________________________________
+2. Cookies we use
+a. Essential cookies (always active)
+These cookies are required for the website to function:
+•	User authentication and login
+•	Security and fraud prevention
+•	Session management
+These cookies do not require consent.
+________________________________________
+b. Analytics cookies (optional)
+We use Google Analytics to understand how visitors use TouchConnectPro.
+These cookies may collect:
+•	Pages visited
+•	Time spent on pages
+•	Device and browser information
+Analytics cookies are:
+•	Disabled by default
+•	Only activated if you give consent
+________________________________________
+3. How we collect consent
+When you first visit TouchConnectPro, you see a cookie banner that lets you:
+•	Accept analytics cookies
+•	Reject analytics cookies
+You can use the website even if you reject analytics cookies.
+________________________________________
+4. Managing your preferences
+You can:
+•	Withdraw or change your consent at any time
+•	Clear cookies through your browser settings
+[Optional later: “Cookie settings” link in footer]
+________________________________________
+5. Third-party cookies
+Analytics cookies are provided by Google Analytics. We do not use advertising or marketing cookies at this time.
+________________________________________
+6. Changes to this policy
+We may update this Cookie Policy from time to time. Any changes will be posted on this page.
+________________________________________
+7. Contact
+If you have questions about this Cookie Policy, contact us at:
+📧 [hello@touchconnectpro.com]
