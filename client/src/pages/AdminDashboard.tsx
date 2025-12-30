@@ -365,10 +365,13 @@ export default function AdminDashboard() {
         console.error("Error fetching mentors:", err);
       }
 
-      // Load coach applications from API
+      // Load coach applications from API (admin endpoint with full data)
       try {
         console.log("=== FETCHING COACHES ===");
-        const coachResponse = await fetch(`${API_BASE_URL}/api/coaches`);
+        const adminToken = localStorage.getItem("tcp_adminToken");
+        const coachResponse = await fetch(`${API_BASE_URL}/api/admin/coaches`, {
+          headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {}
+        });
         if (coachResponse.ok) {
           const coaches = await coachResponse.json();
           console.log("Coaches received:", coaches);
@@ -389,7 +392,8 @@ export default function AdminDashboard() {
               status: c.status === "submitted" ? "pending" : c.status,
               submittedAt: c.created_at,
               is_resubmitted: c.is_resubmitted,
-              is_disabled: c.is_disabled || false
+              is_disabled: c.is_disabled || false,
+              externalReputation: c.external_reputation || null
             }));
             setCoachApplications(mappedCoaches);
             setApprovedCoaches(mappedCoaches.filter((app: any) => app.status === "approved"));
@@ -1221,11 +1225,23 @@ export default function AdminDashboard() {
             setApprovedMentors((mentorsData || []).filter((m: any) => m.status === "approved"));
           }
         } else if (type === "coach") {
-          const coachesResponse = await fetch(`${API_BASE_URL}/api/coaches`);
+          const adminToken = localStorage.getItem("tcp_adminToken");
+          const coachesResponse = await fetch(`${API_BASE_URL}/api/admin/coaches`, {
+            headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {}
+          });
           if (coachesResponse.ok) {
             const coachesData = await coachesResponse.json();
-            setCoachApplications(coachesData.coaches || coachesData || []);
-            setApprovedCoaches((coachesData.coaches || coachesData || []).filter((c: any) => c.status === "approved"));
+            const mappedCoaches = (coachesData || []).map((c: any) => ({
+              id: c.id, fullName: c.full_name, email: c.email, linkedin: c.linkedin,
+              bio: c.bio, expertise: c.expertise, focusAreas: c.focus_areas,
+              hourlyRate: c.hourly_rate, specializations: c.specializations || [],
+              profileImage: c.profile_image, country: c.country, state: c.state,
+              status: c.status === "submitted" ? "pending" : c.status,
+              submittedAt: c.created_at, is_resubmitted: c.is_resubmitted,
+              is_disabled: c.is_disabled || false, externalReputation: c.external_reputation || null
+            }));
+            setCoachApplications(mappedCoaches);
+            setApprovedCoaches(mappedCoaches.filter((c: any) => c.status === "approved"));
           }
         } else if (type === "investor") {
           const investorsResponse = await fetch(`${API_BASE_URL}/api/investors`);
@@ -1380,11 +1396,23 @@ export default function AdminDashboard() {
             setApprovedMentors((data || []).filter((m: any) => m.status === "approved"));
           }
         } else if (type === "coach") {
-          const res = await fetch(`${API_BASE_URL}/api/coaches`);
+          const adminToken = localStorage.getItem("tcp_adminToken");
+          const res = await fetch(`${API_BASE_URL}/api/admin/coaches`, {
+            headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {}
+          });
           if (res.ok) {
             const data = await res.json();
-            setCoachApplications(data.coaches || data || []);
-            setApprovedCoaches((data.coaches || data || []).filter((c: any) => c.status === "approved"));
+            const mappedCoaches = (data || []).map((c: any) => ({
+              id: c.id, fullName: c.full_name, email: c.email, linkedin: c.linkedin,
+              bio: c.bio, expertise: c.expertise, focusAreas: c.focus_areas,
+              hourlyRate: c.hourly_rate, specializations: c.specializations || [],
+              profileImage: c.profile_image, country: c.country, state: c.state,
+              status: c.status === "submitted" ? "pending" : c.status,
+              submittedAt: c.created_at, is_resubmitted: c.is_resubmitted,
+              is_disabled: c.is_disabled || false, externalReputation: c.external_reputation || null
+            }));
+            setCoachApplications(mappedCoaches);
+            setApprovedCoaches(mappedCoaches.filter((c: any) => c.status === "approved"));
           }
         } else if (type === "investor") {
           const res = await fetch(`${API_BASE_URL}/api/investors`);
@@ -1435,11 +1463,23 @@ export default function AdminDashboard() {
             setApprovedMentors((data || []).filter((m: any) => m.status === "approved"));
           }
         } else if (type === "coach") {
-          const res = await fetch(`${API_BASE_URL}/api/coaches`);
+          const adminToken = localStorage.getItem("tcp_adminToken");
+          const res = await fetch(`${API_BASE_URL}/api/admin/coaches`, {
+            headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {}
+          });
           if (res.ok) {
             const data = await res.json();
-            setCoachApplications(data.coaches || data || []);
-            setApprovedCoaches((data.coaches || data || []).filter((c: any) => c.status === "approved"));
+            const mappedCoaches = (data || []).map((c: any) => ({
+              id: c.id, fullName: c.full_name, email: c.email, linkedin: c.linkedin,
+              bio: c.bio, expertise: c.expertise, focusAreas: c.focus_areas,
+              hourlyRate: c.hourly_rate, specializations: c.specializations || [],
+              profileImage: c.profile_image, country: c.country, state: c.state,
+              status: c.status === "submitted" ? "pending" : c.status,
+              submittedAt: c.created_at, is_resubmitted: c.is_resubmitted,
+              is_disabled: c.is_disabled || false, externalReputation: c.external_reputation || null
+            }));
+            setCoachApplications(mappedCoaches);
+            setApprovedCoaches(mappedCoaches.filter((c: any) => c.status === "approved"));
           }
         } else if (type === "investor") {
           const res = await fetch(`${API_BASE_URL}/api/investors`);
@@ -1573,6 +1613,11 @@ export default function AdminDashboard() {
   const pendingMentorApplications = mentorApplications.filter(app => app.status === "pending");
   const pendingCoachApplications = coachApplications.filter(app => app.status === "pending");
   const pendingInvestorApplications = investorApplications.filter(app => app.status === "pending");
+  const pendingReputationVerifications = coachApplications.filter(app => 
+    app.status === "approved" && 
+    app.externalReputation && 
+    !app.externalReputation.verified
+  );
   const rejectedEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "rejected");
   const rejectedMentorApplications = mentorApplications.filter(app => app.status === "rejected");
   const rejectedCoachApplications = coachApplications.filter(app => app.status === "rejected");
@@ -2422,11 +2467,11 @@ export default function AdminDashboard() {
                                       const response = await fetch(`${API_BASE_URL}/api/admin/coaches/${app.id}/verify-reputation`, {
                                         method: "PUT",
                                         headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({ verified: checked, adminEmail: adminUser })
+                                        body: JSON.stringify({ verified: checked, adminEmail: localStorage.getItem("tcp_adminEmail") || "admin" })
                                       });
                                       if (response.ok) {
                                         setCoachApplications(prev => prev.map(c => 
-                                          c.id === app.id 
+                                          c.id === app.id && c.externalReputation
                                             ? { ...c, externalReputation: { ...c.externalReputation, verified: checked, verified_at: checked ? new Date().toISOString() : null } }
                                             : c
                                         ));
@@ -3388,6 +3433,88 @@ export default function AdminDashboard() {
               {/* Coaches - Full Details */}
               {activeMembersCategoryTab === "coaches" && (
                 <div>
+                  {/* Pending Reputation Verifications */}
+                  {pendingReputationVerifications.length > 0 && (
+                    <div className="mb-8">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Star className="h-5 w-5 text-amber-500" />
+                        <h2 className="text-xl font-display font-bold text-slate-900 dark:text-white">
+                          Pending Reputation Verifications ({pendingReputationVerifications.length})
+                        </h2>
+                      </div>
+                      <div className="grid gap-4">
+                        {pendingReputationVerifications.map((app, idx) => (
+                          <Card key={`rep-${idx}`} className="border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-900/10">
+                            <CardContent className="pt-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white font-bold overflow-hidden">
+                                    {app.profileImage ? (
+                                      <img src={app.profileImage} alt={app.fullName} className="w-full h-full object-cover" />
+                                    ) : (
+                                      app.fullName?.substring(0, 2).toUpperCase() || "CO"
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-semibold text-slate-900 dark:text-white">{app.fullName}</p>
+                                    <p className="text-sm text-slate-500">{app.email}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-6">
+                                  <div className="text-right">
+                                    <p className="text-xs text-slate-500 uppercase font-semibold">External Platform</p>
+                                    <p className="font-medium">{app.externalReputation?.platform_name}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs text-slate-500 uppercase font-semibold">Rating</p>
+                                    <p className="font-medium flex items-center gap-1">
+                                      <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                                      {app.externalReputation?.average_rating} ({app.externalReputation?.review_count} reviews)
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <a 
+                                      href={app.externalReputation?.profile_url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-cyan-600 hover:underline text-sm flex items-center gap-1"
+                                    >
+                                      <ExternalLink className="h-4 w-4" />
+                                      Verify Profile
+                                    </a>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Switch
+                                      checked={false}
+                                      onCheckedChange={async (checked) => {
+                                        const adminEmail = localStorage.getItem("tcp_adminEmail") || "admin";
+                                        const response = await fetch(`${API_BASE_URL}/api/admin/coaches/${app.id}/verify-reputation`, {
+                                          method: "PUT",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({ verified: checked, adminEmail })
+                                        });
+                                        if (response.ok) {
+                                          setCoachApplications(prev => prev.map(c => 
+                                            c.id === app.id 
+                                              ? { ...c, externalReputation: { ...c.externalReputation!, verified: checked, verified_at: checked ? new Date().toISOString() : null } }
+                                              : c
+                                          ));
+                                          toast.success("Reputation verified!");
+                                        }
+                                      }}
+                                      data-testid={`switch-quick-verify-${idx}`}
+                                    />
+                                    <span className="text-sm text-slate-600">Verify</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Approved Coaches</h2>
                   {coachApplications.filter(app => app.status === "approved").length === 0 ? (
                     <Card>

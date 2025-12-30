@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "x-api-key"]
+  allowedHeaders: ["Content-Type", "x-api-key", "Authorization"]
 }));
 // JSON parsing - SKIP for Stripe webhook (needs raw body for signature verification)
 app.use((req, res, next) => {
@@ -1988,6 +1988,51 @@ app.get("/api/coaches", async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
+    // Strip profile_url from external_reputation for privacy (admin-only field)
+    const safeData = (data || []).map(coach => {
+      if (coach.external_reputation) {
+        const { profile_url, ...safeReputation } = coach.external_reputation;
+        return { ...coach, external_reputation: safeReputation };
+      }
+      return coach;
+    });
+
+    return res.json(safeData);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Admin-only: Get all coaches with full data including profile_url
+app.get("/api/admin/coaches", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (!token) {
+      return res.status(401).json({ error: "Admin token required" });
+    }
+
+    // Verify admin token
+    const { data: session, error: sessionError } = await supabase
+      .from("admin_sessions")
+      .select("*")
+      .eq("token", token)
+      .gt("expires_at", new Date().toISOString())
+      .single();
+
+    if (sessionError || !session) {
+      return res.status(401).json({ error: "Invalid or expired admin token" });
+    }
+
+    const { data, error } = await supabase
+      .from("coach_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    // Return full data including profile_url for admin
     return res.json(data);
   } catch (error) {
     return res.status(500).json({ error: error.message });
