@@ -2137,6 +2137,23 @@ app.put("/api/coaches/:id/external-reputation", async (req, res) => {
 // Admin: Verify or unverify coach external reputation
 app.put("/api/admin/coaches/:id/verify-reputation", async (req, res) => {
   try {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (!token) {
+      return res.status(401).json({ error: "Admin token required" });
+    }
+
+    // Verify admin token
+    const { data: session, error: sessionError } = await supabase
+      .from("admin_sessions")
+      .select("*")
+      .eq("token", token)
+      .gt("expires_at", new Date().toISOString())
+      .single();
+
+    if (sessionError || !session) {
+      return res.status(401).json({ error: "Invalid or expired admin token" });
+    }
+
     const { id } = req.params;
     const { verified, adminEmail, notes } = req.body;
     

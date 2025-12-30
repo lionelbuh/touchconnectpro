@@ -2385,6 +2385,38 @@ export default function AdminDashboard() {
                                     Verified {new Date(coach.externalReputation.verified_at).toLocaleDateString()}
                                   </span>
                                 )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-950/20"
+                                  onClick={async () => {
+                                    try {
+                                      const adminToken = localStorage.getItem("tcp_adminToken");
+                                      const response = await fetch(`${API_BASE_URL}/api/admin/coaches/${coach.id}/verify-reputation`, {
+                                        method: "PUT",
+                                        headers: { 
+                                          "Content-Type": "application/json",
+                                          "Authorization": `Bearer ${adminToken}`
+                                        },
+                                        body: JSON.stringify({ verified: false, adminEmail: localStorage.getItem("tcp_adminEmail") || "admin" })
+                                      });
+                                      if (response.ok) {
+                                        setCoachApplications(prev => prev.map(c => 
+                                          c.id === coach.id && c.externalReputation
+                                            ? { ...c, externalReputation: { ...c.externalReputation, verified: false, verified_at: null } }
+                                            : c
+                                        ));
+                                        toast.success("Verification removed");
+                                      }
+                                    } catch (err) {
+                                      console.error("Failed to un-verify:", err);
+                                    }
+                                  }}
+                                  data-testid={`button-unverify-${idx}`}
+                                >
+                                  <X className="h-3 w-3 mr-1" />
+                                  Un-verify
+                                </Button>
                               </div>
                             </div>
                           ))}
@@ -2531,9 +2563,13 @@ export default function AdminDashboard() {
                                   checked={app.externalReputation.verified || false}
                                   onCheckedChange={async (checked) => {
                                     try {
+                                      const adminToken = localStorage.getItem("tcp_adminToken");
                                       const response = await fetch(`${API_BASE_URL}/api/admin/coaches/${app.id}/verify-reputation`, {
                                         method: "PUT",
-                                        headers: { "Content-Type": "application/json" },
+                                        headers: { 
+                                          "Content-Type": "application/json",
+                                          "Authorization": `Bearer ${adminToken}`
+                                        },
                                         body: JSON.stringify({ verified: checked, adminEmail: localStorage.getItem("tcp_adminEmail") || "admin" })
                                       });
                                       if (response.ok) {
@@ -3555,9 +3591,13 @@ export default function AdminDashboard() {
                                       checked={false}
                                       onCheckedChange={async (checked) => {
                                         const adminEmail = localStorage.getItem("tcp_adminEmail") || "admin";
+                                        const adminToken = localStorage.getItem("tcp_adminToken");
                                         const response = await fetch(`${API_BASE_URL}/api/admin/coaches/${app.id}/verify-reputation`, {
                                           method: "PUT",
-                                          headers: { "Content-Type": "application/json" },
+                                          headers: { 
+                                            "Content-Type": "application/json",
+                                            "Authorization": `Bearer ${adminToken}`
+                                          },
                                           body: JSON.stringify({ verified: checked, adminEmail })
                                         });
                                         if (response.ok) {

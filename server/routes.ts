@@ -2371,7 +2371,116 @@ export async function registerRoutes(
     }
   });
 
-  // Get all coaches (for admin)
+  // Admin-only: Get all coaches with full data including profile_url
+  app.get("/api/admin/coaches", async (req, res) => {
+    try {
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      if (!token) {
+        return res.status(401).json({ error: "Admin token required" });
+      }
+
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      // Verify admin token
+      const { data: session, error: sessionError } = await (client
+        .from("admin_sessions")
+        .select("*")
+        .eq("token", token)
+        .gt("expires_at", new Date().toISOString())
+        .single() as any);
+
+      if (sessionError || !session) {
+        return res.status(401).json({ error: "Invalid or expired admin token" });
+      }
+
+      const { data, error } = await (client
+        .from("coach_applications")
+        .select("*")
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[GET /api/admin/coaches] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      // Return full data including profile_url for admin
+      return res.json(data || []);
+    } catch (error: any) {
+      console.error("[GET /api/admin/coaches] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Admin: Verify or unverify coach external reputation
+  app.put("/api/admin/coaches/:id/verify-reputation", async (req, res) => {
+    try {
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      if (!token) {
+        return res.status(401).json({ error: "Admin token required" });
+      }
+
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      // Verify admin token
+      const { data: session, error: sessionError } = await (client
+        .from("admin_sessions")
+        .select("*")
+        .eq("token", token)
+        .gt("expires_at", new Date().toISOString())
+        .single() as any);
+
+      if (sessionError || !session) {
+        return res.status(401).json({ error: "Invalid or expired admin token" });
+      }
+
+      const { id } = req.params;
+      const { verified, adminEmail, notes } = req.body;
+
+      // Get current external reputation
+      const { data: coach, error: fetchError } = await (client
+        .from("coach_applications")
+        .select("external_reputation")
+        .eq("id", id)
+        .single() as any);
+
+      if (fetchError || !coach) {
+        return res.status(404).json({ error: "Coach not found" });
+      }
+
+      const currentReputation = coach.external_reputation || {};
+      const updatedReputation = {
+        ...currentReputation,
+        verified: verified,
+        verified_by_admin_id: verified ? adminEmail : null,
+        verified_at: verified ? new Date().toISOString() : null,
+        verification_notes: notes || null
+      };
+
+      const { data, error } = await (client
+        .from("coach_applications")
+        .update({ external_reputation: updatedReputation })
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        console.error("[PUT /api/admin/coaches/:id/verify-reputation] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, coach: data?.[0] });
+    } catch (error: any) {
+      console.error("[PUT /api/admin/coaches/:id/verify-reputation] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get all coaches (public - strips profile_url for privacy)
   app.get("/api/coaches", async (req, res) => {
     try {
       const client = getSupabaseClient();
@@ -2389,7 +2498,16 @@ export async function registerRoutes(
         return res.status(400).json({ error: error.message });
       }
 
-      return res.json(data || []);
+      // Strip profile_url from external_reputation for privacy (admin-only field)
+      const safeData = (data || []).map((coach: any) => {
+        if (coach.external_reputation) {
+          const { profile_url, ...safeReputation } = coach.external_reputation;
+          return { ...coach, external_reputation: safeReputation };
+        }
+        return coach;
+      });
+
+      return res.json(safeData);
     } catch (error: any) {
       console.error("[GET /api/coaches] Error:", error);
       return res.status(500).json({ error: error.message });
@@ -2417,7 +2535,15 @@ export async function registerRoutes(
       }
 
       console.log("[GET /api/coaches/approved] Returning", data?.length || 0, "coaches");
-      return res.json(data || []);
+      // Strip profile_url from external_reputation for privacy (admin-only field)
+      const safeData = (data || []).map((coach: any) => {
+        if (coach.external_reputation) {
+          const { profile_url, ...safeReputation } = coach.external_reputation;
+          return { ...coach, external_reputation: safeReputation };
+        }
+        return coach;
+      });
+      return res.json(safeData);
     } catch (error: any) {
       console.error("[GET /api/coaches/approved] Error:", error);
       return res.status(500).json({ error: error.message });
