@@ -3725,7 +3725,8 @@ export default function AdminDashboard() {
                                   onClick={async () => {
                                     setSelectedCoachForReviews(app);
                                     try {
-                                      const response = await fetch(`${API_BASE_URL}/api/coach-ratings/${app.id}/reviews`);
+                                      // Use admin endpoint to get reviews with email addresses
+                                      const response = await fetch(`${API_BASE_URL}/api/admin/coach-ratings/${app.id}/reviews`);
                                       if (response.ok) {
                                         const data = await response.json();
                                         setCoachReviews(data.reviews || []);
