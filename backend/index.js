@@ -1043,6 +1043,87 @@ async function sendAdminMessageNotificationEmail(senderName, senderEmail, recipi
   }
 }
 
+// Send email notification when coach receives a new review
+async function sendCoachReviewNotificationEmail(coachEmail, coachName, rating, reviewText) {
+  console.log("[EMAIL] Sending review notification to coach:", coachEmail);
+  
+  const resendData = await getResendClient();
+  if (!resendData) {
+    console.log("[EMAIL] Resend not configured, skipping review notification");
+    return { success: false, reason: "Email not configured" };
+  }
+
+  const { client, fromEmail } = resendData;
+  
+  const starsDisplay = "★".repeat(rating) + "☆".repeat(5 - rating);
+  const reviewPreview = reviewText ? (reviewText.length > 200 ? reviewText.substring(0, 200) + "..." : reviewText) : null;
+  
+  const subject = `New ${rating}-Star Review on TouchConnectPro`;
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+        .stars { font-size: 28px; color: #f59e0b; text-align: center; margin: 15px 0; }
+        .review-box { background: white; border: 1px solid #e2e8f0; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #06b6d4; font-style: italic; }
+        .button { display: inline-block; background: #06b6d4; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>You Received a New Review!</h1>
+        </div>
+        <div class="content">
+          <p>Hi ${coachName || "Coach"},</p>
+          
+          <p>Great news! An entrepreneur has left you a review on TouchConnectPro.</p>
+          
+          <div class="stars">${starsDisplay}</div>
+          <p style="text-align: center; font-size: 18px; font-weight: 600;">${rating} out of 5 stars</p>
+          
+          ${reviewPreview ? `
+          <div class="review-box">
+            <p style="margin: 0;">"${reviewPreview}"</p>
+          </div>
+          ` : '<p style="text-align: center; color: #64748b;">No written review was provided.</p>'}
+          
+          <p>This review is now visible on your public profile page. Keep up the great work!</p>
+          
+          <p style="text-align: center;">
+            <a href="${FRONTEND_URL}/login" class="button">View Your Dashboard</a>
+          </p>
+          
+          <p>Best regards,<br>The TouchConnectPro Team</p>
+        </div>
+        <div class="footer">
+          <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: coachEmail,
+      subject,
+      html: htmlContent
+    });
+    console.log("[EMAIL] Review notification sent to coach:", coachEmail);
+    return { success: true, id: result.id };
+  } catch (error) {
+    console.error("[EMAIL] Error sending review notification:", error.message);
+    return { success: false, error: error.message };
+  }
+}
+
 // Send email notification when mentor is assigned to entrepreneur
 async function sendMentorAssignmentEmail(recipientEmail, recipientName, recipientRole, otherPartyName, portfolioNumber) {
   console.log("[EMAIL] Sending mentor assignment email to:", recipientEmail, "role:", recipientRole);
@@ -1825,7 +1906,9 @@ app.post("/api/coach-ratings", async (req, res) => {
       }
 
       console.log("[SUCCESS] Coach rating updated");
-      return res.json({ success: true, rating: data?.[0], updated: true });
+      // Return rating without email for privacy
+      const { rater_email: _, ...safeRating } = data?.[0] || {};
+      return res.json({ success: true, rating: safeRating, updated: true });
     }
 
     // Insert new rating
@@ -1845,21 +1928,40 @@ app.post("/api/coach-ratings", async (req, res) => {
     }
 
     console.log("[SUCCESS] Coach rating saved");
-    return res.json({ success: true, rating: data?.[0] });
+    
+    // Send email notification to the coach
+    try {
+      const { data: coachData } = await supabase
+        .from("coach_applications")
+        .select("email, full_name")
+        .eq("id", coachId)
+        .single();
+      
+      if (coachData?.email) {
+        sendCoachReviewNotificationEmail(coachData.email, coachData.full_name, rating, review)
+          .catch(err => console.error("[EMAIL] Failed to send review notification:", err));
+      }
+    } catch (emailErr) {
+      console.error("[EMAIL] Error fetching coach for notification:", emailErr);
+    }
+    
+    // Return rating without email for privacy
+    const { rater_email: _, ...safeRating } = data?.[0] || {};
+    return res.json({ success: true, rating: safeRating });
   } catch (error) {
     console.error("[EXCEPTION]:", error);
     return res.status(500).json({ error: error.message || "Server error" });
   }
 });
 
-// Get average rating for a coach
+// Get average rating for a coach (emails hidden for privacy)
 app.get("/api/coach-ratings/:coachId", async (req, res) => {
   try {
     const { coachId } = req.params;
 
     const { data, error } = await supabase
       .from("coach_ratings")
-      .select("rating, review, rater_email, created_at")
+      .select("rating, review, created_at")
       .eq("coach_id", coachId);
 
     if (error) {
@@ -1884,7 +1986,7 @@ app.get("/api/coach-ratings/:coachId", async (req, res) => {
   }
 });
 
-// Get reviews for a specific coach
+// Get reviews for a specific coach (emails hidden for privacy)
 app.get("/api/coach-ratings/:coachId/reviews", async (req, res) => {
   try {
     const { coachId } = req.params;
@@ -1892,7 +1994,7 @@ app.get("/api/coach-ratings/:coachId/reviews", async (req, res) => {
 
     const { data, error } = await supabase
       .from("coach_ratings")
-      .select("id, rating, review, rater_email, created_at")
+      .select("id, rating, review, created_at")
       .eq("coach_id", coachId)
       .order("created_at", { ascending: false });
 
@@ -1902,6 +2004,7 @@ app.get("/api/coach-ratings/:coachId/reviews", async (req, res) => {
     }
 
     console.log("[GET /api/coach-ratings/:coachId/reviews] Found", data?.length || 0, "reviews for coach ID:", coachId);
+    // Reviews returned without email for privacy
     return res.json({ reviews: data || [] });
   } catch (error) {
     console.error("[GET /api/coach-ratings/:coachId/reviews] Error:", error);
