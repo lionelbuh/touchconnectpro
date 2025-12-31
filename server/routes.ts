@@ -3372,7 +3372,73 @@ export async function registerRoutes(
       }
 
       console.log("[POST /api/coach-ratings] Rating submitted for coach:", coachId);
-      return res.json({ success: true, rating: data?.[0] });
+      
+      // Send email notification to the coach
+      try {
+        const { data: coachData } = await (client
+          .from("coach_applications")
+          .select("email, full_name")
+          .eq("id", coachId)
+          .single() as any);
+        
+        if (coachData?.email) {
+          const resendConfig = await getResendClient();
+          if (resendConfig) {
+            const starsDisplay = "★".repeat(rating) + "☆".repeat(5 - rating);
+            const reviewPreview = review ? (review.length > 200 ? review.substring(0, 200) + "..." : review) : null;
+            
+            await resendConfig.client.emails.send({
+              from: resendConfig.fromEmail,
+              to: coachData.email,
+              subject: `New ${rating}-Star Review on TouchConnectPro`,
+              html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <style>
+                    body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                    .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                    .stars { font-size: 28px; color: #f59e0b; text-align: center; margin: 15px 0; }
+                    .review-box { background: white; border: 1px solid #e2e8f0; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #06b6d4; font-style: italic; }
+                    .button { display: inline-block; background: #06b6d4; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+                    .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                  </style>
+                </head>
+                <body>
+                  <div class="container">
+                    <div class="header">
+                      <h1>You Received a New Review!</h1>
+                    </div>
+                    <div class="content">
+                      <p>Hi ${coachData.full_name || "Coach"},</p>
+                      <p>Great news! An entrepreneur has left you a review on TouchConnectPro.</p>
+                      <div class="stars">${starsDisplay}</div>
+                      <p style="text-align: center; font-size: 18px; font-weight: 600;">${rating} out of 5 stars</p>
+                      ${reviewPreview ? `<div class="review-box"><p style="margin: 0;">"${reviewPreview}"</p></div>` : '<p style="text-align: center; color: #64748b;">No written review was provided.</p>'}
+                      <p>This review is now visible on your public profile page. Keep up the great work!</p>
+                      <p style="text-align: center;"><a href="https://touchconnectpro.com/login" class="button">View Your Dashboard</a></p>
+                      <p>Best regards,<br>The TouchConnectPro Team</p>
+                    </div>
+                    <div class="footer">
+                      <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                    </div>
+                  </div>
+                </body>
+                </html>
+              `
+            });
+            console.log("[POST /api/coach-ratings] Email notification sent to coach:", coachData.email);
+          }
+        }
+      } catch (emailErr: any) {
+        console.error("[POST /api/coach-ratings] Error sending email:", emailErr.message);
+      }
+      
+      // Return rating without email for privacy
+      const { rater_email, ...safeRating } = data?.[0] || {};
+      return res.json({ success: true, rating: safeRating });
     } catch (error: any) {
       console.error("[POST /api/coach-ratings] Error:", error);
       return res.status(500).json({ error: error.message });
@@ -3429,7 +3495,7 @@ export async function registerRoutes(
     }
   });
 
-  // Get reviews for a specific coach (emails hidden for privacy)
+  // Get reviews for a specific coach (emails hidden for privacy - public endpoint)
   app.get("/api/coach-ratings/:coachId/reviews", async (req, res) => {
     try {
       const client = getSupabaseClient();
@@ -3442,7 +3508,7 @@ export async function registerRoutes(
 
       const { data, error } = await (client
         .from("coach_ratings")
-        .select("id, rating, review, rater_email, created_at")
+        .select("id, rating, review, created_at")
         .eq("coach_id", coachId)
         .order("created_at", { ascending: false }) as any);
 
@@ -3452,10 +3518,41 @@ export async function registerRoutes(
       }
 
       console.log("[GET /api/coach-ratings/:coachId/reviews] Found", data?.length || 0, "reviews for coach ID:", coachId);
-      // Return reviews without email addresses for privacy
+      // Reviews returned without email for privacy
       return res.json({ reviews: data || [] });
     } catch (error: any) {
       console.error("[GET /api/coach-ratings/:coachId/reviews] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Admin endpoint: Get reviews for a specific coach WITH emails (for admin dashboard)
+  app.get("/api/admin/coach-ratings/:coachId/reviews", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { coachId } = req.params;
+      console.log("[GET /api/admin/coach-ratings/:coachId/reviews] Admin fetching reviews for coach ID:", coachId);
+
+      const { data, error } = await (client
+        .from("coach_ratings")
+        .select("id, rating, review, rater_email, created_at")
+        .eq("coach_id", coachId)
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[GET /api/admin/coach-ratings/:coachId/reviews] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      console.log("[GET /api/admin/coach-ratings/:coachId/reviews] Found", data?.length || 0, "reviews for coach ID:", coachId);
+      // Admin endpoint includes rater_email
+      return res.json({ reviews: data || [] });
+    } catch (error: any) {
+      console.error("[GET /api/admin/coach-ratings/:coachId/reviews] Error:", error);
       return res.status(500).json({ error: error.message });
     }
   });

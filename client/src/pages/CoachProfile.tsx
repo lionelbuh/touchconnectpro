@@ -39,8 +39,7 @@ interface CoachRating {
 interface Review {
   id: string;
   rating: number;
-  comment: string;
-  entrepreneur_name: string;
+  review: string | null;
   created_at: string;
 }
 
@@ -215,12 +214,21 @@ export default function CoachProfile() {
                     <p className="text-lg text-muted-foreground mt-1">{coach.expertise}</p>
                   </div>
                   
-                  {rating && (
-                    <div className="flex items-center gap-2 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-2 rounded-lg">
+                  {rating && rating.totalRatings > 0 && (
+                    <button
+                      onClick={() => {
+                        const reviewsSection = document.getElementById('reviews-section');
+                        if (reviewsSection) {
+                          reviewsSection.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                      className="flex items-center gap-2 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-2 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors cursor-pointer"
+                      data-testid="button-scroll-to-reviews"
+                    >
                       <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                       <span className="font-bold text-lg">{rating.averageRating}</span>
-                      <span className="text-sm text-muted-foreground">({rating.totalRatings} reviews)</span>
-                    </div>
+                      <span className="text-sm text-muted-foreground underline">({rating.totalRatings} reviews)</span>
+                    </button>
                   )}
                 </div>
               </div>
@@ -426,7 +434,7 @@ export default function CoachProfile() {
         </Dialog>
 
         {reviews.length > 0 && (
-          <Card className="mt-6">
+          <Card className="mt-6" id="reviews-section">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-yellow-500" />
@@ -445,13 +453,12 @@ export default function CoachProfile() {
                         />
                       ))}
                     </div>
-                    <span className="text-sm font-medium">{review.entrepreneur_name}</span>
                     <span className="text-xs text-muted-foreground">
                       {new Date(review.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  {review.comment && (
-                    <p className="text-sm text-slate-700 dark:text-slate-300">{review.comment}</p>
+                  {review.review && (
+                    <p className="text-sm text-slate-700 dark:text-slate-300">{review.review}</p>
                   )}
                 </div>
               ))}
