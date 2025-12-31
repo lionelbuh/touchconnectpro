@@ -127,8 +127,11 @@ export default function BecomeaCoach() {
       console.log("Validation failed", { fullName: formData.fullName, email: formData.email, bio: formData.bio, expertise: formData.expertise, focusAreas: formData.focusAreas, introCallRate: formData.introCallRate, sessionRate: formData.sessionRate, monthlyRate: formData.monthlyRate, country: formData.country });
       return;
     }
-    if (!formData.externalPlatform || !formData.externalRating || !formData.externalReviewCount || !formData.externalProfileUrl) {
-      alert("Please fill in all External Reputation fields. These are required for verification.");
+    // External reputation is optional, but if any field is filled, all must be filled
+    const hasAnyExternalField = formData.externalPlatform || formData.externalRating || formData.externalReviewCount || formData.externalProfileUrl;
+    const hasAllExternalFields = formData.externalPlatform && formData.externalRating && formData.externalReviewCount && formData.externalProfileUrl;
+    if (hasAnyExternalField && !hasAllExternalFields) {
+      alert("If you provide any External Reputation information, all fields are required (Platform, Rating, Review Count, and Profile URL).");
       return;
     }
     if (!contractAgreed) {
@@ -141,17 +144,21 @@ export default function BecomeaCoach() {
     }
     
     try {
-      const submitData = {
+      const submitData: any = {
         ...formData,
         expertise: formData.expertise.join(", "),
-        externalReputation: {
+      };
+      
+      // Only include externalReputation if all fields are provided
+      if (hasAllExternalFields) {
+        submitData.externalReputation = {
           platform_name: formData.externalPlatform,
           average_rating: parseFloat(formData.externalRating) || 0,
           review_count: parseInt(formData.externalReviewCount) || 0,
           profile_url: formData.externalProfileUrl,
           verified: false
-        }
-      };
+        };
+      }
       console.log("Submitting to:", `${API_BASE_URL}/api/coaches`);
       console.log("Submit data:", submitData);
       
@@ -574,14 +581,14 @@ export default function BecomeaCoach() {
                     <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
                       <div className="flex items-center gap-2 mb-4">
                         <Star className="h-5 w-5 text-amber-500" />
-                        <label className="text-sm font-semibold text-slate-900 dark:text-white">External Reputation / Ratings *</label>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white">External Reputation / Ratings <span className="text-slate-400 font-normal">(Optional)</span></label>
                       </div>
                       <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-                        External profile links are required so TouchConnectPro can verify your ratings. These links will never be shown publicly.
+                        If you have ratings on another platform (e.g., MentorCruise), share them here for verification. If you fill any field, all fields become required. These links will never be shown publicly.
                       </p>
                       <div className="space-y-4">
                         <div>
-                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Platform Name *</label>
+                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Platform Name</label>
                           <Input
                             name="externalPlatform"
                             value={formData.externalPlatform}
@@ -593,7 +600,7 @@ export default function BecomeaCoach() {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Average Rating *</label>
+                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Average Rating</label>
                             <Input
                               name="externalRating"
                               type="number"
@@ -608,7 +615,7 @@ export default function BecomeaCoach() {
                             />
                           </div>
                           <div>
-                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Number of Reviews *</label>
+                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Number of Reviews</label>
                             <Input
                               name="externalReviewCount"
                               type="number"
@@ -622,7 +629,7 @@ export default function BecomeaCoach() {
                           </div>
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">External Profile URL * (for verification only)</label>
+                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">External Profile URL (for verification only)</label>
                           <Input
                             name="externalProfileUrl"
                             type="url"
