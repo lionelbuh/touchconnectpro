@@ -27,6 +27,20 @@ const US_STATES = [
   "Wisconsin", "Wyoming", "District of Columbia"
 ];
 
+const validatePassword = (password: string): { valid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  if (password.length < 10) {
+    errors.push("At least 10 characters");
+  }
+  if (!/[A-Z]/.test(password)) {
+    errors.push("At least one capital letter");
+  }
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    errors.push("At least one special character (!@#$%^&*...)");
+  }
+  return { valid: errors.length === 0, errors };
+};
+
 export default function Login() {
   const [, navigate] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
@@ -319,6 +333,11 @@ export default function Login() {
     }
     if (country === "United States" && !state) {
       toast.error("Please select your state");
+      return;
+    }
+    const passwordValidation = validatePassword(signupPassword);
+    if (!passwordValidation.valid) {
+      toast.error("Password requirements not met: " + passwordValidation.errors.join(", "));
       return;
     }
     setLoading(true);
@@ -698,6 +717,17 @@ export default function Login() {
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
+                </div>
+                <div className="mt-2 space-y-1">
+                  <p className={`text-xs flex items-center gap-1 ${signupPassword.length >= 10 ? 'text-green-400' : 'text-slate-500'}`}>
+                    {signupPassword.length >= 10 ? '✓' : '○'} At least 10 characters
+                  </p>
+                  <p className={`text-xs flex items-center gap-1 ${/[A-Z]/.test(signupPassword) ? 'text-green-400' : 'text-slate-500'}`}>
+                    {/[A-Z]/.test(signupPassword) ? '✓' : '○'} At least one capital letter
+                  </p>
+                  <p className={`text-xs flex items-center gap-1 ${/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(signupPassword) ? 'text-green-400' : 'text-slate-500'}`}>
+                    {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(signupPassword) ? '✓' : '○'} At least one special character
+                  </p>
                 </div>
               </div>
 
