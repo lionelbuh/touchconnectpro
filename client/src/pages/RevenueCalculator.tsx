@@ -497,22 +497,41 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
             </CardHeader>
             <CardContent className="space-y-6">
               <InputSlider
-                label="Mentor Payout Rate"
+                label="Mentor Payout Rate (Subscriptions)"
                 value={inputs.mentorPayoutRate}
                 onChange={(v) => updateInput("mentorPayoutRate", v)}
                 min={0}
                 max={70}
                 step={5}
                 suffix="%"
-                tooltip="Percentage of subscription revenue paid to mentors as COGS"
+                tooltip="Percentage of subscription revenue paid to mentors (applies to $49/mo membership only)"
               />
               <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Info className="h-4 w-4" />
-                  <span className="font-medium">Mentor Payment Estimate</span>
+                  <span className="font-medium">Mentor Payment Estimate (Subscriptions)</span>
                 </div>
                 <p className="text-slate-600 dark:text-slate-400">
-                  At {inputs.mentorPayoutRate}% of ${inputs.subscriptionPrice}, each new entrepreneur generates <span className="font-semibold text-indigo-600">${((inputs.mentorPayoutRate / 100) * inputs.subscriptionPrice).toFixed(2)}/month</span>.
+                  At {inputs.mentorPayoutRate}% of ${inputs.subscriptionPrice}, each entrepreneur generates <span className="font-semibold text-indigo-600">${((inputs.mentorPayoutRate / 100) * inputs.subscriptionPrice).toFixed(2)}/month</span> for their mentor.
+                </p>
+              </div>
+              <InputSlider
+                label="Mentor Payout on Coaches Profit"
+                value={inputs.mentorCoachingPayoutRate || 0}
+                onChange={(v) => updateInput("mentorCoachingPayoutRate", v)}
+                min={0}
+                max={50}
+                step={5}
+                suffix="%"
+                tooltip={`Percentage of the platform's ${inputs.platformCommissionRate}% coaching commission shared with mentors`}
+              />
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Info className="h-4 w-4" />
+                  <span className="font-medium">Mentor Coaching Bonus</span>
+                </div>
+                <p className="text-slate-600 dark:text-slate-400">
+                  Mentors receive <span className="font-semibold text-indigo-600">{inputs.mentorCoachingPayoutRate || 0}%</span> of TouchConnectPro's {inputs.platformCommissionRate}% coaching commission. If a coach earns ${inputs.avgCoachingSpendPerUser}, the platform keeps ${(inputs.avgCoachingSpendPerUser * inputs.platformCommissionRate / 100).toFixed(0)} ({inputs.platformCommissionRate}%), and mentors receive <span className="font-semibold text-indigo-600">${((inputs.avgCoachingSpendPerUser * inputs.platformCommissionRate / 100) * ((inputs.mentorCoachingPayoutRate || 0) / 100)).toFixed(2)}</span>.
                 </p>
               </div>
               <InputSlider
