@@ -53,6 +53,7 @@ The platform uses a component-based approach with a responsive, mobile-first des
     - **Coaching Marketplace Income**: Models coaching adoption rate, average spend per user, and platform commission (default 20%). GMV and commission revenue tracked separately.
     - **Mentor Compensation**: Two separate payout streams: (1) Mentor Payout Rate on Subscriptions (default 30%) applies only to $49/mo membership revenue; (2) Mentor Payout on Coaches Profit (0-50%, default 0%) applies to the platform's coaching commission. Both appear as COGS. The coaching payout is gated behind the coaching toggle.
     - **Stripe Fee Accuracy**: Stripe percentage fees calculated on full processed volume (subscriptions + gross coaching GMV), not just platform revenue.
+    - **Monthly/Yearly Toggle**: Switch between monthly and yearly views. Monetary values (revenue, costs, profit) are annualized (×12) in yearly mode while subscriber counts remain as monthly rates. Labels update dynamically to indicate the active period.
     - **localStorage Persistence**: Inputs saved per mode (internal vs public) with separate storage keys. Settings persist between sessions.
     - **Design Principle**: One calculator, one logic (`client/src/lib/calculatorLogic.ts`), two views. Founder view = truth; Public view = education + motivation (not promises).
     - No backend required - all calculations happen client-side with instant recalculation.
