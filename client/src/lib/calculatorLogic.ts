@@ -33,6 +33,7 @@ export interface CalculatorInputs {
   avgCoachingSpendPerUser: number;
   platformCommissionRate: number;
   mentorPayoutRate: number;
+  mentorCoachingPayoutRate: number;
   mentorWelcomeCallPayment: number;
   includeCoachingRevenue: boolean;
 }
@@ -95,7 +96,8 @@ export const defaultInternalInputs: CalculatorInputs = {
   coachingAdoptionRate: 20,
   avgCoachingSpendPerUser: 200,
   platformCommissionRate: 20,
-  mentorPayoutRate: 50,
+  mentorPayoutRate: 30,
+  mentorCoachingPayoutRate: 0,
   mentorWelcomeCallPayment: 30,
   includeCoachingRevenue: true,
 };
@@ -120,7 +122,8 @@ export const defaultPublicInputs: CalculatorInputs = {
   coachingAdoptionRate: 20,
   avgCoachingSpendPerUser: 200,
   platformCommissionRate: 20,
-  mentorPayoutRate: 50,
+  mentorPayoutRate: 30,
+  mentorCoachingPayoutRate: 0,
   mentorWelcomeCallPayment: 30,
   includeCoachingRevenue: false,
 };
@@ -237,11 +240,11 @@ export function calculateMentorSubscriptionExpense(subscriptionRevenue: number, 
 
 /**
  * Calculate mentor expense from coaching commission
- * Formula: coachingCommissionRevenue * (mentorPayoutRate / 100)
- * Mentors receive 50% of coaching commission as compensation
+ * Formula: coachingCommissionRevenue * (mentorCoachingPayoutRate / 100)
+ * Mentors receive 0-50% of coaching commission (platform's 20% cut) as compensation
  */
-export function calculateMentorCommissionExpense(coachingCommissionRevenue: number, mentorPayoutRate: number): number {
-  return coachingCommissionRevenue * (mentorPayoutRate / 100);
+export function calculateMentorCommissionExpense(coachingCommissionRevenue: number, mentorCoachingPayoutRate: number): number {
+  return coachingCommissionRevenue * (mentorCoachingPayoutRate / 100);
 }
 
 /**
@@ -338,7 +341,7 @@ export function calculateAll(inputs: CalculatorInputs): CalculatorOutputs {
   const totalRevenue = calculateTotalRevenue(subscriptionRevenue, coachingCommissionRevenue);
   
   const mentorSubscriptionExpense = calculateMentorSubscriptionExpense(subscriptionRevenue, inputs.mentorPayoutRate);
-  const mentorCommissionExpense = calculateMentorCommissionExpense(coachingCommissionRevenue, inputs.mentorPayoutRate);
+  const mentorCommissionExpense = includeCoaching ? calculateMentorCommissionExpense(coachingCommissionRevenue, inputs.mentorCoachingPayoutRate || 0) : 0;
   const mentorWelcomeCallCost = newMembersPerMonth * (inputs.mentorWelcomeCallPayment || 0);
   const totalMentorExpenses = calculateTotalMentorExpenses(mentorSubscriptionExpense, mentorCommissionExpense) + mentorWelcomeCallCost;
   
@@ -410,7 +413,7 @@ export function generate36MonthProjections(inputs: CalculatorInputs): MonthlyPro
     const totalRevenue = calculateTotalRevenue(subscriptionRevenue, coachingCommissionRevenue);
     
     const mentorSubExpense = calculateMentorSubscriptionExpense(subscriptionRevenue, inputs.mentorPayoutRate);
-    const mentorCommExpense = calculateMentorCommissionExpense(coachingCommissionRevenue, inputs.mentorPayoutRate);
+    const mentorCommExpense = includeCoaching ? calculateMentorCommissionExpense(coachingCommissionRevenue, inputs.mentorCoachingPayoutRate || 0) : 0;
     const mentorWelcomeCallCost = newSubscribersThisMonth * (inputs.mentorWelcomeCallPayment || 0);
     const mentorExpenses = calculateTotalMentorExpenses(mentorSubExpense, mentorCommExpense) + mentorWelcomeCallCost;
     

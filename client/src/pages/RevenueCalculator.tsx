@@ -51,6 +51,7 @@ import {
 
 type CalculatorMode = "internal" | "public";
 type ProjectionRange = 12 | 24 | 36;
+type ViewPeriod = "monthly" | "yearly";
 
 interface InputSliderProps {
   label: string;
@@ -151,13 +152,16 @@ function SummaryCard({ title, value, subtitle, icon, variant = "default" }: Summ
   );
 }
 
-function PublicView({ inputs, outputs, updateInput }: { 
+function PublicView({ inputs, outputs, updateInput, viewPeriod }: { 
   inputs: CalculatorInputs; 
   outputs: CalculatorOutputs;
   updateInput: (key: keyof CalculatorInputs, value: number | boolean) => void;
+  viewPeriod: ViewPeriod;
 }) {
   const projections = useMemo(() => generate36MonthProjections(inputs), [inputs]);
   const month1 = projections[0];
+  const periodMultiplier = viewPeriod === "yearly" ? 12 : 1;
+  const periodLabel = viewPeriod === "yearly" ? "year" : "month";
   const chartData = projections.slice(0, 24).map(p => ({
     month: `M${p.month}`,
     subscribers: p.activeSubscribers,
@@ -232,20 +236,20 @@ function PublicView({ inputs, outputs, updateInput }: {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <Calendar className="h-4 w-4 text-blue-600" />
-            Month 1 Estimate
+            {viewPeriod === "yearly" ? "First Year Estimate" : "Month 1 Estimate"}
           </CardTitle>
-          <CardDescription>Based on new subscribers acquired this month</CardDescription>
+          <CardDescription>{viewPeriod === "yearly" ? "Monthly acquisition rate annualized" : "Based on new subscribers acquired this month"}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4 border border-blue-100 dark:border-blue-900">
               <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">New Paying Members</p>
               <p className="text-3xl font-bold mt-1 text-slate-900 dark:text-white">{formatNumber(month1.newSubscribers)}</p>
-              <p className="text-xs text-muted-foreground mt-1">subscribers in month 1</p>
+              <p className="text-xs text-muted-foreground mt-1">per month</p>
             </div>
             <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4 border border-blue-100 dark:border-blue-900">
-              <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">Platform Revenue</p>
-              <p className="text-3xl font-bold mt-1 text-slate-900 dark:text-white">{formatCurrency(month1.totalRevenue)}</p>
+              <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">{viewPeriod === "yearly" ? "Annual Revenue" : "Platform Revenue"}</p>
+              <p className="text-3xl font-bold mt-1 text-slate-900 dark:text-white">{formatCurrency(month1.totalRevenue * periodMultiplier)}</p>
               <p className="text-xs text-muted-foreground mt-1">{inputs.includeCoachingRevenue ? "subscriptions + coaching" : "from subscriptions"}</p>
             </div>
           </div>
@@ -256,7 +260,7 @@ function PublicView({ inputs, outputs, updateInput }: {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-emerald-600" />
-            Steady-State Monthly Estimate
+            Steady-State {viewPeriod === "yearly" ? "Yearly" : "Monthly"} Estimate
           </CardTitle>
           <CardDescription>Assumes consistent traffic, conversion, and average retention over time</CardDescription>
         </CardHeader>
@@ -268,8 +272,8 @@ function PublicView({ inputs, outputs, updateInput }: {
               <p className="text-xs text-muted-foreground mt-1">at equilibrium</p>
             </div>
             <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-4 border border-emerald-100 dark:border-emerald-900">
-              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Monthly Platform Revenue</p>
-              <p className="text-3xl font-bold mt-1 text-slate-900 dark:text-white">{formatCurrency(outputs.totalRevenue)}</p>
+              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">{viewPeriod === "yearly" ? "Yearly" : "Monthly"} Platform Revenue</p>
+              <p className="text-3xl font-bold mt-1 text-slate-900 dark:text-white">{formatCurrency(outputs.totalRevenue * periodMultiplier)}</p>
               <p className="text-xs text-muted-foreground mt-1">{inputs.includeCoachingRevenue ? "subscriptions + coaching" : "from subscriptions"}</p>
             </div>
           </div>
@@ -340,15 +344,18 @@ function PublicView({ inputs, outputs, updateInput }: {
   );
 }
 
-function FounderView({ inputs, outputs, updateInput, resetToDefaults }: { 
+function FounderView({ inputs, outputs, updateInput, resetToDefaults, viewPeriod }: { 
   inputs: CalculatorInputs; 
   outputs: CalculatorOutputs;
   updateInput: (key: keyof CalculatorInputs, value: number | boolean) => void;
   resetToDefaults: () => void;
+  viewPeriod: ViewPeriod;
 }) {
   const [selectedMonth, setSelectedMonth] = useState(12);
   const [projectionRange, setProjectionRange] = useState<ProjectionRange>(36);
   const [showTable, setShowTable] = useState(false);
+  const periodMultiplier = viewPeriod === "yearly" ? 12 : 1;
+  const periodLabel = viewPeriod === "yearly" ? "/yr" : "/mo";
   
   const projections = useMemo(() => generate36MonthProjections(inputs), [inputs]);
   const displayedProjections = projections.slice(0, projectionRange);
@@ -497,22 +504,41 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
             </CardHeader>
             <CardContent className="space-y-6">
               <InputSlider
-                label="Mentor Payout Rate"
+                label="Mentor Payout Rate (Subscriptions)"
                 value={inputs.mentorPayoutRate}
                 onChange={(v) => updateInput("mentorPayoutRate", v)}
                 min={0}
                 max={70}
                 step={5}
                 suffix="%"
-                tooltip="Percentage of subscription revenue paid to mentors as COGS"
+                tooltip="Percentage of subscription revenue paid to mentors (applies to $49/mo membership only)"
               />
               <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Info className="h-4 w-4" />
-                  <span className="font-medium">Mentor Payment Estimate</span>
+                  <span className="font-medium">Mentor Payment Estimate (Subscriptions)</span>
                 </div>
                 <p className="text-slate-600 dark:text-slate-400">
-                  At {inputs.mentorPayoutRate}% of ${inputs.subscriptionPrice}, each new entrepreneur generates <span className="font-semibold text-indigo-600">${((inputs.mentorPayoutRate / 100) * inputs.subscriptionPrice).toFixed(2)}/month</span>.
+                  At {inputs.mentorPayoutRate}% of ${inputs.subscriptionPrice}, each entrepreneur generates <span className="font-semibold text-indigo-600">${((inputs.mentorPayoutRate / 100) * inputs.subscriptionPrice).toFixed(2)}/month</span> for their mentor.
+                </p>
+              </div>
+              <InputSlider
+                label="Mentor Payout on Coaches Profit"
+                value={inputs.mentorCoachingPayoutRate || 0}
+                onChange={(v) => updateInput("mentorCoachingPayoutRate", v)}
+                min={0}
+                max={50}
+                step={5}
+                suffix="%"
+                tooltip={`Percentage of the platform's ${inputs.platformCommissionRate}% coaching commission shared with mentors`}
+              />
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Info className="h-4 w-4" />
+                  <span className="font-medium">Mentor Coaching Bonus</span>
+                </div>
+                <p className="text-slate-600 dark:text-slate-400">
+                  Mentors receive <span className="font-semibold text-indigo-600">{inputs.mentorCoachingPayoutRate || 0}%</span> of TouchConnectPro's {inputs.platformCommissionRate}% coaching commission. If a coach earns ${inputs.avgCoachingSpendPerUser}, the platform keeps ${(inputs.avgCoachingSpendPerUser * inputs.platformCommissionRate / 100).toFixed(0)} ({inputs.platformCommissionRate}%), and mentors receive <span className="font-semibold text-indigo-600">${((inputs.avgCoachingSpendPerUser * inputs.platformCommissionRate / 100) * ((inputs.mentorCoachingPayoutRate || 0) / 100)).toFixed(2)}</span>.
                 </p>
               </div>
               <InputSlider
@@ -613,7 +639,7 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-emerald-600" />
-                Month {selectedMonth}
+                Month {selectedMonth} {viewPeriod === "yearly" ? "(Annualized)" : ""}
               </h2>
               <Button variant="outline" size="sm" onClick={resetToDefaults} data-testid="button-reset">
                 Reset
@@ -645,10 +671,10 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
             />
 
             <SummaryCard
-              title="Total Revenue"
-              value={formatCurrency(currentProjection.totalRevenue)}
+              title={`Total Revenue${periodLabel}`}
+              value={formatCurrency(currentProjection.totalRevenue * periodMultiplier)}
               subtitle={inputs.includeCoachingRevenue !== false 
-                ? `Subs: ${formatCurrency(currentProjection.subscriptionRevenue)} + Coaching: ${formatCurrency(currentProjection.coachingCommissionRevenue)}`
+                ? `Subs: ${formatCurrency(currentProjection.subscriptionRevenue * periodMultiplier)} + Coaching: ${formatCurrency(currentProjection.coachingCommissionRevenue * periodMultiplier)}`
                 : `From subscriptions`}
               icon={<DollarSign className="h-5 w-5" />}
               variant="success"
@@ -656,40 +682,40 @@ function FounderView({ inputs, outputs, updateInput, resetToDefaults }: {
 
             <Card className="bg-slate-50 dark:bg-slate-900 border">
               <CardContent className="p-4">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Cost Breakdown</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Cost Breakdown{periodLabel}</p>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Mentor Payouts</span>
-                    <span>{formatCurrency(currentProjection.mentorExpenses)}</span>
+                    <span>{formatCurrency(currentProjection.mentorExpenses * periodMultiplier)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Stripe Fees</span>
-                    <span>{formatCurrency(currentProjection.stripeFees)}</span>
+                    <span>{formatCurrency(currentProjection.stripeFees * periodMultiplier)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Fixed Costs</span>
-                    <span>{formatCurrency(currentProjection.fixedCosts)}</span>
+                    <span>{formatCurrency(currentProjection.fixedCosts * periodMultiplier)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Variable Costs</span>
-                    <span>{formatCurrency(currentProjection.variableCosts)}</span>
+                    <span>{formatCurrency(currentProjection.variableCosts * periodMultiplier)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Marketing</span>
-                    <span>{formatCurrency(currentProjection.marketingCosts)}</span>
+                    <span>{formatCurrency(currentProjection.marketingCosts * periodMultiplier)}</span>
                   </div>
                   <div className="flex justify-between font-semibold pt-2 border-t">
                     <span>Total Costs</span>
-                    <span>{formatCurrency(currentProjection.totalCosts)}</span>
+                    <span>{formatCurrency(currentProjection.totalCosts * periodMultiplier)}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             <SummaryCard
-              title="Net Profit"
-              value={formatCurrency(currentProjection.netProfit)}
-              subtitle={currentProjection.netProfit >= 0 ? "Monthly profit" : "Monthly loss"}
+              title={`Net Profit${periodLabel}`}
+              value={formatCurrency(currentProjection.netProfit * periodMultiplier)}
+              subtitle={currentProjection.netProfit >= 0 ? (viewPeriod === "yearly" ? "Yearly profit" : "Monthly profit") : (viewPeriod === "yearly" ? "Yearly loss" : "Monthly loss")}
               icon={currentProjection.netProfit >= 0 ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
               variant={profitVariant}
             />
@@ -857,6 +883,7 @@ export default function RevenueCalculator() {
   const [mode, setMode] = useState<CalculatorMode>("internal");
   const [inputs, setInputs] = useState<CalculatorInputs>(defaultInternalInputs);
   const [loaded, setLoaded] = useState(false);
+  const [viewPeriod, setViewPeriod] = useState<ViewPeriod>("monthly");
 
   useEffect(() => {
     const saved = loadInputs(mode);
@@ -915,7 +942,7 @@ export default function RevenueCalculator() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
               <Tabs value={mode} onValueChange={(v) => handleModeChange(v as CalculatorMode)}>
                 <TabsList className="grid w-full grid-cols-2" data-testid="tabs-mode">
                   <TabsTrigger value="internal" data-testid="tab-internal">
@@ -925,6 +952,16 @@ export default function RevenueCalculator() {
                   <TabsTrigger value="public" data-testid="tab-public">
                     <Target className="mr-2 h-4 w-4" />
                     Public View
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <Tabs value={viewPeriod} onValueChange={(v) => setViewPeriod(v as ViewPeriod)}>
+                <TabsList className="grid w-full grid-cols-2" data-testid="tabs-period">
+                  <TabsTrigger value="monthly" data-testid="tab-monthly">
+                    Monthly
+                  </TabsTrigger>
+                  <TabsTrigger value="yearly" data-testid="tab-yearly">
+                    Yearly
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -942,9 +979,9 @@ export default function RevenueCalculator() {
         </div>
 
         {isPublic ? (
-          <PublicView inputs={inputs} outputs={outputs} updateInput={updateInput} />
+          <PublicView inputs={inputs} outputs={outputs} updateInput={updateInput} viewPeriod={viewPeriod} />
         ) : (
-          <FounderView inputs={inputs} outputs={outputs} updateInput={updateInput} resetToDefaults={resetToDefaults} />
+          <FounderView inputs={inputs} outputs={outputs} updateInput={updateInput} resetToDefaults={resetToDefaults} viewPeriod={viewPeriod} />
         )}
       </div>
     </div>
