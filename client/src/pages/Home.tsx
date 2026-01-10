@@ -65,7 +65,7 @@ export default function Home() {
           </h1>
           <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed">
             AI tools help you structure and refine your ideas, but your mentor keeps them creative, personalized, and actionable. You'll never feel lost, every next step is guided, with clarity and purpose.
-            <br /><span className="text-cyan-300/80 italic">The human touch inspires real creativity and makes your ideas truly unique, not AI.</span>
+            <br /><span className="text-cyan-300/80 italic">The human touch inspires real creativity and makes your ideas truly unique.<br />Not AI.</span>
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/coming-soon">
