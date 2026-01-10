@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, ArrowRight, Sparkles, Users, FileText, TrendingUp, Shield, Target, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import heroBg from "@assets/generated_images/modern_abstract_network_connections_hero_background.png";
-import mentorFeature from "@assets/mentor_partnership_step23.png";
+import mentorFeature from "@assets/stock_images/business_mentor_coac_726c681a.jpg";
 import step1Image from "@assets/stock_images/business_mentor_meet_68880719.jpg";
 
 interface ExpandableItemProps {
