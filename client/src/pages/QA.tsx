@@ -103,7 +103,7 @@ export default function QA() {
               <AccordionItem value="item-mentor-5">
                 <AccordionTrigger>What if I miss the Sunday deadline?</AccordionTrigger>
                 <AccordionContent>
-                  Your mentor will review questions in the next cycle. To make the most of mentor feedback, try to stick to the weekly schedule — it keeps your project moving efficiently.
+                  Your mentor will review questions in the next cycle. To make the most of mentor feedback, try to stick to the weekly schedule, it keeps your project moving efficiently.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
