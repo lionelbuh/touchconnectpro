@@ -72,6 +72,43 @@ export default function QA() {
             </Accordion>
           </div>
 
+          {/* Mentor Response Guidelines Section */}
+          <div>
+            <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-6">Mentor Response Guidelines</h2>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="item-mentor-1">
+                <AccordionTrigger>How often can I ask my mentor questions?</AccordionTrigger>
+                <AccordionContent>
+                  You can ask as many questions as you like, but mentors respond thoughtfully only when guidance is truly needed. This ensures you get high-quality, actionable feedback on the most important issues.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-mentor-2">
+                <AccordionTrigger>Is there a schedule for mentor responses?</AccordionTrigger>
+                <AccordionContent>
+                  Yes. To keep things structured, send all your questions by Sunday evening. Your mentor will review and respond by Friday, providing focused guidance for the week.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-mentor-3">
+                <AccordionTrigger>Why don't mentors respond immediately to every question?</AccordionTrigger>
+                <AccordionContent>
+                  Rapid-fire responses can dilute focus and overwhelm both founders and mentors. By batching questions, your mentor can provide high-value, thoughtful guidance and ensure your progress stays on track.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-mentor-4">
+                <AccordionTrigger>Can I get help on urgent issues outside the schedule?</AccordionTrigger>
+                <AccordionContent>
+                  For critical blockers or decisions that could stall your project, your mentor will prioritize guidance. Routine or clarifying questions should be included in the weekly batch.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-mentor-5">
+                <AccordionTrigger>What if I miss the Sunday deadline?</AccordionTrigger>
+                <AccordionContent>
+                  Your mentor will review questions in the next cycle. To make the most of mentor feedback, try to stick to the weekly schedule — it keeps your project moving efficiently.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+
           {/* Pricing & Billing Section */}
           <div>
             <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-6">Pricing & Billing</h2>
