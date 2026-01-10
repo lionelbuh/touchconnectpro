@@ -6,7 +6,7 @@ import { Check, ArrowRight, Sparkles, Users, FileText, TrendingUp, Shield, Targe
 import { Link } from "wouter";
 import heroBg from "@assets/generated_images/modern_abstract_network_connections_hero_background.png";
 import mentorFeature from "@assets/stock_images/business_mentor_coac_726c681a.jpg";
-import step1Image from "@assets/stock_images/business_mentor_meet_68880719.jpg";
+import step1Image from "@assets/stock_images/entrepreneur_brainst_de5546e3.jpg";
 
 interface ExpandableItemProps {
   title: string;
