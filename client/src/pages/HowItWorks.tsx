@@ -7,29 +7,29 @@ export default function HowItWorks() {
   const steps = [
     {
       id: "01",
-      title: "Free Entry & AI Refinement",
+      title: "Free Entry & Idea Refinement",
       subtitle: "Zero-Barrier Entry Point",
-      desc: "Start refining your idea immediately. [BOLD]No credit card required.[/BOLD] Our AI tools help you articulate your value proposition and create a draft business plan.",
+      desc: "Start shaping your idea immediately: [BOLD]no credit card required.[/BOLD] Our tools help you clarify your value proposition and create a structured draft business plan.",
       icon: <Sparkles className="h-8 w-8 text-cyan-500" />,
-      features: ["AI Idea Refinement", "Draft Business Plan Generation", "Viability Check"],
+      features: ["Refine Your Idea: Turn your concept into a clear, compelling vision.", "Build a Draft Plan: Organize your strategy and priorities quickly.", "Check Viability: Make sure your idea has a strong foundation."],
       color: "cyan"
     },
     {
       id: "02",
       title: "Mentor Match",
       subtitle: "Evaluation & Acceptance",
-      desc: "Submit your refined plan for review. A dedicated mentor approves your idea into his or her portfolio, ensuring a meaningful partnership.",
+      desc: "Submit your refined plan for review. A dedicated mentor approves your idea into their portfolio, starting a focused and meaningful mentorship.",
       icon: <Shield className="h-8 w-8 text-cyan-500" />,
-      features: ["Personalized Evaluation", "Portfolio Approval", "Goal Alignment"],
+      features: ["Personalized Evaluation: Get targeted, actionable feedback.", "Portfolio Approval: Secure a spot in a mentor's portfolio.", "Goal Alignment: Set clear objectives to guide your next steps."],
       color: "cyan"
     },
     {
       id: "03",
       title: "Active Development",
       subtitle: "Membership - $49/month",
-      desc: "Unlock the full support system. Monthly coaching sessions, community learning, and access to specialized experts in Finance, Legal, and Marketing. [BOLD]Only available to entrepreneurs approved by a mentor—you have 5 days after approval to activate your membership.[/BOLD]",
+      desc: "Unlock the full support system: monthly coaching, community learning, and optional access to experts in Finance, Legal, and Marketing. [BOLD]Only for entrepreneurs approved by a mentor. You have 5 days after approval to activate.[/BOLD]",
       icon: <Users className="h-8 w-8 text-emerald-500" />,
-      features: ["30-min Onboarding Session", "Monthly Group Coaching", "Specialized Marketplace Access"],
+      features: ["Quick Start Guide: Step-by-step resources to hit the ground running.", "Monthly Group Coaching: Learn, grow, and get feedback in a collaborative setting.", "Specialized Marketplace Access: Connect with expert services to accelerate your business."],
       color: "cyan"
     },
     {

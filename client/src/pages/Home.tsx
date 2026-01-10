@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, ArrowRight, Sparkles, Users, FileText, TrendingUp, Shield, Target, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import heroBg from "@assets/generated_images/modern_abstract_network_connections_hero_background.png";
-import mentorFeature from "@assets/mentor_partnership_human.png";
+import mentorFeature from "@assets/mentor_partnership_step23.png";
 import step1Image from "@assets/stock_images/business_mentor_meet_68880719.jpg";
 
 interface ExpandableItemProps {
@@ -196,7 +196,7 @@ export default function Home() {
               </div>
             </div>
             <div className="md:w-1/2 order-1 md:order-2">
-              <Badge variant="outline" className="mb-4 border-primary/30 text-primary">Step 1: AI Refinement</Badge>
+              <Badge variant="outline" className="mb-4 border-primary/30 text-primary">Step 1: Idea Refinement</Badge>
               <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-slate-900 dark:text-white">
                 Zero Friction. <br/>
                 <span className="text-primary">Immediate Value.</span>

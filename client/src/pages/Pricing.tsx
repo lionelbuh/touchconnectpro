@@ -1,95 +1,90 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Check, ShieldCheck } from "lucide-react";
+import { Check, ShieldCheck, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Pricing() {
+  const [expandedPricingItem, setExpandedPricingItem] = useState<number | null>(null);
+  
   return (
     <div className="bg-slate-50 dark:bg-slate-950 min-h-screen py-24">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h1 className="text-4xl md:text-5xl font-display font-bold mb-6 text-slate-900 dark:text-white">Membership: Your Growth Foundation</h1>
-          <p className="text-xl text-muted-foreground">Zero-barrier entry. Pay only when you are accepted by a mentor and ready to grow.</p>
+          <p className="text-xl text-muted-foreground">
+            For $49/month, your personalized mentor gives structured guidance and tailored feedback at every stage, from refining your idea to building a strong business foundation. Ask questions anytime and tap into optional expert coaches when needed, all without blocking your calendar with unnecessary meetings.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
-          {/* Free Tier */}
-          <Card className="border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="p-8">
-              <h3 className="text-2xl font-bold mb-2">Free Entry</h3>
-              <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold">$0</span>
-                <span className="text-muted-foreground">/month</span>
-              </div>
-              <p className="text-muted-foreground text-sm">Start refining your idea immediately. No credit card required.</p>
-            </CardHeader>
-            <CardContent className="p-8 pt-0">
-              <Link href="/coming-soon">
-                <Button className="w-full mb-8 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold">Start Refining Idea</Button>
-              </Link>
-              <ul className="space-y-4 text-sm">
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-cyan-500 shrink-0" />
-                  <span className="font-medium">AI-Powered Idea Refinement</span>
+          {/* Free Tier - matching homepage */}
+          <Card className="bg-slate-800 border-slate-700 text-left relative overflow-hidden">
+            <CardContent className="p-8">
+              <h3 className="text-2xl font-bold mb-2 text-white">Free Entry</h3>
+              <div className="text-4xl font-display font-bold mb-4 text-white">$0<span className="text-lg text-slate-400 font-normal">/mo</span> <span className="text-base text-slate-400 font-normal">– No credit card required</span></div>
+              <ul className="space-y-4 mb-8">
+                <li className="text-slate-300">
+                  <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Refine Your Idea</span>
+                  <span className="text-sm text-slate-400 ml-6">Turn your raw concept into a clear, compelling vision.</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-cyan-500 shrink-0" />
-                  <span>Draft Business Plan Generation</span>
+                <li className="text-slate-300">
+                  <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Build a Draft Plan</span>
+                  <span className="text-sm text-slate-400 ml-6">Quickly create a structured business plan to guide your next steps.</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-cyan-500 shrink-0" />
-                  <span>Prepare Materials for Mentor Review</span>
-                </li>
-                <li className="flex items-start gap-3 text-muted-foreground">
-                  <Check className="h-5 w-5 text-slate-300 shrink-0" />
-                  <span>Validation, not yet investor-grade</span>
+                <li className="text-slate-300">
+                  <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Get Mentor-Ready</span>
+                  <span className="text-sm text-slate-400 ml-6">Prepare your materials so your mentor can give targeted, actionable feedback from day one.</span>
                 </li>
               </ul>
+              <Link href="/coming-soon">
+                <Button className="w-full bg-slate-700 hover:bg-slate-600 text-white">Start Free - No Credit Card</Button>
+              </Link>
             </CardContent>
           </Card>
 
-          {/* Member Tier */}
-          <Card className="border-indigo-500 shadow-xl relative overflow-hidden bg-white dark:bg-slate-900 z-10">
-            <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-indigo-500 to-cyan-500"></div>
-            <CardHeader className="p-8">
-              <h3 className="text-2xl font-bold mb-2">Member</h3>
-              <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold">$49</span>
-                <span className="text-muted-foreground">/month</span>
-              </div>
-              <p className="text-muted-foreground text-sm">Membership begins after mentor acceptance.</p>
-            </CardHeader>
-            <CardContent className="p-8 pt-0">
-              <div className="mb-8 p-4 bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-indigo-500/30 rounded-lg backdrop-blur-sm">
+          {/* Member Tier - matching homepage */}
+          <Card className="bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-500/50 text-left relative overflow-hidden">
+            <CardContent className="p-8">
+              <h3 className="text-2xl font-bold mb-2 text-white">Member</h3>
+              <div className="text-4xl font-display font-bold mb-4 text-white">$49<span className="text-lg text-indigo-300 font-normal">/month</span></div>
+              <p className="text-indigo-200 mb-6">Upon Mentor Acceptance</p>
+              <div className="mb-6 p-4 bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 border border-indigo-400/40 rounded-lg backdrop-blur-sm">
                 <div className="flex items-start gap-3">
-                  <div className="font-bold text-indigo-600 dark:text-indigo-400 pt-1">📋</div>
+                  <div className="font-bold text-indigo-300 pt-1">📋</div>
                   <div>
-                    <p className="font-bold text-indigo-700 dark:text-indigo-300 mb-1">Waiting List</p>
-                    <p className="text-xs text-indigo-600 dark:text-indigo-400">Only if your idea is approved and you are in a mentor's portfolio</p>
+                    <p className="font-bold text-indigo-200 mb-1">Waiting List</p>
+                    <p className="text-xs text-indigo-300">Only after your idea is approved and added to a mentor's portfolio</p>
                   </div>
                 </div>
               </div>
-              <ul className="space-y-4 text-sm font-medium">
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-500 shrink-0" />
-                  <span>Dedicated Mentor-Coach Match</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-500 shrink-0" />
-                  <span>30-min Onboarding Session (Month 1)</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-500 shrink-0" />
-                  <span>Monthly 1-hour Group Coaching</span>
-                </li>
-                 <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-500 shrink-0" />
-                  <span>Pitch-Creation Tools & Frameworks</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-500 shrink-0" />
-                  <span>Community Learning Environment</span>
-                </li>
+              <h4 className="text-sm font-semibold text-indigo-200 uppercase tracking-wide mb-4">What's Included</h4>
+              <ul className="space-y-3 mb-6">
+                {[
+                  { title: "Dedicated Mentor", detail: "Personally matched, providing structured guidance and actionable feedback" },
+                  { title: "Ask Questions Anytime", detail: "Ongoing support when you need clarity" },
+                  { title: "Strategic Frameworks", detail: "Tools and resources to structure your business" },
+                  { title: "Optional Specialist Coaches", detail: "Live sessions for legal, finance, or growth expertise" },
+                  { title: "Community Access", detail: "Learn from focused other entrepreneurs" },
+                  { title: "All without fixed scheduled meetings", detail: "Guidance happens on your busy calendar." }
+                ].map((item, i) => (
+                  <li 
+                    key={i} 
+                    className="cursor-pointer"
+                    onClick={() => setExpandedPricingItem(expandedPricingItem === i ? null : i)}
+                  >
+                    <div className="flex items-center gap-2 text-white">
+                      <Check className="h-4 w-4 text-indigo-400 shrink-0"/>
+                      <span className="flex-1">{item.title}</span>
+                      <ChevronDown className={`h-4 w-4 text-indigo-300 transition-transform duration-200 ${expandedPricingItem === i ? 'rotate-180' : ''}`} />
+                    </div>
+                    {expandedPricingItem === i && (
+                      <p className="mt-2 ml-6 text-sm text-indigo-200/80 animate-in fade-in slide-in-from-top-1 duration-200">
+                        {item.detail}
+                      </p>
+                    )}
+                  </li>
+                ))}
               </ul>
             </CardContent>
           </Card>
