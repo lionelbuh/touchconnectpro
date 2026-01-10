@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, ArrowRight, Sparkles, Users, FileText, TrendingUp, Shield, Target, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import heroBg from "@assets/generated_images/modern_abstract_network_connections_hero_background.png";
-import mentorFeature from "@assets/generated_images/mentorship_connection_feature_image.png";
+import mentorFeature from "@assets/mentor_partnership_human.png";
 import step1Image from "@assets/stock_images/business_mentor_meet_68880719.jpg";
 
 interface ExpandableItemProps {
@@ -100,7 +100,7 @@ export default function Home() {
               {
                 icon: <Sparkles className="h-6 w-6 text-cyan-500" />,
                 title: "1. Free Entry",
-                desc: "AI-powered idea refinement and draft business plan generation to structure your thinking."
+                desc: "Step-by-step idea refinement and draft business plan generation for clear, structured thinking."
               },
               {
                 icon: <Shield className="h-6 w-6 text-indigo-500" />,
@@ -223,7 +223,7 @@ export default function Home() {
                 ))}
               </ul>
               <a href="#free-entry">
-                <Button size="lg">Try AI Rewrite Demo</Button>
+                <Button size="lg">Try the Free Guided Rewrite Demo</Button>
               </a>
             </div>
           </div>
@@ -241,7 +241,7 @@ export default function Home() {
                 <span className="text-indigo-500">Matched to Your Goals</span>
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
-                Membership begins after your mentor reviews your AI-prepared materials and approves your idea into their portfolio. This ensures a personalized, focused mentor relationship from the start.
+                Membership begins once your mentor reviews the materials you've prepared using our smart tools and approves your idea for their portfolio. This ensures a personalized, focused mentoring relationship from day one.
               </p>
               <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">What's Included</h4>
               <ul className="space-y-4 mb-8">
@@ -249,7 +249,7 @@ export default function Home() {
                   { title: "Personalized Mentor Guidance", detail: "Matched to your goals, providing structured feedback and actionable advice" },
                   { title: "Ongoing Mentor Support", detail: "Ask questions anytime; your mentor responds thoughtfully to keep your project moving forward" },
                   { title: "Partner Business Tools", detail: "Curated resources to help you structure and grow your idea" },
-                  { title: "Mentor-Ready AI Materials", detail: "Guidance starts from materials your mentor can review immediately, so feedback is focused and actionable" },
+                  { title: "Mentor-Ready Guided Materials", detail: "Guidance starts from materials your mentor can review immediately, so feedback is focused and actionable" },
                   { title: "Optional Specialist Experts", detail: "Access paid coaches for legal, finance, marketing, or other deep expertise when needed" },
                   { title: "No scheduled meetings required", detail: "Guidance happens when it matters most." }
                 ].map((item, i) => (
@@ -284,19 +284,27 @@ export default function Home() {
         <div className="container px-4 mx-auto text-center">
            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">Membership: Your Growth Foundation</h2>
            <p className="text-slate-400 text-lg max-w-3xl mx-auto mb-12">
-             For $49/month, your personalized mentor provides structured guidance and tailored feedback at every stage, from refining your idea to building a solid foundation for your business. Ask questions anytime, and access optional paid coaches for specialized expertise when needed, all without scheduled meetings on your busy calendar.
+             For $49/month, your personalized mentor gives structured guidance and tailored feedback at every stage, from refining your idea to building a strong business foundation. Ask questions anytime and tap into optional expert coaches when needed, all without blocking your calendar with unnecessary meetings.
            </p>
            
            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
              <Card className="bg-slate-800 border-slate-700 text-left relative overflow-hidden">
                <CardContent className="p-8">
                  <h3 className="text-2xl font-bold mb-2 text-white">Free Entry</h3>
-                 <div className="text-4xl font-display font-bold mb-6 text-white">$0<span className="text-lg text-slate-400 font-normal">/mo</span></div>
-                 <p className="text-slate-400 mb-8">No credit card required.</p>
-                 <ul className="space-y-3 mb-8">
-                   <li className="flex items-center gap-2 text-slate-300"><Check className="h-4 w-4 text-cyan-500"/> AI Idea Refinement</li>
-                   <li className="flex items-center gap-2 text-slate-300"><Check className="h-4 w-4 text-cyan-500"/> Draft Business Plan Gen</li>
-                   <li className="flex items-center gap-2 text-slate-300"><Check className="h-4 w-4 text-cyan-500"/> Prepare for Mentor Review</li>
+                 <div className="text-4xl font-display font-bold mb-4 text-white">$0<span className="text-lg text-slate-400 font-normal">/mo</span> <span className="text-base text-slate-400 font-normal">– No credit card required</span></div>
+                 <ul className="space-y-4 mb-8">
+                   <li className="text-slate-300">
+                     <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Refine Your Idea</span>
+                     <span className="text-sm text-slate-400 ml-6">Turn your raw concept into a clear, compelling vision.</span>
+                   </li>
+                   <li className="text-slate-300">
+                     <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Build a Draft Plan</span>
+                     <span className="text-sm text-slate-400 ml-6">Quickly create a structured business plan to guide your next steps.</span>
+                   </li>
+                   <li className="text-slate-300">
+                     <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Get Mentor-Ready</span>
+                     <span className="text-sm text-slate-400 ml-6">Prepare your materials so your mentor can give targeted, actionable feedback from day one.</span>
+                   </li>
                  </ul>
                  <Link href="/coming-soon">
                    <Button className="w-full bg-slate-700 hover:bg-slate-600">Start Free - No Credit Card</Button>
