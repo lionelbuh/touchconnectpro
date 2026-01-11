@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail, User, FileText, Upload, CreditCard, CheckCircle2, ExternalLink, Check, Send, Reply, Edit, ClipboardCheck } from "lucide-react";
+import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -637,8 +638,26 @@ export default function DashboardCoach() {
     );
   }
 
+  const coachNavTabs: NavTab[] = [
+    { id: "overview", label: "Overview", icon: <LayoutDashboard className="h-4 w-4" /> },
+    { id: "entrepreneurs", label: "Entrepreneurs", icon: <Users className="h-4 w-4" /> },
+    { id: "messages", label: "Messages", icon: <MessageSquare className="h-4 w-4" />, badge: unreadMessageCount > 0 ? <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{unreadMessageCount}</span> : undefined },
+    { id: "earnings", label: "Earnings", icon: <DollarSign className="h-4 w-4" /> },
+    { id: "agreements", label: "My Agreements", icon: <ClipboardCheck className="h-4 w-4" /> },
+  ];
+
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
+      <DashboardMobileNav
+        tabs={coachNavTabs}
+        activeTab={activeTab}
+        onTabChange={(tabId) => setActiveTab(tabId as any)}
+        title="Coach Dashboard"
+        userName={profile?.full_name || "Coach"}
+        userRole={profile?.is_disabled ? "Disabled" : "Coach"}
+        onLogout={handleLogout}
+      />
+      <div className="flex flex-1">
       <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
         <div className="p-6 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-6">
@@ -1651,6 +1670,7 @@ export default function DashboardCoach() {
           )}
         </div>
       </main>
+      </div>
     </div>
   );
 }

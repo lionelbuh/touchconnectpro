@@ -5119,9 +5119,9 @@ app.post("/api/message-threads", async (req, res) => {
     }
 
     const entry = {
-      id: `entry_${Date.now()}`,
+      id: crypto.randomUUID(),
       senderRole: senderRole || "entrepreneur",
-      senderName: senderName || "Unknown",
+      senderName: senderName || "Entrepreneur",
       message,
       attachments: attachments || [],
       createdAt: new Date().toISOString()
@@ -5138,7 +5138,8 @@ app.post("/api/message-threads", async (req, res) => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
-      .select();
+      .select()
+      .single();
 
     if (error) {
       console.error("[POST /api/message-threads] Error:", error);
@@ -5151,7 +5152,7 @@ app.post("/api/message-threads", async (req, res) => {
     sendMessageNotificationEmail(recipientEmail, recipientName, senderName, senderRole === "entrepreneur" ? entrepreneurEmail : mentorEmail, message)
       .catch(err => console.error("[EMAIL] Thread notification failed:", err));
 
-    return res.json({ success: true, thread: data?.[0] });
+    return res.json({ thread: data });
   } catch (error) {
     console.error("[POST /api/message-threads] Error:", error);
     return res.status(500).json({ error: error.message });
@@ -5180,9 +5181,9 @@ app.post("/api/message-threads/:id/reply", async (req, res) => {
     }
 
     const newEntry = {
-      id: `entry_${Date.now()}`,
-      senderRole: senderRole || "mentor",
-      senderName: senderName || "Unknown",
+      id: crypto.randomUUID(),
+      senderRole: senderRole || "entrepreneur",
+      senderName: senderName || "User",
       message,
       attachments: attachments || [],
       createdAt: new Date().toISOString()
@@ -5197,7 +5198,8 @@ app.post("/api/message-threads/:id/reply", async (req, res) => {
         updated_at: new Date().toISOString()
       })
       .eq("id", id)
-      .select();
+      .select()
+      .single();
 
     if (error) {
       console.error("[POST /api/message-threads/:id/reply] Error:", error);
@@ -5210,7 +5212,7 @@ app.post("/api/message-threads/:id/reply", async (req, res) => {
     sendMessageNotificationEmail(recipientEmail, recipientName, senderName, senderRole === "mentor" ? thread.mentor_email : thread.entrepreneur_email, message)
       .catch(err => console.error("[EMAIL] Reply notification failed:", err));
 
-    return res.json({ success: true, thread: data?.[0] });
+    return res.json({ thread: data });
   } catch (error) {
     console.error("[POST /api/message-threads/:id/reply] Error:", error);
     return res.status(500).json({ error: error.message });
@@ -5223,22 +5225,23 @@ app.patch("/api/message-threads/:id/status", async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!status || !["open", "closed"].includes(status)) {
-      return res.status(400).json({ error: "Invalid status. Must be 'open' or 'closed'" });
+    if (!["open", "closed"].includes(status)) {
+      return res.status(400).json({ error: "Status must be 'open' or 'closed'" });
     }
 
     const { data, error } = await supabase
       .from("message_threads")
       .update({ status, updated_at: new Date().toISOString() })
       .eq("id", id)
-      .select();
+      .select()
+      .single();
 
     if (error) {
       console.error("[PATCH /api/message-threads/:id/status] Error:", error);
       return res.status(500).json({ error: error.message });
     }
 
-    return res.json({ success: true, thread: data?.[0] });
+    return res.json({ thread: data });
   } catch (error) {
     console.error("[PATCH /api/message-threads/:id/status] Error:", error);
     return res.status(500).json({ error: error.message });

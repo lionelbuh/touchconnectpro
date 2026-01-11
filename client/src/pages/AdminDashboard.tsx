@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Check, CheckCircle, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus } from "lucide-react";
+import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
@@ -1664,15 +1665,55 @@ export default function AdminDashboard() {
     return sorted;
   };
 
+  const pendingCount = pendingEntrepreneurApplications.length + pendingMentorApplications.length + pendingCoachApplications.length + pendingInvestorApplications.length;
+  const unreadMemberMessages = messageHistory.filter((m: any) => (m.to_email === "admin@touchconnectpro.com" || m.to_name === "Admin" || m.to_email?.includes("+admin")) && !m.is_read).length;
+
+  const adminNavTabs: NavTab[] = [
+    { id: "approvals", label: "Approvals", icon: <Check className="h-4 w-4" />, badge: pendingCount > 0 ? <Badge className="bg-red-500 text-white">{pendingCount}</Badge> : undefined },
+    { id: "members", label: "Members", icon: <Users className="h-4 w-4" />, badge: unreadMemberMessages > 0 ? <Badge className="bg-red-500 text-white">{unreadMemberMessages}</Badge> : undefined },
+    { id: "meetings", label: "Meetings", icon: <Calendar className="h-4 w-4" /> },
+    { id: "earnings", label: "Earnings", icon: <DollarSign className="h-4 w-4" /> },
+    { id: "contracts", label: "Contracts", icon: <ClipboardCheck className="h-4 w-4" /> },
+    { id: "admins", label: "Admins", icon: <Shield className="h-4 w-4" /> },
+  ];
+
+  const handleAdminLogout = async () => {
+    const token = localStorage.getItem("tcp_adminToken");
+    if (token) {
+      try {
+        await fetch(`${API_BASE_URL}/api/admin/logout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token })
+        });
+      } catch (e) {
+        console.error("Logout error:", e);
+      }
+    }
+    localStorage.removeItem("tcp_adminToken");
+    localStorage.removeItem("tcp_adminData");
+    setLocation("/admin-login");
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <DashboardMobileNav
+        tabs={adminNavTabs}
+        activeTab={activeTab}
+        onTabChange={(tabId) => setActiveTab(tabId as any)}
+        title="Admin Dashboard"
+        userName="Admin"
+        userRole="Administrator"
+        onLogout={handleAdminLogout}
+      />
+      <div className="p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 mb-4">
               <ShieldAlert className="h-8 w-8 text-red-600" />
-              <h1 className="text-4xl font-display font-bold text-slate-900 dark:text-white">Admin Dashboard</h1>
+              <h1 className="text-2xl md:text-4xl font-display font-bold text-slate-900 dark:text-white">Admin Dashboard</h1>
             </div>
             <Button
               variant="outline"
@@ -1703,8 +1744,8 @@ export default function AdminDashboard() {
           <p className="text-muted-foreground">Manage platform users, approvals, and communications</p>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex gap-2 mb-8 flex-wrap">
+        {/* Tab Navigation - hidden on mobile, shown on desktop */}
+        <div className="hidden md:flex gap-2 mb-8 flex-wrap">
           <Button 
             variant={activeTab === "approvals" ? "default" : "outline"}
             onClick={() => setActiveTab("approvals")}
@@ -5750,6 +5791,7 @@ export default function AdminDashboard() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

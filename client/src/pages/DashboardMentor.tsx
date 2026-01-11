@@ -11,6 +11,7 @@ import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
 import { IDEA_PROPOSAL_QUESTIONS } from "@/lib/constants";
 import MyAgreements from "@/components/MyAgreements";
+import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 
 interface MentorProfileData {
   id: string;
@@ -421,7 +422,7 @@ export default function DashboardMentor() {
 
   // Effect: Handle selected entrepreneur from Portfolio - expand existing thread or show new thread modal
   useEffect(() => {
-    if (activeTab === "messages" && selectedEntrepreneurForMessage && messageThreads.length >= 0) {
+    if (activeTab === "messages" && selectedEntrepreneurForMessage && selectedEntrepreneur && messageThreads.length >= 0) {
       const existingThread = messageThreads.find(t => 
         t.entrepreneur_email?.toLowerCase() === selectedEntrepreneurForMessage.toLowerCase()
       );
@@ -429,11 +430,11 @@ export default function DashboardMentor() {
         setExpandedThreadId(existingThread.id);
         setSelectedEntrepreneurForMessage(null);
         setShowNewThreadModal(false);
-      } else if (selectedEntrepreneur) {
+      } else {
         setShowNewThreadModal(true);
       }
     }
-  }, [activeTab, selectedEntrepreneurForMessage, messageThreads]);
+  }, [activeTab, selectedEntrepreneurForMessage, selectedEntrepreneur, messageThreads]);
 
   // Include all admin email aliases
   const adminEmails = ["admin@touchconnectpro.com", "buhler.lionel+admin@gmail.com"];
@@ -748,8 +749,27 @@ export default function DashboardMentor() {
     );
   }
 
+  const mentorNavTabs: NavTab[] = [
+    { id: "overview", label: "Overview", icon: <Briefcase className="h-4 w-4" /> },
+    { id: "portfolio", label: "Portfolios", icon: <Users className="h-4 w-4" /> },
+    { id: "coaches", label: "Available Coaches", icon: <GraduationCap className="h-4 w-4" /> },
+    { id: "messages", label: "Messages", icon: <MessageSquare className="h-4 w-4" />, badge: unreadMessageCount > 0 ? <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{unreadMessageCount}</span> : undefined },
+    { id: "profile", label: "Profile", icon: <Settings className="h-4 w-4" /> },
+    { id: "agreements", label: "My Agreements", icon: <ClipboardCheck className="h-4 w-4" /> },
+  ];
+
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
+      <DashboardMobileNav
+        tabs={mentorNavTabs}
+        activeTab={activeTab}
+        onTabChange={(tabId) => setActiveTab(tabId as any)}
+        title="Mentor Dashboard"
+        userName={mentorProfile.fullName}
+        userRole="Mentor"
+        onLogout={handleLogout}
+      />
+      <div className="flex flex-1">
       {/* Sidebar */}
       <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
         <div className="p-6 flex flex-col h-full">
@@ -2427,6 +2447,7 @@ export default function DashboardMentor() {
           {mentorProfile?.email && <MyAgreements userEmail={mentorProfile.email} />}
         </div>
       )}
+      </div>
     </div>
   );
 }
