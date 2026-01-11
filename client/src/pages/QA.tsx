@@ -17,19 +17,19 @@ export default function QA() {
               <AccordionItem value="item-1">
                 <AccordionTrigger>Who can join TouchConnectPro?</AccordionTrigger>
                 <AccordionContent>
-                  Anyone with a business idea, product in progress, or startup vision can join. You don't need a pitch deck or business plan — AI tools and mentors will help you shape your thinking.
+                  Anyone with a business idea, product in progress, or startup vision can join. You don't need a pitch deck or business plan, our tools and mentors will help you shape and refine your thinking.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-2">
                 <AccordionTrigger>What tools do I need to get started?</AccordionTrigger>
                 <AccordionContent>
-                  Just your idea. We guide you with AI-coaching, structure your plan, and help you prepare investor-ready materials.
+                  Just your idea. We guide you with structured support, help shape your plan, and prepare you for investor-ready materials.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-3">
                 <AccordionTrigger>Is TouchConnectPro global?</AccordionTrigger>
                 <AccordionContent>
-                  Yes — both entrepreneurs and mentors can join from anywhere. Time zones may vary, but sessions can be scheduled to fit.
+                  Yes. Entrepreneurs and mentors can join from anywhere. Guidance is provided asynchronously, so time zones aren't a constraint. When working with specialist coaches, sessions are flexible and arranged directly, often with local experts.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -42,7 +42,7 @@ export default function QA() {
               <AccordionItem value="item-4">
                 <AccordionTrigger>How does the approval process work?</AccordionTrigger>
                 <AccordionContent>
-                  After completing your onboarding, an AI-prepared profile is sent to relevant mentors. If one accepts your project, you'll be approved to join their portfolio — that's when billing begins. Until then, there's no charge.
+                  After completing onboarding, your profile is shared with relevant mentors. If a mentor accepts your project, you'll be approved to join their portfolio. That's when billing begins. Until then, there's no charge.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-5">
@@ -54,7 +54,7 @@ export default function QA() {
               <AccordionItem value="item-6">
                 <AccordionTrigger>Do I get matched with only one mentor?</AccordionTrigger>
                 <AccordionContent>
-                  Initially, yes — you're assigned to the mentor who best fits your startup. You may later request additional mentors for growth, pivots, or specific challenges.
+                  Initially, yes. You're assigned to the mentor who best fits your startup. You may later request additional mentors for growth, pivots, or specific challenges.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-7">
@@ -66,7 +66,7 @@ export default function QA() {
               <AccordionItem value="item-7b">
                 <AccordionTrigger>Will I have the same mentor from the beginning to the end?</AccordionTrigger>
                 <AccordionContent>
-                  Most mentor relationships continue over time, but things can change — your business may evolve or a mentor may become unavailable. If a change is needed, TouchConnectPro will help match you with a new mentor who fits your current goals and stage.
+                  Most mentor relationships continue over time, but things can change. Your business may evolve or a mentor may become unavailable. If a change is needed, TouchConnectPro will help match you with a new mentor who fits your current goals and stage.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -116,13 +116,13 @@ export default function QA() {
               <AccordionItem value="item-8">
                 <AccordionTrigger>When does billing start?</AccordionTrigger>
                 <AccordionContent>
-                  Billing for the $49/mo membership only begins *after* a mentor reviews your AI-prepared materials and approves you into their portfolio.
+                  Billing for the $49/month membership begins only after a mentor reviews your materials and approves you into their portfolio.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-9">
                 <AccordionTrigger>Are the coaching sessions included in the membership fee?</AccordionTrigger>
                 <AccordionContent>
-                  Membership includes access to the platform, community, AI assistance, and mentor onboarding. Coaching sessions are paid separately because each expert sets their own price based on experience and specialty.
+                  Membership includes full access to the platform, community, and mentor onboarding. Specialist coaching sessions are paid separately, with each expert setting their own price based on experience and expertise.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-10">
@@ -134,7 +134,7 @@ export default function QA() {
               <AccordionItem value="item-11">
                 <AccordionTrigger>Can I cancel my membership anytime?</AccordionTrigger>
                 <AccordionContent>
-                  Yes — you can cancel with one click inside your dashboard. Billing stops at the end of the current cycle.
+                  Yes. You can cancel with one click inside your dashboard. Billing stops at the end of the current cycle.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

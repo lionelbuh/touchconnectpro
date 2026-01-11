@@ -29,7 +29,7 @@ export default function HowItWorks() {
       subtitle: "Membership - $49/month",
       desc: "Unlock the full support system: monthly coaching, community learning, and optional access to experts in Finance, Legal, and Marketing. [BOLD]Only for entrepreneurs approved by a mentor. You have 5 days after approval to activate.[/BOLD]",
       icon: <Users className="h-8 w-8 text-emerald-500" />,
-      features: ["Quick Start Guide: Step-by-step resources to hit the ground running.", "Monthly Group Coaching: Learn, grow, and get feedback in a collaborative setting.", "Specialized Marketplace Access: Connect with expert services to accelerate your business."],
+      features: ["Quick Start Guide: Step-by-step resources to hit the ground running.", "Ongoing Mentor Access: Ask questions, receive feedback, and get guidance throughout the month.", "Specialized Marketplace Access: Connect with expert services to accelerate your business."],
       color: "cyan"
     },
     {

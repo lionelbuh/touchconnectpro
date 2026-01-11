@@ -64,9 +64,9 @@ export default function Pricing() {
                   { title: "Dedicated Mentor", detail: "Personally matched, providing structured guidance and actionable feedback" },
                   { title: "Ask Questions Anytime", detail: "Ongoing support when you need clarity" },
                   { title: "Strategic Frameworks", detail: "Tools and resources to structure your business" },
-                  { title: "Optional Specialist Coaches", detail: "Live sessions for legal, finance, or growth expertise" },
                   { title: "Community Access", detail: "Learn from focused other entrepreneurs" },
-                  { title: "All without fixed scheduled meetings", detail: "Guidance happens on your busy calendar." }
+                  { title: "All without fixed scheduled meetings", detail: "Guidance happens on your busy calendar." },
+                  { title: "Optional Specialist Coaches", detail: "Access to specialist coaches in legal, finance, and growth (paid separately)" }
                 ].map((item, i) => (
                   <li 
                     key={i} 
