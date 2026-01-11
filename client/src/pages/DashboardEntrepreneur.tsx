@@ -90,6 +90,7 @@ export default function DashboardEntrepreneur() {
   const [newThreadAttachments, setNewThreadAttachments] = useState<{name: string; type: string; url: string}[]>([]);
   const [threadReplyAttachments, setThreadReplyAttachments] = useState<Record<number, {name: string; type: string; url: string}[]>>({});
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [readThreadEntryCounts, setReadThreadEntryCounts] = useState<Record<string, number>>({});
   
   // One-time contact request state
   const [showContactModal, setShowContactModal] = useState(false);
@@ -264,12 +265,14 @@ export default function DashboardEntrepreneur() {
     const savedProfile = localStorage.getItem("tcp_profileData");
     const savedSubmitted = localStorage.getItem("tcp_submitted");
     const savedReadMessageIds = localStorage.getItem("tcp_entrepreneurReadMessageIds");
+    const savedThreadCounts = localStorage.getItem("tcp_entrepreneurReadThreadEntryCounts");
     
     if (savedFormData) setFormData(JSON.parse(savedFormData));
     if (savedBusinessPlan) setBusinessPlanData(JSON.parse(savedBusinessPlan));
     if (savedProfile) setProfileData(JSON.parse(savedProfile));
     if (savedSubmitted) setSubmitted(JSON.parse(savedSubmitted));
     if (savedReadMessageIds) setEntrepreneurReadMessageIds(JSON.parse(savedReadMessageIds));
+    if (savedThreadCounts) setReadThreadEntryCounts(JSON.parse(savedThreadCounts));
     
     // Messages will be loaded from database after user email is available
     
@@ -826,12 +829,18 @@ export default function DashboardEntrepreneur() {
   // Calculate unread legacy messages (from mentor/admin to entrepreneur)
   const unreadLegacyMessages = messages.filter((m: any) => m.to_email === userEmail && !m.is_read).length;
 
-  // Count unread thread messages (threads where last message is from mentor, not entrepreneur)
+  // Count unread thread messages (threads with new entries since last read, from mentor)
   const unreadThreadMessages = messageThreads.filter((thread: any) => {
     const entries = thread.entries || [];
     if (entries.length === 0) return false;
-    const lastEntry = entries[entries.length - 1];
-    return lastEntry.sender_role === 'mentor';
+    const threadKey = String(thread.id);
+    const lastReadCount = readThreadEntryCounts[threadKey] || 0;
+    // Unread if there are new entries AND the last entry is from mentor
+    if (entries.length > lastReadCount) {
+      const lastEntry = entries[entries.length - 1];
+      return lastEntry.sender_role === 'mentor';
+    }
+    return false;
   }).length;
 
   // Total unread count (legacy + threads)
@@ -843,6 +852,7 @@ export default function DashboardEntrepreneur() {
       const adminEmails = ["admin@touchconnectpro.com", "buhler.lionel+admin@gmail.com"];
       const isAdminEmail = (email: string) => adminEmails.some(ae => ae.toLowerCase() === email?.toLowerCase());
       
+      // Mark legacy admin messages as read
       const adminMessagesToMark = messages
         .filter((m: any) => m.to_email === userEmail && isAdminEmail(m.from_email) && !entrepreneurReadMessageIds.includes(m.id))
         .map((m: any) => m.id);
@@ -852,8 +862,24 @@ export default function DashboardEntrepreneur() {
         setEntrepreneurReadMessageIds(updatedReadIds);
         localStorage.setItem("tcp_entrepreneurReadMessageIds", JSON.stringify(updatedReadIds));
       }
+
+      // Mark threads as read by storing current entry counts
+      const newReadCounts: Record<string, number> = { ...readThreadEntryCounts };
+      let hasChanges = false;
+      messageThreads.forEach((thread: any) => {
+        const entryCount = (thread.entries || []).length;
+        const threadKey = String(thread.id);
+        if (newReadCounts[threadKey] !== entryCount) {
+          newReadCounts[threadKey] = entryCount;
+          hasChanges = true;
+        }
+      });
+      if (hasChanges) {
+        setReadThreadEntryCounts(newReadCounts);
+        localStorage.setItem("tcp_entrepreneurReadThreadEntryCounts", JSON.stringify(newReadCounts));
+      }
     }
-  }, [activeTab, userEmail, messages, entrepreneurReadMessageIds]);
+  }, [activeTab, userEmail, messages, entrepreneurReadMessageIds, messageThreads, readThreadEntryCounts]);
 
   const steps = [
     {
