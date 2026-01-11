@@ -2609,34 +2609,8 @@ export async function registerRoutes(
     }
   });
 
-  // Get single thread by ID
-  app.get("/api/message-threads/thread/:id", async (req, res) => {
-    try {
-      const client = getSupabaseClient();
-      if (!client) {
-        return res.status(500).json({ error: "Supabase not configured" });
-      }
-
-      const { id } = req.params;
-
-      const { data, error } = await (client
-        .from("message_threads")
-        .select("*")
-        .eq("id", id)
-        .single() as any);
-
-      if (error || !data) {
-        return res.status(404).json({ error: "Thread not found" });
-      }
-
-      return res.json({ thread: data });
-    } catch (error: any) {
-      console.error("[GET /api/message-threads/thread/:id] Error:", error);
-      return res.status(500).json({ error: error.message });
-    }
-  });
-
   // Upload attachment for message threads (using Supabase Storage)
+  // NOTE: This route MUST come BEFORE /thread/:id to avoid "upload" matching as :id
   app.post("/api/message-threads/upload", async (req, res) => {
     try {
       const client = getSupabaseClient();
@@ -2687,6 +2661,33 @@ export async function registerRoutes(
       });
     } catch (error: any) {
       console.error("[POST /api/message-threads/upload] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get single thread by ID
+  app.get("/api/message-threads/thread/:id", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+
+      const { data, error } = await (client
+        .from("message_threads")
+        .select("*")
+        .eq("id", id)
+        .single() as any);
+
+      if (error || !data) {
+        return res.status(404).json({ error: "Thread not found" });
+      }
+
+      return res.json({ thread: data });
+    } catch (error: any) {
+      console.error("[GET /api/message-threads/thread/:id] Error:", error);
       return res.status(500).json({ error: error.message });
     }
   });
