@@ -64,8 +64,8 @@ export default function Home() {
             Turning Ideas Into Action
           </h1>
           <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed">
-            AI tools help you structure and refine your ideas, but your mentor keeps them creative, personalized, and actionable. You'll never feel lost, every next step is guided, with clarity and purpose.
-            <br /><span className="text-cyan-300/80 italic">The human touch inspires real creativity and makes your ideas truly unique.<br />Not AI.</span>
+            <span className="text-cyan-300/80 italic">The human touch inspires real creativity and makes your ideas truly unique.<br />Not AI.</span>
+            <br />AI tools help you structure and refine your ideas, but your mentor keeps them creative, personalized, and actionable. You'll never feel lost, every next step is guided, with clarity and purpose.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/coming-soon">
@@ -332,9 +332,9 @@ export default function Home() {
                      { title: "Dedicated Mentor", detail: "Personally matched, providing structured guidance and actionable feedback" },
                      { title: "Ask Questions Anytime", detail: "Ongoing support when you need clarity" },
                      { title: "Strategic Frameworks", detail: "Tools and resources to structure your business" },
-                     { title: "Optional Specialist Coaches", detail: "Live sessions for legal, finance, or growth expertise" },
                      { title: "Community Access", detail: "Learn from focused other entrepreneurs" },
-                     { title: "All without fixed scheduled meetings", detail: "Guidance happens on your busy calendar." }
+                     { title: "All without fixed scheduled meetings", detail: "Guidance happens on your busy calendar." },
+                     { title: "Optional Specialist Coaches", detail: "Access to specialist coaches in legal, finance, and growth (paid separately)" }
                    ].map((item, i) => (
                      <li 
                        key={i} 
