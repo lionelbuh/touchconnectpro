@@ -530,6 +530,7 @@ export default function DashboardMentor() {
                 </span>
               )}
             </Button>
+            {/* Hidden for now - keep for future use
             <Button 
               variant={activeTab === "meetings" ? "secondary" : "ghost"}
               className="w-full justify-start font-medium text-slate-600"
@@ -538,6 +539,7 @@ export default function DashboardMentor() {
             >
               <Calendar className="mr-2 h-4 w-4" /> Meetings
             </Button>
+            */}
             <Button 
               variant={activeTab === "profile" ? "secondary" : "ghost"}
               className="w-full justify-start font-medium text-slate-600"
