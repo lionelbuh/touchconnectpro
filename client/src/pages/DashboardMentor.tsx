@@ -1430,123 +1430,6 @@ export default function DashboardMentor() {
               <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Messages</h1>
               <p className="text-muted-foreground mb-8">Communicate with your entrepreneurs and the TouchConnectPro admin team.</p>
 
-              {/* Admin Section */}
-              <Card className="mb-6 border-cyan-200 dark:border-cyan-900/30">
-                <CardHeader className="bg-cyan-50/50 dark:bg-cyan-950/20 cursor-pointer" onClick={async () => {
-                  const el = document.getElementById('admin-messages-section');
-                  if (el) el.classList.toggle('hidden');
-                  // Mark all admin messages as read
-                  const unreadAdminMsgs = adminMsgs.filter((m: any) => m.to_email === mentorProfile.email && !m.is_read);
-                  if (unreadAdminMsgs.length > 0) {
-                    try {
-                      await Promise.all(unreadAdminMsgs.map((m: any) => 
-                        fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PATCH" })
-                      ));
-                      const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
-                      if (loadResponse.ok) {
-                        const data = await loadResponse.json();
-                        setAdminMessages(data.messages || []);
-                      }
-                    } catch (e) { console.error("Error marking as read:", e); }
-                  }
-                }}>
-                  <CardTitle className="text-lg flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="h-5 w-5 text-cyan-600" />
-                      Admin
-                      {adminUnread > 0 && (
-                        <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" data-testid="badge-admin-unread">
-                          {adminUnread} new
-                        </span>
-                      )}
-                    </div>
-                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent id="admin-messages-section" className="space-y-4 pt-4">
-                  <textarea
-                    value={adminMessage}
-                    onChange={(e) => setAdminMessage(e.target.value)}
-                    placeholder="Type your message to the admin team..."
-                    className="w-full min-h-20 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    data-testid="textarea-admin-message"
-                  />
-                  <Button 
-                    onClick={async () => {
-                      if (adminMessage.trim() && mentorProfile.email) {
-                        try {
-                          const response = await fetch(`${API_BASE_URL}/api/messages`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              fromName: mentorProfile.fullName,
-                              fromEmail: mentorProfile.email,
-                              toName: "Admin",
-                              toEmail: "admin@touchconnectpro.com",
-                              message: adminMessage
-                            })
-                          });
-                          if (response.ok) {
-                            const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
-                            if (loadResponse.ok) {
-                              const data = await loadResponse.json();
-                              setAdminMessages(data.messages || []);
-                            }
-                            setAdminMessage("");
-                            toast.success("Message sent to admin!");
-                          } else {
-                            toast.error("Failed to send message");
-                          }
-                        } catch (error) {
-                          toast.error("Error sending message");
-                        }
-                      }
-                    }}
-                    disabled={!adminMessage.trim()}
-                    size="sm"
-                    className="bg-cyan-600 hover:bg-cyan-700"
-                    data-testid="button-send-admin-message"
-                  >
-                    <Send className="mr-2 h-4 w-4" /> Send
-                  </Button>
-                  
-                  {adminMsgs.length > 0 && (
-                    <div className="border-t pt-4 mt-4">
-                      <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
-                      <div className="space-y-3 max-h-64 overflow-y-auto">
-                        {[...adminMsgs].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => {
-                          const isFromMe = msg.from_email === mentorProfile.email;
-                          return (
-                            <div key={msg.id} onClick={async () => {
-                              if (!isFromMe && !msg.is_read) {
-                                try {
-                                  await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PATCH" });
-                                  const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
-                                  if (loadResponse.ok) {
-                                    const data = await loadResponse.json();
-                                    setAdminMessages(data.messages || []);
-                                  }
-                                } catch (e) {
-                                  console.error("Error marking as read:", e);
-                                }
-                              }
-                            }} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-cyan-50 dark:bg-cyan-950/30'} ${!isFromMe && !msg.is_read ? 'cursor-pointer opacity-70 hover:opacity-100' : ''}`}>
-                              <div className="flex justify-between items-start mb-1">
-                                <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-cyan-700 dark:text-cyan-400'}`}>
-                                  {isFromMe ? 'You' : 'Admin'}
-                                </span>
-                                <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
-                              </div>
-                              <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
               {/* Entrepreneur Conversations (Threaded) */}
               <Card className="mb-6 border-emerald-200 dark:border-emerald-900/30">
                 <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/20">
@@ -1744,6 +1627,122 @@ export default function DashboardMentor() {
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground text-center py-4">No conversations yet. Entrepreneurs can start conversations from their dashboard.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Admin Section */}
+              <Card className="mb-6 border-cyan-200 dark:border-cyan-900/30">
+                <CardHeader className="bg-cyan-50/50 dark:bg-cyan-950/20 cursor-pointer" onClick={async () => {
+                  const el = document.getElementById('admin-messages-section');
+                  if (el) el.classList.toggle('hidden');
+                  const unreadAdminMsgs = adminMsgs.filter((m: any) => m.to_email === mentorProfile.email && !m.is_read);
+                  if (unreadAdminMsgs.length > 0) {
+                    try {
+                      await Promise.all(unreadAdminMsgs.map((m: any) => 
+                        fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PATCH" })
+                      ));
+                      const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
+                      if (loadResponse.ok) {
+                        const data = await loadResponse.json();
+                        setAdminMessages(data.messages || []);
+                      }
+                    } catch (e) { console.error("Error marking as read:", e); }
+                  }
+                }}>
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-5 w-5 text-cyan-600" />
+                      Admin
+                      {adminUnread > 0 && (
+                        <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" data-testid="badge-admin-unread">
+                          {adminUnread} new
+                        </span>
+                      )}
+                    </div>
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent id="admin-messages-section" className="space-y-4 pt-4">
+                  <textarea
+                    value={adminMessage}
+                    onChange={(e) => setAdminMessage(e.target.value)}
+                    placeholder="Type your message to the admin team..."
+                    className="w-full min-h-20 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    data-testid="textarea-admin-message"
+                  />
+                  <Button 
+                    onClick={async () => {
+                      if (adminMessage.trim() && mentorProfile.email) {
+                        try {
+                          const response = await fetch(`${API_BASE_URL}/api/messages`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              fromName: mentorProfile.fullName,
+                              fromEmail: mentorProfile.email,
+                              toName: "Admin",
+                              toEmail: "admin@touchconnectpro.com",
+                              message: adminMessage
+                            })
+                          });
+                          if (response.ok) {
+                            const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
+                            if (loadResponse.ok) {
+                              const data = await loadResponse.json();
+                              setAdminMessages(data.messages || []);
+                            }
+                            setAdminMessage("");
+                            toast.success("Message sent to admin!");
+                          } else {
+                            toast.error("Failed to send message");
+                          }
+                        } catch (error) {
+                          toast.error("Error sending message");
+                        }
+                      }
+                    }}
+                    disabled={!adminMessage.trim()}
+                    size="sm"
+                    className="bg-cyan-600 hover:bg-cyan-700"
+                    data-testid="button-send-admin-message"
+                  >
+                    <Send className="mr-2 h-4 w-4" /> Send
+                  </Button>
+                  
+                  {adminMsgs.length > 0 && (
+                    <div className="border-t pt-4 mt-4">
+                      <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
+                      <div className="space-y-3 max-h-64 overflow-y-auto">
+                        {[...adminMsgs].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => {
+                          const isFromMe = msg.from_email === mentorProfile.email;
+                          return (
+                            <div key={msg.id} onClick={async () => {
+                              if (!isFromMe && !msg.is_read) {
+                                try {
+                                  await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PATCH" });
+                                  const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
+                                  if (loadResponse.ok) {
+                                    const data = await loadResponse.json();
+                                    setAdminMessages(data.messages || []);
+                                  }
+                                } catch (e) {
+                                  console.error("Error marking as read:", e);
+                                }
+                              }
+                            }} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-cyan-50 dark:bg-cyan-950/30'} ${!isFromMe && !msg.is_read ? 'cursor-pointer opacity-70 hover:opacity-100' : ''}`}>
+                              <div className="flex justify-between items-start mb-1">
+                                <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-cyan-700 dark:text-cyan-400'}`}>
+                                  {isFromMe ? 'You' : 'Admin'}
+                                </span>
+                                <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                              </div>
+                              <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   )}
                 </CardContent>
               </Card>
