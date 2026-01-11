@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, CheckCircle, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply, ShoppingCart, CreditCard, X } from "lucide-react";
+import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
@@ -1449,8 +1450,29 @@ export default function DashboardEntrepreneur() {
         ? "bg-amber-500"
         : (entrepreneurStatus === "approved" ? "bg-emerald-500" : "bg-amber-500");
 
+    const entrepreneurNavTabs: NavTab[] = [
+      { id: "overview", label: "Overview", icon: <LayoutDashboard className="h-4 w-4" /> },
+      { id: "idea", label: "My Idea", icon: <Lightbulb className="h-4 w-4" /> },
+      { id: "plan", label: "Business Plan", icon: <Target className="h-4 w-4" /> },
+      { id: "coaches", label: "Available Coaches", icon: <GraduationCap className="h-4 w-4" /> },
+      { id: "purchases", label: "My Purchases", icon: <ShoppingCart className="h-4 w-4" />, badge: coachPurchases.length > 0 ? <span className="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 text-xs px-2 py-0.5 rounded-full">{coachPurchases.length}</span> : undefined },
+      { id: "notes", label: "Mentor Notes", icon: <ClipboardList className="h-4 w-4" />, badge: mentorNotes.length > 0 ? <span className="bg-cyan-100 dark:bg-cyan-900 text-cyan-600 dark:text-cyan-400 text-xs px-2 py-0.5 rounded-full">{mentorNotes.length}</span> : undefined },
+      { id: "messages", label: "Messages", icon: <MessageSquare className="h-4 w-4" />, badge: unreadMessageCount > 0 ? <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{unreadMessageCount}</span> : undefined },
+      { id: "profile", label: "Profile", icon: <Settings className="h-4 w-4" /> },
+    ];
+
     return (
-      <div className="flex min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
+      <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
+        <DashboardMobileNav
+          tabs={entrepreneurNavTabs}
+          activeTab={activeTab}
+          onTabChange={(tabId) => setActiveTab(tabId as any)}
+          title="Entrepreneur Dashboard"
+          userName={profileData.fullName || "Entrepreneur"}
+          userRole={statusDisplay}
+          onLogout={handleLogout}
+        />
+        <div className="flex flex-1">
         <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col justify-between">
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
@@ -3321,6 +3343,7 @@ export default function DashboardEntrepreneur() {
             </Card>
           </div>
         )}
+        </div>
       </div>
     );
   }
