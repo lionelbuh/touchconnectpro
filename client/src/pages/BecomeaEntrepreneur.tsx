@@ -703,7 +703,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
           <Card className="mb-12 -mt-8 border-emerald-200 dark:border-emerald-900/30 bg-emerald-50 dark:bg-emerald-950/20">
             <CardContent className="p-10">
               <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
-                TouchConnectPro connects ambitious entrepreneurs with experienced mentors, coaches, and investors. Submit your idea, develop your business plan with AI guidance, and get approved to join our growing community of innovators.
+                TouchConnectPro connects ambitious entrepreneurs with experienced mentors, coaches, and investors. Submit your idea, refine your business plan, and, once approved, join a growing community focused on execution, feedback, and growth.
               </p>
             </CardContent>
           </Card>
@@ -719,7 +719,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Submit Your Idea</h3>
-                    <p className="text-slate-700 dark:text-slate-300">Answer comprehensive questions about your core idea, market, and vision with AI-enhanced review.</p>
+                    <p className="text-slate-700 dark:text-slate-300">Present your concept, market insights, and vision to be considered for our curated community of entrepreneurs.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -728,7 +728,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Build Your Plan</h3>
-                    <p className="text-slate-700 dark:text-slate-300">AI generates a business plan draft based on your idea. Review, edit, and refine it before submitting.</p>
+                    <p className="text-slate-700 dark:text-slate-300">Develop a polished, actionable business plan that clearly lays out your strategy and growth path.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -737,7 +737,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Get Approved & Subscribe</h3>
-                    <p className="text-slate-700 dark:text-slate-300">Our team reviews your complete submission within 24-48 hours. Once approved, complete your paid subscription.</p>
+                    <p className="text-slate-700 dark:text-slate-300">Our team carefully reviews your submission within 24–48 hours. Once approved, activate your membership to unlock full access.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -746,7 +746,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Connect & Grow</h3>
-                    <p className="text-slate-700 dark:text-slate-300">Join your mentor's portfolio, get coaching, access investor connections, and accelerate your startup.</p>
+                    <p className="text-slate-700 dark:text-slate-300">Join a mentor's portfolio, receive expert guidance, connect with top coaches and investors, and accelerate your startup's growth.</p>
                   </div>
                 </div>
               </CardContent>
@@ -776,7 +776,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                         <Sparkles className="h-5 w-5 text-cyan-500 absolute -top-1 -right-1 animate-pulse" />
                       </div>
                       <div className="text-center space-y-2">
-                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">AI is working on your content</h3>
+                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Your content is being refined.</h3>
                         <p className="text-slate-600 dark:text-slate-400">This usually takes 15-30 seconds. Please be patient while our AI processes your information.</p>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -793,9 +793,9 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <Sparkles className="h-6 w-6 text-cyan-600" />
-                        <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">AI Review of Your Idea - All 42 Questions</h2>
+                        <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">Comprehensive Review of Your Idea – All 42 Questions</h2>
                       </div>
-                      <p className="text-slate-600 dark:text-slate-400">Here's a review of all your answers. Edit any section if you'd like to refine it before building your business plan.</p>
+                      <p className="text-slate-600 dark:text-slate-400">Here's a review of your answers. Some parts might be a bit dummy, our intelligent tool tried its best, so tweak anything with your own words before building your plan!</p>
                     </div>
 
                     <div className="space-y-4">
@@ -818,7 +818,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
 
                     <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                       <p className="text-sm text-slate-600 dark:text-slate-400">
-                        <strong>Edit any section directly above</strong> if you'd like to refine the AI's rephrasing. Then continue to build your business plan.
+                        <strong>Edit any section directly above</strong> if you'd like to refine the suggested rephrasing. Then continue building your business plan.
                       </p>
                       <div className="flex gap-3">
                         <Button
@@ -851,7 +851,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                         <Sparkles className="h-6 w-6 text-cyan-600" />
                         <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">Your Business Plan</h2>
                       </div>
-                      <p className="text-muted-foreground">Here's the business plan that was generated by AI. Edit each section to customize it for your needs.</p>
+                      <p className="text-muted-foreground">Here's your business plan draft. Some parts might be a bit dummy, feel free to edit each section and make it truly yours.</p>
                     </div>
 
                     <div className="space-y-6">
@@ -1347,7 +1347,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                             </>
                           ) : (
                             <>
-                              <Sparkles className="mr-2 h-4 w-4" /> Next: AI Review
+                              <Sparkles className="mr-2 h-4 w-4" /> Next: Review & Refine
                             </>
                           )}
                         </Button>
