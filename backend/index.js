@@ -5081,6 +5081,193 @@ app.patch("/api/messages/:id/read", async (req, res) => {
   }
 });
 
+// =============================================
+// MESSAGE THREADS (Threaded Conversations)
+// =============================================
+
+// Get all message threads for a user (by email)
+app.get("/api/message-threads/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const decodedEmail = decodeURIComponent(email).toLowerCase();
+
+    const { data, error } = await supabase
+      .from("message_threads")
+      .select("*")
+      .or(`entrepreneur_email.ilike.${decodedEmail},mentor_email.ilike.${decodedEmail}`)
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      console.error("[GET /api/message-threads/:email] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.json({ threads: data || [] });
+  } catch (error) {
+    console.error("[GET /api/message-threads/:email] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Create a new message thread
+app.post("/api/message-threads", async (req, res) => {
+  try {
+    const { entrepreneurEmail, mentorEmail, subject, message, senderRole, senderName, attachments } = req.body;
+
+    if (!entrepreneurEmail || !mentorEmail || !message) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const entry = {
+      id: `entry_${Date.now()}`,
+      senderRole: senderRole || "entrepreneur",
+      senderName: senderName || "Unknown",
+      message,
+      attachments: attachments || [],
+      createdAt: new Date().toISOString()
+    };
+
+    const { data, error } = await supabase
+      .from("message_threads")
+      .insert({
+        entrepreneur_email: entrepreneurEmail.toLowerCase(),
+        mentor_email: mentorEmail.toLowerCase(),
+        subject: subject || "New Conversation",
+        status: "open",
+        entries: [entry],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select();
+
+    if (error) {
+      console.error("[POST /api/message-threads] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    // Send email notification to the recipient
+    const recipientEmail = senderRole === "entrepreneur" ? mentorEmail : entrepreneurEmail;
+    const recipientName = senderRole === "entrepreneur" ? "Mentor" : "Entrepreneur";
+    sendMessageNotificationEmail(recipientEmail, recipientName, senderName, senderRole === "entrepreneur" ? entrepreneurEmail : mentorEmail, message)
+      .catch(err => console.error("[EMAIL] Thread notification failed:", err));
+
+    return res.json({ success: true, thread: data?.[0] });
+  } catch (error) {
+    console.error("[POST /api/message-threads] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Add reply to a message thread
+app.post("/api/message-threads/:id/reply", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { message, senderRole, senderName, attachments } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: "Message is required" });
+    }
+
+    // Get current thread
+    const { data: thread, error: fetchError } = await supabase
+      .from("message_threads")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !thread) {
+      return res.status(404).json({ error: "Thread not found" });
+    }
+
+    const newEntry = {
+      id: `entry_${Date.now()}`,
+      senderRole: senderRole || "mentor",
+      senderName: senderName || "Unknown",
+      message,
+      attachments: attachments || [],
+      createdAt: new Date().toISOString()
+    };
+
+    const updatedEntries = [...(thread.entries || []), newEntry];
+
+    const { data, error } = await supabase
+      .from("message_threads")
+      .update({
+        entries: updatedEntries,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.error("[POST /api/message-threads/:id/reply] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    // Send email notification to the other party
+    const recipientEmail = senderRole === "mentor" ? thread.entrepreneur_email : thread.mentor_email;
+    const recipientName = senderRole === "mentor" ? "Entrepreneur" : "Mentor";
+    sendMessageNotificationEmail(recipientEmail, recipientName, senderName, senderRole === "mentor" ? thread.mentor_email : thread.entrepreneur_email, message)
+      .catch(err => console.error("[EMAIL] Reply notification failed:", err));
+
+    return res.json({ success: true, thread: data?.[0] });
+  } catch (error) {
+    console.error("[POST /api/message-threads/:id/reply] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Update thread status (open/closed)
+app.patch("/api/message-threads/:id/status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status || !["open", "closed"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status. Must be 'open' or 'closed'" });
+    }
+
+    const { data, error } = await supabase
+      .from("message_threads")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.error("[PATCH /api/message-threads/:id/status] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.json({ success: true, thread: data?.[0] });
+  } catch (error) {
+    console.error("[PATCH /api/message-threads/:id/status] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get a single thread by ID
+app.get("/api/message-threads/thread/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data, error } = await supabase
+      .from("message_threads")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("[GET /api/message-threads/thread/:id] Error:", error);
+      return res.status(404).json({ error: "Thread not found" });
+    }
+
+    return res.json({ thread: data });
+  } catch (error) {
+    console.error("[GET /api/message-threads/thread/:id] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // Early Access Signup - sends notification to hello@touchconnectpro.com
 app.post("/api/early-access", async (req, res) => {
   console.log("[POST /api/early-access] Called");

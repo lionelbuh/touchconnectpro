@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText, ClipboardCheck } from "lucide-react";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, ChevronUp, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText, ClipboardCheck, Paperclip, RefreshCw, X } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -101,6 +101,13 @@ export default function DashboardMentor() {
   const [selectedEntrepreneurIds, setSelectedEntrepreneurIds] = useState<string[]>([]);
   const [sendingInvites, setSendingInvites] = useState(false);
   const [zoomMeetings, setZoomMeetings] = useState<any[]>([]);
+  
+  // Message threads state (threaded conversations with entrepreneurs)
+  const [messageThreads, setMessageThreads] = useState<any[]>([]);
+  const [expandedThreadId, setExpandedThreadId] = useState<number | null>(null);
+  const [threadReplyText, setThreadReplyText] = useState<Record<number, string>>({});
+  const [threadReplyAttachments, setThreadReplyAttachments] = useState<Record<number, {name: string; type: string; url: string}[]>>({});
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -198,6 +205,174 @@ export default function DashboardMentor() {
     }
     loadMessages();
   }, [mentorProfile.email]);
+
+  // Load message threads (threaded conversations with entrepreneurs)
+  useEffect(() => {
+    async function loadMessageThreads() {
+      if (!mentorProfile.email) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/message-threads/${encodeURIComponent(mentorProfile.email)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setMessageThreads(data.threads || []);
+        }
+      } catch (error) {
+        console.error("Error loading message threads:", error);
+      }
+    }
+    loadMessageThreads();
+  }, [mentorProfile.email]);
+
+  // Helper: Upload file attachment (mentor)
+  const uploadAttachment = async (file: File): Promise<{name: string; type: string; url: string} | null> => {
+    try {
+      setUploadingFile(true);
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.onload = async () => {
+          try {
+            const base64 = (reader.result as string).split(',')[1];
+            const response = await fetch(`${API_BASE_URL}/api/message-threads/upload`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                fileName: file.name,
+                fileType: file.type,
+                fileData: base64,
+                userEmail: mentorProfile.email
+              })
+            });
+            if (response.ok) {
+              const data = await response.json();
+              resolve(data.attachment);
+            } else {
+              toast.error("Failed to upload file");
+              resolve(null);
+            }
+          } catch (err) {
+            reject(err);
+          } finally {
+            setUploadingFile(false);
+          }
+        };
+        reader.onerror = () => {
+          setUploadingFile(false);
+          reject(reader.error);
+        };
+        reader.readAsDataURL(file);
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      setUploadingFile(false);
+      toast.error("Error uploading file");
+      return null;
+    }
+  };
+
+  // Helper: Handle file selection for reply (mentor)
+  const handleReplyFileSelect = async (threadId: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    for (const file of Array.from(files)) {
+      const attachment = await uploadAttachment(file);
+      if (attachment) {
+        setThreadReplyAttachments(prev => ({
+          ...prev,
+          [threadId]: [...(prev[threadId] || []), attachment]
+        }));
+        toast.success(`${file.name} uploaded!`);
+      }
+    }
+    e.target.value = ''; // Reset input
+  };
+
+  // Helper: Add reply to thread (mentor)
+  const addThreadReply = async (threadId: number) => {
+    const replyText = threadReplyText[threadId];
+    if (!replyText?.trim()) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/message-threads/${threadId}/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: replyText.trim(),
+          senderRole: "mentor",
+          senderName: mentorProfile.fullName || "Mentor",
+          attachments: threadReplyAttachments[threadId] || []
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMessageThreads(prev => prev.map(t => t.id === threadId ? data.thread : t));
+        setThreadReplyText(prev => ({ ...prev, [threadId]: "" }));
+        setThreadReplyAttachments(prev => ({ ...prev, [threadId]: [] }));
+        toast.success("Reply sent!");
+      } else {
+        toast.error("Failed to send reply");
+      }
+    } catch (error) {
+      console.error("Error adding reply:", error);
+      toast.error("Error sending reply");
+    }
+  };
+
+  // Helper: Close thread (mentor only)
+  const closeThread = async (threadId: number) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/message-threads/${threadId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "closed" })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMessageThreads(prev => prev.map(t => t.id === threadId ? data.thread : t));
+        toast.success("Conversation closed");
+      } else {
+        toast.error("Failed to close conversation");
+      }
+    } catch (error) {
+      console.error("Error closing thread:", error);
+      toast.error("Error closing conversation");
+    }
+  };
+
+  // Helper: Reopen thread (mentor only)
+  const reopenThread = async (threadId: number) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/message-threads/${threadId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "open" })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMessageThreads(prev => prev.map(t => t.id === threadId ? data.thread : t));
+        toast.success("Conversation reopened");
+      } else {
+        toast.error("Failed to reopen conversation");
+      }
+    } catch (error) {
+      console.error("Error reopening thread:", error);
+      toast.error("Error reopening conversation");
+    }
+  };
+
+  // Helper: Refresh threads
+  const refreshThreads = async () => {
+    if (!mentorProfile.email) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/message-threads/${encodeURIComponent(mentorProfile.email)}`);
+      if (response.ok) {
+        const data = await response.json();
+        setMessageThreads(data.threads || []);
+        toast.success("Conversations refreshed!");
+      }
+    } catch (error) {
+      console.error("Error refreshing threads:", error);
+    }
+  };
 
   // Include all admin email aliases
   const adminEmails = ["admin@touchconnectpro.com", "buhler.lionel+admin@gmail.com"];
@@ -1326,106 +1501,206 @@ export default function DashboardMentor() {
                 </CardContent>
               </Card>
 
-              {/* Entrepreneur Sections */}
-              {allEntrepreneurs.map((ent, idx) => {
-                const entMsgs = adminMessages.filter((m: any) => 
-                  (m.from_email?.toLowerCase() === ent.email.toLowerCase()) || 
-                  (m.to_email?.toLowerCase() === ent.email.toLowerCase())
-                );
-                const entUnread = entMsgs.filter((m: any) => 
-                  m.to_email === mentorProfile.email && !m.is_read
-                ).length;
-                
-                return (
-                  <Card key={ent.email} className="mb-4 border-emerald-200 dark:border-emerald-900/30">
-                    <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/20 cursor-pointer py-3" onClick={async () => {
-                      const el = document.getElementById(`entrepreneur-messages-${idx}`);
-                      if (el) el.classList.toggle('hidden');
-                      // Mark all messages from this entrepreneur as read
-                      const unreadEntMsgs = entMsgs.filter((m: any) => m.to_email === mentorProfile.email && !m.is_read);
-                      if (unreadEntMsgs.length > 0) {
-                        try {
-                          await Promise.all(unreadEntMsgs.map((m: any) => 
-                            fetch(`${API_BASE_URL}/api/messages/${m.id}/read`, { method: "PATCH" })
-                          ));
-                          const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
-                          if (loadResponse.ok) {
-                            const data = await loadResponse.json();
-                            setAdminMessages(data.messages || []);
-                          }
-                        } catch (e) { console.error("Error marking as read:", e); }
-                      }
-                    }}>
-                      <CardTitle className="text-base flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <GraduationCap className="h-4 w-4 text-emerald-600" />
-                          {ent.name}
-                          {entUnread > 0 && (
-                            <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" data-testid={`badge-entrepreneur-unread-${idx}`}>
-                              {entUnread} new
-                            </span>
-                          )}
-                        </div>
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent id={`entrepreneur-messages-${idx}`} className="space-y-3 pt-3 hidden">
-                      {!isAccountDisabled && (
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm"
-                            className="bg-emerald-600 hover:bg-emerald-700"
-                            onClick={() => {
-                              setSelectedEntrepreneur(ent);
-                              setShowEntrepreneurMessageModal(true);
-                            }}
-                            data-testid={`button-send-to-${ent.email}`}
+              {/* Entrepreneur Conversations (Threaded) */}
+              <Card className="mb-6 border-emerald-200 dark:border-emerald-900/30">
+                <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/20">
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="h-5 w-5 text-emerald-600" />
+                      Entrepreneur Conversations
+                    </div>
+                    <Button 
+                      onClick={refreshThreads}
+                      variant="outline"
+                      size="sm"
+                      className="border-emerald-300 text-emerald-600 hover:bg-emerald-50"
+                      data-testid="button-refresh-threads"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  {messageThreads.length > 0 ? (
+                    <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                      {messageThreads.map((thread: any) => {
+                        const isExpanded = expandedThreadId === thread.id;
+                        const isClosed = thread.status === "closed";
+                        const entries = thread.entries || [];
+                        const lastEntry = entries[entries.length - 1];
+                        const entrepreneurEmail = thread.entrepreneur_email;
+                        const entrepreneurName = allEntrepreneurs.find(e => e.email.toLowerCase() === entrepreneurEmail?.toLowerCase())?.name || "Entrepreneur";
+                        
+                        return (
+                          <div 
+                            key={thread.id} 
+                            className={`rounded-lg border ${isClosed ? 'bg-slate-50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700' : 'bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-800'}`}
+                            data-testid={`thread-${thread.id}`}
                           >
-                            <Send className="mr-2 h-3 w-3" /> Send Message
-                          </Button>
-                        </div>
-                      )}
-                      
-                      {entMsgs.length > 0 ? (
-                        <div className="border-t pt-3 mt-2">
-                          <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
-                          <div className="space-y-2 max-h-48 overflow-y-auto">
-                            {[...entMsgs].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => {
-                              const isFromMe = msg.from_email === mentorProfile.email;
-                              return (
-                                <div key={msg.id} onClick={async () => {
-                                  if (!isFromMe && !msg.is_read) {
-                                    try {
-                                      await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PATCH" });
-                                      const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
-                                      if (loadResponse.ok) {
-                                        const data = await loadResponse.json();
-                                        setAdminMessages(data.messages || []);
-                                      }
-                                    } catch (e) {
-                                      console.error("Error marking as read:", e);
-                                    }
-                                  }
-                                }} className={`p-2 rounded-lg text-sm ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-emerald-50 dark:bg-emerald-950/30'} ${!isFromMe && !msg.is_read ? 'cursor-pointer opacity-70 hover:opacity-100' : ''}`}>
-                                  <div className="flex justify-between items-start mb-1">
-                                    <span className={`text-xs font-semibold ${isFromMe ? 'text-slate-600 dark:text-slate-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
-                                      {isFromMe ? 'You' : ent.name}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
-                                  </div>
-                                  <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
+                            <div 
+                              className="p-3 cursor-pointer flex items-start justify-between"
+                              onClick={() => setExpandedThreadId(isExpanded ? null : thread.id)}
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <p className={`font-semibold text-sm ${isClosed ? 'text-slate-500' : 'text-emerald-700 dark:text-emerald-400'}`}>
+                                    {thread.subject || "Conversation"} - {entrepreneurName}
+                                  </p>
+                                  {isClosed && (
+                                    <Badge variant="secondary" className="text-xs bg-slate-200 dark:bg-slate-700">Closed</Badge>
+                                  )}
                                 </div>
-                              );
-                            })}
+                                <p className="text-xs text-muted-foreground">
+                                  {entries.length} {entries.length === 1 ? 'message' : 'messages'} • Last: {lastEntry ? new Date(lastEntry.createdAt).toLocaleDateString() : 'N/A'}
+                                </p>
+                              </div>
+                              {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                            </div>
+                            
+                            {isExpanded && (
+                              <div className="border-t border-slate-200 dark:border-slate-700 p-3 space-y-3">
+                                {/* Thread Entries */}
+                                <div className="space-y-2 max-h-64 overflow-y-auto">
+                                  {entries.map((entry: any) => {
+                                    const isFromMe = entry.senderRole === "mentor";
+                                    return (
+                                      <div 
+                                        key={entry.id} 
+                                        className={`p-2 rounded-lg text-sm ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-emerald-50 dark:bg-emerald-950/30'}`}
+                                      >
+                                        <div className="flex justify-between items-start mb-1">
+                                          <span className={`text-xs font-semibold ${isFromMe ? 'text-slate-600 dark:text-slate-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                            {isFromMe ? 'You' : (entry.senderName || entrepreneurName)}
+                                          </span>
+                                          <span className="text-xs text-muted-foreground">{new Date(entry.createdAt).toLocaleString()}</span>
+                                        </div>
+                                        <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{entry.message}</p>
+                                        {entry.attachments && entry.attachments.length > 0 && (
+                                          <div className="mt-2 flex flex-wrap gap-2">
+                                            {entry.attachments.map((att: any, idx: number) => (
+                                              <a 
+                                                key={idx}
+                                                href={att.url} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
+                                              >
+                                                <Paperclip className="h-3 w-3" />
+                                                {att.name || 'Attachment'}
+                                              </a>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                
+                                {/* Reply Form and Actions */}
+                                {!isAccountDisabled && (
+                                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                                    {!isClosed && (
+                                      <div className="space-y-2">
+                                        {/* Reply attachments display */}
+                                        {(threadReplyAttachments[thread.id]?.length || 0) > 0 && (
+                                          <div className="flex flex-wrap gap-2">
+                                            {threadReplyAttachments[thread.id].map((att, idx) => (
+                                              <div key={idx} className="flex items-center gap-1 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 rounded text-xs">
+                                                <Paperclip className="h-3 w-3" />
+                                                <span className="max-w-[100px] truncate">{att.name}</span>
+                                                <button 
+                                                  onClick={() => setThreadReplyAttachments(prev => ({
+                                                    ...prev,
+                                                    [thread.id]: prev[thread.id]?.filter((_, i) => i !== idx) || []
+                                                  }))}
+                                                  className="text-red-500 hover:text-red-700"
+                                                >
+                                                  <X className="h-3 w-3" />
+                                                </button>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                        <div className="flex gap-2 items-center">
+                                          <Input
+                                            value={threadReplyText[thread.id] || ""}
+                                            onChange={(e) => setThreadReplyText(prev => ({ ...prev, [thread.id]: e.target.value }))}
+                                            placeholder="Type your reply..."
+                                            className="flex-1 text-sm"
+                                            data-testid={`input-reply-${thread.id}`}
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                addThreadReply(thread.id);
+                                              }
+                                            }}
+                                          />
+                                          <label className="cursor-pointer">
+                                            <input
+                                              type="file"
+                                              multiple
+                                              accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.webp"
+                                              onChange={(e) => handleReplyFileSelect(thread.id, e)}
+                                              className="hidden"
+                                              data-testid={`input-reply-attachment-${thread.id}`}
+                                            />
+                                            <div className={`flex items-center justify-center w-8 h-8 rounded-md border border-emerald-300 text-emerald-600 hover:bg-emerald-50 ${uploadingFile ? 'opacity-50 pointer-events-none' : ''}`}>
+                                              <Paperclip className="h-4 w-4" />
+                                            </div>
+                                          </label>
+                                          <Button
+                                            onClick={() => addThreadReply(thread.id)}
+                                            disabled={!threadReplyText[thread.id]?.trim() || uploadingFile}
+                                            size="sm"
+                                            className="bg-emerald-600 hover:bg-emerald-700"
+                                            data-testid={`button-reply-${thread.id}`}
+                                          >
+                                            <Reply className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    <div className="flex justify-end">
+                                      {isClosed ? (
+                                        <Button
+                                          onClick={() => reopenThread(thread.id)}
+                                          size="sm"
+                                          variant="outline"
+                                          className="text-emerald-600 border-emerald-300 hover:bg-emerald-50"
+                                          data-testid={`button-reopen-${thread.id}`}
+                                        >
+                                          Reopen Conversation
+                                        </Button>
+                                      ) : (
+                                        <Button
+                                          onClick={() => closeThread(thread.id)}
+                                          size="sm"
+                                          variant="outline"
+                                          className="text-slate-600 border-slate-300 hover:bg-slate-50"
+                                          data-testid={`button-close-${thread.id}`}
+                                        >
+                                          <X className="h-3 w-3 mr-1" /> Close Conversation
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {isAccountDisabled && isClosed && (
+                                  <p className="text-xs text-center text-muted-foreground py-2">This conversation is closed.</p>
+                                )}
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground py-2">No messages yet with this entrepreneur.</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">No conversations yet. Entrepreneurs can start conversations from their dashboard.</p>
+                  )}
+                </CardContent>
+              </Card>
               
               {allEntrepreneurs.length === 0 && (
                 <Card>
