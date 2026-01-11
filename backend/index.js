@@ -5398,6 +5398,44 @@ app.post("/api/message-threads/:id/ai-draft", async (req, res) => {
       return res.status(500).json({ error: "AI service not configured" });
     }
 
+    // Helper: Recursively flatten nested objects/arrays into readable key-value lines
+    function flattenToLines(obj, prefix = "") {
+      const lines = [];
+      if (!obj || typeof obj !== 'object') {
+        return lines;
+      }
+      
+      for (const [key, val] of Object.entries(obj)) {
+        const label = prefix ? `${prefix} > ${key}` : key;
+        
+        if (val === null || val === undefined) {
+          continue;
+        } else if (typeof val === 'string' && val.trim()) {
+          lines.push(`- ${label}: ${val}`);
+        } else if (typeof val === 'number' || typeof val === 'boolean') {
+          lines.push(`- ${label}: ${val}`);
+        } else if (Array.isArray(val)) {
+          // Handle arrays - could be array of objects or primitives
+          val.forEach((item, idx) => {
+            if (typeof item === 'object' && item !== null) {
+              // Check for question/answer format
+              if (item.question && item.answer) {
+                lines.push(`- ${item.question}: ${item.answer}`);
+              } else {
+                lines.push(...flattenToLines(item, `${label}[${idx}]`));
+              }
+            } else if (item && String(item).trim()) {
+              lines.push(`- ${label}[${idx}]: ${item}`);
+            }
+          });
+        } else if (typeof val === 'object') {
+          // Recurse into nested objects
+          lines.push(...flattenToLines(val, label));
+        }
+      }
+      return lines;
+    }
+
     // Build context from available data - send FULL data to AI for accuracy
     let contextParts = [];
     contextParts.push(`Entrepreneur: ${entrepreneurName}`);
@@ -5405,39 +5443,22 @@ app.post("/api/message-threads/:id/ai-draft", async (req, res) => {
       contextParts.push(`Conversation Subject: ${thread.subject}`);
     }
     
-    // Include FULL idea proposal (all 42 questions) - no truncation
+    // Include FULL idea proposal (all 42 questions) - recursively flattened
     if (ideaProposal && Object.keys(ideaProposal).length > 0) {
-      // Handle nested structure - check for answers array or direct key-value pairs
-      let proposalData = ideaProposal;
-      if (ideaProposal.answers && Array.isArray(ideaProposal.answers)) {
-        proposalData = ideaProposal.answers.reduce((acc, item) => {
-          if (item.question && item.answer) {
-            acc[item.question] = item.answer;
-          }
-          return acc;
-        }, {});
+      const proposalLines = flattenToLines(ideaProposal);
+      if (proposalLines.length > 0) {
+        contextParts.push(`\n**Entrepreneur's Full Idea Proposal:**\n${proposalLines.join("\n")}`);
       }
-      
-      const allAnswers = Object.entries(proposalData)
-        .filter(([key, val]) => val && String(val).trim())
-        .map(([key, val]) => `- ${key}: ${String(val)}`)
-        .join("\n");
-      if (allAnswers) {
-        contextParts.push(`\n**Entrepreneur's Full Idea Proposal:**\n${allAnswers}`);
-      }
-      console.log("[AI-DRAFT] Idea proposal keys:", Object.keys(proposalData).length);
+      console.log("[AI-DRAFT] Idea proposal lines extracted:", proposalLines.length);
     }
     
-    // Include FULL business plan (all 11 sections) - no truncation
+    // Include FULL business plan (all 11 sections) - recursively flattened
     if (businessPlan && Object.keys(businessPlan).length > 0) {
-      const fullPlan = Object.entries(businessPlan)
-        .filter(([key, val]) => val && String(val).trim())
-        .map(([key, val]) => `- ${key}: ${String(val)}`)
-        .join("\n");
-      if (fullPlan) {
-        contextParts.push(`\n**Entrepreneur's Full Business Plan:**\n${fullPlan}`);
+      const planLines = flattenToLines(businessPlan);
+      if (planLines.length > 0) {
+        contextParts.push(`\n**Entrepreneur's Full Business Plan:**\n${planLines.join("\n")}`);
       }
-      console.log("[AI-DRAFT] Business plan keys:", Object.keys(businessPlan).length);
+      console.log("[AI-DRAFT] Business plan lines extracted:", planLines.length);
     }
     
     contextParts.push(`\n**Entrepreneur's Latest Message:**\n"${latestMessage}"`);
