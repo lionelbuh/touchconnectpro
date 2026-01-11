@@ -4405,6 +4405,142 @@ export async function registerRoutes(
     }
   });
 
+  // Mentor Waitlist Signup
+  app.post("/api/mentor-waitlist", async (req, res) => {
+    console.log("[POST /api/mentor-waitlist] Called");
+    try {
+      const { email, fullName } = req.body;
+
+      if (!email || !fullName) {
+        return res.status(400).json({ error: "Email and full name are required" });
+      }
+
+      console.log("[MENTOR WAITLIST] New signup:", fullName, email);
+
+      // Store in Supabase
+      const client = getSupabaseClient();
+      if (client) {
+        try {
+          const { error: dbError } = await (client
+            .from("mentor_waitlist")
+            .insert({ email, full_name: fullName, created_at: new Date().toISOString() } as any) as any);
+          if (dbError) {
+            console.log("[MENTOR WAITLIST] Database save skipped:", dbError.message);
+          } else {
+            console.log("[MENTOR WAITLIST] Saved to database");
+          }
+        } catch (dbError: any) {
+          console.log("[MENTOR WAITLIST] Database save error:", dbError.message);
+        }
+      }
+
+      // Send confirmation email
+      const resendData = await getResendClient();
+      
+      if (resendData) {
+        const { client: resend, fromEmail } = resendData;
+        
+        try {
+          await resend.emails.send({
+            from: fromEmail,
+            to: email,
+            subject: "You're on the TouchConnectPro Mentor Waiting List",
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                  .highlight-box { background: linear-gradient(135deg, #6366f1/10, #8b5cf6/10); padding: 20px; border-radius: 8px; border-left: 4px solid #6366f1; margin: 20px 0; }
+                  .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <h1>Thank You, ${fullName}!</h1>
+                  </div>
+                  <div class="content">
+                    <p>We're honored by your interest in becoming a mentor at TouchConnectPro.</p>
+                    
+                    <div class="highlight-box">
+                      <p style="margin: 0;"><strong>What happens next?</strong></p>
+                      <p style="margin: 10px 0 0 0;">We currently have all the mentors we need to support our entrepreneurs, but as we grow, we'll need more experienced guides like you. We'll reach out as soon as a spot opens up.</p>
+                    </div>
+                    
+                    <p>In the meantime, thank you for wanting to make a difference in the lives of aspiring entrepreneurs.</p>
+                    
+                    <p style="color: #64748b; font-size: 14px;">
+                      Best regards,<br>
+                      The TouchConnectPro Team
+                    </p>
+                  </div>
+                  <div class="footer">
+                    <p>&copy; ${new Date().getFullYear()} TouchConnectPro</p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `
+          });
+          console.log("[MENTOR WAITLIST] Confirmation email sent to:", email);
+
+          // Also notify admin
+          await resend.emails.send({
+            from: fromEmail,
+            to: "hello@touchconnectpro.com",
+            subject: "New Mentor Waitlist Signup",
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                  .info-box { background: white; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 15px 0; }
+                  .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <h2>New Mentor Waitlist Signup</h2>
+                  </div>
+                  <div class="content">
+                    <p>A potential mentor has joined the waiting list.</p>
+                    
+                    <div class="info-box">
+                      <strong>Name:</strong> ${fullName}<br>
+                      <strong>Email:</strong> ${email}<br>
+                      <strong>Date:</strong> ${new Date().toLocaleString()}
+                    </div>
+                  </div>
+                  <div class="footer">
+                    <p>&copy; ${new Date().getFullYear()} TouchConnectPro</p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `
+          });
+          console.log("[MENTOR WAITLIST] Admin notification sent");
+        } catch (emailError: any) {
+          console.error("[MENTOR WAITLIST] Email send failed:", emailError.message);
+        }
+      }
+
+      return res.json({ success: true, message: "Added to mentor waiting list" });
+    } catch (error: any) {
+      console.error("[MENTOR WAITLIST] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // ===== ZOOM MEETING INTEGRATION =====
 
   // Helper function to get Zoom access token

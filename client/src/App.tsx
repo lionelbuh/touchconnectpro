@@ -15,6 +15,7 @@ import QA from "@/pages/QA";
 import HowItWorks from "@/pages/HowItWorks";
 import ComingSoon from "@/pages/ComingSoon";
 import BecomeaMentor from "@/pages/BecomeaMentor";
+import MentorWaitlist from "@/pages/MentorWaitlist";
 import BecomeaCoach from "@/pages/BecomeaCoach";
 import BecomeaInvestor from "@/pages/BecomeaInvestor";
 import BecomeaEntrepreneur from "@/pages/BecomeaEntrepreneur";
@@ -63,7 +64,8 @@ function Router() {
         <Route path="/qa" component={QA} />
         <Route path="/how-it-works" component={HowItWorks} />
         <Route path="/become-entrepreneur" component={BecomeaEntrepreneur} />
-        <Route path="/become-mentor" component={BecomeaMentor} />
+        <Route path="/become-mentor" component={MentorWaitlist} />
+        <Route path="/become-mentor2" component={BecomeaMentor} />
         <Route path="/become-coach" component={BecomeaCoach} />
         <Route path="/investors" component={BecomeaInvestor} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />

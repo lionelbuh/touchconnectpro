@@ -1300,6 +1300,7 @@ export default function DashboardEntrepreneur() {
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{messages.filter((m: any) => m.to_email === userEmail && !m.is_read).length}</span>
                 )}
               </Button>
+              {/* Hidden for now - keep for future use
               <Button 
                 variant={activeTab === "meetings" ? "secondary" : "ghost"}
                 className="w-full justify-start font-medium text-slate-600"
@@ -1311,6 +1312,7 @@ export default function DashboardEntrepreneur() {
                   <span className="ml-auto bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 text-xs px-2 py-0.5 rounded-full">{meetings.length}</span>
                 )}
               </Button>
+              */}
               <Button 
                 variant={activeTab === "profile" ? "secondary" : "ghost"}
                 className="w-full justify-start font-medium text-slate-600"
