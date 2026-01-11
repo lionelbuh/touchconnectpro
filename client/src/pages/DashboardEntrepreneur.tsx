@@ -1543,6 +1543,7 @@ export default function DashboardEntrepreneur() {
                           >
                             <ClipboardList className="mr-2 h-4 w-4" /> View Mentor Notes ({mentorNotes.length})
                           </Button>
+                          {/* Hidden for now - keep for future use
                           <Button 
                             variant="outline" 
                             className="w-full border-blue-200 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20"
@@ -1551,6 +1552,7 @@ export default function DashboardEntrepreneur() {
                           >
                             <Calendar className="mr-2 h-4 w-4" /> View Meetings with my Mentor ({meetings.length})
                           </Button>
+                          */}
                         </div>
                       </div>
                     ) : (
