@@ -942,7 +942,7 @@ export default function DashboardMentor() {
                                         size="default"
                                         onClick={() => {
                                           setSelectedEntrepreneur(member);
-                                          setShowEntrepreneurMessageModal(true);
+                                          setActiveTab("messages");
                                         }}
                                         data-testid={`button-message-entrepreneur-${member.id}`}
                                       >
@@ -2030,83 +2030,7 @@ export default function DashboardMentor() {
         </div>
       </main>
 
-      {/* Message Modal */}
-      {showMessageModal && selectedPortfolio !== null && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-96 max-w-md">
-            <CardHeader>
-              <CardTitle>Send Message to Portfolio {selectedPortfolio + 1}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <textarea
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Write your message..."
-                className="w-full min-h-24 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                data-testid="textarea-new-message"
-              />
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setShowMessageModal(false)}>Cancel</Button>
-                <Button className="flex-1 bg-cyan-600 hover:bg-cyan-700" onClick={handleSendMessage} data-testid="button-send-message">Send</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
-      {/* Entrepreneur Message Modal */}
-      {showEntrepreneurMessageModal && selectedEntrepreneur && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-96 max-w-md">
-            <CardHeader>
-              <CardTitle>Message {selectedEntrepreneur.name}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <textarea
-                value={entrepreneurMessage}
-                onChange={(e) => setEntrepreneurMessage(e.target.value)}
-                placeholder="Type your message..."
-                className="w-full min-h-24 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                data-testid="textarea-entrepreneur-message"
-              />
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setShowEntrepreneurMessageModal(false)}>Cancel</Button>
-                <Button className="flex-1 bg-cyan-600 hover:bg-cyan-700" onClick={async () => {
-                  if (entrepreneurMessage.trim() && selectedEntrepreneur && mentorProfile.email) {
-                    try {
-                      const response = await fetch(`${API_BASE_URL}/api/messages`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          fromName: mentorProfile.fullName,
-                          fromEmail: mentorProfile.email,
-                          toName: selectedEntrepreneur.name,
-                          toEmail: selectedEntrepreneur.email,
-                          message: entrepreneurMessage
-                        })
-                      });
-                      if (response.ok) {
-                        const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
-                        if (loadResponse.ok) {
-                          const data = await loadResponse.json();
-                          setAdminMessages(data.messages || []);
-                        }
-                        setEntrepreneurMessage("");
-                        setShowEntrepreneurMessageModal(false);
-                        toast.success("Message sent to " + selectedEntrepreneur.name);
-                      } else {
-                        toast.error("Failed to send message");
-                      }
-                    } catch (error) {
-                      toast.error("Error sending message");
-                    }
-                  }
-                }} data-testid="button-send-entrepreneur-message">Send</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Zoom Meeting Modal */}
       {showMeetingModal && (
