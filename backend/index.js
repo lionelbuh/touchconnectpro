@@ -5350,12 +5350,13 @@ app.post("/api/message-threads/:id/ai-draft", async (req, res) => {
 
     // Find entrepreneur by email from thread
     const entrepreneurEmail = thread.entrepreneur_email;
+    console.log("[AI-DRAFT] Looking up entrepreneur:", entrepreneurEmail);
     
-    // Look up entrepreneur in applications to get idea proposal and business plan
+    // Look up entrepreneur in ideas table to get idea proposal and business plan
     const { data: entrepreneur, error: entError } = await supabase
-      .from("entrepreneur_applications")
+      .from("ideas")
       .select("*")
-      .eq("email", entrepreneurEmail)
+      .eq("entrepreneur_email", entrepreneurEmail)
       .single();
 
     let ideaProposal = {};
@@ -5363,26 +5364,32 @@ app.post("/api/message-threads/:id/ai-draft", async (req, res) => {
     let entrepreneurName = thread.entrepreneur_email;
 
     if (entrepreneur) {
-      entrepreneurName = entrepreneur.entrepreneur_name || entrepreneur.full_name || entrepreneurEmail;
+      console.log("[AI-DRAFT] Found entrepreneur data, has business_plan:", !!entrepreneur.business_plan, "has data:", !!entrepreneur.data);
+      entrepreneurName = entrepreneur.entrepreneur_name || entrepreneurEmail;
       
-      // Parse application data which contains idea proposal
+      // Parse idea proposal from 'data' column (contains the 42 questions)
       try {
-        const appData = typeof entrepreneur.application_data === 'string' 
-          ? JSON.parse(entrepreneur.application_data) 
-          : entrepreneur.application_data || {};
-        ideaProposal = appData.ideaReview || appData;
+        const formData = typeof entrepreneur.data === 'string' 
+          ? JSON.parse(entrepreneur.data) 
+          : entrepreneur.data || {};
+        // Check for nested ideaReview or use the data directly
+        ideaProposal = formData.ideaReview || formData;
+        console.log("[AI-DRAFT] Idea proposal keys:", Object.keys(ideaProposal).length);
       } catch (e) {
-        console.log("[AI-DRAFT] Could not parse idea proposal");
+        console.log("[AI-DRAFT] Could not parse idea proposal:", e.message);
       }
 
-      // Get business plan
+      // Get business plan from 'business_plan' column
       try {
         businessPlan = typeof entrepreneur.business_plan === 'string'
           ? JSON.parse(entrepreneur.business_plan)
           : entrepreneur.business_plan || {};
+        console.log("[AI-DRAFT] Business plan keys:", Object.keys(businessPlan).length);
       } catch (e) {
-        console.log("[AI-DRAFT] Could not parse business plan");
+        console.log("[AI-DRAFT] Could not parse business plan:", e.message);
       }
+    } else {
+      console.log("[AI-DRAFT] Entrepreneur not found in ideas table, error:", entError?.message);
     }
 
     // Generate AI draft using OpenAI
