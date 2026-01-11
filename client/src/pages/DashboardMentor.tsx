@@ -422,7 +422,7 @@ export default function DashboardMentor() {
 
   // Effect: Handle selected entrepreneur from Portfolio - expand existing thread or show new thread modal
   useEffect(() => {
-    if (activeTab === "messages" && selectedEntrepreneurForMessage && messageThreads.length >= 0) {
+    if (activeTab === "messages" && selectedEntrepreneurForMessage && selectedEntrepreneur && messageThreads.length >= 0) {
       const existingThread = messageThreads.find(t => 
         t.entrepreneur_email?.toLowerCase() === selectedEntrepreneurForMessage.toLowerCase()
       );
@@ -430,11 +430,11 @@ export default function DashboardMentor() {
         setExpandedThreadId(existingThread.id);
         setSelectedEntrepreneurForMessage(null);
         setShowNewThreadModal(false);
-      } else if (selectedEntrepreneur) {
+      } else {
         setShowNewThreadModal(true);
       }
     }
-  }, [activeTab, selectedEntrepreneurForMessage, messageThreads]);
+  }, [activeTab, selectedEntrepreneurForMessage, selectedEntrepreneur, messageThreads]);
 
   // Include all admin email aliases
   const adminEmails = ["admin@touchconnectpro.com", "buhler.lionel+admin@gmail.com"];
