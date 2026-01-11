@@ -65,7 +65,7 @@ function Router() {
         <Route path="/how-it-works" component={HowItWorks} />
         <Route path="/become-entrepreneur" component={BecomeaEntrepreneur} />
         <Route path="/become-mentor" component={MentorWaitlist} />
-        <Route path="/become-mentor-form" component={BecomeaMentor} />
+        <Route path="/become-mentor2" component={BecomeaMentor} />
         <Route path="/become-coach" component={BecomeaCoach} />
         <Route path="/investors" component={BecomeaInvestor} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />
