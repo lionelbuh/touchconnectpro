@@ -251,3 +251,91 @@ Return ONLY valid JSON.`
 
   return JSON.parse(content) as MeetingQuestionsOutput;
 }
+
+// Generate mentor draft response for message thread
+export interface MentorDraftInput {
+  entrepreneurName: string;
+  entrepreneurQuestion: string;
+  ideaProposal?: Record<string, any>;
+  businessPlan?: Record<string, any>;
+  mentorName?: string;
+  threadSubject?: string;
+}
+
+export interface MentorDraftOutput {
+  draft: string;
+}
+
+const MENTOR_DRAFT_PROMPT = `You are an experienced business mentor helping prepare a thoughtful response to an entrepreneur's message. Your role is to provide guidance, ask clarifying questions when needed, and offer actionable advice.
+
+Guidelines for your response:
+1. Be warm, encouraging, and professional
+2. Reference specific details from their business plan or idea proposal when relevant
+3. Provide actionable next steps or thoughtful questions
+4. Keep the response concise but substantive (2-4 paragraphs)
+5. If their question relates to a specific aspect of their business, tie your answer back to their stated goals
+6. Encourage them while also being honest about challenges they may face
+
+Remember: This is a draft for the mentor to review and personalize before sending.`;
+
+export async function generateMentorDraftResponse(input: MentorDraftInput): Promise<MentorDraftOutput> {
+  // Build context from available data
+  let contextParts: string[] = [];
+  
+  contextParts.push(`Entrepreneur: ${input.entrepreneurName}`);
+  if (input.threadSubject) {
+    contextParts.push(`Conversation Subject: ${input.threadSubject}`);
+  }
+  
+  // Summarize idea proposal (limit to key points to save tokens)
+  if (input.ideaProposal && Object.keys(input.ideaProposal).length > 0) {
+    const keyFields = ['ideaDescription', 'problemSolved', 'targetCustomer', 'uniqueValue', 'revenueModel', 'competition'];
+    const relevantAnswers = Object.entries(input.ideaProposal)
+      .filter(([key, val]) => val && String(val).trim())
+      .slice(0, 15) // Limit to prevent token overflow
+      .map(([key, val]) => `- ${key}: ${String(val).substring(0, 300)}`)
+      .join("\n");
+    if (relevantAnswers) {
+      contextParts.push(`\n**Entrepreneur's Idea Proposal (Key Points):**\n${relevantAnswers}`);
+    }
+  }
+  
+  // Summarize business plan sections
+  if (input.businessPlan && Object.keys(input.businessPlan).length > 0) {
+    const planSummary = Object.entries(input.businessPlan)
+      .filter(([key, val]) => val && String(val).trim())
+      .map(([key, val]) => `- ${key}: ${String(val).substring(0, 200)}...`)
+      .join("\n");
+    if (planSummary) {
+      contextParts.push(`\n**Business Plan Summary:**\n${planSummary}`);
+    }
+  }
+  
+  contextParts.push(`\n**Entrepreneur's Latest Message:**\n"${input.entrepreneurQuestion}"`);
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      { role: "system", content: MENTOR_DRAFT_PROMPT },
+      { 
+        role: "user", 
+        content: `Based on the following context, draft a helpful mentor response:
+
+${contextParts.join("\n")}
+
+Write a draft response that the mentor (${input.mentorName || 'Mentor'}) can review and personalize before sending. The response should be helpful, specific to their situation, and actionable.
+
+Return ONLY the draft response text, no additional formatting or explanations.`
+      }
+    ],
+    temperature: 0.7,
+    max_tokens: 800
+  });
+
+  const content = response.choices[0]?.message?.content;
+  if (!content) {
+    throw new Error("No response from AI");
+  }
+
+  return { draft: content };
+}

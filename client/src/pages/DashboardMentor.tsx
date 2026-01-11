@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, ChevronUp, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText, ClipboardCheck, Paperclip, RefreshCw, X, Search } from "lucide-react";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, ChevronUp, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText, ClipboardCheck, Paperclip, RefreshCw, X, Search, Sparkles } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -115,6 +115,7 @@ export default function DashboardMentor() {
   const [showNewThreadModal, setShowNewThreadModal] = useState(false);
   const [newThreadSubject, setNewThreadSubject] = useState("");
   const [newThreadMessage, setNewThreadMessage] = useState("");
+  const [generatingAiDraft, setGeneratingAiDraft] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     async function loadProfile() {
@@ -368,6 +369,34 @@ export default function DashboardMentor() {
     } catch (error) {
       console.error("Error reopening thread:", error);
       toast.error("Error reopening conversation");
+    }
+  };
+
+  // Helper: Generate AI draft response for mentor
+  const generateAiDraft = async (threadId: number) => {
+    setGeneratingAiDraft(prev => ({ ...prev, [threadId]: true }));
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/message-threads/${threadId}/ai-draft`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mentorName: mentorProfile.fullName || "Mentor",
+          mentorEmail: mentorProfile.email
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setThreadReplyText(prev => ({ ...prev, [threadId]: data.draft }));
+        toast.success("AI draft generated! Review and edit before sending.");
+      } else {
+        const err = await response.json();
+        toast.error(err.error || "Failed to generate AI draft");
+      }
+    } catch (error) {
+      console.error("Error generating AI draft:", error);
+      toast.error("Error generating AI draft");
+    } finally {
+      setGeneratingAiDraft(prev => ({ ...prev, [threadId]: false }));
     }
   };
 
@@ -1649,42 +1678,55 @@ export default function DashboardMentor() {
                                             ))}
                                           </div>
                                         )}
-                                        <div className="flex gap-2 items-center">
-                                          <Input
+                                        <div className="space-y-2">
+                                          <textarea
                                             value={threadReplyText[thread.id] || ""}
                                             onChange={(e) => setThreadReplyText(prev => ({ ...prev, [thread.id]: e.target.value }))}
                                             placeholder="Type your reply..."
-                                            className="flex-1 text-sm"
+                                            className="w-full min-h-[60px] p-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-emerald-500"
                                             data-testid={`input-reply-${thread.id}`}
-                                            onKeyDown={(e) => {
-                                              if (e.key === 'Enter' && !e.shiftKey) {
-                                                e.preventDefault();
-                                                addThreadReply(thread.id);
-                                              }
-                                            }}
                                           />
-                                          <label className="cursor-pointer">
-                                            <input
-                                              type="file"
-                                              multiple
-                                              accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.webp"
-                                              onChange={(e) => handleReplyFileSelect(thread.id, e)}
-                                              className="hidden"
-                                              data-testid={`input-reply-attachment-${thread.id}`}
-                                            />
-                                            <div className={`flex items-center justify-center w-8 h-8 rounded-md border border-emerald-300 text-emerald-600 hover:bg-emerald-50 ${uploadingFile ? 'opacity-50 pointer-events-none' : ''}`}>
-                                              <Paperclip className="h-4 w-4" />
+                                          <div className="flex gap-2 items-center justify-between">
+                                            <Button
+                                              onClick={() => generateAiDraft(thread.id)}
+                                              disabled={generatingAiDraft[thread.id] || uploadingFile}
+                                              size="sm"
+                                              variant="outline"
+                                              className="text-purple-600 border-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/20"
+                                              data-testid={`button-ai-draft-${thread.id}`}
+                                            >
+                                              {generatingAiDraft[thread.id] ? (
+                                                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                                              ) : (
+                                                <Sparkles className="h-4 w-4 mr-1" />
+                                              )}
+                                              AI Draft
+                                            </Button>
+                                            <div className="flex gap-2 items-center">
+                                              <label className="cursor-pointer">
+                                                <input
+                                                  type="file"
+                                                  multiple
+                                                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.webp"
+                                                  onChange={(e) => handleReplyFileSelect(thread.id, e)}
+                                                  className="hidden"
+                                                  data-testid={`input-reply-attachment-${thread.id}`}
+                                                />
+                                                <div className={`flex items-center justify-center w-8 h-8 rounded-md border border-emerald-300 text-emerald-600 hover:bg-emerald-50 ${uploadingFile ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                  <Paperclip className="h-4 w-4" />
+                                                </div>
+                                              </label>
+                                              <Button
+                                                onClick={() => addThreadReply(thread.id)}
+                                                disabled={!threadReplyText[thread.id]?.trim() || uploadingFile}
+                                                size="sm"
+                                                className="bg-emerald-600 hover:bg-emerald-700"
+                                                data-testid={`button-reply-${thread.id}`}
+                                              >
+                                                <Reply className="h-4 w-4 mr-1" /> Send
+                                              </Button>
                                             </div>
-                                          </label>
-                                          <Button
-                                            onClick={() => addThreadReply(thread.id)}
-                                            disabled={!threadReplyText[thread.id]?.trim() || uploadingFile}
-                                            size="sm"
-                                            className="bg-emerald-600 hover:bg-emerald-700"
-                                            data-testid={`button-reply-${thread.id}`}
-                                          >
-                                            <Reply className="h-4 w-4" />
-                                          </Button>
+                                          </div>
                                         </div>
                                       </div>
                                     )}
