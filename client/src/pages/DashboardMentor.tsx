@@ -108,6 +108,7 @@ export default function DashboardMentor() {
   const [threadReplyText, setThreadReplyText] = useState<Record<number, string>>({});
   const [threadReplyAttachments, setThreadReplyAttachments] = useState<Record<number, {name: string; type: string; url: string}[]>>({});
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [readThreadEntryCounts, setReadThreadEntryCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     async function loadProfile() {
@@ -167,6 +168,11 @@ export default function DashboardMentor() {
     const savedReadIds = localStorage.getItem("tcp_mentorReadMessageIds");
     if (savedReadIds) {
       setMentorReadMessageIds(JSON.parse(savedReadIds));
+    }
+    // Load read thread entry counts
+    const savedThreadCounts = localStorage.getItem("tcp_mentorReadThreadEntryCounts");
+    if (savedThreadCounts) {
+      setReadThreadEntryCounts(JSON.parse(savedThreadCounts));
     }
   }, []);
 
@@ -378,9 +384,10 @@ export default function DashboardMentor() {
   const adminEmails = ["admin@touchconnectpro.com", "buhler.lionel+admin@gmail.com"];
   const isAdminEmail = (email: string) => adminEmails.some(ae => ae.toLowerCase() === email?.toLowerCase());
 
-  // Mark admin messages as read when viewing messages tab
+  // Mark admin messages and threads as read when viewing messages tab
   useEffect(() => {
     if (activeTab === "messages" && mentorProfile.email) {
+      // Mark legacy admin messages as read
       const adminMessagesToMark = adminMessages
         .filter((m: any) => m.to_email === mentorProfile.email && isAdminEmail(m.from_email) && !mentorReadMessageIds.includes(m.id))
         .map((m: any) => m.id);
@@ -390,8 +397,24 @@ export default function DashboardMentor() {
         setMentorReadMessageIds(updatedReadIds);
         localStorage.setItem("tcp_mentorReadMessageIds", JSON.stringify(updatedReadIds));
       }
+
+      // Mark threads as read by storing current entry counts
+      const newReadCounts: Record<string, number> = { ...readThreadEntryCounts };
+      let hasChanges = false;
+      messageThreads.forEach((thread: any) => {
+        const entryCount = (thread.entries || []).length;
+        const threadKey = String(thread.id);
+        if (newReadCounts[threadKey] !== entryCount) {
+          newReadCounts[threadKey] = entryCount;
+          hasChanges = true;
+        }
+      });
+      if (hasChanges) {
+        setReadThreadEntryCounts(newReadCounts);
+        localStorage.setItem("tcp_mentorReadThreadEntryCounts", JSON.stringify(newReadCounts));
+      }
     }
-  }, [activeTab, adminMessages, mentorProfile.email, mentorReadMessageIds]);
+  }, [activeTab, adminMessages, mentorProfile.email, mentorReadMessageIds, messageThreads, readThreadEntryCounts]);
 
   // Calculate unread message count using is_read from database
   // Count ALL unread messages to mentor (from admin + entrepreneurs)
@@ -399,12 +422,18 @@ export default function DashboardMentor() {
     (m: any) => m.to_email === mentorProfile.email && !m.is_read
   ).length;
 
-  // Count unread thread messages (threads where last message is from entrepreneur, not mentor)
+  // Count unread thread messages (threads with new entries since last read)
   const unreadThreadMessages = messageThreads.filter((thread: any) => {
     const entries = thread.entries || [];
     if (entries.length === 0) return false;
-    const lastEntry = entries[entries.length - 1];
-    return lastEntry.sender_role === 'entrepreneur';
+    const threadKey = String(thread.id);
+    const lastReadCount = readThreadEntryCounts[threadKey] || 0;
+    // Unread if there are new entries AND the last entry is from entrepreneur
+    if (entries.length > lastReadCount) {
+      const lastEntry = entries[entries.length - 1];
+      return lastEntry.sender_role === 'entrepreneur';
+    }
+    return false;
   }).length;
 
   // Total unread count (legacy + threads)
