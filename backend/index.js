@@ -5322,6 +5322,150 @@ app.get("/api/message-threads/thread/:id", async (req, res) => {
   }
 });
 
+// Generate AI draft response for mentor
+app.post("/api/message-threads/:id/ai-draft", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { mentorName, mentorEmail } = req.body;
+
+    // Get the thread
+    const { data: thread, error: threadError } = await supabase
+      .from("message_threads")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (threadError || !thread) {
+      return res.status(404).json({ error: "Thread not found" });
+    }
+
+    // Get the latest entrepreneur message from thread entries
+    const entries = thread.entries || [];
+    const entrepreneurMessages = entries.filter(e => 
+      e.senderRole === "entrepreneur" || e.sender_role === "entrepreneur"
+    );
+    const latestMessage = entrepreneurMessages.length > 0 
+      ? entrepreneurMessages[entrepreneurMessages.length - 1].message 
+      : entries[entries.length - 1]?.message || "";
+
+    // Find entrepreneur by email from thread
+    const entrepreneurEmail = thread.entrepreneur_email;
+    
+    // Look up entrepreneur in applications to get idea proposal and business plan
+    const { data: entrepreneur, error: entError } = await supabase
+      .from("entrepreneur_applications")
+      .select("*")
+      .eq("email", entrepreneurEmail)
+      .single();
+
+    let ideaProposal = {};
+    let businessPlan = {};
+    let entrepreneurName = thread.entrepreneur_email;
+
+    if (entrepreneur) {
+      entrepreneurName = entrepreneur.entrepreneur_name || entrepreneur.full_name || entrepreneurEmail;
+      
+      // Parse application data which contains idea proposal
+      try {
+        const appData = typeof entrepreneur.application_data === 'string' 
+          ? JSON.parse(entrepreneur.application_data) 
+          : entrepreneur.application_data || {};
+        ideaProposal = appData.ideaReview || appData;
+      } catch (e) {
+        console.log("[AI-DRAFT] Could not parse idea proposal");
+      }
+
+      // Get business plan
+      try {
+        businessPlan = typeof entrepreneur.business_plan === 'string'
+          ? JSON.parse(entrepreneur.business_plan)
+          : entrepreneur.business_plan || {};
+      } catch (e) {
+        console.log("[AI-DRAFT] Could not parse business plan");
+      }
+    }
+
+    // Generate AI draft using OpenAI
+    const openai = getOpenAI();
+    if (!openai) {
+      return res.status(500).json({ error: "AI service not configured" });
+    }
+
+    // Build context from available data
+    let contextParts = [];
+    contextParts.push(`Entrepreneur: ${entrepreneurName}`);
+    if (thread.subject) {
+      contextParts.push(`Conversation Subject: ${thread.subject}`);
+    }
+    
+    // Summarize idea proposal (limit to key points to save tokens)
+    if (ideaProposal && Object.keys(ideaProposal).length > 0) {
+      const relevantAnswers = Object.entries(ideaProposal)
+        .filter(([key, val]) => val && String(val).trim())
+        .slice(0, 15)
+        .map(([key, val]) => `- ${key}: ${String(val).substring(0, 300)}`)
+        .join("\n");
+      if (relevantAnswers) {
+        contextParts.push(`\n**Entrepreneur's Idea Proposal (Key Points):**\n${relevantAnswers}`);
+      }
+    }
+    
+    // Summarize business plan sections
+    if (businessPlan && Object.keys(businessPlan).length > 0) {
+      const planSummary = Object.entries(businessPlan)
+        .filter(([key, val]) => val && String(val).trim())
+        .map(([key, val]) => `- ${key}: ${String(val).substring(0, 200)}...`)
+        .join("\n");
+      if (planSummary) {
+        contextParts.push(`\n**Business Plan Summary:**\n${planSummary}`);
+      }
+    }
+    
+    contextParts.push(`\n**Entrepreneur's Latest Message:**\n"${latestMessage}"`);
+
+    const systemPrompt = `You are an experienced business mentor helping prepare a thoughtful response to an entrepreneur's message. Your role is to provide guidance, ask clarifying questions when needed, and offer actionable advice.
+
+Guidelines for your response:
+1. Be warm, encouraging, and professional
+2. Reference specific details from their business plan or idea proposal when relevant
+3. Provide actionable next steps or thoughtful questions
+4. Keep the response concise but substantive (2-4 paragraphs)
+5. If their question relates to a specific aspect of their business, tie your answer back to their stated goals
+6. Encourage them while also being honest about challenges they may face
+
+Remember: This is a draft for the mentor to review and personalize before sending.`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { 
+          role: "user", 
+          content: `Based on the following context, draft a helpful mentor response:
+
+${contextParts.join("\n")}
+
+Write a draft response that the mentor (${mentorName || 'Mentor'}) can review and personalize before sending. The response should be helpful, specific to their situation, and actionable.
+
+Return ONLY the draft response text, no additional formatting or explanations.`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 800
+    });
+
+    const draft = response.choices[0]?.message?.content;
+    if (!draft) {
+      return res.status(500).json({ error: "No response from AI" });
+    }
+
+    return res.json({ draft });
+  } catch (error) {
+    console.error("[POST /api/message-threads/:id/ai-draft] Error:", error);
+    return res.status(500).json({ error: error.message || "Failed to generate AI draft" });
+  }
+});
+
 // Early Access Signup - sends notification to hello@touchconnectpro.com
 app.post("/api/early-access", async (req, res) => {
   console.log("[POST /api/early-access] Called");

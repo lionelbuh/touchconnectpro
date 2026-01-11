@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import crypto from "crypto";
-import { rephraseAnswers, generateBusinessPlan, generateMeetingQuestions } from "./aiService";
+import { rephraseAnswers, generateBusinessPlan, generateMeetingQuestions, generateMentorDraftResponse } from "./aiService";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
 
@@ -2689,6 +2689,91 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("[GET /api/message-threads/thread/:id] Error:", error);
       return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Generate AI draft response for mentor
+  app.post("/api/message-threads/:id/ai-draft", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      const { mentorName, mentorEmail } = req.body;
+
+      // Get the thread
+      const { data: thread, error: threadError } = await (client
+        .from("message_threads")
+        .select("*")
+        .eq("id", id)
+        .single() as any);
+
+      if (threadError || !thread) {
+        return res.status(404).json({ error: "Thread not found" });
+      }
+
+      // Get the latest entrepreneur message from thread entries
+      const entries = thread.entries || [];
+      const entrepreneurMessages = entries.filter((e: any) => 
+        e.senderRole === "entrepreneur" || e.sender_role === "entrepreneur"
+      );
+      const latestMessage = entrepreneurMessages.length > 0 
+        ? entrepreneurMessages[entrepreneurMessages.length - 1].message 
+        : entries[entries.length - 1]?.message || "";
+
+      // Find entrepreneur by email from thread
+      const entrepreneurEmail = thread.entrepreneur_email;
+      
+      // Look up entrepreneur in applications to get idea proposal and business plan
+      const { data: entrepreneur, error: entError } = await (client
+        .from("entrepreneur_applications")
+        .select("*")
+        .eq("email", entrepreneurEmail)
+        .single() as any);
+
+      let ideaProposal = {};
+      let businessPlan = {};
+      let entrepreneurName = thread.entrepreneur_email;
+
+      if (entrepreneur) {
+        entrepreneurName = entrepreneur.entrepreneur_name || entrepreneur.full_name || entrepreneurEmail;
+        
+        // Parse application data which contains idea proposal
+        try {
+          const appData = typeof entrepreneur.application_data === 'string' 
+            ? JSON.parse(entrepreneur.application_data) 
+            : entrepreneur.application_data || {};
+          ideaProposal = appData.ideaReview || appData;
+        } catch (e) {
+          console.log("[AI-DRAFT] Could not parse idea proposal");
+        }
+
+        // Get business plan
+        try {
+          businessPlan = typeof entrepreneur.business_plan === 'string'
+            ? JSON.parse(entrepreneur.business_plan)
+            : entrepreneur.business_plan || {};
+        } catch (e) {
+          console.log("[AI-DRAFT] Could not parse business plan");
+        }
+      }
+
+      // Generate AI draft
+      const result = await generateMentorDraftResponse({
+        entrepreneurName,
+        entrepreneurQuestion: latestMessage,
+        ideaProposal,
+        businessPlan,
+        mentorName: mentorName || "Mentor",
+        threadSubject: thread.subject
+      });
+
+      return res.json({ draft: result.draft });
+    } catch (error: any) {
+      console.error("[POST /api/message-threads/:id/ai-draft] Error:", error);
+      return res.status(500).json({ error: error.message || "Failed to generate AI draft" });
     }
   });
 
