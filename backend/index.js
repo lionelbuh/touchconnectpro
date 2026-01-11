@@ -5268,6 +5268,56 @@ app.get("/api/message-threads/thread/:id", async (req, res) => {
   }
 });
 
+// Upload attachment for message threads (using Supabase Storage)
+app.post("/api/message-threads/upload", async (req, res) => {
+  try {
+    // Expected: base64 file data with metadata
+    const { fileName, fileType, fileData, userEmail } = req.body;
+
+    if (!fileName || !fileType || !fileData) {
+      return res.status(400).json({ error: "Missing file data" });
+    }
+
+    // Decode base64
+    const buffer = Buffer.from(fileData, "base64");
+    
+    // Generate unique filename
+    const ext = fileName.split('.').pop() || 'bin';
+    const uniqueName = `${Date.now()}-${crypto.randomUUID()}.${ext}`;
+    const storagePath = `message-attachments/${userEmail || 'anonymous'}/${uniqueName}`;
+
+    const { data, error } = await supabase.storage
+      .from("attachments")
+      .upload(storagePath, buffer, {
+        contentType: fileType,
+        upsert: false
+      });
+
+    if (error) {
+      console.error("[POST /api/message-threads/upload] Storage error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from("attachments")
+      .getPublicUrl(storagePath);
+
+    return res.json({
+      success: true,
+      attachment: {
+        name: fileName,
+        type: fileType,
+        url: urlData.publicUrl,
+        path: storagePath
+      }
+    });
+  } catch (error) {
+    console.error("[POST /api/message-threads/upload] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // Early Access Signup - sends notification to hello@touchconnectpro.com
 app.post("/api/early-access", async (req, res) => {
   console.log("[POST /api/early-access] Called");
