@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, CheckCircle, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply, ShoppingCart, CreditCard } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, CheckCircle, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply, ShoppingCart, CreditCard, X } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
@@ -87,6 +87,9 @@ export default function DashboardEntrepreneur() {
   const [newThreadMessage, setNewThreadMessage] = useState("");
   const [threadReplyText, setThreadReplyText] = useState<Record<number, string>>({});
   const [showNewThreadForm, setShowNewThreadForm] = useState(false);
+  const [newThreadAttachments, setNewThreadAttachments] = useState<{name: string; type: string; url: string}[]>([]);
+  const [threadReplyAttachments, setThreadReplyAttachments] = useState<Record<number, {name: string; type: string; url: string}[]>>({});
+  const [uploadingFile, setUploadingFile] = useState(false);
   
   // One-time contact request state
   const [showContactModal, setShowContactModal] = useState(false);
@@ -662,6 +665,85 @@ export default function DashboardEntrepreneur() {
     loadMessageThreads();
   }, [userEmail]);
 
+  // Helper: Upload file attachment
+  const uploadAttachment = async (file: File): Promise<{name: string; type: string; url: string} | null> => {
+    try {
+      setUploadingFile(true);
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.onload = async () => {
+          try {
+            const base64 = (reader.result as string).split(',')[1];
+            const response = await fetch(`${API_BASE_URL}/api/message-threads/upload`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                fileName: file.name,
+                fileType: file.type,
+                fileData: base64,
+                userEmail: userEmail
+              })
+            });
+            if (response.ok) {
+              const data = await response.json();
+              resolve(data.attachment);
+            } else {
+              toast.error("Failed to upload file");
+              resolve(null);
+            }
+          } catch (err) {
+            reject(err);
+          } finally {
+            setUploadingFile(false);
+          }
+        };
+        reader.onerror = () => {
+          setUploadingFile(false);
+          reject(reader.error);
+        };
+        reader.readAsDataURL(file);
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      setUploadingFile(false);
+      toast.error("Error uploading file");
+      return null;
+    }
+  };
+
+  // Helper: Handle file selection for new thread
+  const handleNewThreadFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    for (const file of Array.from(files)) {
+      const attachment = await uploadAttachment(file);
+      if (attachment) {
+        setNewThreadAttachments(prev => [...prev, attachment]);
+        toast.success(`${file.name} uploaded!`);
+      }
+    }
+    e.target.value = ''; // Reset input
+  };
+
+  // Helper: Handle file selection for reply
+  const handleReplyFileSelect = async (threadId: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    for (const file of Array.from(files)) {
+      const attachment = await uploadAttachment(file);
+      if (attachment) {
+        setThreadReplyAttachments(prev => ({
+          ...prev,
+          [threadId]: [...(prev[threadId] || []), attachment]
+        }));
+        toast.success(`${file.name} uploaded!`);
+      }
+    }
+    e.target.value = ''; // Reset input
+  };
+
   // Helper: Create new message thread
   const createNewThread = async () => {
     if (!mentorData?.mentor?.email || !newThreadMessage.trim()) return;
@@ -675,7 +757,8 @@ export default function DashboardEntrepreneur() {
           subject: newThreadSubject.trim() || "New Conversation",
           message: newThreadMessage.trim(),
           senderRole: "entrepreneur",
-          senderName: profileData.fullName || "Entrepreneur"
+          senderName: profileData.fullName || "Entrepreneur",
+          attachments: newThreadAttachments
         })
       });
       if (response.ok) {
@@ -683,6 +766,7 @@ export default function DashboardEntrepreneur() {
         setMessageThreads(prev => [data.thread, ...prev]);
         setNewThreadSubject("");
         setNewThreadMessage("");
+        setNewThreadAttachments([]);
         setShowNewThreadForm(false);
         toast.success("Conversation started!");
       } else {
@@ -705,13 +789,15 @@ export default function DashboardEntrepreneur() {
         body: JSON.stringify({
           message: replyText.trim(),
           senderRole: "entrepreneur",
-          senderName: profileData.fullName || "Entrepreneur"
+          senderName: profileData.fullName || "Entrepreneur",
+          attachments: threadReplyAttachments[threadId] || []
         })
       });
       if (response.ok) {
         const data = await response.json();
         setMessageThreads(prev => prev.map(t => t.id === threadId ? data.thread : t));
         setThreadReplyText(prev => ({ ...prev, [threadId]: "" }));
+        setThreadReplyAttachments(prev => ({ ...prev, [threadId]: [] }));
         toast.success("Reply sent!");
       } else {
         toast.error("Failed to send reply");
@@ -2302,21 +2388,55 @@ export default function DashboardEntrepreneur() {
                             className="w-full min-h-20 p-3 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             data-testid="textarea-new-thread-message"
                           />
-                          <div className="flex gap-2">
+                          
+                          {/* Attachments Display */}
+                          {newThreadAttachments.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {newThreadAttachments.map((att, idx) => (
+                                <div key={idx} className="flex items-center gap-1 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 rounded text-xs">
+                                  <Paperclip className="h-3 w-3" />
+                                  <span className="max-w-[100px] truncate">{att.name}</span>
+                                  <button 
+                                    onClick={() => setNewThreadAttachments(prev => prev.filter((_, i) => i !== idx))}
+                                    className="text-red-500 hover:text-red-700"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          <div className="flex gap-2 items-center">
                             <Button 
                               onClick={createNewThread}
-                              disabled={!newThreadMessage.trim()}
+                              disabled={!newThreadMessage.trim() || uploadingFile}
                               size="sm"
                               className="bg-emerald-600 hover:bg-emerald-700"
                               data-testid="button-send-new-thread"
                             >
                               <Send className="mr-2 h-4 w-4" /> Send
                             </Button>
+                            <label className="cursor-pointer">
+                              <input
+                                type="file"
+                                multiple
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.webp"
+                                onChange={handleNewThreadFileSelect}
+                                className="hidden"
+                                data-testid="input-new-thread-attachment"
+                              />
+                              <div className={`flex items-center gap-1 px-3 py-1.5 rounded-md border border-emerald-300 text-emerald-600 hover:bg-emerald-50 text-sm ${uploadingFile ? 'opacity-50 pointer-events-none' : ''}`}>
+                                <Paperclip className="h-4 w-4" />
+                                {uploadingFile ? 'Uploading...' : 'Attach'}
+                              </div>
+                            </label>
                             <Button 
                               onClick={() => {
                                 setShowNewThreadForm(false);
                                 setNewThreadSubject("");
                                 setNewThreadMessage("");
+                                setNewThreadAttachments([]);
                               }}
                               variant="outline"
                               size="sm"
@@ -2408,29 +2528,64 @@ export default function DashboardEntrepreneur() {
                                         
                                         {/* Reply Form (only if not closed) */}
                                         {!isClosed && (
-                                          <div className="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                                            <Input
-                                              value={threadReplyText[thread.id] || ""}
-                                              onChange={(e) => setThreadReplyText(prev => ({ ...prev, [thread.id]: e.target.value }))}
-                                              placeholder="Type your reply..."
-                                              className="flex-1 text-sm"
-                                              data-testid={`input-reply-${thread.id}`}
-                                              onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && !e.shiftKey) {
-                                                  e.preventDefault();
-                                                  addThreadReply(thread.id);
-                                                }
-                                              }}
-                                            />
-                                            <Button
-                                              onClick={() => addThreadReply(thread.id)}
-                                              disabled={!threadReplyText[thread.id]?.trim()}
-                                              size="sm"
-                                              className="bg-emerald-600 hover:bg-emerald-700"
-                                              data-testid={`button-reply-${thread.id}`}
-                                            >
-                                              <Reply className="h-4 w-4" />
-                                            </Button>
+                                          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                                            {/* Reply attachments display */}
+                                            {(threadReplyAttachments[thread.id]?.length || 0) > 0 && (
+                                              <div className="flex flex-wrap gap-2">
+                                                {threadReplyAttachments[thread.id].map((att, idx) => (
+                                                  <div key={idx} className="flex items-center gap-1 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 rounded text-xs">
+                                                    <Paperclip className="h-3 w-3" />
+                                                    <span className="max-w-[100px] truncate">{att.name}</span>
+                                                    <button 
+                                                      onClick={() => setThreadReplyAttachments(prev => ({
+                                                        ...prev,
+                                                        [thread.id]: prev[thread.id]?.filter((_, i) => i !== idx) || []
+                                                      }))}
+                                                      className="text-red-500 hover:text-red-700"
+                                                    >
+                                                      <X className="h-3 w-3" />
+                                                    </button>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            )}
+                                            <div className="flex gap-2 items-center">
+                                              <Input
+                                                value={threadReplyText[thread.id] || ""}
+                                                onChange={(e) => setThreadReplyText(prev => ({ ...prev, [thread.id]: e.target.value }))}
+                                                placeholder="Type your reply..."
+                                                className="flex-1 text-sm"
+                                                data-testid={`input-reply-${thread.id}`}
+                                                onKeyDown={(e) => {
+                                                  if (e.key === 'Enter' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    addThreadReply(thread.id);
+                                                  }
+                                                }}
+                                              />
+                                              <label className="cursor-pointer">
+                                                <input
+                                                  type="file"
+                                                  multiple
+                                                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.webp"
+                                                  onChange={(e) => handleReplyFileSelect(thread.id, e)}
+                                                  className="hidden"
+                                                  data-testid={`input-reply-attachment-${thread.id}`}
+                                                />
+                                                <div className={`flex items-center justify-center w-8 h-8 rounded-md border border-emerald-300 text-emerald-600 hover:bg-emerald-50 ${uploadingFile ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                  <Paperclip className="h-4 w-4" />
+                                                </div>
+                                              </label>
+                                              <Button
+                                                onClick={() => addThreadReply(thread.id)}
+                                                disabled={!threadReplyText[thread.id]?.trim() || uploadingFile}
+                                                size="sm"
+                                                className="bg-emerald-600 hover:bg-emerald-700"
+                                                data-testid={`button-reply-${thread.id}`}
+                                              >
+                                                <Reply className="h-4 w-4" />
+                                              </Button>
+                                            </div>
                                           </div>
                                         )}
                                         

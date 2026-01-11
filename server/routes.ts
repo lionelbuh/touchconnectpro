@@ -2371,6 +2371,326 @@ export async function registerRoutes(
     }
   });
 
+  // =====================================================
+  // MESSAGE THREADS - Threaded Conversations (Entrepreneur <-> Mentor)
+  // =====================================================
+
+  // Get all threads for a user (by email - matches entrepreneur_email OR mentor_email)
+  app.get("/api/message-threads/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { email } = req.params;
+      const decodedEmail = decodeURIComponent(email);
+
+      // Get threads where user is entrepreneur OR mentor
+      const { data: entrepreneurThreads, error: e1 } = await (client
+        .from("message_threads")
+        .select("*")
+        .eq("entrepreneur_email", decodedEmail)
+        .order("updated_at", { ascending: false }) as any);
+
+      const { data: mentorThreads, error: e2 } = await (client
+        .from("message_threads")
+        .select("*")
+        .eq("mentor_email", decodedEmail)
+        .order("updated_at", { ascending: false }) as any);
+
+      if (e1 || e2) {
+        console.error("[GET /api/message-threads/:email] Error:", e1 || e2);
+        return res.status(500).json({ error: (e1 || e2)?.message });
+      }
+
+      // Combine and deduplicate
+      const allThreads = [...(entrepreneurThreads || []), ...(mentorThreads || [])];
+      const uniqueThreads = allThreads.filter((thread, index, self) =>
+        index === self.findIndex(t => t.id === thread.id)
+      );
+
+      return res.json({ threads: uniqueThreads });
+    } catch (error: any) {
+      console.error("[GET /api/message-threads/:email] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Create a new thread
+  app.post("/api/message-threads", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { entrepreneurEmail, mentorEmail, subject, message, senderRole, senderName, attachments } = req.body;
+
+      if (!entrepreneurEmail || !mentorEmail || !subject || !message) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const initialEntry = {
+        id: crypto.randomUUID(),
+        message,
+        senderRole: senderRole || "entrepreneur",
+        senderName: senderName || "Entrepreneur",
+        createdAt: new Date().toISOString(),
+        attachments: attachments || []
+      };
+
+      const { data, error } = await (client
+        .from("message_threads")
+        .insert({
+          entrepreneur_email: entrepreneurEmail,
+          mentor_email: mentorEmail,
+          subject,
+          status: "open",
+          entries: [initialEntry],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single() as any);
+
+      if (error) {
+        console.error("[POST /api/message-threads] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      // Send email notification to mentor
+      try {
+        const resendData = await getResendClient();
+        if (resendData) {
+          await resendData.client.emails.send({
+            from: resendData.fromEmail,
+            to: mentorEmail,
+            subject: `New conversation from ${senderName}: ${subject}`,
+            html: `
+              <p>Hello,</p>
+              <p><strong>${senderName}</strong> started a new conversation with you.</p>
+              <p><strong>Subject:</strong> ${subject}</p>
+              <p><strong>Message:</strong></p>
+              <blockquote style="border-left:3px solid #10b981;padding-left:12px;margin:12px 0;">${message}</blockquote>
+              <p><a href="https://www.touchconnectpro.com/dashboard/mentor" style="background:#10b981;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;display:inline-block;">View in Dashboard</a></p>
+              <p>Best,<br>TouchConnectPro Team</p>
+            `
+          });
+        }
+      } catch (emailError) {
+        console.error("[POST /api/message-threads] Email error:", emailError);
+      }
+
+      return res.json({ thread: data });
+    } catch (error: any) {
+      console.error("[POST /api/message-threads] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Add reply to thread
+  app.post("/api/message-threads/:id/reply", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      const { message, senderRole, senderName, attachments } = req.body;
+
+      if (!message) {
+        return res.status(400).json({ error: "Message is required" });
+      }
+
+      // Get existing thread
+      const { data: thread, error: fetchError } = await (client
+        .from("message_threads")
+        .select("*")
+        .eq("id", id)
+        .single() as any);
+
+      if (fetchError || !thread) {
+        return res.status(404).json({ error: "Thread not found" });
+      }
+
+      const newEntry = {
+        id: crypto.randomUUID(),
+        message,
+        senderRole: senderRole || "entrepreneur",
+        senderName: senderName || "User",
+        createdAt: new Date().toISOString(),
+        attachments: attachments || []
+      };
+
+      const updatedEntries = [...(thread.entries || []), newEntry];
+
+      const { data, error } = await (client
+        .from("message_threads")
+        .update({
+          entries: updatedEntries,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", id)
+        .select()
+        .single() as any);
+
+      if (error) {
+        console.error("[POST /api/message-threads/:id/reply] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      // Send email notification to the other party
+      try {
+        const resendData = await getResendClient();
+        if (resendData) {
+          const recipientEmail = senderRole === "mentor" ? thread.entrepreneur_email : thread.mentor_email;
+          await resendData.client.emails.send({
+            from: resendData.fromEmail,
+            to: recipientEmail,
+            subject: `New reply: ${thread.subject}`,
+            html: `
+              <p>Hello,</p>
+              <p><strong>${senderName}</strong> replied to your conversation.</p>
+              <p><strong>Subject:</strong> ${thread.subject}</p>
+              <p><strong>Reply:</strong></p>
+              <blockquote style="border-left:3px solid #10b981;padding-left:12px;margin:12px 0;">${message}</blockquote>
+              <p><a href="https://www.touchconnectpro.com/dashboard/${senderRole === 'mentor' ? 'entrepreneur' : 'mentor'}" style="background:#10b981;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;display:inline-block;">View in Dashboard</a></p>
+              <p>Best,<br>TouchConnectPro Team</p>
+            `
+          });
+        }
+      } catch (emailError) {
+        console.error("[POST /api/message-threads/:id/reply] Email error:", emailError);
+      }
+
+      return res.json({ thread: data });
+    } catch (error: any) {
+      console.error("[POST /api/message-threads/:id/reply] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update thread status (open/closed) - mentor only
+  app.patch("/api/message-threads/:id/status", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!["open", "closed"].includes(status)) {
+        return res.status(400).json({ error: "Status must be 'open' or 'closed'" });
+      }
+
+      const { data, error } = await (client
+        .from("message_threads")
+        .update({
+          status,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", id)
+        .select()
+        .single() as any);
+
+      if (error) {
+        console.error("[PATCH /api/message-threads/:id/status] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.json({ thread: data });
+    } catch (error: any) {
+      console.error("[PATCH /api/message-threads/:id/status] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get single thread by ID
+  app.get("/api/message-threads/thread/:id", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+
+      const { data, error } = await (client
+        .from("message_threads")
+        .select("*")
+        .eq("id", id)
+        .single() as any);
+
+      if (error || !data) {
+        return res.status(404).json({ error: "Thread not found" });
+      }
+
+      return res.json({ thread: data });
+    } catch (error: any) {
+      console.error("[GET /api/message-threads/thread/:id] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Upload attachment for message threads (using Supabase Storage)
+  app.post("/api/message-threads/upload", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      // Expected: base64 file data with metadata
+      const { fileName, fileType, fileData, userEmail } = req.body;
+
+      if (!fileName || !fileType || !fileData) {
+        return res.status(400).json({ error: "Missing file data" });
+      }
+
+      // Decode base64
+      const buffer = Buffer.from(fileData, "base64");
+      
+      // Generate unique filename
+      const ext = fileName.split('.').pop() || 'bin';
+      const uniqueName = `${Date.now()}-${crypto.randomUUID()}.${ext}`;
+      const storagePath = `message-attachments/${userEmail || 'anonymous'}/${uniqueName}`;
+
+      const { data, error } = await client.storage
+        .from("attachments")
+        .upload(storagePath, buffer, {
+          contentType: fileType,
+          upsert: false
+        });
+
+      if (error) {
+        console.error("[POST /api/message-threads/upload] Storage error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      // Get public URL
+      const { data: urlData } = client.storage
+        .from("attachments")
+        .getPublicUrl(storagePath);
+
+      return res.json({
+        success: true,
+        attachment: {
+          name: fileName,
+          type: fileType,
+          url: urlData.publicUrl,
+          path: storagePath
+        }
+      });
+    } catch (error: any) {
+      console.error("[POST /api/message-threads/upload] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Admin-only: Get all coaches with full data including profile_url
   app.get("/api/admin/coaches", async (req, res) => {
     try {
