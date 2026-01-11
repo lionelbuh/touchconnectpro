@@ -395,9 +395,20 @@ export default function DashboardMentor() {
 
   // Calculate unread message count using is_read from database
   // Count ALL unread messages to mentor (from admin + entrepreneurs)
-  const unreadMessageCount = adminMessages.filter(
+  const unreadLegacyMessages = adminMessages.filter(
     (m: any) => m.to_email === mentorProfile.email && !m.is_read
   ).length;
+
+  // Count unread thread messages (threads where last message is from entrepreneur, not mentor)
+  const unreadThreadMessages = messageThreads.filter((thread: any) => {
+    const entries = thread.entries || [];
+    if (entries.length === 0) return false;
+    const lastEntry = entries[entries.length - 1];
+    return lastEntry.sender_role === 'entrepreneur';
+  }).length;
+
+  // Total unread count (legacy + threads)
+  const unreadMessageCount = unreadLegacyMessages + unreadThreadMessages;
 
   // Calculate unread messages specifically from mentees (exclude admin messages)
   const unreadFromMentees = adminMessages.filter(
@@ -405,7 +416,7 @@ export default function DashboardMentor() {
                 !m.is_read && 
                 !isAdminEmail(m.from_email) &&
                 m.from_email !== "system@touchconnectpro.com"
-  ).length;
+  ).length + unreadThreadMessages;
 
   // Function to refresh portfolio data
   const refreshPortfolios = async (email?: string) => {
@@ -839,9 +850,11 @@ export default function DashboardMentor() {
                   <Button variant="outline" className="w-full" onClick={() => setActiveTab("messages")}>
                     <MessageSquare className="mr-2 h-4 w-4" /> Check Messages
                   </Button>
+                  {/* Hidden for now - keep for future use
                   <Button variant="outline" className="w-full" onClick={() => setActiveTab("meetings")}>
                     <Calendar className="mr-2 h-4 w-4" /> Schedule Meeting
                   </Button>
+                  */}
                 </CardContent>
               </Card>
             </div>
@@ -1223,6 +1236,7 @@ export default function DashboardMentor() {
                           >
                             <MessageSquare className="mr-2 h-3 w-3" /> Message Members
                           </Button>
+                          {/* Hidden for now - keep for future use
                           <Button 
                             variant="outline" 
                             className="w-full text-sm"
@@ -1234,6 +1248,7 @@ export default function DashboardMentor() {
                           >
                             <Calendar className="mr-2 h-3 w-3" /> Schedule Meeting
                           </Button>
+                          */}
                         </div>
                       </div>
                     </CardContent>

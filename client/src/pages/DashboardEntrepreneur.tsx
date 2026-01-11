@@ -823,6 +823,20 @@ export default function DashboardEntrepreneur() {
     }
   };
 
+  // Calculate unread legacy messages (from mentor/admin to entrepreneur)
+  const unreadLegacyMessages = messages.filter((m: any) => m.to_email === userEmail && !m.is_read).length;
+
+  // Count unread thread messages (threads where last message is from mentor, not entrepreneur)
+  const unreadThreadMessages = messageThreads.filter((thread: any) => {
+    const entries = thread.entries || [];
+    if (entries.length === 0) return false;
+    const lastEntry = entries[entries.length - 1];
+    return lastEntry.sender_role === 'mentor';
+  }).length;
+
+  // Total unread count (legacy + threads)
+  const unreadMessageCount = unreadLegacyMessages + unreadThreadMessages;
+
   useEffect(() => {
     if (activeTab === "messages" && userEmail) {
       // Include all admin email aliases
@@ -1482,8 +1496,8 @@ export default function DashboardEntrepreneur() {
                 data-testid="button-messages-tab"
               >
                 <MessageSquare className="mr-2 h-4 w-4" /> Messages
-                {messages.filter((m: any) => m.to_email === userEmail && !m.is_read).length > 0 && (
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{messages.filter((m: any) => m.to_email === userEmail && !m.is_read).length}</span>
+                {unreadMessageCount > 0 && (
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{unreadMessageCount}</span>
                 )}
               </Button>
               {/* Hidden for now - keep for future use
