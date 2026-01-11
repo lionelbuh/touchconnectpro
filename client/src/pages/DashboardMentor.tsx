@@ -431,7 +431,9 @@ export default function DashboardMentor() {
     // Unread if there are new entries AND the last entry is from entrepreneur
     if (entries.length > lastReadCount) {
       const lastEntry = entries[entries.length - 1];
-      return lastEntry.sender_role === 'entrepreneur';
+      // Check both senderRole (camelCase from backend) and sender_role (snake_case)
+      const role = (lastEntry.senderRole || lastEntry.sender_role || '').toLowerCase();
+      return role === 'entrepreneur';
     }
     return false;
   }).length;
