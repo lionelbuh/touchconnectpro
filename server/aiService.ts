@@ -270,16 +270,19 @@ const MENTOR_DRAFT_PROMPT = `You are an experienced business mentor helping prep
 
 Guidelines for your response:
 1. Be warm, encouraging, and professional
-2. Reference specific details from their business plan or idea proposal when relevant
-3. Provide actionable next steps or thoughtful questions
-4. Keep the response concise but substantive (2-4 paragraphs)
-5. If their question relates to a specific aspect of their business, tie your answer back to their stated goals
-6. Encourage them while also being honest about challenges they may face
+2. Reference SPECIFIC details from their business plan or idea proposal - use exact numbers, figures, funding amounts, dates, and company names they mentioned
+3. When asked about specific data (funding, revenue targets, market size, etc.), quote the exact figures from their documents
+4. Provide actionable next steps or thoughtful questions
+5. Keep the response concise but substantive (2-4 paragraphs)
+6. If their question relates to a specific aspect of their business, tie your answer back to their stated goals using their own words and data
+7. Encourage them while also being honest about challenges they may face
+
+IMPORTANT: When the entrepreneur asks about specific information (like funding amounts, revenue projections, dates), find and quote the exact data from their idea proposal and business plan. Do not generalize or paraphrase numbers.
 
 Remember: This is a draft for the mentor to review and personalize before sending.`;
 
 export async function generateMentorDraftResponse(input: MentorDraftInput): Promise<MentorDraftOutput> {
-  // Build context from available data
+  // Build context from available data - send FULL data to AI for accuracy
   let contextParts: string[] = [];
   
   contextParts.push(`Entrepreneur: ${input.entrepreneurName}`);
@@ -287,27 +290,36 @@ export async function generateMentorDraftResponse(input: MentorDraftInput): Prom
     contextParts.push(`Conversation Subject: ${input.threadSubject}`);
   }
   
-  // Summarize idea proposal (limit to key points to save tokens)
+  // Include FULL idea proposal (all 42 questions) - no truncation
   if (input.ideaProposal && Object.keys(input.ideaProposal).length > 0) {
-    const keyFields = ['ideaDescription', 'problemSolved', 'targetCustomer', 'uniqueValue', 'revenueModel', 'competition'];
-    const relevantAnswers = Object.entries(input.ideaProposal)
+    // Handle nested structure - check for answers array or direct key-value pairs
+    let proposalData = input.ideaProposal;
+    if (input.ideaProposal.answers && Array.isArray(input.ideaProposal.answers)) {
+      proposalData = input.ideaProposal.answers.reduce((acc: Record<string, any>, item: any) => {
+        if (item.question && item.answer) {
+          acc[item.question] = item.answer;
+        }
+        return acc;
+      }, {});
+    }
+    
+    const allAnswers = Object.entries(proposalData)
       .filter(([key, val]) => val && String(val).trim())
-      .slice(0, 15) // Limit to prevent token overflow
-      .map(([key, val]) => `- ${key}: ${String(val).substring(0, 300)}`)
+      .map(([key, val]) => `- ${key}: ${String(val)}`)
       .join("\n");
-    if (relevantAnswers) {
-      contextParts.push(`\n**Entrepreneur's Idea Proposal (Key Points):**\n${relevantAnswers}`);
+    if (allAnswers) {
+      contextParts.push(`\n**Entrepreneur's Full Idea Proposal:**\n${allAnswers}`);
     }
   }
   
-  // Summarize business plan sections
+  // Include FULL business plan (all 11 sections) - no truncation
   if (input.businessPlan && Object.keys(input.businessPlan).length > 0) {
-    const planSummary = Object.entries(input.businessPlan)
+    const fullPlan = Object.entries(input.businessPlan)
       .filter(([key, val]) => val && String(val).trim())
-      .map(([key, val]) => `- ${key}: ${String(val).substring(0, 200)}...`)
+      .map(([key, val]) => `- ${key}: ${String(val)}`)
       .join("\n");
-    if (planSummary) {
-      contextParts.push(`\n**Business Plan Summary:**\n${planSummary}`);
+    if (fullPlan) {
+      contextParts.push(`\n**Entrepreneur's Full Business Plan:**\n${fullPlan}`);
     }
   }
   
