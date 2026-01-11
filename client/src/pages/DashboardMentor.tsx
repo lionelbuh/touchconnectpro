@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, ChevronUp, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText, ClipboardCheck, Paperclip, RefreshCw, X } from "lucide-react";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, ChevronUp, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText, ClipboardCheck, Paperclip, RefreshCw, X, Search } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -109,6 +109,11 @@ export default function DashboardMentor() {
   const [threadReplyAttachments, setThreadReplyAttachments] = useState<Record<number, {name: string; type: string; url: string}[]>>({});
   const [uploadingFile, setUploadingFile] = useState(false);
   const [readThreadEntryCounts, setReadThreadEntryCounts] = useState<Record<string, number>>({});
+  const [messageSearchQuery, setMessageSearchQuery] = useState("");
+  const [selectedEntrepreneurForMessage, setSelectedEntrepreneurForMessage] = useState<string | null>(null);
+  const [showNewThreadModal, setShowNewThreadModal] = useState(false);
+  const [newThreadSubject, setNewThreadSubject] = useState("");
+  const [newThreadMessage, setNewThreadMessage] = useState("");
 
   useEffect(() => {
     async function loadProfile() {
@@ -379,6 +384,56 @@ export default function DashboardMentor() {
       console.error("Error refreshing threads:", error);
     }
   };
+
+  // Helper: Create new thread with entrepreneur
+  const createNewThread = async (entrepreneurEmail: string, entrepreneurName: string, subject: string, message: string) => {
+    if (!mentorProfile.email || !message.trim()) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/message-threads`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          entrepreneurEmail: entrepreneurEmail,
+          mentorEmail: mentorProfile.email,
+          subject: subject || `Conversation with ${entrepreneurName}`,
+          message: message,
+          senderRole: "mentor",
+          senderName: mentorProfile.fullName || "Mentor"
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMessageThreads(prev => [data.thread, ...prev]);
+        setShowNewThreadModal(false);
+        setNewThreadSubject("");
+        setNewThreadMessage("");
+        setSelectedEntrepreneurForMessage(null);
+        setExpandedThreadId(data.thread.id);
+        toast.success(`Started conversation with ${entrepreneurName}!`);
+      } else {
+        toast.error("Failed to start conversation");
+      }
+    } catch (error) {
+      console.error("Error creating thread:", error);
+      toast.error("Error starting conversation");
+    }
+  };
+
+  // Effect: Handle selected entrepreneur from Portfolio - expand existing thread or show new thread modal
+  useEffect(() => {
+    if (activeTab === "messages" && selectedEntrepreneurForMessage && messageThreads.length >= 0) {
+      const existingThread = messageThreads.find(t => 
+        t.entrepreneur_email?.toLowerCase() === selectedEntrepreneurForMessage.toLowerCase()
+      );
+      if (existingThread) {
+        setExpandedThreadId(existingThread.id);
+        setSelectedEntrepreneurForMessage(null);
+        setShowNewThreadModal(false);
+      } else if (selectedEntrepreneur) {
+        setShowNewThreadModal(true);
+      }
+    }
+  }, [activeTab, selectedEntrepreneurForMessage, messageThreads]);
 
   // Include all admin email aliases
   const adminEmails = ["admin@touchconnectpro.com", "buhler.lionel+admin@gmail.com"];
@@ -942,6 +997,7 @@ export default function DashboardMentor() {
                                         size="default"
                                         onClick={() => {
                                           setSelectedEntrepreneur(member);
+                                          setSelectedEntrepreneurForMessage(member.email);
                                           setActiveTab("messages");
                                         }}
                                         data-testid={`button-message-entrepreneur-${member.id}`}
@@ -1450,9 +1506,32 @@ export default function DashboardMentor() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4">
-                  {messageThreads.length > 0 ? (
+                  {/* Search/Filter Input */}
+                  <div className="relative mb-4">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Search by name, email, or subject..."
+                      value={messageSearchQuery}
+                      onChange={(e) => setMessageSearchQuery(e.target.value)}
+                      className="pl-9 bg-white dark:bg-slate-900"
+                      data-testid="input-message-search"
+                    />
+                  </div>
+                  
+                  {(() => {
+                    const filteredThreads = messageThreads.filter((thread: any) => {
+                      if (!messageSearchQuery.trim()) return true;
+                      const query = messageSearchQuery.toLowerCase();
+                      const entrepreneurEmail = thread.entrepreneur_email?.toLowerCase() || '';
+                      const entrepreneurName = allEntrepreneurs.find(e => e.email.toLowerCase() === entrepreneurEmail)?.name?.toLowerCase() || '';
+                      const subject = (thread.subject || '').toLowerCase();
+                      return entrepreneurName.includes(query) || entrepreneurEmail.includes(query) || subject.includes(query);
+                    });
+                    
+                    return filteredThreads.length > 0 ? (
                     <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                      {messageThreads.map((thread: any) => {
+                      {filteredThreads.map((thread: any) => {
                         const isExpanded = expandedThreadId === thread.id;
                         const isClosed = thread.status === "closed";
                         const entries = thread.entries || [];
@@ -1626,8 +1705,11 @@ export default function DashboardMentor() {
                       })}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">No conversations yet. Entrepreneurs can start conversations from their dashboard.</p>
-                  )}
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      {messageSearchQuery.trim() ? 'No conversations match your search.' : 'No conversations yet. Entrepreneurs can start conversations from their dashboard.'}
+                    </p>
+                  )
+                  })()}
                 </CardContent>
               </Card>
 
@@ -2029,7 +2111,68 @@ export default function DashboardMentor() {
         </div>
       </main>
 
-
+      {/* New Thread Modal */}
+      {showNewThreadModal && selectedEntrepreneur && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-[500px] max-w-lg">
+            <CardHeader className="bg-emerald-50 dark:bg-emerald-950/20">
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-emerald-600" />
+                Start Conversation with {selectedEntrepreneur.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              <div>
+                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Subject (optional)</label>
+                <Input
+                  placeholder="e.g., Follow-up on business plan"
+                  value={newThreadSubject}
+                  onChange={(e) => setNewThreadSubject(e.target.value)}
+                  className="bg-slate-50 dark:bg-slate-800/50"
+                  data-testid="input-new-thread-subject"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Message *</label>
+                <textarea
+                  placeholder="Type your message..."
+                  value={newThreadMessage}
+                  onChange={(e) => setNewThreadMessage(e.target.value)}
+                  className="w-full min-h-24 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  data-testid="textarea-new-thread-message"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  className="flex-1" 
+                  onClick={() => {
+                    setShowNewThreadModal(false);
+                    setNewThreadSubject("");
+                    setNewThreadMessage("");
+                    setSelectedEntrepreneurForMessage(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  disabled={!newThreadMessage.trim()}
+                  onClick={() => createNewThread(
+                    selectedEntrepreneur.email,
+                    selectedEntrepreneur.name,
+                    newThreadSubject,
+                    newThreadMessage
+                  )}
+                  data-testid="button-start-conversation"
+                >
+                  <Send className="h-4 w-4 mr-2" /> Start Conversation
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Zoom Meeting Modal */}
       {showMeetingModal && (
