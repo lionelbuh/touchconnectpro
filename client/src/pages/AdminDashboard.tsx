@@ -669,7 +669,11 @@ export default function AdminDashboard() {
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        toast.success(`Email updated to ${newEmailValue}`);
+        if (data.authUpdated) {
+          toast.success(`Email updated! User can now log in with ${newEmailValue}`);
+        } else {
+          toast.success(`Email updated to ${newEmailValue}. Note: User hasn't set up login yet.`);
+        }
         setShowEditEmailModal(false);
         setEditEmailUser(null);
         setNewEmailValue("");

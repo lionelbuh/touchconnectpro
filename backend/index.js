@@ -8056,6 +8056,20 @@ app.patch("/api/admin/update-user-email", async (req, res) => {
       return res.status(400).json({ error: "Invalid userType. Must be entrepreneur, mentor, coach, or investor" });
     }
 
+    // Get the current/old email from the application table
+    const { data: currentUser, error: fetchError } = await supabase
+      .from(config.table)
+      .select(config.emailColumn)
+      .eq("id", userId)
+      .single();
+
+    if (fetchError || !currentUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const oldEmail = currentUser[config.emailColumn];
+    console.log(`[ADMIN] Changing email from ${oldEmail} to ${newEmail}`);
+
     // Check if new email already exists in this table
     const { data: existingUser, error: checkError } = await supabase
       .from(config.table)
@@ -8068,7 +8082,46 @@ app.patch("/api/admin/update-user-email", async (req, res) => {
       return res.status(400).json({ error: `A ${userType} with this email already exists` });
     }
 
-    // Update the email
+    // Update Supabase Auth email if user exists in auth system
+    let authUpdateSuccess = false;
+    try {
+      const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
+      if (!listError && users) {
+        const authUser = users.find(u => u.email?.toLowerCase() === oldEmail.toLowerCase());
+        if (authUser) {
+          console.log(`[ADMIN] Found auth user ${authUser.id}, updating email`);
+          const { error: authUpdateError } = await supabase.auth.admin.updateUserById(
+            authUser.id,
+            { email: newEmail.toLowerCase(), email_confirm: true }
+          );
+          if (authUpdateError) {
+            console.error("[ADMIN] Auth email update error:", authUpdateError);
+          } else {
+            authUpdateSuccess = true;
+            console.log(`[ADMIN] Successfully updated auth email to ${newEmail}`);
+          }
+        } else {
+          console.log(`[ADMIN] No auth user found for ${oldEmail}`);
+        }
+      }
+    } catch (authErr) {
+      console.error("[ADMIN] Error updating auth email:", authErr);
+    }
+
+    // Update the users table if it has this email
+    try {
+      const { error: usersUpdateError } = await supabase
+        .from("users")
+        .update({ email: newEmail.toLowerCase() })
+        .eq("email", oldEmail.toLowerCase());
+      if (!usersUpdateError) {
+        console.log(`[ADMIN] Updated users table email`);
+      }
+    } catch (err) {
+      console.error("[ADMIN] Error updating users table:", err);
+    }
+
+    // Update the application table email
     const updateData = {};
     updateData[config.emailColumn] = newEmail.toLowerCase();
 
@@ -8088,7 +8141,14 @@ app.patch("/api/admin/update-user-email", async (req, res) => {
     }
 
     console.log(`[ADMIN] Updated ${userType} email for ID ${userId} to ${newEmail}`);
-    return res.json({ success: true, user: data[0] });
+    return res.json({ 
+      success: true, 
+      user: data[0],
+      authUpdated: authUpdateSuccess,
+      message: authUpdateSuccess 
+        ? "Email updated in all systems. User can now log in with the new email."
+        : "Email updated in application records. Note: User may not have set up login yet."
+    });
   } catch (error) {
     console.error("[ADMIN] Update email error:", error.message);
     return res.status(500).json({ error: error.message });
