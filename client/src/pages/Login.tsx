@@ -12,7 +12,7 @@ const COUNTRIES = [
   "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", 
   "India", "Japan", "Brazil", "Mexico", "Singapore", "Netherlands", "Switzerland",
   "Sweden", "Ireland", "Israel", "South Korea", "New Zealand", "Spain", "Italy",
-  "China", "Argentina", "Colombia", "Chile", "Peru", "Thailand", "Philippines",
+  "Portugal", "China", "Argentina", "Colombia", "Chile", "Peru", "Thailand", "Philippines",
   "Vietnam", "Indonesia", "Malaysia", "Hong Kong", "Pakistan", "Bangladesh"
 ];
 
