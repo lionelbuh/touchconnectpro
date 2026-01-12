@@ -3714,6 +3714,92 @@ export async function registerRoutes(
     }
   });
 
+  // PATCH /api/admin/update-user-email - Update user email (requires admin token)
+  app.patch("/api/admin/update-user-email", async (req, res) => {
+    console.log("[PATCH /api/admin/update-user-email] Updating user email");
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      const { userType, userId, newEmail } = req.body;
+
+      // Verify requesting user is an admin
+      const { data: session, error: sessionError } = await (client
+        .from("admin_sessions")
+        .select("*, admin_users(*)")
+        .eq("token", token)
+        .gt("expires_at", new Date().toISOString())
+        .single() as any);
+
+      if (sessionError || !session) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (!userType || !userId || !newEmail) {
+        return res.status(400).json({ error: "userType, userId, and newEmail are required" });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(newEmail)) {
+        return res.status(400).json({ error: "Invalid email format" });
+      }
+
+      // Determine table and email column based on userType
+      const tableConfig: {[key: string]: {table: string; emailColumn: string}} = {
+        entrepreneur: { table: "ideas", emailColumn: "entrepreneur_email" },
+        mentor: { table: "mentor_applications", emailColumn: "email" },
+        coach: { table: "coach_applications", emailColumn: "email" },
+        investor: { table: "investor_applications", emailColumn: "email" }
+      };
+
+      const config = tableConfig[userType];
+      if (!config) {
+        return res.status(400).json({ error: "Invalid userType. Must be entrepreneur, mentor, coach, or investor" });
+      }
+
+      // Check if new email already exists in this table
+      const { data: existingUser } = await (client
+        .from(config.table)
+        .select("id")
+        .eq(config.emailColumn, newEmail.toLowerCase())
+        .neq("id", userId)
+        .single() as any);
+
+      if (existingUser) {
+        return res.status(400).json({ error: `A ${userType} with this email already exists` });
+      }
+
+      // Update the email
+      const updateData: {[key: string]: string} = {};
+      updateData[config.emailColumn] = newEmail.toLowerCase();
+
+      const { data, error } = await (client
+        .from(config.table)
+        .update(updateData)
+        .eq("id", userId)
+        .select() as any);
+
+      if (error) {
+        console.error("[ADMIN] Update email error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      if (!data || data.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      console.log(`[ADMIN] Updated ${userType} email for ID ${userId} to ${newEmail}`);
+      return res.json({ success: true, user: data[0] });
+    } catch (error: any) {
+      console.error("[ADMIN] Update email error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Check if entrepreneur has already contacted a specific coach
   app.get("/api/coach-contact-requests/check", async (req, res) => {
     try {

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, CheckCircle, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus } from "lucide-react";
+import { Check, CheckCircle, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus, Pencil } from "lucide-react";
 import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
@@ -331,6 +331,10 @@ export default function AdminDashboard() {
   const [earningsTab, setEarningsTab] = useState<"coach" | "subscription">("coach");
   const [adminContactRequests, setAdminContactRequests] = useState<any[]>([]);
   const [loadingContactRequests, setLoadingContactRequests] = useState(false);
+  const [showEditEmailModal, setShowEditEmailModal] = useState(false);
+  const [editEmailUser, setEditEmailUser] = useState<{id: string; name: string; email: string; type: "entrepreneur" | "mentor" | "coach" | "investor"} | null>(null);
+  const [newEmailValue, setNewEmailValue] = useState("");
+  const [savingEmail, setSavingEmail] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -633,6 +637,64 @@ export default function AdminDashboard() {
       toast.error("Failed to create admin");
     } finally {
       setCreatingAdmin(false);
+    }
+  };
+
+  const openEditEmailModal = (user: {id: string; name: string; email: string; type: "entrepreneur" | "mentor" | "coach" | "investor"}) => {
+    setEditEmailUser(user);
+    setNewEmailValue(user.email);
+    setShowEditEmailModal(true);
+  };
+
+  const handleUpdateUserEmail = async () => {
+    if (!editEmailUser || !newEmailValue) return;
+    if (newEmailValue === editEmailUser.email) {
+      setShowEditEmailModal(false);
+      return;
+    }
+    setSavingEmail(true);
+    try {
+      const token = localStorage.getItem("tcp_adminToken");
+      const response = await fetch(`${API_BASE_URL}/api/admin/update-user-email`, {
+        method: "PATCH",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          userType: editEmailUser.type,
+          userId: editEmailUser.id,
+          newEmail: newEmailValue.toLowerCase()
+        })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        toast.success(`Email updated to ${newEmailValue}`);
+        setShowEditEmailModal(false);
+        setEditEmailUser(null);
+        setNewEmailValue("");
+        // Update local state based on user type
+        if (editEmailUser.type === "entrepreneur") {
+          setEntrepreneurApplications(prev => prev.map(e => e.id === editEmailUser.id ? {...e, email: newEmailValue.toLowerCase()} : e));
+          setApprovedEntrepreneurs(prev => prev.map(e => e.id === editEmailUser.id ? {...e, email: newEmailValue.toLowerCase()} : e));
+        } else if (editEmailUser.type === "mentor") {
+          setMentorApplications(prev => prev.map(m => m.id === editEmailUser.id ? {...m, email: newEmailValue.toLowerCase()} : m));
+          setApprovedMentors(prev => prev.map(m => m.id === editEmailUser.id ? {...m, email: newEmailValue.toLowerCase()} : m));
+        } else if (editEmailUser.type === "coach") {
+          setCoachApplications(prev => prev.map(c => c.id === editEmailUser.id ? {...c, email: newEmailValue.toLowerCase()} : c));
+          setApprovedCoaches(prev => prev.map(c => c.id === editEmailUser.id ? {...c, email: newEmailValue.toLowerCase()} : c));
+        } else if (editEmailUser.type === "investor") {
+          setInvestorApplications(prev => prev.map(i => i.id === editEmailUser.id ? {...i, email: newEmailValue.toLowerCase()} : i));
+          setApprovedInvestors(prev => prev.map(i => i.id === editEmailUser.id ? {...i, email: newEmailValue.toLowerCase()} : i));
+        }
+      } else {
+        toast.error(data.error || "Failed to update email");
+      }
+    } catch (err) {
+      console.error("Error updating email:", err);
+      toast.error("Failed to update email");
+    } finally {
+      setSavingEmail(false);
     }
   };
 
@@ -4330,7 +4392,17 @@ export default function AdminDashboard() {
                                         </span>
                                       )}
                                     </p>
-                                    <p className="text-sm text-muted-foreground">{entrepreneur.email}</p>
+                                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                      {entrepreneur.email}
+                                      <button 
+                                        onClick={() => openEditEmailModal({id: entrepreneur.id, name: entrepreneur.fullName, email: entrepreneur.email, type: "entrepreneur"})}
+                                        className="text-slate-400 hover:text-cyan-600 transition-colors p-0.5"
+                                        title="Edit email"
+                                        data-testid={`button-edit-email-entrepreneur-${idx}`}
+                                      >
+                                        <Pencil className="h-3 w-3" />
+                                      </button>
+                                    </p>
                                   </div>
                                 </div>
                                 <Button onClick={() => openConversationModal({id: entrepreneur.id, name: entrepreneur.fullName, email: entrepreneur.email, type: "entrepreneur", status: "active"})} data-testid={`button-message-entrepreneur-${idx}`} size="sm" className={hasUnreadReplies ? "bg-amber-600 hover:bg-amber-700" : ""}>
@@ -4373,7 +4445,17 @@ export default function AdminDashboard() {
                                       </span>
                                     )}
                                   </p>
-                                  <p className="text-sm text-muted-foreground">{mentor.email}</p>
+                                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                    {mentor.email}
+                                    <button 
+                                      onClick={() => openEditEmailModal({id: mentor.id, name: mentor.fullName, email: mentor.email, type: "mentor"})}
+                                      className="text-slate-400 hover:text-cyan-600 transition-colors p-0.5"
+                                      title="Edit email"
+                                      data-testid={`button-edit-email-mentor-${idx}`}
+                                    >
+                                      <Pencil className="h-3 w-3" />
+                                    </button>
+                                  </p>
                                 </div>
                                 <Button onClick={() => openConversationModal({id: mentor.id, name: mentor.fullName, email: mentor.email, type: "mentor", status: "active"})} data-testid={`button-message-mentor-${idx}`} size="sm" className={hasUnreadReplies ? "bg-amber-600 hover:bg-amber-700" : ""}>
                                   <MessageSquare className="mr-2 h-4 w-4" /> {hasUnreadReplies ? "View Reply" : "Message"}
@@ -4415,7 +4497,17 @@ export default function AdminDashboard() {
                                       </span>
                                     )}
                                   </p>
-                                  <p className="text-sm text-muted-foreground">{coach.email}</p>
+                                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                    {coach.email}
+                                    <button 
+                                      onClick={() => openEditEmailModal({id: coach.id, name: coach.fullName, email: coach.email, type: "coach"})}
+                                      className="text-slate-400 hover:text-cyan-600 transition-colors p-0.5"
+                                      title="Edit email"
+                                      data-testid={`button-edit-email-coach-${idx}`}
+                                    >
+                                      <Pencil className="h-3 w-3" />
+                                    </button>
+                                  </p>
                                 </div>
                                 <Button onClick={() => openConversationModal({id: coach.id, name: coach.fullName, email: coach.email, type: "coach", status: "active"})} data-testid={`button-message-coach-${idx}`} size="sm" className={hasUnreadReplies ? "bg-amber-600 hover:bg-amber-700" : ""}>
                                   <MessageSquare className="mr-2 h-4 w-4" /> {hasUnreadReplies ? "View Reply" : "Message"}
@@ -4457,7 +4549,17 @@ export default function AdminDashboard() {
                                       </span>
                                     )}
                                   </p>
-                                  <p className="text-sm text-muted-foreground">{investor.email}</p>
+                                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                    {investor.email}
+                                    <button 
+                                      onClick={() => openEditEmailModal({id: investor.id, name: investor.fullName, email: investor.email, type: "investor"})}
+                                      className="text-slate-400 hover:text-cyan-600 transition-colors p-0.5"
+                                      title="Edit email"
+                                      data-testid={`button-edit-email-investor-${idx}`}
+                                    >
+                                      <Pencil className="h-3 w-3" />
+                                    </button>
+                                  </p>
                                 </div>
                                 <Button onClick={() => openConversationModal({id: investor.id, name: investor.fullName, email: investor.email, type: "investor", status: "active"})} data-testid={`button-message-investor-${idx}`} size="sm" className={hasUnreadReplies ? "bg-amber-600 hover:bg-amber-700" : ""}>
                                   <MessageSquare className="mr-2 h-4 w-4" /> {hasUnreadReplies ? "View Reply" : "Message"}
@@ -5789,6 +5891,52 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           )}
+        </div>
+      )}
+
+      {/* Edit Email Modal */}
+      {showEditEmailModal && editEmailUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Edit Email Address</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Update email for <span className="font-semibold">{editEmailUser.name}</span> ({editEmailUser.type})
+              </p>
+              <div>
+                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">New Email Address</label>
+                <Input 
+                  type="email" 
+                  value={newEmailValue}
+                  onChange={(e) => setNewEmailValue(e.target.value)}
+                  placeholder="new@email.com"
+                  className="w-full"
+                  data-testid="input-edit-email"
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  className="flex-1" 
+                  onClick={() => {setShowEditEmailModal(false); setEditEmailUser(null); setNewEmailValue("");}}
+                  data-testid="button-cancel-edit-email"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  className="flex-1 bg-cyan-600 hover:bg-cyan-700" 
+                  onClick={handleUpdateUserEmail}
+                  disabled={savingEmail || !newEmailValue.trim() || newEmailValue === editEmailUser.email}
+                  data-testid="button-save-email"
+                >
+                  {savingEmail ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Save Email
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
       </div>
