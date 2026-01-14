@@ -174,12 +174,30 @@ export default function CoachProfile() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center justify-between mb-6">
-          <Link href="/">
-            <Button variant="ghost" size="sm" data-testid="button-back-home">
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-          </Link>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            data-testid="button-back-home"
+            onClick={() => {
+              // Check if user is logged in as entrepreneur - go to coaches tab
+              const profileData = localStorage.getItem("tcp_profileData");
+              if (profileData) {
+                try {
+                  const profile = JSON.parse(profileData);
+                  // Only redirect entrepreneurs to their dashboard coaches tab
+                  if (profile.role === "entrepreneur") {
+                    navigate("/dashboard-entrepreneur?tab=coaches");
+                    return;
+                  }
+                } catch {}
+              }
+              // Otherwise go home (for public visitors, mentors, coaches, investors)
+              navigate("/");
+            }}
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
           <Button variant="outline" size="sm" onClick={handleShare} data-testid="button-share-profile">
             {copied ? <Check className="mr-2 h-4 w-4" /> : <Share2 className="mr-2 h-4 w-4" />}
             {copied ? "Copied!" : "Share Profile"}
@@ -187,51 +205,45 @@ export default function CoachProfile() {
         </div>
 
         <Card className="overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 h-32 md:h-40" />
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 pt-8 pb-20 flex items-center justify-center">
+            <Avatar className="h-28 w-28 md:h-36 md:w-36 border-4 border-white/30 shadow-xl">
+              {coach.profile_image && (
+                <AvatarImage src={coach.profile_image} alt={coach.full_name} className="object-cover" />
+              )}
+              <AvatarFallback className="bg-purple-400 text-white text-3xl md:text-4xl">
+                {coach.full_name?.substring(0, 2).toUpperCase() || "CO"}
+              </AvatarFallback>
+            </Avatar>
+          </div>
           
-          <div className="px-6 md:px-8 -mt-16 md:-mt-20 relative">
-            <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-6">
-              <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-white dark:border-slate-900 shadow-xl">
-                {coach.profile_image && (
-                  <AvatarImage src={coach.profile_image} alt={coach.full_name} className="object-cover" />
+          <div className="px-6 md:px-8 py-6">
+            <div className="text-center mb-6">
+              <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-900 dark:text-white flex items-center justify-center gap-2">
+                {coach.full_name}
+                {!canPurchase && (
+                  <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                    Coming Soon
+                  </Badge>
                 )}
-                <AvatarFallback className="bg-purple-500 text-white text-3xl md:text-4xl">
-                  {coach.full_name?.substring(0, 2).toUpperCase() || "CO"}
-                </AvatarFallback>
-              </Avatar>
+              </h1>
+              <p className="text-lg text-muted-foreground mt-1">{coach.expertise}</p>
               
-              <div className="flex-1 pb-4 md:pb-6">
-                <div className="flex items-start justify-between flex-wrap gap-2">
-                  <div>
-                    <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      {coach.full_name}
-                      {!canPurchase && (
-                        <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
-                          Coming Soon
-                        </Badge>
-                      )}
-                    </h1>
-                    <p className="text-lg text-muted-foreground mt-1">{coach.expertise}</p>
-                  </div>
-                  
-                  {rating && rating.totalRatings > 0 && (
-                    <button
-                      onClick={() => {
-                        const reviewsSection = document.getElementById('reviews-section');
-                        if (reviewsSection) {
-                          reviewsSection.scrollIntoView({ behavior: 'smooth' });
-                        }
-                      }}
-                      className="flex items-center gap-2 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-2 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors cursor-pointer"
-                      data-testid="button-scroll-to-reviews"
-                    >
-                      <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                      <span className="font-bold text-lg">{rating.averageRating}</span>
-                      <span className="text-sm text-muted-foreground underline">({rating.totalRatings} reviews)</span>
-                    </button>
-                  )}
-                </div>
-              </div>
+              {rating && rating.totalRatings > 0 && (
+                <button
+                  onClick={() => {
+                    const reviewsSection = document.getElementById('reviews-section');
+                    if (reviewsSection) {
+                      reviewsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="inline-flex items-center gap-2 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-2 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors cursor-pointer mt-3"
+                  data-testid="button-scroll-to-reviews"
+                >
+                  <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                  <span className="font-bold text-lg">{rating.averageRating}</span>
+                  <span className="text-sm text-muted-foreground underline">({rating.totalRatings} reviews)</span>
+                </button>
+              )}
             </div>
           </div>
 
