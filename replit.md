@@ -66,6 +66,13 @@ The platform uses a component-based approach with a responsive, mobile-first des
 -   **First Admin**: buhler.lionel@gmail.com
 -   **Adding New Admins**: Use POST `/api/admin/create` with existing admin token
 
+### Admin Email Management
+-   **Edit User Email**: Admins can edit user emails via pencil icons in Members > Messaging section. Updates 3 systems: application table, Supabase Auth, and users table.
+-   **Resend Invite**: Admins can resend registration emails via mail icons next to user emails. Two behaviors:
+    - If user has NOT set up login: Expires old tokens, creates new 7-day token, sends password setup email
+    - If user HAS existing auth: Sends login reminder instead (with link to reset password if needed)
+-   **Endpoint**: POST `/api/admin/resend-invite` with body `{userType, userId}`. Requires admin token.
+
 ## External Dependencies
 
 1.  **Supabase**: Provides PostgreSQL database hosting, authentication, user management, real-time subscriptions, and storage for user-uploaded files (e.g., profile images).
