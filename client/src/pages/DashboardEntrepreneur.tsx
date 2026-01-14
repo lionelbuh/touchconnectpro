@@ -2069,7 +2069,7 @@ export default function DashboardEntrepreneur() {
                               variant="outline"
                               size="sm"
                               className="hidden md:flex border-purple-300 text-purple-700 hover:bg-purple-50"
-                              onClick={() => navigate(`/coach/${coach.id}`)}
+                              onClick={() => window.open(`/coach/${coach.id}`, '_blank')}
                               data-testid={`button-view-profile-${coach.id}`}
                             >
                               <ExternalLink className="h-3 w-3 mr-1" />
