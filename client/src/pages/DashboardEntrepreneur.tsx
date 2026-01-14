@@ -24,6 +24,20 @@ export default function DashboardEntrepreneur() {
   const [validationError, setValidationError] = useState("");
   const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile" | "notes" | "messages" | "meetings" | "purchases">("overview");
+  
+  // Read tab from URL query params on mount (preserve other params like payment=success)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get("tab");
+    if (tabParam && ["overview", "coaches", "idea", "plan", "profile", "notes", "messages", "meetings", "purchases"].includes(tabParam)) {
+      setActiveTab(tabParam as any);
+      // Remove only the tab param, preserve others (like payment=success)
+      urlParams.delete("tab");
+      const newSearch = urlParams.toString();
+      window.history.replaceState({}, '', window.location.pathname + (newSearch ? '?' + newSearch : ''));
+    }
+  }, []);
+  
   const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
   const [coachPurchases, setCoachPurchases] = useState<any[]>([]);
   const [loadingPurchases, setLoadingPurchases] = useState(false);
