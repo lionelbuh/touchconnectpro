@@ -3861,6 +3861,185 @@ export async function registerRoutes(
     }
   });
 
+  // POST /api/admin/resend-invite - Resend registration email (requires admin token)
+  app.post("/api/admin/resend-invite", async (req, res) => {
+    console.log("[POST /api/admin/resend-invite] Resending invite");
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      const { userType, userId } = req.body;
+
+      // Verify requesting user is an admin
+      const { data: session, error: sessionError } = await (client
+        .from("admin_sessions")
+        .select("*, admin_users(*)")
+        .eq("token", token)
+        .gt("expires_at", new Date().toISOString())
+        .single() as any);
+
+      if (sessionError || !session) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (!userType || !userId) {
+        return res.status(400).json({ error: "userType and userId are required" });
+      }
+
+      // Determine table and email column based on userType
+      const tableConfig: {[key: string]: {table: string, emailColumn: string, nameColumn: string}} = {
+        entrepreneur: { table: "ideas", emailColumn: "entrepreneur_email", nameColumn: "entrepreneur_name" },
+        mentor: { table: "mentor_applications", emailColumn: "email", nameColumn: "full_name" },
+        coach: { table: "coach_applications", emailColumn: "email", nameColumn: "full_name" },
+        investor: { table: "investor_applications", emailColumn: "email", nameColumn: "full_name" }
+      };
+
+      const config = tableConfig[userType];
+      if (!config) {
+        return res.status(400).json({ error: "Invalid userType. Must be entrepreneur, mentor, coach, or investor" });
+      }
+
+      // Get user's email and name from the application table
+      const { data: userData, error: fetchError } = await (client
+        .from(config.table)
+        .select(`${config.emailColumn}, ${config.nameColumn}, status`)
+        .eq("id", userId)
+        .single() as any);
+
+      if (fetchError || !userData) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const email = userData[config.emailColumn];
+      const fullName = userData[config.nameColumn];
+      const status = userData.status;
+
+      // Only allow resend for approved or pre-approved users
+      if (!["approved", "pre-approved"].includes(status)) {
+        return res.status(400).json({ error: `Cannot resend invite. User status is "${status}". Must be approved or pre-approved.` });
+      }
+
+      console.log(`[ADMIN] Resending invite to ${email} (${fullName}) for ${userType}`);
+
+      // Check if user already has a Supabase auth account (already registered)
+      let userHasAuth = false;
+      try {
+        const { data: authUsers } = await client.auth.admin.listUsers();
+        if (authUsers?.users) {
+          userHasAuth = authUsers.users.some((u: any) => u.email?.toLowerCase() === email.toLowerCase());
+        }
+      } catch (authErr: any) {
+        console.error("[ADMIN] Error checking auth status:", authErr);
+      }
+
+      if (userHasAuth) {
+        // User already has login credentials - send a login reminder instead
+        console.log(`[ADMIN] User ${email} already has auth account - sending login reminder`);
+        
+        const resendData = await getResendClient();
+        if (resendData) {
+          const { client: resendClient, fromEmail } = resendData;
+          const FRONTEND_URL = process.env.NODE_ENV === 'production' 
+            ? 'https://touchconnectpro.com' 
+            : 'http://localhost:5000';
+          try {
+            await resendClient.emails.send({
+              from: fromEmail,
+              to: email,
+              subject: "TouchConnectPro - Login Reminder",
+              html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <style>
+                    body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                    .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+                    .button { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+                    .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                  </style>
+                </head>
+                <body>
+                  <div class="container">
+                    <div class="header">
+                      <h1>Hello, ${fullName}!</h1>
+                    </div>
+                    <div class="content">
+                      <p>This is a reminder that you already have an account with TouchConnectPro.</p>
+                      
+                      <p>You can log in anytime using your email: <strong>${email}</strong></p>
+                      
+                      <p style="text-align: center;">
+                        <a href="${FRONTEND_URL}/login" class="button">Go to Login</a>
+                      </p>
+                      
+                      <p style="font-size: 14px; color: #64748b;">If you forgot your password, you can reset it from the login page.</p>
+                      
+                      <p>Best regards,<br>The TouchConnectPro Team</p>
+                    </div>
+                    <div class="footer">
+                      <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                    </div>
+                  </div>
+                </body>
+                </html>
+              `
+            });
+            return res.json({ 
+              success: true, 
+              message: `Login reminder sent to ${email}. They already have an account and can log in with their existing password.`
+            });
+          } catch (emailErr: any) {
+            console.error("[ADMIN] Error sending login reminder:", emailErr);
+            return res.status(500).json({ error: "Failed to send login reminder email" });
+          }
+        } else {
+          return res.status(500).json({ error: "Email service not configured" });
+        }
+      }
+
+      // User doesn't have auth yet - expire old tokens and send new password setup link
+      // Expire any existing pending tokens for this user
+      const { error: expireError } = await (client
+        .from("password_tokens")
+        .update({ status: "expired" })
+        .eq("email", email)
+        .eq("status", "pending") as any);
+
+      if (expireError) {
+        console.error("[ADMIN] Error expiring old tokens:", expireError);
+      } else {
+        console.log(`[ADMIN] Expired old pending tokens for ${email}`);
+      }
+
+      // For resend, we always want to send the password setup email (wasPreApproved = false)
+      const wasPreApproved = false;
+
+      // Send the status email which creates a new token
+      const emailResult = await sendStatusEmail(email, fullName, userType, status, userId, wasPreApproved);
+
+      if (emailResult.success) {
+        console.log(`[ADMIN] Successfully resent invite to ${email}`);
+        return res.json({ 
+          success: true, 
+          message: `Invite email sent to ${email}. The link is valid for 7 days.`
+        });
+      } else {
+        console.error(`[ADMIN] Failed to resend invite:`, emailResult.reason);
+        return res.status(500).json({ 
+          error: `Failed to send email: ${emailResult.reason || "Unknown error"}`
+        });
+      }
+    } catch (error: any) {
+      console.error("[ADMIN] Resend invite error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Check if entrepreneur has already contacted a specific coach
   app.get("/api/coach-contact-requests/check", async (req, res) => {
     try {

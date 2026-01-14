@@ -335,6 +335,33 @@ export default function AdminDashboard() {
   const [editEmailUser, setEditEmailUser] = useState<{id: string; name: string; email: string; type: "entrepreneur" | "mentor" | "coach" | "investor"} | null>(null);
   const [newEmailValue, setNewEmailValue] = useState("");
   const [savingEmail, setSavingEmail] = useState(false);
+  const [resendingInvite, setResendingInvite] = useState<string | null>(null);
+
+  const handleResendInvite = async (userId: string, userType: "entrepreneur" | "mentor" | "coach" | "investor", email: string) => {
+    setResendingInvite(userId);
+    try {
+      const token = localStorage.getItem("tcp_adminToken");
+      const response = await fetch(`${API_BASE_URL}/api/admin/resend-invite`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ userType, userId })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        toast.success(data.message || `Registration email sent to ${email}`);
+      } else {
+        toast.error(data.error || "Failed to resend invite");
+      }
+    } catch (err) {
+      console.error("Error resending invite:", err);
+      toast.error("Failed to resend invite");
+    } finally {
+      setResendingInvite(null);
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -4406,6 +4433,19 @@ export default function AdminDashboard() {
                                       >
                                         <Pencil className="h-3 w-3" />
                                       </button>
+                                      <button
+                                        onClick={() => handleResendInvite(entrepreneur.id, "entrepreneur", entrepreneur.email)}
+                                        disabled={resendingInvite === entrepreneur.id}
+                                        className="text-slate-400 hover:text-emerald-600 transition-colors p-0.5 disabled:opacity-50"
+                                        title="Resend registration email"
+                                        data-testid={`button-resend-invite-entrepreneur-${idx}`}
+                                      >
+                                        {resendingInvite === entrepreneur.id ? (
+                                          <Loader2 className="h-3 w-3 animate-spin" />
+                                        ) : (
+                                          <Mail className="h-3 w-3" />
+                                        )}
+                                      </button>
                                     </p>
                                   </div>
                                 </div>
@@ -4459,6 +4499,19 @@ export default function AdminDashboard() {
                                     >
                                       <Pencil className="h-3 w-3" />
                                     </button>
+                                    <button
+                                      onClick={() => handleResendInvite(mentor.id, "mentor", mentor.email)}
+                                      disabled={resendingInvite === mentor.id}
+                                      className="text-slate-400 hover:text-emerald-600 transition-colors p-0.5 disabled:opacity-50"
+                                      title="Resend registration email"
+                                      data-testid={`button-resend-invite-mentor-${idx}`}
+                                    >
+                                      {resendingInvite === mentor.id ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <Mail className="h-3 w-3" />
+                                      )}
+                                    </button>
                                   </p>
                                 </div>
                                 <Button onClick={() => openConversationModal({id: mentor.id, name: mentor.fullName, email: mentor.email, type: "mentor", status: "active"})} data-testid={`button-message-mentor-${idx}`} size="sm" className={hasUnreadReplies ? "bg-amber-600 hover:bg-amber-700" : ""}>
@@ -4511,6 +4564,19 @@ export default function AdminDashboard() {
                                     >
                                       <Pencil className="h-3 w-3" />
                                     </button>
+                                    <button
+                                      onClick={() => handleResendInvite(coach.id, "coach", coach.email)}
+                                      disabled={resendingInvite === coach.id}
+                                      className="text-slate-400 hover:text-emerald-600 transition-colors p-0.5 disabled:opacity-50"
+                                      title="Resend registration email"
+                                      data-testid={`button-resend-invite-coach-${idx}`}
+                                    >
+                                      {resendingInvite === coach.id ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <Mail className="h-3 w-3" />
+                                      )}
+                                    </button>
                                   </p>
                                 </div>
                                 <Button onClick={() => openConversationModal({id: coach.id, name: coach.fullName, email: coach.email, type: "coach", status: "active"})} data-testid={`button-message-coach-${idx}`} size="sm" className={hasUnreadReplies ? "bg-amber-600 hover:bg-amber-700" : ""}>
@@ -4562,6 +4628,19 @@ export default function AdminDashboard() {
                                       data-testid={`button-edit-email-investor-${idx}`}
                                     >
                                       <Pencil className="h-3 w-3" />
+                                    </button>
+                                    <button
+                                      onClick={() => handleResendInvite(investor.id, "investor", investor.email)}
+                                      disabled={resendingInvite === investor.id}
+                                      className="text-slate-400 hover:text-emerald-600 transition-colors p-0.5 disabled:opacity-50"
+                                      title="Resend registration email"
+                                      data-testid={`button-resend-invite-investor-${idx}`}
+                                    >
+                                      {resendingInvite === investor.id ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <Mail className="h-3 w-3" />
+                                      )}
                                     </button>
                                   </p>
                                 </div>
