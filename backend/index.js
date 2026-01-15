@@ -1755,7 +1755,7 @@ app.patch("/api/mentors/:id", async (req, res) => {
 app.post("/api/coaches", async (req, res) => {
   console.log("[POST /api/coaches] Called");
   try {
-    const { fullName, email, linkedin, bio, expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, country, state, specializations, externalReputation } = req.body;
+    const { fullName, email, linkedin, bio, expertise, focusAreas, introCallRate, sessionRate, monthlyRate, monthlyRetainerDescription, hourlyRate, country, state, specializations, externalReputation } = req.body;
 
     const ratesProvided = introCallRate && sessionRate && monthlyRate;
     const legacyRateProvided = hourlyRate;
@@ -1765,7 +1765,7 @@ app.post("/api/coaches", async (req, res) => {
     }
     
     const rateValue = ratesProvided 
-      ? JSON.stringify({ introCallRate, sessionRate, monthlyRate })
+      ? JSON.stringify({ introCallRate, sessionRate, monthlyRate, monthlyRetainerDescription: monthlyRetainerDescription || "" })
       : hourlyRate;
 
     // Check if email exists in another category
@@ -2193,11 +2193,11 @@ app.get("/api/coaches/profile/:email", async (req, res) => {
 app.put("/api/coaches/profile/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, linkedin, bio, profileImage } = req.body;
+    const { expertise, focusAreas, introCallRate, sessionRate, monthlyRate, monthlyRetainerDescription, hourlyRate, linkedin, bio, profileImage } = req.body;
     
     const ratesProvided = introCallRate && sessionRate && monthlyRate;
     const rateValue = ratesProvided 
-      ? JSON.stringify({ introCallRate, sessionRate, monthlyRate })
+      ? JSON.stringify({ introCallRate, sessionRate, monthlyRate, monthlyRetainerDescription: monthlyRetainerDescription || "" })
       : hourlyRate;
 
     const updateData = {
@@ -7462,7 +7462,7 @@ app.post("/api/public/applications/mentors", partnerApiAuth, async (req, res) =>
 app.post("/api/public/applications/coaches", partnerApiAuth, async (req, res) => {
   console.log("[PUBLIC API] POST /api/public/applications/coaches");
   try {
-    const { fullName, email, linkedin, bio, expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, country, state, specializations } = req.body;
+    const { fullName, email, linkedin, bio, expertise, focusAreas, introCallRate, sessionRate, monthlyRate, monthlyRetainerDescription, hourlyRate, country, state, specializations } = req.body;
 
     const ratesProvided = introCallRate && sessionRate && monthlyRate;
     const legacyRateProvided = hourlyRate;
@@ -7475,7 +7475,7 @@ app.post("/api/public/applications/coaches", partnerApiAuth, async (req, res) =>
     }
     
     const rateValue = ratesProvided 
-      ? JSON.stringify({ introCallRate, sessionRate, monthlyRate })
+      ? JSON.stringify({ introCallRate, sessionRate, monthlyRate, monthlyRetainerDescription: monthlyRetainerDescription || "" })
       : hourlyRate;
 
     // Check for existing application

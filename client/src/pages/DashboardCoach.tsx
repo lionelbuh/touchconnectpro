@@ -24,6 +24,7 @@ const FOCUS_AREAS_OPTIONS = [
   "Business Strategy",
   "Pitching & Fundraising",
   "Product & Technology",
+  "Product Marketing",
   "Marketing & Brand",
   "Sales & Growth",
   "Finance & Analytics",
@@ -79,6 +80,7 @@ interface CoachRates {
   introCallRate: string;
   sessionRate: string;
   monthlyRate: string;
+  monthlyRetainerDescription: string;
 }
 
 interface CoachProfile {
@@ -109,12 +111,12 @@ function parseRates(hourlyRate: string): CoachRates {
   try {
     const parsed = JSON.parse(hourlyRate);
     if (parsed.introCallRate && parsed.sessionRate && parsed.monthlyRate) {
-      return parsed;
+      return { ...parsed, monthlyRetainerDescription: parsed.monthlyRetainerDescription || "" };
     }
   } catch {
     // Legacy format - single rate
   }
-  return { introCallRate: "", sessionRate: hourlyRate || "", monthlyRate: "" };
+  return { introCallRate: "", sessionRate: hourlyRate || "", monthlyRate: "", monthlyRetainerDescription: "" };
 }
 
 export default function DashboardCoach() {
@@ -128,6 +130,7 @@ export default function DashboardCoach() {
   const [introCallRate, setIntroCallRate] = useState("");
   const [sessionRate, setSessionRate] = useState("");
   const [monthlyRate, setMonthlyRate] = useState("");
+  const [monthlyRetainerDescription, setMonthlyRetainerDescription] = useState("");
   const [linkedin, setLinkedin] = useState("");
   const [bio, setBio] = useState("");
   const [profileImage, setProfileImage] = useState("");
@@ -158,6 +161,7 @@ export default function DashboardCoach() {
     introCallRate: string;
     sessionRate: string;
     monthlyRate: string;
+    monthlyRetainerDescription: string;
     linkedin: string;
     bio: string;
     profileImage: string;
@@ -180,6 +184,7 @@ export default function DashboardCoach() {
       introCallRate,
       sessionRate,
       monthlyRate,
+      monthlyRetainerDescription,
       linkedin,
       bio,
       profileImage
@@ -194,6 +199,7 @@ export default function DashboardCoach() {
       setIntroCallRate(originalProfileValues.introCallRate);
       setSessionRate(originalProfileValues.sessionRate);
       setMonthlyRate(originalProfileValues.monthlyRate);
+      setMonthlyRetainerDescription(originalProfileValues.monthlyRetainerDescription);
       setLinkedin(originalProfileValues.linkedin);
       setBio(originalProfileValues.bio);
       setProfileImage(originalProfileValues.profileImage);
@@ -249,6 +255,7 @@ export default function DashboardCoach() {
           setIntroCallRate(rates.introCallRate);
           setSessionRate(rates.sessionRate);
           setMonthlyRate(rates.monthlyRate);
+          setMonthlyRetainerDescription(rates.monthlyRetainerDescription);
           setLinkedin(data.linkedin || "");
           setBio(data.bio || "");
           setProfileImage(data.profile_image || "");
@@ -522,7 +529,7 @@ export default function DashboardCoach() {
           expertise: expertise.join(", "),
           focusAreas,
           ...(allRatesProvided 
-            ? { introCallRate, sessionRate, monthlyRate }
+            ? { introCallRate, sessionRate, monthlyRate, monthlyRetainerDescription }
             : { hourlyRate: sessionRate || profile.hourly_rate }),
           linkedin,
           bio,
@@ -947,7 +954,7 @@ export default function DashboardCoach() {
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Per Month / Full Courses</label>
+                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Monthly Coaching Retainer</label>
                       <div className="flex gap-2">
                         <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
                         <input 
@@ -959,6 +966,16 @@ export default function DashboardCoach() {
                           data-testid="input-coach-monthly-rate"
                         />
                       </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Monthly Retainer Description (Optional)</label>
+                      <textarea 
+                        value={monthlyRetainerDescription}
+                        onChange={(e) => setMonthlyRetainerDescription(e.target.value)}
+                        placeholder="Describe what's included in your monthly coaching retainer..."
+                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 min-h-[60px]"
+                        data-testid="input-coach-monthly-description"
+                      />
                     </div>
                   </div>
                 ) : (
@@ -972,9 +989,15 @@ export default function DashboardCoach() {
                       <span className="font-medium text-slate-900 dark:text-white">{sessionRate ? `$${sessionRate}` : "Not set"}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Monthly/Course:</span>
+                      <span className="text-sm text-slate-600 dark:text-slate-400">Monthly Retainer:</span>
                       <span className="font-medium text-slate-900 dark:text-white">{monthlyRate ? `$${monthlyRate}` : "Not set"}</span>
                     </div>
+                    {monthlyRetainerDescription && (
+                      <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 block mb-1">What's included:</span>
+                        <p className="text-sm text-slate-700 dark:text-slate-300">{monthlyRetainerDescription}</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>

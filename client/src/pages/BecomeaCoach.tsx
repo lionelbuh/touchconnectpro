@@ -62,6 +62,7 @@ const FOCUS_AREAS_OPTIONS = [
   "Business Strategy",
   "Pitching & Fundraising",
   "Product & Technology",
+  "Product Marketing",
   "Marketing & Brand",
   "Sales & Growth",
   "Finance & Analytics",
@@ -82,6 +83,7 @@ export default function BecomeaCoach() {
     introCallRate: string;
     sessionRate: string;
     monthlyRate: string;
+    monthlyRetainerDescription: string;
     country: string;
     state: string;
     externalPlatform: string;
@@ -98,6 +100,7 @@ export default function BecomeaCoach() {
     introCallRate: "",
     sessionRate: "",
     monthlyRate: "",
+    monthlyRetainerDescription: "",
     country: "",
     state: "",
     externalPlatform: "",
@@ -198,7 +201,7 @@ export default function BecomeaCoach() {
   const handleCloseModal = () => {
     setSubmitted(false);
     setShowForm(false);
-    setFormData({ fullName: "", email: "", linkedin: "", bio: "", expertise: [], focusAreas: "", introCallRate: "", sessionRate: "", monthlyRate: "", country: "", state: "", externalPlatform: "", externalRating: "", externalReviewCount: "", externalProfileUrl: "" });
+    setFormData({ fullName: "", email: "", linkedin: "", bio: "", expertise: [], focusAreas: "", introCallRate: "", sessionRate: "", monthlyRate: "", monthlyRetainerDescription: "", country: "", state: "", externalPlatform: "", externalRating: "", externalReviewCount: "", externalProfileUrl: "" });
     setContractAgreed(false);
   };
 
@@ -524,7 +527,7 @@ export default function BecomeaCoach() {
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Per Month / Full Courses *</label>
+                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Monthly Coaching Retainer (Monthly fee for ongoing coaching across multiple sessions.) *</label>
                           <Input
                             name="monthlyRate"
                             type="number"
@@ -533,6 +536,17 @@ export default function BecomeaCoach() {
                             placeholder="e.g., $500"
                             className="bg-slate-50 dark:bg-slate-800/50"
                             data-testid="input-coach-monthlyrate"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Monthly Retainer Description (Optional)</label>
+                          <Textarea
+                            name="monthlyRetainerDescription"
+                            value={formData.monthlyRetainerDescription}
+                            onChange={handleInputChange}
+                            placeholder="Describe what's included in your monthly coaching retainer (e.g., number of sessions, email support, resources provided...)"
+                            className="bg-slate-50 dark:bg-slate-800/50 min-h-[80px]"
+                            data-testid="input-coach-monthly-retainer-description"
                           />
                         </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400">TouchConnectPro retains 20% commission — you keep 80% of your earnings</p>

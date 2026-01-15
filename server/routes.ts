@@ -3076,11 +3076,11 @@ export async function registerRoutes(
       }
 
       const { id } = req.params;
-      const { expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, linkedin, bio, profileImage } = req.body;
+      const { expertise, focusAreas, introCallRate, sessionRate, monthlyRate, monthlyRetainerDescription, hourlyRate, linkedin, bio, profileImage } = req.body;
       
       const ratesProvided = introCallRate && sessionRate && monthlyRate;
       const rateValue = ratesProvided 
-        ? JSON.stringify({ introCallRate, sessionRate, monthlyRate })
+        ? JSON.stringify({ introCallRate, sessionRate, monthlyRate, monthlyRetainerDescription: monthlyRetainerDescription || "" })
         : hourlyRate;
 
       const updateData: any = {
@@ -6937,7 +6937,7 @@ export async function registerRoutes(
         return res.status(500).json({ error: "Database not configured" });
       }
 
-      const { fullName, email, linkedin, bio, expertise, focusAreas, introCallRate, sessionRate, monthlyRate, hourlyRate, country, state, specializations } = req.body;
+      const { fullName, email, linkedin, bio, expertise, focusAreas, introCallRate, sessionRate, monthlyRate, monthlyRetainerDescription, hourlyRate, country, state, specializations } = req.body;
 
       const ratesProvided = introCallRate && sessionRate && monthlyRate;
       const legacyRateProvided = hourlyRate;
@@ -6950,7 +6950,7 @@ export async function registerRoutes(
       }
       
       const rateValue = ratesProvided 
-        ? JSON.stringify({ introCallRate, sessionRate, monthlyRate })
+        ? JSON.stringify({ introCallRate, sessionRate, monthlyRate, monthlyRetainerDescription: monthlyRetainerDescription || "" })
         : hourlyRate;
 
       // Check for existing application
