@@ -351,14 +351,17 @@ export default function CoachProfile() {
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-base flex items-center gap-2">
                           <GraduationCap className="h-4 w-4 text-purple-600" />
-                          Monthly Package
+                          Monthly Coaching Retainer
                         </CardTitle>
                         {canPurchase && <Badge className="bg-purple-600">Best Value</Badge>}
                       </div>
-                      <CardDescription>Full month of coaching</CardDescription>
+                      <CardDescription>Monthly fee for ongoing coaching across multiple sessions</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-3xl font-bold text-purple-600 mb-3">${rates.monthlyRate}<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                      <p className="text-3xl font-bold text-purple-600 mb-2">${rates.monthlyRate}<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                      {rates.monthlyRetainerDescription && (
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 bg-purple-50 dark:bg-purple-900/20 p-2 rounded">{rates.monthlyRetainerDescription}</p>
+                      )}
                       <Button 
                         className={`w-full ${canPurchase ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-400'}`}
                         disabled={!canPurchase}

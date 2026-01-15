@@ -2176,12 +2176,17 @@ export default function DashboardEntrepreneur() {
                                             <Loader2 className="h-3 w-3 animate-spin" />
                                           ) : (
                                             <>
-                                              <span className="text-xs">Monthly</span>
+                                              <span className="text-xs">Monthly Retainer</span>
                                               <span className="font-bold">${rates.monthlyRate}</span>
                                             </>
                                           )}
                                         </Button>
                                       </div>
+                                      {rates.monthlyRetainerDescription && (
+                                        <p className="text-xs text-slate-600 dark:text-slate-400 bg-purple-50 dark:bg-purple-900/20 p-2 rounded">
+                                          <span className="font-medium">Monthly Retainer includes:</span> {rates.monthlyRetainerDescription}
+                                        </p>
+                                      )}
                                       <p className="text-xs text-muted-foreground text-center">
                                         {canPurchase ? (
                                           <>
