@@ -62,6 +62,7 @@ const FOCUS_AREAS_OPTIONS = [
   "Business Strategy",
   "Pitching & Fundraising",
   "Product & Technology",
+  "Product Marketing",
   "Marketing & Brand",
   "Sales & Growth",
   "Finance & Analytics",
@@ -524,7 +525,7 @@ export default function BecomeaCoach() {
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Per Month / Full Courses *</label>
+                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Monthly Coaching Retainer (Monthly fee for ongoing coaching across multiple sessions.) *</label>
                           <Input
                             name="monthlyRate"
                             type="number"
