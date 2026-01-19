@@ -6618,6 +6618,52 @@ export async function registerRoutes(
     }
   });
 
+  // Reset Stripe Connect account (allows coach to connect a different account)
+  app.post("/api/stripe/connect/reset/:coachId", async (req, res) => {
+    try {
+      const { coachId } = req.params;
+      
+      console.log("[STRIPE CONNECT] Resetting account for coach:", coachId);
+
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      // Get current coach data
+      const { data: coach, error: fetchError } = await (client
+        .from("coach_applications")
+        .select("*")
+        .eq("id", coachId)
+        .single() as any);
+
+      if (fetchError || !coach) {
+        return res.status(404).json({ error: "Coach not found" });
+      }
+
+      // Clear the stripe_account_id from the database
+      const { error: updateError } = await (client
+        .from("coach_applications")
+        .update({ stripe_account_id: null })
+        .eq("id", coachId) as any);
+
+      if (updateError) {
+        console.error("[STRIPE CONNECT] Failed to reset account:", updateError);
+        return res.status(500).json({ error: "Failed to reset Stripe account" });
+      }
+
+      console.log("[STRIPE CONNECT] Successfully reset account for coach:", coachId);
+      
+      return res.json({ 
+        success: true,
+        message: "Stripe account disconnected. You can now connect a new account."
+      });
+    } catch (error: any) {
+      console.error("[STRIPE CONNECT] Reset account error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Create checkout session for coach service purchase (destination charges)
   app.post("/api/stripe/connect/checkout", async (req, res) => {
     try {

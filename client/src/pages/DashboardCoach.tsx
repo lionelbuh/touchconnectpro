@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail, User, FileText, Upload, CreditCard, CheckCircle2, ExternalLink, Check, Send, Reply, Edit, ClipboardCheck } from "lucide-react";
+import { LayoutDashboard, DollarSign, Users, Star, Save, Loader2, Link as LinkIcon, Target, LogOut, X, MessageSquare, AlertCircle, Mail, User, FileText, Upload, CreditCard, CheckCircle2, ExternalLink, Check, Send, Reply, Edit, ClipboardCheck, RefreshCw } from "lucide-react";
 import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -770,9 +770,35 @@ export default function DashboardCoach() {
                         {stripeStatus?.chargesEnabled ? 'Payment Setup Complete' : 'Set Up Payments'}
                       </h3>
                       {stripeStatus?.chargesEnabled ? (
-                        <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
-                          <CheckCircle2 className="h-4 w-4" />
-                          <span>You can receive payments from entrepreneurs. You keep 80% of each transaction.</span>
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span>You can receive payments from entrepreneurs. You keep 80% of each transaction.</span>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={async () => {
+                              if (!confirm("Are you sure you want to disconnect your Stripe account? You'll need to connect a new one to receive payments.")) return;
+                              try {
+                                const response = await fetch(`${API_BASE_URL}/api/stripe/connect/reset/${profile?.id}`, { method: 'POST' });
+                                if (response.ok) {
+                                  toast.success("Stripe account disconnected. You can now connect a new account.");
+                                  setStripeStatus({ hasAccount: false, onboardingComplete: false, chargesEnabled: false, payoutsEnabled: false });
+                                } else {
+                                  const error = await response.json();
+                                  toast.error(error.error || "Failed to disconnect Stripe account");
+                                }
+                              } catch (error) {
+                                toast.error("Error disconnecting Stripe account");
+                              }
+                            }}
+                            className="text-slate-600 dark:text-slate-400"
+                            data-testid="button-reset-stripe"
+                          >
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            Connect Different Account
+                          </Button>
                         </div>
                       ) : (
                         <>
