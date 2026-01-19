@@ -914,8 +914,8 @@ async function sendMessageNotificationEmail(recipientEmail, recipientName, sende
 
   const { client, fromEmail } = resendData;
   
-  // Truncate message preview
-  const preview = messagePreview.length > 200 ? messagePreview.substring(0, 200) + "..." : messagePreview;
+  // Show full message content - convert newlines to <br> for HTML
+  const formattedMessage = messagePreview.replace(/\n/g, '<br>');
   
   const subject = `New Message from ${senderName} - TouchConnectPro`;
   const htmlContent = `
@@ -944,14 +944,14 @@ async function sendMessageNotificationEmail(recipientEmail, recipientName, sende
           
           <div class="message-box">
             <p style="margin: 0; color: #64748b; font-size: 14px;"><strong>From:</strong> ${senderName}</p>
-            <p style="margin: 15px 0 0 0;">${preview}</p>
+            <p style="margin: 15px 0 0 0;">${formattedMessage}</p>
           </div>
           
           <p style="text-align: center;">
-            <a href="${FRONTEND_URL}/login" class="button">View Full Message</a>
+            <a href="${FRONTEND_URL}/login" class="button">View in Dashboard</a>
           </p>
           
-          <p style="font-size: 14px; color: #64748b;">Log in to your dashboard to read the full message and reply.</p>
+          <p style="font-size: 14px; color: #64748b;">Log in to your dashboard to reply.</p>
         </div>
         <div class="footer">
           <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
@@ -988,7 +988,8 @@ async function sendAdminMessageNotificationEmail(senderName, senderEmail, recipi
 
   const { client, fromEmail } = resendData;
   
-  const preview = messagePreview.length > 150 ? messagePreview.substring(0, 150) + "..." : messagePreview;
+  // Show full message content - convert newlines to <br> for HTML
+  const formattedMessage = messagePreview.replace(/\n/g, '<br>');
   
   const subject = `Internal Message: ${senderName} → ${recipientName}`;
   const htmlContent = `
@@ -1001,7 +1002,7 @@ async function sendAdminMessageNotificationEmail(senderName, senderEmail, recipi
         .header { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
         .content { background: #f8fafc; padding: 20px; border-radius: 0 0 10px 10px; }
         .info-row { display: flex; margin: 10px 0; }
-        .message-preview { background: #e0e7ff; padding: 15px; border-radius: 8px; margin: 15px 0; font-style: italic; }
+        .message-box { background: #e0e7ff; padding: 15px; border-radius: 8px; margin: 15px 0; }
         .footer { text-align: center; margin-top: 15px; color: #64748b; font-size: 12px; }
       </style>
     </head>
@@ -1014,8 +1015,8 @@ async function sendAdminMessageNotificationEmail(senderName, senderEmail, recipi
           <p><strong>From:</strong> ${senderName} (${senderEmail})</p>
           <p><strong>To:</strong> ${recipientName} (${recipientEmail})</p>
           
-          <div class="message-preview">
-            "${preview}"
+          <div class="message-box">
+            ${formattedMessage}
           </div>
           
           <p style="font-size: 14px; color: #64748b;">This is an automated notification. View full details in the admin dashboard.</p>
@@ -7147,6 +7148,47 @@ app.get("/api/stripe/connect/account-status/:coachId", async (req, res) => {
     });
   } catch (error) {
     console.error("[STRIPE CONNECT] Account status error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Reset Stripe Connect account (allows coach to connect a different account)
+app.post("/api/stripe/connect/reset/:coachId", async (req, res) => {
+  try {
+    const { coachId } = req.params;
+    
+    console.log("[STRIPE CONNECT] Resetting account for coach:", coachId);
+
+    // Get current coach data
+    const { data: coach, error: fetchError } = await supabase
+      .from("coach_applications")
+      .select("*")
+      .eq("id", coachId)
+      .single();
+
+    if (fetchError || !coach) {
+      return res.status(404).json({ error: "Coach not found" });
+    }
+
+    // Clear the stripe_account_id from the database
+    const { error: updateError } = await supabase
+      .from("coach_applications")
+      .update({ stripe_account_id: null })
+      .eq("id", coachId);
+
+    if (updateError) {
+      console.error("[STRIPE CONNECT] Failed to reset account:", updateError);
+      return res.status(500).json({ error: "Failed to reset Stripe account" });
+    }
+
+    console.log("[STRIPE CONNECT] Successfully reset account for coach:", coachId);
+    
+    return res.json({ 
+      success: true,
+      message: "Stripe account disconnected. You can now connect a new account."
+    });
+  } catch (error) {
+    console.error("[STRIPE CONNECT] Reset account error:", error.message);
     return res.status(500).json({ error: error.message });
   }
 });
