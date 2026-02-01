@@ -5118,7 +5118,7 @@ export async function registerRoutes(
                     <p>They're interested in being notified when the AI tools are ready.</p>
                     
                     <p style="color: #64748b; font-size: 14px;">
-                      Received: ${new Date().toLocaleString()}
+                      Received: ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST
                     </p>
                   </div>
                   <div class="footer">
@@ -5256,7 +5256,7 @@ export async function registerRoutes(
                     <div class="info-box">
                       <strong>Name:</strong> ${fullName}<br>
                       <strong>Email:</strong> ${email}<br>
-                      <strong>Date:</strong> ${new Date().toLocaleString()}
+                      <strong>Date:</strong> ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST
                     </div>
                   </div>
                   <div class="footer">
@@ -5473,7 +5473,7 @@ export async function registerRoutes(
                       
                       <div class="meeting-box">
                         <h3 style="margin-top: 0;">${meeting.topic}</h3>
-                        ${meeting.start_time ? `<p><strong>Date & Time:</strong> ${new Date(meeting.start_time).toLocaleString()}</p>` : ''}
+                        ${meeting.start_time ? `<p><strong>Date & Time:</strong> ${new Date(meeting.start_time).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>` : ''}
                         <p><strong>Duration:</strong> ${meeting.duration} minutes</p>
                         ${meeting.password ? `<p><strong>Password:</strong> ${meeting.password}</p>` : ''}
                         <a href="${meeting.join_url}" class="join-button">Join Meeting</a>
@@ -5734,7 +5734,7 @@ export async function registerRoutes(
                     
                     <div class="meeting-box">
                       <h3 style="margin-top: 0;">${topic}</h3>
-                      ${startTime ? `<p><strong>Date & Time:</strong> ${new Date(startTime).toLocaleString()}</p>` : ''}
+                      ${startTime ? `<p><strong>Date & Time:</strong> ${new Date(startTime).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>` : ''}
                       ${duration ? `<p><strong>Duration:</strong> ${duration} minutes</p>` : ''}
                       ${password ? `<p><strong>Password:</strong> ${password}</p>` : ''}
                       <a href="${joinUrl}" class="join-button">Join Meeting</a>
@@ -5902,7 +5902,7 @@ export async function registerRoutes(
                       
                       <div class="meeting-box">
                         <h3 style="margin-top: 0;">${topic}</h3>
-                        ${startTime ? `<p><strong>Date & Time:</strong> ${new Date(startTime).toLocaleString()}</p>` : ''}
+                        ${startTime ? `<p><strong>Date & Time:</strong> ${new Date(startTime).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>` : ''}
                         ${duration ? `<p><strong>Duration:</strong> ${duration} minutes</p>` : ''}
                         ${password ? `<p><strong>Password:</strong> ${password}</p>` : ''}
                         <a href="${joinUrl}" class="join-button">Join Meeting</a>

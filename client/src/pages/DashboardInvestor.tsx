@@ -940,7 +940,7 @@ export default function DashboardInvestor() {
                               <span className={`font-semibold ${isAdminEmail(msg.from_email) ? "text-amber-700 dark:text-amber-400" : "text-slate-700 dark:text-slate-300"}`}>
                                 {isAdminEmail(msg.from_email) ? "From Admin" : "You"}
                               </span>
-                              <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                              <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</span>
                             </div>
                             <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
                           </div>

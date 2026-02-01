@@ -1290,7 +1290,7 @@ export default function DashboardMentor() {
                                                           {resp.attachmentName || "Download File"}
                                                         </a>
                                                       )}
-                                                      <p className="text-xs text-slate-500 mt-1">{new Date(resp.timestamp).toLocaleString()}</p>
+                                                      <p className="text-xs text-slate-500 mt-1">{new Date(resp.timestamp).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>
                                                     </div>
                                                   ))}
                                                 </div>
