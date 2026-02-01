@@ -2934,7 +2934,7 @@ export default function AdminDashboard() {
                 </Button>
                 <Button 
                   variant={activeMembersCategoryTab === "coming-soon" ? "default" : "ghost"}
-                  onClick={() => setActiveMembersCategoryTab("coming-soon")}
+                  onClick={() => { setActiveMembersCategoryTab("coming-soon"); setActiveMembersSubTab("management"); }}
                   className={activeMembersCategoryTab === "coming-soon" ? "bg-orange-500 hover:bg-orange-600" : ""}
                   data-testid="button-members-coming-soon-subtab"
                 >
