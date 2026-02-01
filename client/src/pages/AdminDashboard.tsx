@@ -2462,6 +2462,199 @@ export default function AdminDashboard() {
             {/* Coach Approvals */}
             {activeApprovalsSubTab === "coaches" && (
             <div>
+              <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Coach Approvals</h2>
+              {pendingCoachApplications.length === 0 ? (
+                <Card className="mb-8">
+                  <CardContent className="pt-12 pb-12 text-center">
+                    <p className="text-muted-foreground">No pending coach approvals</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4 mb-8">
+                  {pendingCoachApplications.map((app, idx) => {
+                    const actualIdx = coachApplications.findIndex(a => a === app);
+                    return (
+                      <Card key={actualIdx} className="border-l-4 border-l-cyan-500">
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-4 flex-1">
+                              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-lg font-bold overflow-hidden flex-shrink-0 shadow-md">
+                                {app.profileImage ? (
+                                  <img src={app.profileImage} alt={app.fullName} className="w-full h-full object-cover" />
+                                ) : (
+                                  app.fullName?.substring(0, 2).toUpperCase() || "CO"
+                                )}
+                              </div>
+                              <div>
+                                <CardTitle>{app.fullName}</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-1">{app.email}</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              {app.is_resubmitted && <Badge className="bg-purple-600">Resubmission</Badge>}
+                              <Badge className="bg-cyan-600">Pending</Badge>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                              <p className="text-slate-900 dark:text-white">{app.fullName}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                              <p className="text-slate-900 dark:text-white">{app.email}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                              <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                            </div>
+                            <div className="col-span-2">
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Rates</p>
+                              <div className="text-slate-900 dark:text-white">
+                                {(() => {
+                                  try {
+                                    const rates = JSON.parse(app.hourlyRate);
+                                    if (rates.introCallRate && rates.sessionRate && rates.monthlyRate) {
+                                      return (
+                                        <div className="flex gap-4 text-sm">
+                                          <span>Intro: ${rates.introCallRate}</span>
+                                          <span>Session: ${rates.sessionRate}</span>
+                                          <span>Monthly: ${rates.monthlyRate}</span>
+                                        </div>
+                                      );
+                                    }
+                                  } catch {}
+                                  return <span>${app.hourlyRate}/hr</span>;
+                                })()}
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
+                              <p className="text-slate-900 dark:text-white">{app.expertise}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                              <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
+                              <p className="text-slate-900 dark:text-white">{app.state || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
+                              <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" }) : "—"}</p>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
+                            <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.bio || "—"}</p>
+                          </div>
+                          {app.specializations && app.specializations.length > 0 && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Specializations</p>
+                              <div className="flex flex-wrap gap-2">
+                                {app.specializations.map((tag: string) => (
+                                  <Badge key={tag} variant="secondary" className="bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
+                            <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.focusAreas}</p>
+                          </div>
+                          {app.externalReputation && (
+                            <div className="border border-amber-200 dark:border-amber-800 rounded-lg p-4 bg-amber-50/50 dark:bg-amber-900/10">
+                              <div className="flex items-center justify-between mb-3">
+                                <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase flex items-center gap-2">
+                                  <Star className="h-4 w-4" /> External Reputation
+                                </p>
+                                {app.externalReputation.verified ? (
+                                  <Badge className="bg-green-600">Verified</Badge>
+                                ) : (
+                                  <Badge className="bg-slate-500">Pending Verification</Badge>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                                <div>
+                                  <p className="text-xs text-slate-500">Platform</p>
+                                  <p className="font-medium">{app.externalReputation.platform_name}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-slate-500">Rating</p>
+                                  <p className="font-medium">{app.externalReputation.average_rating} ({app.externalReputation.review_count} reviews)</p>
+                                </div>
+                                <div className="col-span-2">
+                                  <p className="text-xs text-slate-500">Verification URL (Admin Only)</p>
+                                  <a href={app.externalReputation.profile_url} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline text-sm truncate block">{app.externalReputation.profile_url}</a>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 pt-3 border-t border-amber-200 dark:border-amber-700">
+                                <Switch
+                                  checked={app.externalReputation.verified || false}
+                                  onCheckedChange={async (checked) => {
+                                    try {
+                                      const adminToken = localStorage.getItem("tcp_adminToken");
+                                      const response = await fetch(`${API_BASE_URL}/api/admin/coaches/${app.id}/verify-reputation`, {
+                                        method: "PUT",
+                                        headers: { 
+                                          "Content-Type": "application/json",
+                                          "Authorization": `Bearer ${adminToken}`
+                                        },
+                                        body: JSON.stringify({ verified: checked, adminEmail: localStorage.getItem("tcp_adminEmail") || "admin" })
+                                      });
+                                      if (response.ok) {
+                                        setCoachApplications(prev => prev.map(c => 
+                                          c.id === app.id && c.externalReputation
+                                            ? { ...c, externalReputation: { ...c.externalReputation, verified: checked, verified_at: checked ? new Date().toISOString() : null } }
+                                            : c
+                                        ));
+                                      }
+                                    } catch (err) {
+                                      console.error("Failed to update verification:", err);
+                                    }
+                                  }}
+                                  data-testid={`switch-verify-reputation-pending-${actualIdx}`}
+                                />
+                                <label className="text-sm font-medium">
+                                  {app.externalReputation.verified ? "Externally verified by TouchConnectPro" : "Mark as verified"}
+                                </label>
+                              </div>
+                              {app.externalReputation.verified_at && (
+                                <p className="text-xs text-slate-500 mt-2">Verified on {new Date(app.externalReputation.verified_at).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" })}</p>
+                              )}
+                            </div>
+                          )}
+                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700 relative z-10">
+                            <Button 
+                              type="button"
+                              className="flex-1 bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
+                              onClick={() => handleApproveCoach(actualIdx)}
+                              data-testid={`button-admin-approve-coach-${actualIdx}`}
+                            >
+                              <Check className="mr-2 h-4 w-4" /> Approve
+                            </Button>
+                            <Button 
+                              type="button"
+                              variant="outline"
+                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
+                              onClick={() => handleRejectCoach(actualIdx)}
+                              data-testid={`button-admin-reject-coach-${actualIdx}`}
+                            >
+                              <X className="mr-2 h-4 w-4" /> Reject
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* Verified External Reputations Section */}
               {(() => {
                 const verifiedCoaches = coachApplications.filter(
@@ -2560,199 +2753,6 @@ export default function AdminDashboard() {
                   </div>
                 );
               })()}
-              
-              <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Coach Approvals</h2>
-              {pendingCoachApplications.length === 0 ? (
-                <Card>
-                  <CardContent className="pt-12 pb-12 text-center">
-                    <p className="text-muted-foreground">No pending coach approvals</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-4">
-                  {pendingCoachApplications.map((app, idx) => {
-                    const actualIdx = coachApplications.findIndex(a => a === app);
-                    return (
-                      <Card key={actualIdx} className="border-l-4 border-l-cyan-500">
-                        <CardHeader>
-                          <div className="flex justify-between items-start">
-                            <div className="flex items-center gap-4 flex-1">
-                              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-lg font-bold overflow-hidden flex-shrink-0 shadow-md">
-                                {app.profileImage ? (
-                                  <img src={app.profileImage} alt={app.fullName} className="w-full h-full object-cover" />
-                                ) : (
-                                  app.fullName?.substring(0, 2).toUpperCase() || "CO"
-                                )}
-                              </div>
-                              <div>
-                                <CardTitle>{app.fullName}</CardTitle>
-                                <p className="text-sm text-muted-foreground mt-1">{app.email}</p>
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              {app.is_resubmitted && <Badge className="bg-purple-600">Resubmission</Badge>}
-                              <Badge className="bg-cyan-600">Pending</Badge>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
-                              <p className="text-slate-900 dark:text-white">{app.fullName}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
-                              <p className="text-slate-900 dark:text-white">{app.email}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
-                              <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
-                            </div>
-                            <div className="col-span-2">
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Rates</p>
-                              <div className="text-slate-900 dark:text-white">
-                                {(() => {
-                                  try {
-                                    const rates = JSON.parse(app.hourlyRate);
-                                    if (rates.introCallRate && rates.sessionRate && rates.monthlyRate) {
-                                      return (
-                                        <div className="flex gap-4 text-sm">
-                                          <span>Intro: ${rates.introCallRate}</span>
-                                          <span>Session: ${rates.sessionRate}</span>
-                                          <span>Monthly: ${rates.monthlyRate}</span>
-                                        </div>
-                                      );
-                                    }
-                                  } catch {}
-                                  return <span>${app.hourlyRate}/hr</span>;
-                                })()}
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
-                              <p className="text-slate-900 dark:text-white">{app.expertise}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
-                              <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
-                              <p className="text-slate-900 dark:text-white">{app.state || "—"}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
-                              <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
-                            <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.bio || "—"}</p>
-                          </div>
-                          {app.specializations && app.specializations.length > 0 && (
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Specializations</p>
-                              <div className="flex flex-wrap gap-2">
-                                {app.specializations.map((tag: string) => (
-                                  <Badge key={tag} variant="secondary" className="bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300">
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
-                            <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.focusAreas}</p>
-                          </div>
-                          {app.externalReputation && (
-                            <div className="border border-amber-200 dark:border-amber-800 rounded-lg p-4 bg-amber-50/50 dark:bg-amber-900/10">
-                              <div className="flex items-center justify-between mb-3">
-                                <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase flex items-center gap-2">
-                                  <Star className="h-4 w-4" /> External Reputation
-                                </p>
-                                {app.externalReputation.verified ? (
-                                  <Badge className="bg-green-600">Verified</Badge>
-                                ) : (
-                                  <Badge className="bg-slate-500">Pending Verification</Badge>
-                                )}
-                              </div>
-                              <div className="grid grid-cols-2 gap-3 text-sm mb-3">
-                                <div>
-                                  <p className="text-xs text-slate-500">Platform</p>
-                                  <p className="font-medium">{app.externalReputation.platform_name}</p>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-slate-500">Rating</p>
-                                  <p className="font-medium">{app.externalReputation.average_rating} ({app.externalReputation.review_count} reviews)</p>
-                                </div>
-                                <div className="col-span-2">
-                                  <p className="text-xs text-slate-500">Verification URL (Admin Only)</p>
-                                  <a href={app.externalReputation.profile_url} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline text-sm truncate block">{app.externalReputation.profile_url}</a>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3 pt-3 border-t border-amber-200 dark:border-amber-700">
-                                <Switch
-                                  checked={app.externalReputation.verified || false}
-                                  onCheckedChange={async (checked) => {
-                                    try {
-                                      const adminToken = localStorage.getItem("tcp_adminToken");
-                                      const response = await fetch(`${API_BASE_URL}/api/admin/coaches/${app.id}/verify-reputation`, {
-                                        method: "PUT",
-                                        headers: { 
-                                          "Content-Type": "application/json",
-                                          "Authorization": `Bearer ${adminToken}`
-                                        },
-                                        body: JSON.stringify({ verified: checked, adminEmail: localStorage.getItem("tcp_adminEmail") || "admin" })
-                                      });
-                                      if (response.ok) {
-                                        setCoachApplications(prev => prev.map(c => 
-                                          c.id === app.id && c.externalReputation
-                                            ? { ...c, externalReputation: { ...c.externalReputation, verified: checked, verified_at: checked ? new Date().toISOString() : null } }
-                                            : c
-                                        ));
-                                      }
-                                    } catch (err) {
-                                      console.error("Failed to update verification:", err);
-                                    }
-                                  }}
-                                  data-testid={`switch-verify-reputation-${actualIdx}`}
-                                />
-                                <label className="text-sm font-medium">
-                                  {app.externalReputation.verified ? "Externally verified by TouchConnectPro" : "Mark as verified"}
-                                </label>
-                              </div>
-                              {app.externalReputation.verified_at && (
-                                <p className="text-xs text-slate-500 mt-2">Verified on {new Date(app.externalReputation.verified_at).toLocaleDateString()}</p>
-                              )}
-                            </div>
-                          )}
-                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700 relative z-10">
-                            <Button 
-                              type="button"
-                              className="flex-1 bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
-                              onClick={() => handleApproveCoach(actualIdx)}
-                              data-testid={`button-admin-approve-coach-${actualIdx}`}
-                            >
-                              <Check className="mr-2 h-4 w-4" /> Approve
-                            </Button>
-                            <Button 
-                              type="button"
-                              variant="outline"
-                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
-                              onClick={() => handleRejectCoach(actualIdx)}
-                              data-testid={`button-admin-reject-coach-${actualIdx}`}
-                            >
-                              <X className="mr-2 h-4 w-4" /> Reject
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
             </div>
             )}
 
@@ -2870,6 +2870,34 @@ export default function AdminDashboard() {
             <div>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white">Members & Portfolio Management</h2>
+              </div>
+              
+              {/* Approved Member Counts Summary */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <Card className="border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20">
+                  <CardContent className="pt-4 pb-4 text-center">
+                    <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{entrepreneurApplications.filter(a => a.status === "approved" && !a.is_disabled).length}</p>
+                    <p className="text-xs text-muted-foreground">Approved Entrepreneurs</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
+                  <CardContent className="pt-4 pb-4 text-center">
+                    <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{mentorApplications.filter(a => a.status === "approved" && !(a as any).is_disabled).length}</p>
+                    <p className="text-xs text-muted-foreground">Approved Mentors</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-cyan-200 dark:border-cyan-800 bg-cyan-50/50 dark:bg-cyan-950/20">
+                  <CardContent className="pt-4 pb-4 text-center">
+                    <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-400">{coachApplications.filter(a => a.status === "approved" && !(a as any).is_disabled).length}</p>
+                    <p className="text-xs text-muted-foreground">Approved Coaches</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+                  <CardContent className="pt-4 pb-4 text-center">
+                    <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">{investorApplications.filter(a => a.status === "approved" && !(a as any).is_disabled).length}</p>
+                    <p className="text-xs text-muted-foreground">Approved Investors</p>
+                  </CardContent>
+                </Card>
               </div>
               
               {/* Category Sub-tabs - matching Approvals tab style */}
