@@ -161,7 +161,7 @@ async function sendPaymentWelcomeEmail(email: string, fullName: string) {
           <p>Best regards,<br>The TouchConnectPro Team</p>
         </div>
         <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
         </div>
       </div>
     </body>
@@ -251,7 +251,7 @@ async function sendStatusEmail(email: string, fullName: string, userType: string
               <p>Best regards,<br>The TouchConnectPro Team</p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
             </div>
           </div>
         </body>
@@ -305,7 +305,7 @@ async function sendStatusEmail(email: string, fullName: string, userType: string
               <p>Best regards,<br>The TouchConnectPro Team</p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
             </div>
           </div>
         </body>
@@ -364,7 +364,7 @@ async function sendStatusEmail(email: string, fullName: string, userType: string
             <p>Best regards,<br>The TouchConnectPro Team</p>
           </div>
           <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+            <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
           </div>
         </div>
       </body>
@@ -403,7 +403,7 @@ async function sendStatusEmail(email: string, fullName: string, userType: string
             <p>Best regards,<br>The TouchConnectPro Team</p>
           </div>
           <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+            <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
           </div>
         </div>
       </body>
@@ -1776,7 +1776,7 @@ export async function registerRoutes(
                         <p>Best regards,<br>The TouchConnectPro Team</p>
                       </div>
                       <div class="footer">
-                        <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                        <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
                       </div>
                     </div>
                   </body>
@@ -2022,7 +2022,7 @@ export async function registerRoutes(
                         <p>Best regards,<br>The TouchConnectPro Team</p>
                       </div>
                       <div class="footer">
-                        <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                        <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
                       </div>
                     </div>
                   </body>
@@ -3982,7 +3982,7 @@ export async function registerRoutes(
                       <p>Best regards,<br>The TouchConnectPro Team</p>
                     </div>
                     <div class="footer">
-                      <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                      <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
                     </div>
                   </div>
                 </body>
@@ -4161,7 +4161,7 @@ export async function registerRoutes(
                       <p>Best regards,<br>The TouchConnectPro Team</p>
                     </div>
                     <div class="footer">
-                      <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                      <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
                     </div>
                   </div>
                 </body>
@@ -5075,7 +5075,7 @@ export async function registerRoutes(
                     <p>Best regards,<br><strong>The TouchConnectPro Team</strong></p>
                   </div>
                   <div class="footer">
-                    <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                    <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
                   </div>
                 </div>
               </body>

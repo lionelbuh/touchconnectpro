@@ -152,7 +152,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <div className="container mx-auto px-4 mt-12 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} TouchConnectPro. All rights reserved.
+          © {new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.
+          <br />
+          <span className="text-xs">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span>
         </div>
       </footer>
     </div>
