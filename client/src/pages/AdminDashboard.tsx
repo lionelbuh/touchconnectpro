@@ -13,6 +13,17 @@ import { toast } from "sonner";
 import { IDEA_PROPOSAL_QUESTIONS } from "@/lib/constants";
 import { Switch } from "@/components/ui/switch";
 
+// Helper to format UTC timestamps from database to PST
+const formatToPST = (timestamp: string | Date) => {
+  if (!timestamp) return "—";
+  let dateStr = typeof timestamp === 'string' ? timestamp : timestamp.toISOString();
+  // If timestamp doesn't have timezone info, treat it as UTC
+  if (!dateStr.includes('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
+    dateStr = dateStr.replace(' ', 'T') + 'Z';
+  }
+  return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/Los_Angeles" }) + " PST";
+};
+
 interface MentorApplication {
   id: string;
   fullName: string;
@@ -4374,7 +4385,7 @@ export default function AdminDashboard() {
                                         <p className="text-slate-700 dark:text-slate-300">{msg.message}</p>
                                       </div>
                                       <p className="text-xs text-muted-foreground mt-2">
-                                        {new Date(msg.created_at).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST
+                                        {formatToPST(msg.created_at)}
                                       </p>
                                     </div>
                                     <div className="flex flex-col gap-2">
@@ -5215,7 +5226,7 @@ export default function AdminDashboard() {
                       <div className="flex-1">
                         <p className="font-semibold text-slate-900 dark:text-white mb-2">{meeting.topic}</p>
                         <p className="text-sm text-muted-foreground mb-1">Status: <Badge>{meeting.status}</Badge></p>
-                        {meeting.start_time && <p className="text-sm text-muted-foreground">Date/Time: {new Date(meeting.start_time).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>}
+                        {meeting.start_time && <p className="text-sm text-muted-foreground">Date/Time: {formatToPST(meeting.start_time)}</p>}
                         <p className="text-sm text-muted-foreground">Duration: {meeting.duration} minutes</p>
                         {meeting.invitees && meeting.invitees.length > 0 && (
                           <div className="mt-2">
@@ -5329,7 +5340,7 @@ export default function AdminDashboard() {
                         {msg.from_email !== "admin@touchconnectpro.com" && <span className="ml-2 text-xs bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded">Reply</span>}
                       </p>
                       <p className="text-slate-600 dark:text-slate-400 mt-1">{msg.message}</p>
-                      <p className="text-slate-500 text-xs mt-1">{new Date(msg.created_at).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>
+                      <p className="text-slate-500 text-xs mt-1">{formatToPST(msg.created_at)}</p>
                     </div>
                   ))}
                 </div>
@@ -5446,14 +5457,14 @@ export default function AdminDashboard() {
                           </Button>
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">{new Date(note.timestamp).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>
+                      <p className="text-xs text-muted-foreground">{formatToPST(note.timestamp)}</p>
 
                       {note.responses && note.responses.length > 0 && (
                         <div className="mt-3 pl-4 border-l-2 border-slate-200 dark:border-slate-700 space-y-2">
                           {note.responses.map((resp: any) => (
                             <div key={resp.id} className={`p-2 rounded text-sm ${resp.fromAdmin ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-blue-50 dark:bg-blue-900/20'}`}>
                               <p className="font-semibold text-xs mb-1 text-slate-600 dark:text-slate-400">
-                                {resp.fromAdmin ? "Admin" : selectedInvestorForNotes.fullName} • {new Date(resp.timestamp).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST
+                                {resp.fromAdmin ? "Admin" : selectedInvestorForNotes.fullName} • {formatToPST(resp.timestamp)}
                               </p>
                               <p className="text-slate-800 dark:text-slate-200">{resp.text}</p>
                               {resp.attachmentUrl && (

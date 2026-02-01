@@ -11,6 +11,17 @@ import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
 import MyAgreements from "@/components/MyAgreements";
 
+// Helper to format UTC timestamps from database to PST
+const formatToPST = (timestamp: string | Date) => {
+  if (!timestamp) return "—";
+  let dateStr = typeof timestamp === 'string' ? timestamp : timestamp.toISOString();
+  // If timestamp doesn't have timezone info, treat it as UTC
+  if (!dateStr.includes('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
+    dateStr = dateStr.replace(' ', 'T') + 'Z';
+  }
+  return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/Los_Angeles" }) + " PST";
+};
+
 interface StripeConnectStatus {
   hasAccount: boolean;
   onboardingComplete: boolean;
@@ -1410,7 +1421,7 @@ export default function DashboardCoach() {
                               <span className={`font-semibold ${isAdminEmail(msg.from_email) ? "text-cyan-700 dark:text-cyan-400" : "text-slate-700 dark:text-slate-300"}`}>
                                 {isAdminEmail(msg.from_email) ? "From Admin" : "You"}
                               </span>
-                              <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</span>
+                              <span className="text-xs text-muted-foreground">{formatToPST(msg.created_at)}</span>
                             </div>
                             <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
                           </div>

@@ -13,6 +13,17 @@ import { IDEA_PROPOSAL_QUESTIONS } from "@/lib/constants";
 import MyAgreements from "@/components/MyAgreements";
 import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 
+// Helper to format UTC timestamps from database to PST
+const formatToPST = (timestamp: string | Date) => {
+  if (!timestamp) return "—";
+  let dateStr = typeof timestamp === 'string' ? timestamp : timestamp.toISOString();
+  // If timestamp doesn't have timezone info, treat it as UTC
+  if (!dateStr.includes('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
+    dateStr = dateStr.replace(' ', 'T') + 'Z';
+  }
+  return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/Los_Angeles" }) + " PST";
+};
+
 interface MentorProfileData {
   id: string;
   full_name: string;
@@ -1290,7 +1301,7 @@ export default function DashboardMentor() {
                                                           {resp.attachmentName || "Download File"}
                                                         </a>
                                                       )}
-                                                      <p className="text-xs text-slate-500 mt-1">{new Date(resp.timestamp).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>
+                                                      <p className="text-xs text-slate-500 mt-1">{formatToPST(resp.timestamp)}</p>
                                                     </div>
                                                   ))}
                                                 </div>
@@ -1879,7 +1890,7 @@ export default function DashboardMentor() {
                                 <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-cyan-700 dark:text-cyan-400'}`}>
                                   {isFromMe ? 'You' : 'Admin'}
                                 </span>
-                                <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                                <span className="text-xs text-muted-foreground">{formatToPST(msg.created_at)}</span>
                               </div>
                               <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
                             </div>
@@ -1927,7 +1938,7 @@ export default function DashboardMentor() {
                         <div className="flex-1">
                           <p className="font-semibold text-slate-900 dark:text-white mb-2">{meeting.topic}</p>
                           <p className="text-sm text-muted-foreground mb-1">Status: {meeting.status}</p>
-                          {meeting.start_time && <p className="text-sm text-muted-foreground">{new Date(meeting.start_time).toLocaleString()}</p>}
+                          {meeting.start_time && <p className="text-sm text-muted-foreground">{formatToPST(meeting.start_time)}</p>}
                           <p className="text-sm text-muted-foreground">Duration: {meeting.duration} minutes</p>
                           {participantNames.length > 0 && (
                             <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg">

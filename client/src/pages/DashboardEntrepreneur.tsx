@@ -14,6 +14,17 @@ import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 
+// Helper to format UTC timestamps from database to PST
+const formatToPST = (timestamp: string | Date) => {
+  if (!timestamp) return "—";
+  let dateStr = typeof timestamp === 'string' ? timestamp : timestamp.toISOString();
+  // If timestamp doesn't have timezone info, treat it as UTC
+  if (!dateStr.includes('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
+    dateStr = dateStr.replace(' ', 'T') + 'Z';
+  }
+  return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/Los_Angeles" }) + " PST";
+};
+
 export default function DashboardEntrepreneur() {
   const [, navigate] = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
@@ -1879,7 +1890,7 @@ export default function DashboardEntrepreneur() {
                               <p className="font-semibold text-blue-900 dark:text-blue-100">{meeting.topic}</p>
                               <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">{meeting.status}</Badge>
                             </div>
-                            {meeting.start_time && <p className="text-sm text-blue-700 dark:text-blue-300">📅 {new Date(meeting.start_time).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>}
+                            {meeting.start_time && <p className="text-sm text-blue-700 dark:text-blue-300">📅 {formatToPST(meeting.start_time)}</p>}
                             <p className="text-sm text-blue-700 dark:text-blue-300">⏱ {meeting.duration} minutes</p>
                             {meeting.join_url && (
                               <a href={meeting.join_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-blue-600 hover:text-blue-700 flex items-center gap-1">
@@ -2482,7 +2493,7 @@ export default function DashboardEntrepreneur() {
                                                   <span className={`text-xs font-semibold ${isFromMe ? 'text-slate-600 dark:text-slate-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                                                     {isFromMe ? 'You' : (entry.senderName || mentorData.mentor?.full_name || 'Mentor')}
                                                   </span>
-                                                  <span className="text-xs text-muted-foreground">{new Date(entry.createdAt).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</span>
+                                                  <span className="text-xs text-muted-foreground">{formatToPST(entry.createdAt)}</span>
                                                 </div>
                                                 <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{entry.message}</p>
                                                 {entry.attachments && entry.attachments.length > 0 && (
@@ -2691,7 +2702,7 @@ export default function DashboardEntrepreneur() {
                                   <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-cyan-700 dark:text-cyan-400'}`}>
                                     {isFromMe ? 'You' : 'Admin'}
                                   </span>
-                                  <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</span>
+                                  <span className="text-xs text-muted-foreground">{formatToPST(msg.created_at)}</span>
                                 </div>
                                 <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
                               </div>
@@ -2909,7 +2920,7 @@ export default function DashboardEntrepreneur() {
                                               {resp.attachmentName || "Download Attachment"}
                                             </a>
                                           )}
-                                          <p className="text-xs text-slate-500 mt-1">{new Date(resp.timestamp).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>
+                                          <p className="text-xs text-slate-500 mt-1">{formatToPST(resp.timestamp)}</p>
                                         </div>
                                       ))}
                                     </div>
@@ -3040,7 +3051,7 @@ export default function DashboardEntrepreneur() {
                           <div className="flex-1">
                             <p className="font-semibold text-slate-900 dark:text-white mb-2">{meeting.topic}</p>
                             <p className="text-sm text-muted-foreground mb-1">Status: {meeting.status}</p>
-                            {meeting.start_time && <p className="text-sm text-muted-foreground">{new Date(meeting.start_time).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>}
+                            {meeting.start_time && <p className="text-sm text-muted-foreground">{formatToPST(meeting.start_time)}</p>}
                             <p className="text-sm text-muted-foreground">Duration: {meeting.duration} minutes</p>
                             <a href={meeting.join_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium flex items-center gap-2">
                               <ExternalLink className="h-3 w-3" /> Join Meeting
