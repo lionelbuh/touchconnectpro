@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, CheckCircle, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus, Pencil } from "lucide-react";
+import { Check, CheckCircle, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus, Pencil, Clock } from "lucide-react";
 import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
@@ -49,6 +49,7 @@ interface CoachApplication {
   rejection_reason?: string;
   updated_at?: string;
   is_resubmitted?: boolean;
+  stripe_account_id?: string | null;
   externalReputation?: {
     platform_name: string;
     average_rating: number;
@@ -263,7 +264,7 @@ export default function AdminDashboard() {
   const [loadingAdmins, setLoadingAdmins] = useState(false);
   const [activeMembersSubTab, setActiveMembersSubTab] = useState<"portfolio" | "messaging" | "management">("portfolio");
   const [activeApprovalsSubTab, setActiveApprovalsSubTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
-  const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled">("entrepreneurs");
+  const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled" | "coming-soon">("entrepreneurs");
   const [mentorApplications, setMentorApplications] = useState<MentorApplication[]>([]);
   const [coachApplications, setCoachApplications] = useState<CoachApplication[]>([]);
   const [investorApplications, setInvestorApplications] = useState<InvestorApplication[]>([]);
@@ -423,8 +424,10 @@ export default function AdminDashboard() {
               state: c.state,
               status: c.status === "submitted" ? "pending" : c.status,
               submittedAt: c.created_at,
+              updated_at: c.updated_at,
               is_resubmitted: c.is_resubmitted,
               is_disabled: c.is_disabled || false,
+              stripe_account_id: c.stripe_account_id || null,
               externalReputation: c.external_reputation || null
             }));
             setCoachApplications(mappedCoaches);
@@ -1331,8 +1334,9 @@ export default function AdminDashboard() {
               hourlyRate: c.hourly_rate, specializations: c.specializations || [],
               profileImage: c.profile_image, country: c.country, state: c.state,
               status: c.status === "submitted" ? "pending" : c.status,
-              submittedAt: c.created_at, is_resubmitted: c.is_resubmitted,
-              is_disabled: c.is_disabled || false, externalReputation: c.external_reputation || null
+              submittedAt: c.created_at, updated_at: c.updated_at, is_resubmitted: c.is_resubmitted,
+              is_disabled: c.is_disabled || false, stripe_account_id: c.stripe_account_id || null,
+              externalReputation: c.external_reputation || null
             }));
             setCoachApplications(mappedCoaches);
             setApprovedCoaches(mappedCoaches.filter((c: any) => c.status === "approved"));
@@ -1502,8 +1506,9 @@ export default function AdminDashboard() {
               hourlyRate: c.hourly_rate, specializations: c.specializations || [],
               profileImage: c.profile_image, country: c.country, state: c.state,
               status: c.status === "submitted" ? "pending" : c.status,
-              submittedAt: c.created_at, is_resubmitted: c.is_resubmitted,
-              is_disabled: c.is_disabled || false, externalReputation: c.external_reputation || null
+              submittedAt: c.created_at, updated_at: c.updated_at, is_resubmitted: c.is_resubmitted,
+              is_disabled: c.is_disabled || false, stripe_account_id: c.stripe_account_id || null,
+              externalReputation: c.external_reputation || null
             }));
             setCoachApplications(mappedCoaches);
             setApprovedCoaches(mappedCoaches.filter((c: any) => c.status === "approved"));
@@ -1569,8 +1574,9 @@ export default function AdminDashboard() {
               hourlyRate: c.hourly_rate, specializations: c.specializations || [],
               profileImage: c.profile_image, country: c.country, state: c.state,
               status: c.status === "submitted" ? "pending" : c.status,
-              submittedAt: c.created_at, is_resubmitted: c.is_resubmitted,
-              is_disabled: c.is_disabled || false, externalReputation: c.external_reputation || null
+              submittedAt: c.created_at, updated_at: c.updated_at, is_resubmitted: c.is_resubmitted,
+              is_disabled: c.is_disabled || false, stripe_account_id: c.stripe_account_id || null,
+              externalReputation: c.external_reputation || null
             }));
             setCoachApplications(mappedCoaches);
             setApprovedCoaches(mappedCoaches.filter((c: any) => c.status === "approved"));
@@ -2925,6 +2931,22 @@ export default function AdminDashboard() {
                   data-testid="button-members-coaches-subtab"
                 >
                   Coaches
+                </Button>
+                <Button 
+                  variant={activeMembersCategoryTab === "coming-soon" ? "default" : "ghost"}
+                  onClick={() => setActiveMembersCategoryTab("coming-soon")}
+                  className={activeMembersCategoryTab === "coming-soon" ? "bg-orange-500 hover:bg-orange-600" : ""}
+                  data-testid="button-members-coming-soon-subtab"
+                >
+                  Coming Soon
+                  {(() => {
+                    const comingSoonCount = coachApplications.filter(a => a.status === "approved" && !(a as any).is_disabled && !a.stripe_account_id).length;
+                    return comingSoonCount > 0 ? (
+                      <span className="ml-2 bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 text-xs px-1.5 py-0.5 rounded-full">
+                        {comingSoonCount}
+                      </span>
+                    ) : null;
+                  })()}
                 </Button>
                 <Button 
                   variant={activeMembersCategoryTab === "investors" ? "default" : "ghost"}
@@ -4924,6 +4946,63 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   )}
+                  {/* Coming Soon Coaches - approved but no Stripe setup */}
+                  {activeMembersCategoryTab === "coming-soon" && (
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-orange-500" />
+                      Coming Soon Coaches
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">Approved coaches who haven't completed their Stripe payment setup yet.</p>
+                    <div className="space-y-3">
+                      {(() => {
+                        const comingSoonCoaches = coachApplications.filter(a => a.status === "approved" && !(a as any).is_disabled && !a.stripe_account_id);
+                        
+                        if (comingSoonCoaches.length === 0) {
+                          return (
+                            <Card>
+                              <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                                <CheckCircle className="h-12 w-12 text-green-300 mx-auto mb-3" />
+                                All approved coaches have completed their payment setup!
+                              </CardContent>
+                            </Card>
+                          );
+                        }
+                        
+                        return comingSoonCoaches.map((coach, idx) => (
+                          <Card key={`coming-soon-${coach.id}`} className="border-l-4 border-l-orange-500">
+                            <CardContent className="pt-6">
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white font-bold overflow-hidden">
+                                    {coach.profileImage ? (
+                                      <img src={coach.profileImage} alt={coach.fullName} className="w-full h-full object-cover" />
+                                    ) : (
+                                      coach.fullName?.substring(0, 2).toUpperCase() || "CO"
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
+                                    <p className="text-sm text-muted-foreground">{coach.email}</p>
+                                    <div className="flex gap-2 mt-1">
+                                      <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                                        <Clock className="h-3 w-3 mr-1" /> Stripe Pending
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-right text-sm text-muted-foreground">
+                                  <p>Approved: {coach.updated_at ? new Date(coach.updated_at).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" }) : "—"}</p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                  )}
+
                   {/* Disabled Users - show only when selected */}
                   {activeMembersCategoryTab === "disabled" && (
                   <div>
