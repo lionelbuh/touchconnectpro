@@ -6749,6 +6749,25 @@ app.post("/api/cancellation-request", async (req, res) => {
   }
 
   try {
+    // Store cancellation request in database
+    if (supabase) {
+      const { error: dbError } = await supabase
+        .from("cancellation_requests")
+        .insert({
+          user_type: userType,
+          user_name: userName || 'Unknown',
+          user_email: userEmail.toLowerCase(),
+          reason: reason,
+          status: 'pending'
+        });
+      
+      if (dbError) {
+        console.error("[CANCELLATION] Database error:", dbError);
+      } else {
+        console.log("[CANCELLATION] Stored in database");
+      }
+    }
+
     const resendData = await getResendClient();
     
     if (!resendData) {
@@ -6817,18 +6836,96 @@ app.post("/api/cancellation-request", async (req, res) => {
       </html>
     `;
 
-    const result = await resend.emails.send({
+    // Send admin notification
+    const adminResult = await resend.emails.send({
       from: fromEmail,
       to: "hello@touchconnectpro.com",
       subject,
       html: htmlContent,
       replyTo: userEmail
     });
+    console.log("[CANCELLATION] Admin email sent:", adminResult.id);
 
-    console.log("[CANCELLATION] Email sent successfully:", result.id);
+    // Send confirmation email to user
+    const userSubject = "Your Cancellation Request Has Been Received - TouchConnectPro";
+    const userHtmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+          .info-box { background: #fff; border: 1px solid #e2e8f0; padding: 15px; margin: 15px 0; border-radius: 8px; }
+          .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Cancellation Request Received</h1>
+          </div>
+          <div class="content">
+            <p>Dear ${userName || 'User'},</p>
+            <p>We have received your request to cancel your ${userType} account with TouchConnectPro.</p>
+            
+            <div class="info-box">
+              <p><strong>Request submitted:</strong> ${PST_NOW} PST</p>
+              <p><strong>Account type:</strong> ${userType.charAt(0).toUpperCase() + userType.slice(1)}</p>
+            </div>
+            
+            <p>Our team will review your request and process it within 2-3 business days. If you have any questions or would like to reconsider, please don't hesitate to reach out to us at <a href="mailto:hello@touchconnectpro.com">hello@touchconnectpro.com</a>.</p>
+            
+            <p>We're sorry to see you go and wish you all the best in your future endeavors.</p>
+            
+            <p>Best regards,<br/>The TouchConnectPro Team</p>
+          </div>
+          <div class="footer">
+            <p>© 2026 Touch Equity Partners LLC. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const userResult = await resend.emails.send({
+      from: fromEmail,
+      to: userEmail,
+      subject: userSubject,
+      html: userHtmlContent
+    });
+    console.log("[CANCELLATION] User confirmation email sent:", userResult.id);
+
     return res.json({ success: true });
   } catch (error) {
     console.error("[CANCELLATION] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/admin/cancellation-requests - Get all cancellation requests (admin only)
+app.get("/api/admin/cancellation-requests", async (req, res) => {
+  console.log("[ADMIN] Fetching cancellation requests");
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+
+    const { data, error } = await supabase
+      .from("cancellation_requests")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[ADMIN] Error fetching cancellation requests:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log("[ADMIN] Found", data?.length || 0, "cancellation requests");
+    return res.json(data || []);
+  } catch (error) {
+    console.error("[ADMIN] Error:", error.message);
     return res.status(500).json({ error: error.message });
   }
 });

@@ -348,6 +348,8 @@ export default function AdminDashboard() {
   const [newEmailValue, setNewEmailValue] = useState("");
   const [savingEmail, setSavingEmail] = useState(false);
   const [resendingInvite, setResendingInvite] = useState<string | null>(null);
+  const [cancellationRequests, setCancellationRequests] = useState<{id: string; user_type: string; user_email: string; user_name: string; reason: string; status: string; created_at: string}[]>([]);
+  const [cancelledEmails, setCancelledEmails] = useState<Set<string>>(new Set());
 
   const handleResendInvite = async (userId: string, userType: "entrepreneur" | "mentor" | "coach" | "investor", email: string) => {
     setResendingInvite(userId);
@@ -621,6 +623,24 @@ export default function AdminDashboard() {
         console.error("Error fetching contact requests:", err);
       } finally {
         setLoadingContactRequests(false);
+      }
+
+      // Load cancellation requests
+      try {
+        const adminToken = localStorage.getItem("tcp_adminToken");
+        const cancellationResponse = await fetch(`${API_BASE_URL}/api/admin/cancellation-requests`, {
+          headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {}
+        });
+        if (cancellationResponse.ok) {
+          const data = await cancellationResponse.json();
+          setCancellationRequests(data);
+          // Create a Set of emails with pending cancellations for quick lookup
+          const emails = new Set(data.filter((r: any) => r.status === 'pending').map((r: any) => r.user_email.toLowerCase()));
+          setCancelledEmails(emails);
+          console.log("Cancellation requests loaded:", data.length, "Pending emails:", emails.size);
+        }
+      } catch (err) {
+        console.error("Error fetching cancellation requests:", err);
       }
     };
 
@@ -3111,6 +3131,9 @@ export default function AdminDashboard() {
                                 {app.is_disabled && (
                                   <Badge className="bg-red-600">Disabled</Badge>
                                 )}
+                                {cancelledEmails.has(app.email?.toLowerCase()) && (
+                                  <Badge className="bg-orange-500">Cancelled</Badge>
+                                )}
                                 {mentorAssignments[app.id] ? (
                                   <div className="flex items-center gap-1">
                                     <Badge className="bg-cyan-600">
@@ -3592,6 +3615,9 @@ export default function AdminDashboard() {
                                 {(app as any).is_disabled && (
                                   <Badge className="bg-red-600">Disabled</Badge>
                                 )}
+                                {cancelledEmails.has(app.email?.toLowerCase()) && (
+                                  <Badge className="bg-orange-500">Cancelled</Badge>
+                                )}
                               </div>
                             </div>
                           </CardHeader>
@@ -3847,6 +3873,9 @@ export default function AdminDashboard() {
                                 <Badge className="bg-cyan-600">Approved</Badge>
                                 {(app as any).is_disabled && (
                                   <Badge className="bg-red-600">Disabled</Badge>
+                                )}
+                                {cancelledEmails.has(app.email?.toLowerCase()) && (
+                                  <Badge className="bg-orange-500">Cancelled</Badge>
                                 )}
                               </div>
                             </div>
@@ -4149,6 +4178,9 @@ export default function AdminDashboard() {
                                 <Badge className="bg-amber-600">Approved</Badge>
                                 {(app as any).is_disabled && (
                                   <Badge className="bg-red-600">Disabled</Badge>
+                                )}
+                                {cancelledEmails.has(app.email?.toLowerCase()) && (
+                                  <Badge className="bg-orange-500">Cancelled</Badge>
                                 )}
                               </div>
                             </div>
