@@ -55,7 +55,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-primary">
               Log in
             </Link>
-            <Link href="/coming-soon">
+            <Link href="/become-entrepreneur">
               <Button className="font-medium">Get Started</Button>
             </Link>
           </div>
@@ -89,7 +89,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <Link href="/login" className="block px-4 py-2 rounded-lg font-medium text-muted-foreground hover:bg-white/5 hover:text-foreground">
                 Log in
               </Link>
-              <Link href="/coming-soon">
+              <Link href="/become-entrepreneur">
                 <Button className="w-full font-medium">Get Started</Button>
               </Link>
             </div>
@@ -134,7 +134,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div>
             <h4 className="font-semibold mb-4">Community</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/coming-soon">Entrepreneur: Submit your Idea</Link></li>
+              <li><Link href="/become-entrepreneur">Entrepreneur: Submit your Idea</Link></li>
               <li><Link href="/become-mentor">Become a Mentor</Link></li>
               <li><Link href="/become-coach">Become a Coach</Link></li>
               <li><Link href="/investors">For Investors</Link></li>

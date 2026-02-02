@@ -37,7 +37,7 @@ export default function Pricing() {
                   <span className="text-sm text-slate-400 ml-6">Prepare your materials so your mentor can give targeted, actionable feedback from day one.</span>
                 </li>
               </ul>
-              <Link href="/coming-soon">
+              <Link href="/become-entrepreneur">
                 <Button className="w-full bg-slate-700 hover:bg-slate-600 text-white">Start Free - No Credit Card</Button>
               </Link>
             </CardContent>
