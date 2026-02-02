@@ -6930,6 +6930,37 @@ app.get("/api/admin/cancellation-requests", async (req, res) => {
   }
 });
 
+// GET /api/cancellation-status/:email - Check if a user has a pending cancellation
+app.get("/api/cancellation-status/:email", async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.json({ hasPendingCancellation: false });
+    }
+
+    const email = req.params.email.toLowerCase();
+    const { data, error } = await supabase
+      .from("cancellation_requests")
+      .select("*")
+      .eq("user_email", email)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error("[CANCELLATION STATUS] Error:", error);
+      return res.json({ hasPendingCancellation: false });
+    }
+
+    return res.json({ 
+      hasPendingCancellation: data && data.length > 0,
+      cancellationDate: data?.[0]?.created_at || null
+    });
+  } catch (error) {
+    console.error("[CANCELLATION STATUS] Error:", error.message);
+    return res.json({ hasPendingCancellation: false });
+  }
+});
+
 // Stripe webhook for automated payment events
 app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
   console.log("[STRIPE WEBHOOK] ========== WEBHOOK RECEIVED ==========");

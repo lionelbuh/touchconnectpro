@@ -6378,6 +6378,38 @@ export async function registerRoutes(
     }
   });
 
+  // GET /api/cancellation-status/:email - Check if a user has a pending cancellation
+  app.get("/api/cancellation-status/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.json({ hasPendingCancellation: false });
+      }
+
+      const email = req.params.email.toLowerCase();
+      const { data, error } = await (client
+        .from("cancellation_requests")
+        .select("*")
+        .eq("user_email", email)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1) as any);
+
+      if (error) {
+        console.error("[CANCELLATION STATUS] Error:", error);
+        return res.json({ hasPendingCancellation: false });
+      }
+
+      return res.json({ 
+        hasPendingCancellation: data && data.length > 0,
+        cancellationDate: data?.[0]?.created_at || null
+      });
+    } catch (error: any) {
+      console.error("[CANCELLATION STATUS] Error:", error.message);
+      return res.json({ hasPendingCancellation: false });
+    }
+  });
+
   // Check if coach has accepted latest agreement
   app.get("/api/contract-acceptances/check-coach-agreement/:email", async (req, res) => {
     console.log("[CHECK COACH AGREEMENT] Checking for:", req.params.email);

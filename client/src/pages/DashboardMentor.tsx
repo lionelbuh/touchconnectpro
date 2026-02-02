@@ -59,6 +59,7 @@ export default function DashboardMentor() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
+  const [hasPendingCancellation, setHasPendingCancellation] = useState(false);
   const [coachRatings, setCoachRatings] = useState<Record<string, { averageRating: number; totalRatings: number }>>({});
 
   const [mentorProfile, setMentorProfile] = useState({
@@ -233,6 +234,23 @@ export default function DashboardMentor() {
       }
     }
     loadMessages();
+  }, [mentorProfile.email]);
+
+  // Check if mentor has a pending cancellation request
+  useEffect(() => {
+    async function checkCancellation() {
+      if (!mentorProfile.email) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/cancellation-status/${encodeURIComponent(mentorProfile.email)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setHasPendingCancellation(data.hasPendingCancellation);
+        }
+      } catch (error) {
+        console.error("Error checking cancellation status:", error);
+      }
+    }
+    checkCancellation();
   }, [mentorProfile.email]);
 
   // Load message threads (threaded conversations with entrepreneurs)
@@ -921,6 +939,19 @@ export default function DashboardMentor() {
                       <div>
                         <h3 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-1">Account Disabled</h3>
                         <p className="text-red-700 dark:text-red-400">Your mentor account has been disabled. Your dashboard is currently in view-only mode. Please use the Messages tab to contact the Admin team if you would like to reactivate your account.</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {hasPendingCancellation && (
+                <Card className="mb-6 border-orange-300 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800">
+                  <CardContent className="pt-6 pb-6">
+                    <div className="flex items-start gap-4">
+                      <AlertCircle className="h-6 w-6 text-orange-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h3 className="text-lg font-semibold text-orange-800 dark:text-orange-300 mb-1">Cancellation Request Pending</h3>
+                        <p className="text-orange-700 dark:text-orange-400">Your cancellation request has been received and is being processed. You can still change your mind – just email us at <a href="mailto:hello@touchconnectpro.com" className="underline hover:text-orange-600">hello@touchconnectpro.com</a>.</p>
                       </div>
                     </div>
                   </CardContent>
