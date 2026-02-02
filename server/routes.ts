@@ -6433,22 +6433,27 @@ export async function registerRoutes(
       }
 
       const email = req.params.email.toLowerCase();
+      
+      // Check for any cancellation (pending or processed)
       const { data, error } = await (client
         .from("cancellation_requests")
         .select("*")
         .eq("user_email", email)
-        .eq("status", "pending")
         .order("created_at", { ascending: false })
         .limit(1) as any);
 
       if (error) {
         console.error("[CANCELLATION STATUS] Error:", error);
-        return res.json({ hasPendingCancellation: false });
+        return res.json({ hasPendingCancellation: false, hasProcessedCancellation: false });
       }
 
+      const latestRequest = data?.[0];
       return res.json({ 
-        hasPendingCancellation: data && data.length > 0,
-        cancellationDate: data?.[0]?.created_at || null
+        hasPendingCancellation: latestRequest?.status === "pending",
+        hasProcessedCancellation: latestRequest?.status === "processed",
+        cancellationStatus: latestRequest?.status || null,
+        cancellationDate: latestRequest?.created_at || null,
+        processedDate: latestRequest?.processed_at || null
       });
     } catch (error: any) {
       console.error("[CANCELLATION STATUS] Error:", error.message);

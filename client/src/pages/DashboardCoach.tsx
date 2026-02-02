@@ -192,6 +192,7 @@ export default function DashboardCoach() {
   
   // Cancellation status
   const [hasPendingCancellation, setHasPendingCancellation] = useState(false);
+  const [hasProcessedCancellation, setHasProcessedCancellation] = useState(false);
 
   // External reputation state
   const [externalPlatform, setExternalPlatform] = useState("");
@@ -338,6 +339,7 @@ export default function DashboardCoach() {
         if (response.ok) {
           const data = await response.json();
           setHasPendingCancellation(data.hasPendingCancellation);
+          setHasProcessedCancellation(data.hasProcessedCancellation);
         }
       } catch (error) {
         console.error("Error checking cancellation status:", error);
@@ -834,6 +836,20 @@ export default function DashboardCoach() {
                     <div>
                       <h3 className="text-lg font-semibold text-orange-800 dark:text-orange-300 mb-1">Cancellation Request Pending</h3>
                       <p className="text-orange-700 dark:text-orange-400">You have submitted a cancellation request. Our team will process it within 2-3 business days. If you've changed your mind, please contact us at <a href="mailto:hello@touchconnectpro.com" className="underline font-medium">hello@touchconnectpro.com</a> to cancel your request.</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {hasProcessedCancellation && (
+              <Card className="mb-6 border-green-300 bg-green-50 dark:bg-green-950/20 dark:border-green-800" data-testid="cancellation-approved-banner">
+                <CardContent className="pt-6 pb-6">
+                  <div className="flex items-start gap-4">
+                    <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 mb-1">Cancellation Approved</h3>
+                      <p className="text-green-700 dark:text-green-400">Your cancellation request has been received and approved. Thank you for being part of TouchConnectPro. If you ever wish to return, you're always welcome back!</p>
                     </div>
                   </div>
                 </CardContent>
