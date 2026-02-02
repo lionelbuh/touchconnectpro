@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
 import MyAgreements from "@/components/MyAgreements";
+import { COACH_CONTRACT } from "@/lib/contracts";
 
 // Helper to format UTC timestamps from database to PST
 const formatToPST = (timestamp: string | Date) => {
@@ -1935,18 +1936,12 @@ export default function DashboardCoach() {
                   </p>
                 </div>
                 
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <h3>TouchConnectPro Coach Agreement</h3>
-                  <p>By accepting this agreement, you acknowledge and agree to the following terms:</p>
-                  <ul>
-                    <li>You will provide professional coaching services to entrepreneurs on the TouchConnectPro platform</li>
-                    <li>You agree to maintain confidentiality of all client information</li>
-                    <li>You understand that TouchConnectPro retains a 20% platform fee on all coaching transactions</li>
-                    <li>You will conduct yourself professionally and ethically in all interactions</li>
-                    <li>You may terminate your partnership at any time by submitting a cancellation request</li>
-                    <li>TouchConnectPro reserves the right to terminate partnerships for violations of these terms</li>
-                  </ul>
-                  <p>For the full agreement terms, please visit: <a href="https://touchconnectpro.com/coach-agreement" target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline">Coach Agreement</a></p>
+                <div className="border rounded-lg bg-white dark:bg-slate-900 max-h-[40vh] overflow-y-auto">
+                  <div className="p-4">
+                    <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans leading-relaxed">
+                      {COACH_CONTRACT}
+                    </pre>
+                  </div>
                 </div>
 
                 <div className="flex items-start gap-2 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
