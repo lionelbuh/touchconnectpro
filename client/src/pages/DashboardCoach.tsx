@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
 import MyAgreements from "@/components/MyAgreements";
-import { COACH_CONTRACT } from "@/lib/contracts";
+import { COACH_CONTRACT, CONTRACT_VERSION } from "@/lib/contracts";
 
 // Helper to format UTC timestamps from database to PST
 const formatToPST = (timestamp: string | Date) => {
@@ -1966,12 +1966,15 @@ export default function DashboardCoach() {
                 onClick={async () => {
                   setAcceptingAgreement(true);
                   try {
-                    const response = await fetch(`${API_BASE_URL}/api/contract-acceptances/accept-coach-agreement`, {
+                    const response = await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
                         email: profile?.email,
-                        fullName: profile?.full_name
+                        role: 'coach',
+                        contractVersion: CONTRACT_VERSION,
+                        contractText: COACH_CONTRACT,
+                        userAgent: navigator.userAgent
                       })
                     });
                     if (response.ok) {
