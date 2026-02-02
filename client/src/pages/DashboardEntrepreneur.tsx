@@ -50,10 +50,19 @@ export default function DashboardEntrepreneur() {
   }, []);
   
   const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
+  const [shuffledCoaches, setShuffledCoaches] = useState<any[]>([]);
   const [coachPurchases, setCoachPurchases] = useState<any[]>([]);
   const [loadingPurchases, setLoadingPurchases] = useState(false);
   const [coachRatings, setCoachRatings] = useState<Record<string, { averageRating: number; totalRatings: number }>>({});
   const [selectedSpecializations, setSelectedSpecializations] = useState<string[]>([]);
+  
+  // Shuffle coaches when they are loaded to show different order each session
+  useEffect(() => {
+    if (approvedCoaches.length > 0) {
+      const shuffled = [...approvedCoaches].sort(() => Math.random() - 0.5);
+      setShuffledCoaches(shuffled);
+    }
+  }, [approvedCoaches]);
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [selectedCoachForReviews, setSelectedCoachForReviews] = useState<any>(null);
   const [coachReviews, setCoachReviews] = useState<any[]>([]);
@@ -73,6 +82,8 @@ export default function DashboardEntrepreneur() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [businessPlanData, setBusinessPlanData] = useState<any>({
     executiveSummary: "",
     problemStatement: "",
@@ -1912,13 +1923,12 @@ export default function DashboardEntrepreneur() {
                         <GraduationCap className="h-5 w-5 text-purple-600" />
                         Available Coaches
                       </CardTitle>
-                      <CardDescription>Browse specialized coaches to accelerate your growth</CardDescription>
+                      <CardDescription className="text-xs leading-relaxed">Coach specializations are suggested by your mentor based on your project stage, but you are free to choose any coach. All are freelance professionals ready to help.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center justify-between">
-                        <span className="text-2xl font-bold text-purple-600">{approvedCoaches.length}</span>
+                      <div className="flex items-center justify-end">
                         <Button variant="outline" className="border-purple-200 text-purple-600" data-testid="button-view-coaches">
-                          View All <ChevronRight className="ml-1 h-4 w-4" />
+                          See some Coaches Profiles <ChevronRight className="ml-1 h-4 w-4" />
                         </Button>
                       </div>
                     </CardContent>
@@ -1949,8 +1959,8 @@ export default function DashboardEntrepreneur() {
                 <p className="text-muted-foreground mb-4">Browse our approved coaches who can help accelerate your startup journey with specialized expertise.</p>
 
                 {/* Areas of Expertise Filter */}
-                {approvedCoaches.length > 0 && !isAccountDisabled && !isPreApproved && (() => {
-                  const allExpertiseAreas = Array.from(new Set(approvedCoaches.flatMap(c => {
+                {shuffledCoaches.length > 0 && !isAccountDisabled && !isPreApproved && (() => {
+                  const allExpertiseAreas = Array.from(new Set(shuffledCoaches.flatMap(c => {
                     const areas = c.focus_areas || "";
                     return areas.split(",").map((a: string) => a.trim()).filter((a: string) => a);
                   })));
@@ -2012,9 +2022,9 @@ export default function DashboardEntrepreneur() {
                       <p className="text-amber-700 dark:text-amber-400">You have been pre-approved! To access the coaches list and other premium features, please complete your membership payment. Contact the Admin team via the Messages tab for payment instructions.</p>
                     </CardContent>
                   </Card>
-                ) : approvedCoaches.length > 0 ? (
+                ) : shuffledCoaches.length > 0 ? (
                   <div className="grid grid-cols-1 gap-6">
-                    {approvedCoaches
+                    {shuffledCoaches
                       .filter((coach) => {
                         if (selectedSpecializations.length === 0) return true;
                         const coachAreas = (coach.focus_areas || "").split(",").map((a: string) => a.trim()).filter((a: string) => a);
@@ -3309,9 +3319,94 @@ export default function DashboardEntrepreneur() {
                       </CardContent>
                     </Card>
 
+                    {/* Subtle membership management - at the very bottom */}
+                    <div className="mt-12 pt-6 border-t border-slate-100 dark:border-slate-800">
+                      <p className="text-xs text-slate-400 dark:text-slate-600 text-center">
+                        Need to manage your subscription?{" "}
+                        <button 
+                          onClick={() => setShowCancelModal(true)}
+                          className="text-slate-400 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-500 underline"
+                          data-testid="link-cancel-membership"
+                        >
+                          Membership settings
+                        </button>
+                      </p>
+                    </div>
+
                   </div>
                 )}
               </div>
+            )}
+
+            {/* Membership Cancellation Modal */}
+            {showCancelModal && (
+              <Dialog open={showCancelModal} onOpenChange={setShowCancelModal}>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Cancel Membership</DialogTitle>
+                    <DialogDescription>
+                      We're sorry to see you go. Before you cancel, please note:
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                      <li>Your access will remain active until the end of your current billing cycle</li>
+                      <li>No future charges will be made to your card</li>
+                      <li>You can rejoin anytime in the future</li>
+                    </ul>
+                    <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+                      <p className="text-sm text-amber-800 dark:text-amber-300">
+                        <strong>Note:</strong> If you're having issues or need help, please reach out to us via Messages before cancelling. We'd love to help!
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 justify-end">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowCancelModal(false)}
+                      data-testid="button-cancel-modal-close"
+                    >
+                      Keep My Membership
+                    </Button>
+                    <Button 
+                      variant="destructive"
+                      disabled={isCancelling}
+                      onClick={async () => {
+                        setIsCancelling(true);
+                        try {
+                          const response = await fetch(`${API_BASE_URL}/api/stripe/cancel-subscription`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: userEmail })
+                          });
+                          if (response.ok) {
+                            toast.success("Your membership has been cancelled. You'll retain access until the end of your billing period.");
+                            setShowCancelModal(false);
+                          } else {
+                            const data = await response.json();
+                            toast.error(data.error || "Failed to cancel membership");
+                          }
+                        } catch (error) {
+                          console.error("Cancellation error:", error);
+                          toast.error("Failed to cancel membership. Please contact support.");
+                        } finally {
+                          setIsCancelling(false);
+                        }
+                      }}
+                      data-testid="button-confirm-cancel"
+                    >
+                      {isCancelling ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Cancelling...
+                        </>
+                      ) : (
+                        "Cancel My Membership"
+                      )}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             )}
           </div>
         </main>

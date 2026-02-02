@@ -166,6 +166,11 @@ export default function DashboardCoach() {
   
   // Profile edit mode state
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  
+  // Cancellation state
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
   const [originalProfileValues, setOriginalProfileValues] = useState<{
     expertise: string[];
     focusAreas: string;
@@ -177,6 +182,13 @@ export default function DashboardCoach() {
     bio: string;
     profileImage: string;
   } | null>(null);
+  
+  // Coach agreement state
+  const [needsAgreement, setNeedsAgreement] = useState(false);
+  const [checkingAgreement, setCheckingAgreement] = useState(true);
+  const [acceptingAgreement, setAcceptingAgreement] = useState(false);
+  const [agreementAlreadyChecked, setAgreementAlreadyChecked] = useState(false);
+  const [agreementCheckboxChecked, setAgreementCheckboxChecked] = useState(false);
   
   // External reputation state
   const [externalPlatform, setExternalPlatform] = useState("");
@@ -289,6 +301,30 @@ export default function DashboardCoach() {
 
     loadProfile();
   }, []);
+
+  // Check if coach needs to accept new agreement
+  useEffect(() => {
+    async function checkAgreement() {
+      if (!profile?.email) return;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/contract-acceptances/check-coach-agreement/${encodeURIComponent(profile.email)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setNeedsAgreement(!data.hasAccepted);
+        }
+      } catch (error) {
+        console.error("Error checking agreement:", error);
+      } finally {
+        setCheckingAgreement(false);
+        setAgreementAlreadyChecked(true);
+      }
+    }
+    
+    if (profile?.email && !agreementAlreadyChecked) {
+      checkAgreement();
+    }
+  }, [profile?.email, agreementAlreadyChecked]);
 
   // Load read message IDs from localStorage
   useEffect(() => {
@@ -1726,10 +1762,201 @@ export default function DashboardCoach() {
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">My Agreements</h2>
               {profile?.email && <MyAgreements userEmail={profile.email} />}
+              
+              {/* Cancellation Section */}
+              <div className="mt-12 pt-6 border-t border-slate-200 dark:border-slate-700">
+                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">Cancel Coach Partnership</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                  If you wish to end your partnership with TouchConnectPro, please submit a cancellation request.
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  onClick={() => setShowCancelModal(true)}
+                  data-testid="button-cancel-partnership"
+                >
+                  Request Cancellation
+                </Button>
+              </div>
             </div>
           )}
         </div>
       </main>
+
+      {/* Cancellation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-red-600">Cancel Coach Partnership</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                We're sorry to see you go. Please let us know why you'd like to end your partnership.
+              </p>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Reason for cancellation</label>
+                <textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="Please share your reason..."
+                  className="w-full min-h-[100px] p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white resize-y"
+                  data-testid="input-cancel-reason"
+                />
+              </div>
+              <div className="flex gap-3 justify-end pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowCancelModal(false);
+                    setCancelReason("");
+                  }}
+                  data-testid="button-cancel-modal-close"
+                >
+                  Keep Partnership
+                </Button>
+                <Button 
+                  variant="destructive"
+                  disabled={isCancelling || !cancelReason.trim()}
+                  onClick={async () => {
+                    if (!cancelReason.trim()) {
+                      toast.error("Please provide a reason for cancellation");
+                      return;
+                    }
+                    setIsCancelling(true);
+                    try {
+                      const response = await fetch(`${API_BASE_URL}/api/cancellation-request`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          userType: 'coach',
+                          userName: profile?.full_name || 'Coach',
+                          userEmail: profile?.email || '',
+                          reason: cancelReason
+                        })
+                      });
+                      if (response.ok) {
+                        toast.success("Your cancellation request has been submitted. We will contact you shortly.");
+                        setShowCancelModal(false);
+                        setCancelReason("");
+                      } else {
+                        const data = await response.json();
+                        toast.error(data.error || "Failed to submit request");
+                      }
+                    } catch (error) {
+                      console.error("Cancellation error:", error);
+                      toast.error("Failed to submit request. Please try again.");
+                    } finally {
+                      setIsCancelling(false);
+                    }
+                  }}
+                  data-testid="button-confirm-cancel"
+                >
+                  {isCancelling ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Request"
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Blocking Agreement Modal */}
+      {needsAgreement && !checkingAgreement && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <CardHeader className="bg-gradient-to-r from-cyan-600 to-teal-600 text-white">
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardCheck className="h-5 w-5" />
+                Coach Agreement Required
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-4">
+                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+                  <p className="text-amber-800 dark:text-amber-300 text-sm">
+                    <strong>Important:</strong> We have updated our Coach Agreement. Please review and accept the new terms to continue using your dashboard.
+                  </p>
+                </div>
+                
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <h3>TouchConnectPro Coach Agreement</h3>
+                  <p>By accepting this agreement, you acknowledge and agree to the following terms:</p>
+                  <ul>
+                    <li>You will provide professional coaching services to entrepreneurs on the TouchConnectPro platform</li>
+                    <li>You agree to maintain confidentiality of all client information</li>
+                    <li>You understand that TouchConnectPro retains a 20% platform fee on all coaching transactions</li>
+                    <li>You will conduct yourself professionally and ethically in all interactions</li>
+                    <li>You may terminate your partnership at any time by submitting a cancellation request</li>
+                    <li>TouchConnectPro reserves the right to terminate partnerships for violations of these terms</li>
+                  </ul>
+                  <p>For the full agreement terms, please visit: <a href="https://touchconnectpro.com/coach-agreement" target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline">Coach Agreement</a></p>
+                </div>
+
+                <div className="flex items-start gap-2 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <input 
+                    type="checkbox" 
+                    id="agree-checkbox"
+                    checked={agreementCheckboxChecked}
+                    onChange={(e) => setAgreementCheckboxChecked(e.target.checked)}
+                    className="mt-1"
+                    data-testid="checkbox-agree"
+                  />
+                  <label htmlFor="agree-checkbox" className="text-sm text-slate-700 dark:text-slate-300">
+                    I have read and agree to the TouchConnectPro Coach Agreement. I understand and accept all terms and conditions.
+                  </label>
+                </div>
+              </div>
+            </CardContent>
+            <div className="p-4 border-t flex justify-end">
+              <Button
+                disabled={!agreementCheckboxChecked || acceptingAgreement}
+                className="bg-cyan-600 hover:bg-cyan-700"
+                onClick={async () => {
+                  setAcceptingAgreement(true);
+                  try {
+                    const response = await fetch(`${API_BASE_URL}/api/contract-acceptances/accept-coach-agreement`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        email: profile?.email,
+                        fullName: profile?.full_name
+                      })
+                    });
+                    if (response.ok) {
+                      toast.success("Thank you for accepting the Coach Agreement!");
+                      setNeedsAgreement(false);
+                    } else {
+                      toast.error("Failed to save agreement. Please try again.");
+                    }
+                  } catch (error) {
+                    console.error("Error accepting agreement:", error);
+                    toast.error("Failed to save agreement. Please try again.");
+                  } finally {
+                    setAcceptingAgreement(false);
+                  }
+                }}
+                data-testid="button-accept-agreement"
+              >
+                {acceptingAgreement ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Accept Agreement"
+                )}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
       </div>
     </div>
   );

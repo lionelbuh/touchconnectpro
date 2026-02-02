@@ -6127,6 +6127,248 @@ export async function registerRoutes(
     }
   });
 
+  // Stripe: Cancel entrepreneur subscription
+  app.post("/api/stripe/cancel-subscription", async (req, res) => {
+    console.log("[STRIPE CANCEL] Cancel subscription request");
+    
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    try {
+      const { getUncachableStripeClient } = await import('./stripeClient');
+      const stripe = await getUncachableStripeClient();
+      
+      // Find customer by email
+      const customers = await stripe.customers.list({
+        email: email.toLowerCase(),
+        limit: 1
+      });
+
+      if (customers.data.length === 0) {
+        return res.status(404).json({ error: "No subscription found for this email" });
+      }
+
+      const customer = customers.data[0];
+      
+      // Get active subscriptions
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: 'active',
+        limit: 1
+      });
+
+      if (subscriptions.data.length === 0) {
+        return res.status(404).json({ error: "No active subscription found" });
+      }
+
+      const subscription = subscriptions.data[0];
+      
+      // Cancel at period end (access remains until billing cycle ends)
+      const cancelledSubscription = await stripe.subscriptions.update(subscription.id, {
+        cancel_at_period_end: true
+      });
+
+      console.log("[STRIPE CANCEL] Subscription marked for cancellation:", cancelledSubscription.id);
+      console.log("[STRIPE CANCEL] Cancels at:", new Date(cancelledSubscription.current_period_end * 1000).toISOString());
+
+      return res.json({ 
+        success: true, 
+        message: "Subscription will be cancelled at the end of the billing period",
+        cancelAt: new Date(cancelledSubscription.current_period_end * 1000).toISOString()
+      });
+    } catch (error: any) {
+      console.error("[STRIPE CANCEL] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Cancellation request email (for coaches, mentors, investors)
+  app.post("/api/cancellation-request", async (req, res) => {
+    console.log("[CANCELLATION] Request received");
+    
+    const { userType, userName, userEmail, reason } = req.body;
+    
+    if (!userType || !userEmail || !reason) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    try {
+      const resendData = await getResendClient();
+      
+      if (!resendData) {
+        console.log("[CANCELLATION] Resend not configured");
+        return res.status(500).json({ error: "Email service not configured" });
+      }
+
+      const { client: resend, fromEmail } = resendData;
+      const PST_NOW = new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" });
+      
+      const subject = `${userType.charAt(0).toUpperCase() + userType.slice(1)} Cancellation Request - ${userName}`;
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #ef4444; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+            .info-box { background: #fff; border: 1px solid #e2e8f0; padding: 15px; margin: 15px 0; border-radius: 8px; }
+            .label { font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; }
+            .value { color: #1e293b; font-size: 16px; margin-top: 4px; }
+            .reason-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>${userType.charAt(0).toUpperCase() + userType.slice(1)} Cancellation Request</h1>
+            </div>
+            <div class="content">
+              <p>A ${userType} has submitted a cancellation request.</p>
+              
+              <div class="info-box">
+                <div class="label">Name</div>
+                <div class="value">${userName}</div>
+              </div>
+              
+              <div class="info-box">
+                <div class="label">Email</div>
+                <div class="value">${userEmail}</div>
+              </div>
+              
+              <div class="info-box">
+                <div class="label">User Type</div>
+                <div class="value">${userType.charAt(0).toUpperCase() + userType.slice(1)}</div>
+              </div>
+              
+              <div class="info-box">
+                <div class="label">Submitted At</div>
+                <div class="value">${PST_NOW} PST</div>
+              </div>
+              
+              <div class="reason-box">
+                <div class="label">Reason for Cancellation</div>
+                <p style="margin: 10px 0 0 0; white-space: pre-wrap;">${reason}</p>
+              </div>
+              
+              <p style="color: #64748b; font-size: 14px; margin-top: 20px;">
+                Please review this request and take appropriate action.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const result = await resend.emails.send({
+        from: fromEmail,
+        to: "hello@touchconnectpro.com",
+        subject,
+        html: htmlContent,
+        replyTo: userEmail
+      });
+
+      console.log("[CANCELLATION] Email sent successfully:", result.id);
+      return res.json({ success: true });
+    } catch (error: any) {
+      console.error("[CANCELLATION] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Check if coach has accepted latest agreement
+  app.get("/api/contract-acceptances/check-coach-agreement/:email", async (req, res) => {
+    console.log("[CHECK COACH AGREEMENT] Checking for:", req.params.email);
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { email } = req.params;
+      const CURRENT_COACH_AGREEMENT_VERSION = "coach_agreement_v2";
+
+      const { data, error } = await (client
+        .from("contract_acceptances")
+        .select("*")
+        .eq("email", email)
+        .eq("contract_version", CURRENT_COACH_AGREEMENT_VERSION)
+        .single() as any);
+
+      if (error && error.code !== 'PGRST116') {
+        console.error("[CHECK COACH AGREEMENT] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      const hasAccepted = !!data;
+      console.log("[CHECK COACH AGREEMENT] Has accepted:", hasAccepted);
+      return res.json({ hasAccepted });
+    } catch (error: any) {
+      console.error("[CHECK COACH AGREEMENT] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Accept coach agreement
+  app.post("/api/contract-acceptances/accept-coach-agreement", async (req, res) => {
+    console.log("[ACCEPT COACH AGREEMENT] Request received");
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { email, fullName } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      const CURRENT_COACH_AGREEMENT_VERSION = "coach_agreement_v2";
+      const contractText = `TouchConnectPro Coach Agreement (${CURRENT_COACH_AGREEMENT_VERSION})
+
+By accepting this agreement, the coach acknowledges and agrees to:
+- Provide professional coaching services to entrepreneurs on the TouchConnectPro platform
+- Maintain confidentiality of all client information
+- Accept that TouchConnectPro retains a 20% platform fee on all coaching transactions
+- Conduct themselves professionally and ethically in all interactions
+- May terminate the partnership at any time by submitting a cancellation request
+- TouchConnectPro reserves the right to terminate partnerships for violations of these terms
+
+Full terms available at: https://touchconnectpro.com/coach-agreement`;
+
+      const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+      const userAgent = req.headers['user-agent'] || null;
+
+      const { data, error } = await (client
+        .from("contract_acceptances")
+        .insert({
+          email: email.toLowerCase(),
+          role: 'coach',
+          contract_version: CURRENT_COACH_AGREEMENT_VERSION,
+          contract_text: contractText,
+          ip_address: typeof ipAddress === 'string' ? ipAddress : (ipAddress as string[])[0],
+          user_agent: userAgent,
+          accepted_at: new Date().toISOString()
+        })
+        .select()
+        .single() as any);
+
+      if (error) {
+        console.error("[ACCEPT COACH AGREEMENT] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      console.log("[ACCEPT COACH AGREEMENT] Saved successfully for:", email);
+      return res.json({ success: true, acceptance: data });
+    } catch (error: any) {
+      console.error("[ACCEPT COACH AGREEMENT] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Stripe webhook for coach purchases (development testing endpoint)
   // Note: Production on Render uses backend/index.js which has its own webhook handler
   app.post("/api/stripe/webhook", async (req, res) => {

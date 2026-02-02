@@ -96,6 +96,11 @@ export default function DashboardInvestor() {
   const [investorReadMessageIds, setInvestorReadMessageIds] = useState<string[]>([]);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   
+  // Cancellation state
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
+  
   // Investment notes state (like mentor notes)
   const [investorNotes, setInvestorNotes] = useState<InvestorNote[]>([]);
   const [noteResponses, setNoteResponses] = useState<Record<string, string>>({});
@@ -1186,10 +1191,110 @@ export default function DashboardInvestor() {
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">My Agreements</h2>
               {profile?.email && <MyAgreements userEmail={profile.email} />}
+              
+              {/* Cancellation Section */}
+              <div className="mt-12 pt-6 border-t border-slate-200 dark:border-slate-700">
+                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">Cancel Investor Partnership</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                  If you wish to end your partnership with TouchConnectPro, please submit a cancellation request.
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  onClick={() => setShowCancelModal(true)}
+                  data-testid="button-cancel-partnership"
+                >
+                  Request Cancellation
+                </Button>
+              </div>
             </div>
           )}
         </div>
       </main>
+
+      {/* Cancellation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-red-600">Cancel Investor Partnership</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                We're sorry to see you go. Please let us know why you'd like to end your partnership.
+              </p>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Reason for cancellation</label>
+                <textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="Please share your reason..."
+                  className="w-full min-h-[100px] p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white resize-y"
+                  data-testid="input-cancel-reason"
+                />
+              </div>
+              <div className="flex gap-3 justify-end pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowCancelModal(false);
+                    setCancelReason("");
+                  }}
+                  data-testid="button-cancel-modal-close"
+                >
+                  Keep Partnership
+                </Button>
+                <Button 
+                  variant="destructive"
+                  disabled={isCancelling || !cancelReason.trim()}
+                  onClick={async () => {
+                    if (!cancelReason.trim()) {
+                      toast.error("Please provide a reason for cancellation");
+                      return;
+                    }
+                    setIsCancelling(true);
+                    try {
+                      const response = await fetch(`${API_BASE_URL}/api/cancellation-request`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          userType: 'investor',
+                          userName: profile?.full_name || 'Investor',
+                          userEmail: profile?.email || '',
+                          reason: cancelReason
+                        })
+                      });
+                      if (response.ok) {
+                        toast.success("Your cancellation request has been submitted. We will contact you shortly.");
+                        setShowCancelModal(false);
+                        setCancelReason("");
+                      } else {
+                        const data = await response.json();
+                        toast.error(data.error || "Failed to submit request");
+                      }
+                    } catch (error) {
+                      console.error("Cancellation error:", error);
+                      toast.error("Failed to submit request. Please try again.");
+                    } finally {
+                      setIsCancelling(false);
+                    }
+                  }}
+                  data-testid="button-confirm-cancel"
+                >
+                  {isCancelling ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Request"
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
       </div>
     </div>
   );
