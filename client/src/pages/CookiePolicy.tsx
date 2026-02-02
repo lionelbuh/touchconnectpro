@@ -14,8 +14,11 @@ export default function CookiePolicy() {
             <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 text-slate-900 dark:text-white">
               Cookie Policy
             </h1>
-            <p className="text-lg text-slate-600 dark:text-slate-400">
-              Last updated: December 30, 2025
+            <p className="text-lg text-slate-600 dark:text-slate-400 mb-2">
+              Last updated: February 1, 2026
+            </p>
+            <p className="text-slate-600 dark:text-slate-400">
+              TouchConnectPro is a website and service operated by Touch Equity Partners LLC.
             </p>
           </div>
         </div>

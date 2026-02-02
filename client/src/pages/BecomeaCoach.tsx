@@ -138,7 +138,7 @@ export default function BecomeaCoach() {
       return;
     }
     if (!contractAgreed) {
-      alert("Please read and agree to the Pre-Launch Coach Agreement to submit your application");
+      alert("Please read and agree to the Coach Platform Agreement to submit your application");
       return;
     }
     if (formData.country === "United States" && !formData.state) {
@@ -661,7 +661,7 @@ export default function BecomeaCoach() {
                     <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
                       <div className="flex items-center gap-2 mb-4">
                         <FileText className="h-5 w-5 text-cyan-600" />
-                        <label className="text-sm font-semibold text-slate-900 dark:text-white">Pre-Launch Coach Agreement *</label>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white">Coach Platform Agreement *</label>
                       </div>
                       <ScrollArea className="h-64 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
                         <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans leading-relaxed">
@@ -679,7 +679,7 @@ export default function BecomeaCoach() {
                           htmlFor="contract-agreement"
                           className="text-sm text-slate-700 dark:text-slate-300 cursor-pointer leading-relaxed"
                         >
-                          I have read and agree to the <span className="font-semibold text-cyan-600 dark:text-cyan-400">Pre-Launch Coach Agreement</span>
+                          I have read and agree to the <span className="font-semibold text-cyan-600 dark:text-cyan-400">Coach Platform Agreement</span>
                         </label>
                       </div>
                     </div>
