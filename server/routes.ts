@@ -6388,6 +6388,42 @@ export async function registerRoutes(
     }
   });
 
+  // POST /api/admin/cancellation-requests/:id/process - Mark a cancellation as processed
+  app.post("/api/admin/cancellation-requests/:id/process", async (req, res) => {
+    const { id } = req.params;
+    const { processedBy, notes } = req.body;
+    console.log("[ADMIN] Processing cancellation request:", id);
+    
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { data, error } = await (client
+        .from("cancellation_requests")
+        .update({
+          status: "processed",
+          processed_at: new Date().toISOString(),
+          processed_by: processedBy || "admin",
+          notes: notes || null
+        })
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        console.error("[ADMIN] Error processing cancellation:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      console.log("[ADMIN] Cancellation processed successfully");
+      return res.json({ success: true, data: data?.[0] });
+    } catch (error: any) {
+      console.error("[ADMIN] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // GET /api/cancellation-status/:email - Check if a user has a pending cancellation
   app.get("/api/cancellation-status/:email", async (req, res) => {
     try {

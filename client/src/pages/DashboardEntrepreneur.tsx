@@ -3405,14 +3405,31 @@ export default function DashboardEntrepreneur() {
                       onClick={async () => {
                         setIsCancelling(true);
                         try {
+                          // First cancel Stripe subscription
                           const response = await fetch(`${API_BASE_URL}/api/stripe/cancel-subscription`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ email: userEmail })
                           });
                           if (response.ok) {
+                            // Also record cancellation for admin notification and tracking
+                            try {
+                              await fetch(`${API_BASE_URL}/api/cancellation-request`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  userType: 'entrepreneur',
+                                  userName: profileData.fullName || 'Entrepreneur',
+                                  userEmail: userEmail,
+                                  reason: 'Membership cancelled via dashboard'
+                                })
+                              });
+                            } catch (err) {
+                              console.error("Error recording cancellation:", err);
+                            }
                             toast.success("Your membership has been cancelled. You'll retain access until the end of your billing period.");
                             setShowCancelModal(false);
+                            setHasPendingCancellation(true);
                           } else {
                             const data = await response.json();
                             toast.error(data.error || "Failed to cancel membership");

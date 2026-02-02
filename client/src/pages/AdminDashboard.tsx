@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, CheckCircle, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus, Pencil, Clock } from "lucide-react";
+import { Check, CheckCircle, X, XCircle, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus, Pencil, Clock } from "lucide-react";
 import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
   const [loadingAdmins, setLoadingAdmins] = useState(false);
   const [activeMembersSubTab, setActiveMembersSubTab] = useState<"portfolio" | "messaging" | "management">("portfolio");
   const [activeApprovalsSubTab, setActiveApprovalsSubTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
-  const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled" | "coming-soon">("entrepreneurs");
+  const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled" | "coming-soon" | "cancellations">("entrepreneurs");
   const [mentorApplications, setMentorApplications] = useState<MentorApplication[]>([]);
   const [coachApplications, setCoachApplications] = useState<CoachApplication[]>([]);
   const [investorApplications, setInvestorApplications] = useState<InvestorApplication[]>([]);
@@ -635,7 +635,7 @@ export default function AdminDashboard() {
           const data = await cancellationResponse.json();
           setCancellationRequests(data);
           // Create a Set of emails with pending cancellations for quick lookup
-          const emails = new Set(data.filter((r: any) => r.status === 'pending').map((r: any) => r.user_email.toLowerCase()));
+          const emails = new Set<string>(data.filter((r: any) => r.status === 'pending').map((r: any) => r.user_email.toLowerCase()));
           setCancelledEmails(emails);
           console.log("Cancellation requests loaded:", data.length, "Pending emails:", emails.size);
         }
@@ -3013,6 +3013,20 @@ export default function AdminDashboard() {
                     ) : null;
                   })()}
                 </Button>
+                <Button 
+                  variant={activeMembersCategoryTab === "cancellations" ? "default" : "ghost"}
+                  onClick={() => { setActiveMembersCategoryTab("cancellations"); setActiveMembersSubTab("management"); }}
+                  className={activeMembersCategoryTab === "cancellations" ? "bg-orange-600 hover:bg-orange-700" : ""}
+                  data-testid="button-members-cancellations-subtab"
+                >
+                  <XCircle className="mr-1 h-4 w-4" />
+                  Cancellations
+                  {cancellationRequests.filter(c => c.status === "pending").length > 0 && (
+                    <span className="ml-2 bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 text-xs px-1.5 py-0.5 rounded-full">
+                      {cancellationRequests.filter(c => c.status === "pending").length}
+                    </span>
+                  )}
+                </Button>
               </div>
               
               {/* Action Sub-tabs */}
@@ -5162,6 +5176,97 @@ export default function AdminDashboard() {
                           </>
                         );
                       })()}
+                    </div>
+                  </div>
+                  )}
+
+                  {/* Cancellations Tab - show all cancellation requests */}
+                  {activeMembersCategoryTab === "cancellations" && (
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                      <XCircle className="h-5 w-5 text-orange-600" />
+                      Cancellation Requests
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      <strong>Entrepreneurs:</strong> Stripe subscriptions are automatically cancelled. Just mark as processed for record-keeping.
+                      <br />
+                      <strong>Others:</strong> Remove from platform manually, then mark as processed.
+                    </p>
+                    <div className="space-y-3">
+                      {cancellationRequests.length === 0 ? (
+                        <Card>
+                          <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                            <XCircle className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                            No cancellation requests. All members are active.
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        cancellationRequests.map((request, idx) => (
+                          <Card key={request.id} className={`border-l-4 ${request.status === 'pending' ? 'border-l-orange-500' : 'border-l-green-500'}`}>
+                            <CardContent className="pt-6">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <p className="font-semibold text-slate-900 dark:text-white">{request.user_name}</p>
+                                    <Badge variant="outline" className={`text-xs ${
+                                      request.user_type === 'entrepreneur' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                      request.user_type === 'mentor' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                      request.user_type === 'coach' ? 'bg-cyan-50 text-cyan-700 border-cyan-200' :
+                                      'bg-amber-50 text-amber-700 border-amber-200'
+                                    }`}>
+                                      {request.user_type.charAt(0).toUpperCase() + request.user_type.slice(1)}
+                                    </Badge>
+                                    <Badge className={request.status === 'pending' ? 'bg-orange-500' : 'bg-green-500'}>
+                                      {request.status === 'pending' ? 'Pending' : 'Processed'}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">{request.user_email}</p>
+                                  {request.reason && (
+                                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                                      <span className="font-medium">Reason:</span> {request.reason}
+                                    </p>
+                                  )}
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Requested: {new Date(request.created_at).toLocaleDateString()} at {new Date(request.created_at).toLocaleTimeString()}
+                                  </p>
+                                  {(request as any).processed_at && (
+                                    <p className="text-xs text-green-600 mt-1">
+                                      Processed: {new Date((request as any).processed_at).toLocaleDateString()} by {(request as any).processed_by}
+                                    </p>
+                                  )}
+                                </div>
+                                {request.status === 'pending' && (
+                                  <Button 
+                                    onClick={async () => {
+                                      try {
+                                        const token = localStorage.getItem("tcp_adminToken");
+                                        const response = await fetch(`${API_BASE_URL}/api/admin/cancellation-requests/${request.id}/process`, {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                          body: JSON.stringify({ processedBy: 'admin' })
+                                        });
+                                        if (response.ok) {
+                                          setCancellationRequests(prev => 
+                                            prev.map(r => r.id === request.id ? { ...r, status: 'processed' } : r)
+                                          );
+                                          toast.success(`Cancellation for ${request.user_name} marked as processed`);
+                                        }
+                                      } catch (error) {
+                                        toast.error("Failed to process cancellation");
+                                      }
+                                    }}
+                                    data-testid={`button-process-cancellation-${idx}`} 
+                                    size="sm" 
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    <CheckCircle className="mr-2 h-4 w-4" /> Mark Processed
+                                  </Button>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                      )}
                     </div>
                   </div>
                   )}
