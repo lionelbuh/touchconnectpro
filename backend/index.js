@@ -6844,7 +6844,7 @@ app.post("/api/cancellation-request", async (req, res) => {
       html: htmlContent,
       replyTo: userEmail
     });
-    console.log("[CANCELLATION] Admin email sent:", adminResult.id);
+    console.log("[CANCELLATION] Admin email sent:", adminResult?.data?.id || adminResult?.id || "sent");
 
     // Send confirmation email to user
     const userSubject = "Your Cancellation Request Has Been Received - TouchConnectPro";
@@ -6895,7 +6895,7 @@ app.post("/api/cancellation-request", async (req, res) => {
       subject: userSubject,
       html: userHtmlContent
     });
-    console.log("[CANCELLATION] User confirmation email sent:", userResult.id);
+    console.log("[CANCELLATION] User confirmation email sent:", userResult?.data?.id || userResult?.id || "sent");
 
     return res.json({ success: true });
   } catch (error) {
@@ -8738,6 +8738,60 @@ app.post("/api/admin/resend-invite", async (req, res) => {
     }
   } catch (error) {
     console.error("[ADMIN] Resend invite error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/admin/create-cancellation-table - Create the cancellation_requests table
+app.post("/api/admin/create-cancellation-table", async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Supabase not configured" });
+    }
+
+    // Check if table exists
+    const { error: checkError } = await supabase
+      .from("cancellation_requests")
+      .select("id")
+      .limit(1);
+
+    if (!checkError || !checkError.message?.includes("does not exist") && !checkError.message?.includes("schema cache")) {
+      return res.json({
+        success: true,
+        message: "Table 'cancellation_requests' already exists"
+      });
+    }
+
+    // Table doesn't exist - provide SQL to create it
+    const createTableSQL = `
+CREATE TABLE IF NOT EXISTS public.cancellation_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_type TEXT NOT NULL,
+  user_name TEXT,
+  user_email TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  processed_at TIMESTAMPTZ,
+  processed_by TEXT,
+  notes TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_cancellation_requests_email ON public.cancellation_requests(user_email);
+CREATE INDEX IF NOT EXISTS idx_cancellation_requests_status ON public.cancellation_requests(status);
+
+ALTER TABLE public.cancellation_requests ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow service role full access" ON public.cancellation_requests
+  FOR ALL USING (true) WITH CHECK (true);
+`;
+
+    return res.json({
+      success: false,
+      message: "Table 'cancellation_requests' does not exist. Please run the following SQL in Supabase SQL Editor:",
+      sql: createTableSQL
+    });
+  } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 });
