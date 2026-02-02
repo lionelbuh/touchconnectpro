@@ -6837,6 +6837,7 @@ app.post("/api/cancellation-request", async (req, res) => {
     `;
 
     // Send admin notification
+    console.log("[CANCELLATION] Sending admin email from:", fromEmail, "to: hello@touchconnectpro.com");
     const adminResult = await resend.emails.send({
       from: fromEmail,
       to: "hello@touchconnectpro.com",
@@ -6844,7 +6845,11 @@ app.post("/api/cancellation-request", async (req, res) => {
       html: htmlContent,
       replyTo: userEmail
     });
-    console.log("[CANCELLATION] Admin email sent:", adminResult?.data?.id || adminResult?.id || "sent");
+    if (adminResult?.error) {
+      console.error("[CANCELLATION] Admin email error:", adminResult.error);
+    } else {
+      console.log("[CANCELLATION] Admin email sent:", adminResult?.data?.id || adminResult?.id || JSON.stringify(adminResult));
+    }
 
     // Send confirmation email to user
     const userSubject = "Your Cancellation Request Has Been Received - TouchConnectPro";
@@ -6889,13 +6894,18 @@ app.post("/api/cancellation-request", async (req, res) => {
       </html>
     `;
 
+    console.log("[CANCELLATION] Sending user email from:", fromEmail, "to:", userEmail);
     const userResult = await resend.emails.send({
       from: fromEmail,
       to: userEmail,
       subject: userSubject,
       html: userHtmlContent
     });
-    console.log("[CANCELLATION] User confirmation email sent:", userResult?.data?.id || userResult?.id || "sent");
+    if (userResult?.error) {
+      console.error("[CANCELLATION] User email error:", userResult.error);
+    } else {
+      console.log("[CANCELLATION] User confirmation email sent:", userResult?.data?.id || userResult?.id || JSON.stringify(userResult));
+    }
 
     return res.json({ success: true });
   } catch (error) {
@@ -8801,5 +8811,7 @@ app.listen(PORT, () => {
   console.log("SUPABASE_URL:", process.env.SUPABASE_URL ? "Loaded" : "MISSING");
   console.log("SUPABASE_SERVICE_ROLE_KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "Set" : "MISSING");
   console.log("STRIPE_SECRET_KEY:", process.env.STRIPE_SECRET_KEY ? "Set" : "MISSING");
+  console.log("RESEND_API_KEY:", process.env.RESEND_API_KEY ? "Set" : "MISSING (will use Replit connector)");
+  console.log("RESEND_FROM_EMAIL:", process.env.RESEND_FROM_EMAIL || "Not set (will default to noreply@touchconnectpro.com)");
   console.log("Stripe routes: /api/stripe/create-checkout-session, /api/stripe/confirm-payment, /api/stripe/webhook");
 });

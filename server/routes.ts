@@ -6284,6 +6284,7 @@ export async function registerRoutes(
       `;
 
       // Send admin notification
+      console.log("[CANCELLATION] Sending admin email from:", fromEmail, "to: hello@touchconnectpro.com");
       const adminResult = await resend.emails.send({
         from: fromEmail,
         to: "hello@touchconnectpro.com",
@@ -6291,7 +6292,11 @@ export async function registerRoutes(
         html: htmlContent,
         replyTo: userEmail
       });
-      console.log("[CANCELLATION] Admin email sent:", adminResult?.data?.id || adminResult?.id || "sent");
+      if ((adminResult as any)?.error) {
+        console.error("[CANCELLATION] Admin email error:", (adminResult as any).error);
+      } else {
+        console.log("[CANCELLATION] Admin email sent:", (adminResult as any)?.data?.id || (adminResult as any)?.id || JSON.stringify(adminResult));
+      }
 
       // Send confirmation email to user
       const userSubject = "Your Cancellation Request Has Been Received - TouchConnectPro";
@@ -6336,13 +6341,18 @@ export async function registerRoutes(
         </html>
       `;
 
+      console.log("[CANCELLATION] Sending user email from:", fromEmail, "to:", userEmail);
       const userResult = await resend.emails.send({
         from: fromEmail,
         to: userEmail,
         subject: userSubject,
         html: userHtmlContent
       });
-      console.log("[CANCELLATION] User confirmation email sent:", userResult?.data?.id || userResult?.id || "sent");
+      if ((userResult as any)?.error) {
+        console.error("[CANCELLATION] User email error:", (userResult as any).error);
+      } else {
+        console.log("[CANCELLATION] User confirmation email sent:", (userResult as any)?.data?.id || (userResult as any)?.id || JSON.stringify(userResult));
+      }
 
       return res.json({ success: true });
     } catch (error: any) {
