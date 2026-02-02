@@ -8055,9 +8055,9 @@ app.post("/api/contract-acceptances", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields: email, role, contractVersion, contractText" });
     }
 
-    const validRoles = ['coach', 'mentor', 'investor'];
+    const validRoles = ['coach', 'mentor', 'investor', 'entrepreneur'];
     if (!validRoles.includes(role.toLowerCase())) {
-      return res.status(400).json({ error: "Invalid role. Must be coach, mentor, or investor" });
+      return res.status(400).json({ error: "Invalid role. Must be coach, mentor, investor, or entrepreneur" });
     }
 
     const { data, error } = await supabase

@@ -15,7 +15,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { IDEA_PROPOSAL_QUESTIONS } from "@/lib/constants";
-import { ENTREPRENEUR_CONTRACT } from "@/lib/contracts";
+import { ENTREPRENEUR_CONTRACT, CONTRACT_VERSION } from "@/lib/contracts";
 
 const COUNTRIES = [
   "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", 
@@ -414,6 +414,25 @@ export default function BecomeaEntrepreneur() {
       }
       
       console.log("=== SUCCESS ===", result);
+      
+      // Save contract acceptance
+      try {
+        await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: formData.email,
+            role: "entrepreneur",
+            contractVersion: CONTRACT_VERSION,
+            contractText: ENTREPRENEUR_CONTRACT,
+            userAgent: navigator.userAgent
+          })
+        });
+        console.log("[CONTRACT] Entrepreneur agreement saved");
+      } catch (contractError) {
+        console.error("[CONTRACT] Error saving agreement:", contractError);
+      }
+      
       toast.success("Application submitted successfully!");
       setSubmitted(true);
     } catch (error: any) {

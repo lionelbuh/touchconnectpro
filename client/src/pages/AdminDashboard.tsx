@@ -156,7 +156,8 @@ function ContractsSection() {
   const roleColors: Record<string, string> = {
     coach: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
     mentor: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
-    investor: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+    investor: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+    entrepreneur: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
   };
 
   return (
@@ -199,6 +200,14 @@ function ContractsSection() {
                 className={filterRole === "investor" ? "bg-amber-600 hover:bg-amber-700" : ""}
               >
                 Investors
+              </Button>
+              <Button
+                variant={filterRole === "entrepreneur" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterRole("entrepreneur")}
+                className={filterRole === "entrepreneur" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+              >
+                Entrepreneurs
               </Button>
             </div>
           </div>
