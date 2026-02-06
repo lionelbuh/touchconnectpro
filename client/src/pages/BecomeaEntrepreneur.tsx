@@ -15,6 +15,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { IDEA_PROPOSAL_QUESTIONS } from "@/lib/constants";
+import { ENTREPRENEUR_CONTRACT, CONTRACT_VERSION } from "@/lib/contracts";
 
 const COUNTRIES = [
   "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", 
@@ -103,6 +104,7 @@ export default function BecomeaEntrepreneur() {
   const [showForm, setShowForm] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [agreementAccepted, setAgreementAccepted] = useState(false);
   const [aiReview, setAiReview] = useState<any>({});
   const [editedReview, setEditedReview] = useState<any>({});
   const [showingAiReview, setShowingAiReview] = useState(false);
@@ -412,6 +414,25 @@ export default function BecomeaEntrepreneur() {
       }
       
       console.log("=== SUCCESS ===", result);
+      
+      // Save contract acceptance
+      try {
+        await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: formData.email,
+            role: "entrepreneur",
+            contractVersion: CONTRACT_VERSION,
+            contractText: ENTREPRENEUR_CONTRACT,
+            userAgent: navigator.userAgent
+          })
+        });
+        console.log("[CONTRACT] Entrepreneur agreement saved");
+      } catch (contractError) {
+        console.error("[CONTRACT] Error saving agreement:", contractError);
+      }
+      
       toast.success("Application submitted successfully!");
       setSubmitted(true);
     } catch (error: any) {
@@ -884,10 +905,39 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                       ))}
                     </div>
 
-                    <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                       <p className="text-sm text-slate-600 dark:text-slate-400">
                         <strong>Customize all sections</strong> above to match your vision. Use "Previous" to go back to your idea review if needed.
                       </p>
+                      
+                      {/* Entrepreneur Agreement Section */}
+                      <div className="mt-4">
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Entrepreneur Membership Agreement</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                          Please review and accept the agreement below before submitting your application.
+                        </p>
+                        <div className="border rounded-lg bg-white dark:bg-slate-900 max-h-[30vh] overflow-y-auto mb-4">
+                          <div className="p-4">
+                            <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans leading-relaxed">
+                              {ENTREPRENEUR_CONTRACT}
+                            </pre>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                          <input 
+                            type="checkbox" 
+                            id="entrepreneur-agree-checkbox"
+                            checked={agreementAccepted}
+                            onChange={(e) => setAgreementAccepted(e.target.checked)}
+                            className="mt-1"
+                            data-testid="checkbox-entrepreneur-agree"
+                          />
+                          <label htmlFor="entrepreneur-agree-checkbox" className="text-sm text-slate-700 dark:text-slate-300">
+                            I have read and agree to the TouchConnectPro Entrepreneur Membership Agreement. I understand and accept all terms and conditions.
+                          </label>
+                        </div>
+                      </div>
+
                       <div className="flex gap-3">
                         <Button
                           type="button"
@@ -901,7 +951,8 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                         <Button
                           type="button"
                           onClick={handleSubmitApplication}
-                          className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white font-semibold"
+                          disabled={!agreementAccepted}
+                          className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                           data-testid="button-submit-application"
                         >
                           Submit Application <ChevronRight className="ml-2 h-4 w-4" />

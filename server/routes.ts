@@ -161,7 +161,7 @@ async function sendPaymentWelcomeEmail(email: string, fullName: string) {
           <p>Best regards,<br>The TouchConnectPro Team</p>
         </div>
         <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
         </div>
       </div>
     </body>
@@ -251,7 +251,7 @@ async function sendStatusEmail(email: string, fullName: string, userType: string
               <p>Best regards,<br>The TouchConnectPro Team</p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
             </div>
           </div>
         </body>
@@ -305,7 +305,7 @@ async function sendStatusEmail(email: string, fullName: string, userType: string
               <p>Best regards,<br>The TouchConnectPro Team</p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
             </div>
           </div>
         </body>
@@ -364,7 +364,7 @@ async function sendStatusEmail(email: string, fullName: string, userType: string
             <p>Best regards,<br>The TouchConnectPro Team</p>
           </div>
           <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+            <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
           </div>
         </div>
       </body>
@@ -403,7 +403,7 @@ async function sendStatusEmail(email: string, fullName: string, userType: string
             <p>Best regards,<br>The TouchConnectPro Team</p>
           </div>
           <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+            <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
           </div>
         </div>
       </body>
@@ -1776,7 +1776,7 @@ export async function registerRoutes(
                         <p>Best regards,<br>The TouchConnectPro Team</p>
                       </div>
                       <div class="footer">
-                        <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                        <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
                       </div>
                     </div>
                   </body>
@@ -2022,7 +2022,7 @@ export async function registerRoutes(
                         <p>Best regards,<br>The TouchConnectPro Team</p>
                       </div>
                       <div class="footer">
-                        <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                        <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
                       </div>
                     </div>
                   </body>
@@ -3982,7 +3982,7 @@ export async function registerRoutes(
                       <p>Best regards,<br>The TouchConnectPro Team</p>
                     </div>
                     <div class="footer">
-                      <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                      <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
                     </div>
                   </div>
                 </body>
@@ -4161,7 +4161,7 @@ export async function registerRoutes(
                       <p>Best regards,<br>The TouchConnectPro Team</p>
                     </div>
                     <div class="footer">
-                      <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                      <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
                     </div>
                   </div>
                 </body>
@@ -5075,7 +5075,7 @@ export async function registerRoutes(
                     <p>Best regards,<br><strong>The TouchConnectPro Team</strong></p>
                   </div>
                   <div class="footer">
-                    <p>&copy; ${new Date().getFullYear()} TouchConnectPro. All rights reserved.</p>
+                    <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
                   </div>
                 </div>
               </body>
@@ -5118,7 +5118,7 @@ export async function registerRoutes(
                     <p>They're interested in being notified when the AI tools are ready.</p>
                     
                     <p style="color: #64748b; font-size: 14px;">
-                      Received: ${new Date().toLocaleString()}
+                      Received: ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST
                     </p>
                   </div>
                   <div class="footer">
@@ -5256,7 +5256,7 @@ export async function registerRoutes(
                     <div class="info-box">
                       <strong>Name:</strong> ${fullName}<br>
                       <strong>Email:</strong> ${email}<br>
-                      <strong>Date:</strong> ${new Date().toLocaleString()}
+                      <strong>Date:</strong> ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST
                     </div>
                   </div>
                   <div class="footer">
@@ -5473,7 +5473,7 @@ export async function registerRoutes(
                       
                       <div class="meeting-box">
                         <h3 style="margin-top: 0;">${meeting.topic}</h3>
-                        ${meeting.start_time ? `<p><strong>Date & Time:</strong> ${new Date(meeting.start_time).toLocaleString()}</p>` : ''}
+                        ${meeting.start_time ? `<p><strong>Date & Time:</strong> ${new Date(meeting.start_time).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>` : ''}
                         <p><strong>Duration:</strong> ${meeting.duration} minutes</p>
                         ${meeting.password ? `<p><strong>Password:</strong> ${meeting.password}</p>` : ''}
                         <a href="${meeting.join_url}" class="join-button">Join Meeting</a>
@@ -5734,7 +5734,7 @@ export async function registerRoutes(
                     
                     <div class="meeting-box">
                       <h3 style="margin-top: 0;">${topic}</h3>
-                      ${startTime ? `<p><strong>Date & Time:</strong> ${new Date(startTime).toLocaleString()}</p>` : ''}
+                      ${startTime ? `<p><strong>Date & Time:</strong> ${new Date(startTime).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>` : ''}
                       ${duration ? `<p><strong>Duration:</strong> ${duration} minutes</p>` : ''}
                       ${password ? `<p><strong>Password:</strong> ${password}</p>` : ''}
                       <a href="${joinUrl}" class="join-button">Join Meeting</a>
@@ -5902,7 +5902,7 @@ export async function registerRoutes(
                       
                       <div class="meeting-box">
                         <h3 style="margin-top: 0;">${topic}</h3>
-                        ${startTime ? `<p><strong>Date & Time:</strong> ${new Date(startTime).toLocaleString()}</p>` : ''}
+                        ${startTime ? `<p><strong>Date & Time:</strong> ${new Date(startTime).toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p>` : ''}
                         ${duration ? `<p><strong>Duration:</strong> ${duration} minutes</p>` : ''}
                         ${password ? `<p><strong>Password:</strong> ${password}</p>` : ''}
                         <a href="${joinUrl}" class="join-button">Join Meeting</a>
@@ -6123,6 +6123,430 @@ export async function registerRoutes(
       return res.json({ success: true, paymentStatus: "paid", applicationStatus: "pre-approved", emailSent: emailResult.success });
     } catch (error: any) {
       console.error("[STRIPE CONFIRM] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Stripe: Cancel entrepreneur subscription
+  app.post("/api/stripe/cancel-subscription", async (req, res) => {
+    console.log("[STRIPE CANCEL] Cancel subscription request");
+    
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    try {
+      const { getUncachableStripeClient } = await import('./stripeClient');
+      const stripe = await getUncachableStripeClient();
+      
+      // Find customer by email
+      const customers = await stripe.customers.list({
+        email: email.toLowerCase(),
+        limit: 1
+      });
+
+      if (customers.data.length === 0) {
+        return res.status(404).json({ error: "No subscription found for this email" });
+      }
+
+      const customer = customers.data[0];
+      
+      // Get active subscriptions
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: 'active',
+        limit: 1
+      });
+
+      if (subscriptions.data.length === 0) {
+        return res.status(404).json({ error: "No active subscription found" });
+      }
+
+      const subscription = subscriptions.data[0];
+      
+      // Cancel at period end (access remains until billing cycle ends)
+      const cancelledSubscription = await stripe.subscriptions.update(subscription.id, {
+        cancel_at_period_end: true
+      });
+
+      console.log("[STRIPE CANCEL] Subscription marked for cancellation:", cancelledSubscription.id);
+      console.log("[STRIPE CANCEL] Cancels at:", new Date(cancelledSubscription.current_period_end * 1000).toISOString());
+
+      return res.json({ 
+        success: true, 
+        message: "Subscription will be cancelled at the end of the billing period",
+        cancelAt: new Date(cancelledSubscription.current_period_end * 1000).toISOString()
+      });
+    } catch (error: any) {
+      console.error("[STRIPE CANCEL] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Cancellation request email (for coaches, mentors, investors)
+  app.post("/api/cancellation-request", async (req, res) => {
+    console.log("[CANCELLATION] Request received");
+    
+    const { userType, userName, userEmail, reason } = req.body;
+    
+    if (!userType || !userEmail || !reason) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    try {
+      // Store cancellation request in database
+      const client = getSupabaseClient();
+      if (client) {
+        const { error: dbError } = await (client
+          .from("cancellation_requests")
+          .insert({
+            user_type: userType,
+            user_name: userName || 'Unknown',
+            user_email: userEmail.toLowerCase(),
+            reason: reason,
+            status: 'pending'
+          }) as any);
+        
+        if (dbError) {
+          console.error("[CANCELLATION] Database error:", dbError);
+        } else {
+          console.log("[CANCELLATION] Stored in database");
+        }
+      }
+
+      const resendData = await getResendClient();
+      
+      if (!resendData) {
+        console.log("[CANCELLATION] Resend not configured");
+        return res.status(500).json({ error: "Email service not configured" });
+      }
+
+      const { client: resend, fromEmail } = resendData;
+      const PST_NOW = new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" });
+      
+      const subject = `${userType.charAt(0).toUpperCase() + userType.slice(1)} Cancellation Request - ${userName}`;
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #ef4444; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+            .info-box { background: #fff; border: 1px solid #e2e8f0; padding: 15px; margin: 15px 0; border-radius: 8px; }
+            .label { font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; }
+            .value { color: #1e293b; font-size: 16px; margin-top: 4px; }
+            .reason-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>${userType.charAt(0).toUpperCase() + userType.slice(1)} Cancellation Request</h1>
+            </div>
+            <div class="content">
+              <p>A ${userType} has submitted a cancellation request.</p>
+              
+              <div class="info-box">
+                <div class="label">Name</div>
+                <div class="value">${userName}</div>
+              </div>
+              
+              <div class="info-box">
+                <div class="label">Email</div>
+                <div class="value">${userEmail}</div>
+              </div>
+              
+              <div class="info-box">
+                <div class="label">User Type</div>
+                <div class="value">${userType.charAt(0).toUpperCase() + userType.slice(1)}</div>
+              </div>
+              
+              <div class="info-box">
+                <div class="label">Submitted At</div>
+                <div class="value">${PST_NOW} PST</div>
+              </div>
+              
+              <div class="reason-box">
+                <div class="label">Reason for Cancellation</div>
+                <p style="margin: 10px 0 0 0; white-space: pre-wrap;">${reason}</p>
+              </div>
+              
+              <p style="color: #64748b; font-size: 14px; margin-top: 20px;">
+                Please review this request and take appropriate action.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      // Send admin notification
+      console.log("[CANCELLATION] Sending admin email from:", fromEmail, "to: hello@touchconnectpro.com");
+      const adminResult = await resend.emails.send({
+        from: fromEmail,
+        to: "hello@touchconnectpro.com",
+        subject,
+        html: htmlContent,
+        replyTo: userEmail
+      });
+      if ((adminResult as any)?.error) {
+        console.error("[CANCELLATION] Admin email error:", (adminResult as any).error);
+      } else {
+        console.log("[CANCELLATION] Admin email sent:", (adminResult as any)?.data?.id || (adminResult as any)?.id || JSON.stringify(adminResult));
+      }
+
+      // Send confirmation email to user
+      const userSubject = "Your Cancellation Request Has Been Received - TouchConnectPro";
+      const userHtmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+            .info-box { background: #fff; border: 1px solid #e2e8f0; padding: 15px; margin: 15px 0; border-radius: 8px; }
+            .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Cancellation Request Received</h1>
+            </div>
+            <div class="content">
+              <p>Dear ${userName || 'User'},</p>
+              <p>We have received your request to cancel your ${userType} account with TouchConnectPro.</p>
+              
+              <div class="info-box">
+                <p><strong>Request submitted:</strong> ${PST_NOW} PST</p>
+                <p><strong>Account type:</strong> ${userType.charAt(0).toUpperCase() + userType.slice(1)}</p>
+              </div>
+              
+              <p>Our team will review your request and process it within 2-3 business days. If you have any questions or would like to reconsider, please don't hesitate to reach out to us at <a href="mailto:hello@touchconnectpro.com">hello@touchconnectpro.com</a>.</p>
+              
+              <p>We're sorry to see you go and wish you all the best in your future endeavors.</p>
+              
+              <p>Best regards,<br/>The TouchConnectPro Team</p>
+            </div>
+            <div class="footer">
+              <p>© 2026 Touch Equity Partners LLC. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      console.log("[CANCELLATION] Sending user email from:", fromEmail, "to:", userEmail);
+      const userResult = await resend.emails.send({
+        from: fromEmail,
+        to: userEmail,
+        subject: userSubject,
+        html: userHtmlContent
+      });
+      if ((userResult as any)?.error) {
+        console.error("[CANCELLATION] User email error:", (userResult as any).error);
+      } else {
+        console.log("[CANCELLATION] User confirmation email sent:", (userResult as any)?.data?.id || (userResult as any)?.id || JSON.stringify(userResult));
+      }
+
+      return res.json({ success: true });
+    } catch (error: any) {
+      console.error("[CANCELLATION] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // GET /api/admin/cancellation-requests - Get all cancellation requests (admin only)
+  app.get("/api/admin/cancellation-requests", async (req, res) => {
+    console.log("[ADMIN] Fetching cancellation requests");
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { data, error } = await (client
+        .from("cancellation_requests")
+        .select("*")
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[ADMIN] Error fetching cancellation requests:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      console.log("[ADMIN] Found", data?.length || 0, "cancellation requests");
+      return res.json(data || []);
+    } catch (error: any) {
+      console.error("[ADMIN] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // POST /api/admin/cancellation-requests/:id/process - Mark a cancellation as processed
+  app.post("/api/admin/cancellation-requests/:id/process", async (req, res) => {
+    const { id } = req.params;
+    const { processedBy, notes } = req.body;
+    console.log("[ADMIN] Processing cancellation request:", id);
+    
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { data, error } = await (client
+        .from("cancellation_requests")
+        .update({
+          status: "processed",
+          processed_at: new Date().toISOString(),
+          processed_by: processedBy || "admin",
+          notes: notes || null
+        })
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        console.error("[ADMIN] Error processing cancellation:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      console.log("[ADMIN] Cancellation processed successfully");
+      return res.json({ success: true, data: data?.[0] });
+    } catch (error: any) {
+      console.error("[ADMIN] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // GET /api/cancellation-status/:email - Check if a user has a pending cancellation
+  app.get("/api/cancellation-status/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.json({ hasPendingCancellation: false });
+      }
+
+      const email = req.params.email.toLowerCase();
+      
+      // Check for any cancellation (pending or processed)
+      const { data, error } = await (client
+        .from("cancellation_requests")
+        .select("*")
+        .eq("user_email", email)
+        .order("created_at", { ascending: false })
+        .limit(1) as any);
+
+      if (error) {
+        console.error("[CANCELLATION STATUS] Error:", error);
+        return res.json({ hasPendingCancellation: false, hasProcessedCancellation: false });
+      }
+
+      const latestRequest = data?.[0];
+      return res.json({ 
+        hasPendingCancellation: latestRequest?.status === "pending",
+        hasProcessedCancellation: latestRequest?.status === "processed",
+        cancellationStatus: latestRequest?.status || null,
+        cancellationDate: latestRequest?.created_at || null,
+        processedDate: latestRequest?.processed_at || null
+      });
+    } catch (error: any) {
+      console.error("[CANCELLATION STATUS] Error:", error.message);
+      return res.json({ hasPendingCancellation: false });
+    }
+  });
+
+  // Check if coach has accepted latest agreement
+  app.get("/api/contract-acceptances/check-coach-agreement/:email", async (req, res) => {
+    console.log("[CHECK COACH AGREEMENT] Checking for:", req.params.email);
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { email } = req.params;
+      const CURRENT_COACH_AGREEMENT_VERSION = "coach_agreement_v2";
+
+      const { data, error } = await (client
+        .from("contract_acceptances")
+        .select("*")
+        .eq("email", email)
+        .eq("contract_version", CURRENT_COACH_AGREEMENT_VERSION)
+        .single() as any);
+
+      if (error && error.code !== 'PGRST116') {
+        console.error("[CHECK COACH AGREEMENT] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      const hasAccepted = !!data;
+      console.log("[CHECK COACH AGREEMENT] Has accepted:", hasAccepted);
+      return res.json({ hasAccepted });
+    } catch (error: any) {
+      console.error("[CHECK COACH AGREEMENT] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Accept coach agreement
+  app.post("/api/contract-acceptances/accept-coach-agreement", async (req, res) => {
+    console.log("[ACCEPT COACH AGREEMENT] Request received");
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { email, fullName } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      const CURRENT_COACH_AGREEMENT_VERSION = "coach_agreement_v2";
+      const contractText = `TouchConnectPro Coach Agreement (${CURRENT_COACH_AGREEMENT_VERSION})
+
+By accepting this agreement, the coach acknowledges and agrees to:
+- Provide professional coaching services to entrepreneurs on the TouchConnectPro platform
+- Maintain confidentiality of all client information
+- Accept that TouchConnectPro retains a 20% platform fee on all coaching transactions
+- Conduct themselves professionally and ethically in all interactions
+- May terminate the partnership at any time by submitting a cancellation request
+- TouchConnectPro reserves the right to terminate partnerships for violations of these terms
+
+Full terms available at: https://touchconnectpro.com/coach-agreement`;
+
+      const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+      const userAgent = req.headers['user-agent'] || null;
+
+      const { data, error } = await (client
+        .from("contract_acceptances")
+        .insert({
+          email: email.toLowerCase(),
+          role: 'coach',
+          contract_version: CURRENT_COACH_AGREEMENT_VERSION,
+          contract_text: contractText,
+          ip_address: typeof ipAddress === 'string' ? ipAddress : (ipAddress as string[])[0],
+          user_agent: userAgent,
+          accepted_at: new Date().toISOString()
+        })
+        .select()
+        .single() as any);
+
+      if (error) {
+        console.error("[ACCEPT COACH AGREEMENT] Error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      console.log("[ACCEPT COACH AGREEMENT] Saved successfully for:", email);
+      return res.json({ success: true, acceptance: data });
+    } catch (error: any) {
+      console.error("[ACCEPT COACH AGREEMENT] Error:", error.message);
       return res.status(500).json({ error: error.message });
     }
   });
@@ -7149,6 +7573,61 @@ export async function registerRoutes(
       return res.json({
         success: true,
         message: "Column 'data' already exists in mentor_applications table"
+      });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // POST /api/admin/create-cancellation-table - Create the cancellation_requests table
+  app.post("/api/admin/create-cancellation-table", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      // Check if table exists
+      const { error: checkError } = await (client
+        .from("cancellation_requests")
+        .select("id")
+        .limit(1) as any);
+
+      if (!checkError || !checkError.message?.includes("does not exist") && !checkError.message?.includes("schema cache")) {
+        return res.json({
+          success: true,
+          message: "Table 'cancellation_requests' already exists"
+        });
+      }
+
+      // Table doesn't exist - provide SQL to create it
+      const createTableSQL = `
+CREATE TABLE IF NOT EXISTS public.cancellation_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_type TEXT NOT NULL,
+  user_name TEXT,
+  user_email TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  processed_at TIMESTAMPTZ,
+  processed_by TEXT,
+  notes TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_cancellation_requests_email ON public.cancellation_requests(user_email);
+CREATE INDEX IF NOT EXISTS idx_cancellation_requests_status ON public.cancellation_requests(status);
+
+ALTER TABLE public.cancellation_requests ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow service role full access" ON public.cancellation_requests
+  FOR ALL USING (true) WITH CHECK (true);
+`;
+
+      return res.json({
+        success: false,
+        message: "Table 'cancellation_requests' does not exist. Please run the following SQL in Supabase SQL Editor:",
+        sql: createTableSQL
       });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });

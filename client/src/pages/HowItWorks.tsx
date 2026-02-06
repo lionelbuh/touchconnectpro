@@ -114,7 +114,7 @@ export default function HowItWorks() {
 
         <div className="mt-32 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to start your journey?</h2>
-          <Link href="/coming-soon">
+          <Link href="/become-entrepreneur">
             <Button size="lg" className="h-14 px-10 text-lg rounded-full">Start Refining Idea</Button>
           </Link>
         </div>

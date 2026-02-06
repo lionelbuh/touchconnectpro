@@ -44,7 +44,7 @@ export default function Dashboard() {
            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg border border-indigo-100 dark:border-indigo-800">
              <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1">Plan: Explorer</div>
              <div className="text-xs text-indigo-600/80 mb-3">Upgrade for mentor access</div>
-             <Link href="/coming-soon">
+             <Link href="/become-entrepreneur">
                <Button size="sm" className="w-full bg-indigo-600 hover:bg-indigo-500 h-7 text-xs">Upgrade</Button>
              </Link>
            </div>

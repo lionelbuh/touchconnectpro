@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, ChevronUp, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText, ClipboardCheck, Paperclip, RefreshCw, X, Search, Sparkles } from "lucide-react";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, ChevronUp, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText, ClipboardCheck, Paperclip, RefreshCw, X, Search, Sparkles, CheckCircle } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -12,6 +12,17 @@ import { useLocation } from "wouter";
 import { IDEA_PROPOSAL_QUESTIONS } from "@/lib/constants";
 import MyAgreements from "@/components/MyAgreements";
 import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
+
+// Helper to format UTC timestamps from database to PST
+const formatToPST = (timestamp: string | Date) => {
+  if (!timestamp) return "—";
+  let dateStr = typeof timestamp === 'string' ? timestamp : timestamp.toISOString();
+  // If timestamp doesn't have timezone info, treat it as UTC
+  if (!dateStr.includes('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
+    dateStr = dateStr.replace(' ', 'T') + 'Z';
+  }
+  return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/Los_Angeles" }) + " PST";
+};
 
 interface MentorProfileData {
   id: string;
@@ -43,6 +54,13 @@ export default function DashboardMentor() {
   const [loading, setLoading] = useState(true);
   const [isAccountDisabled, setIsAccountDisabled] = useState(false);
   const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
+  
+  // Cancellation state
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [hasPendingCancellation, setHasPendingCancellation] = useState(false);
+  const [hasProcessedCancellation, setHasProcessedCancellation] = useState(false);
   const [coachRatings, setCoachRatings] = useState<Record<string, { averageRating: number; totalRatings: number }>>({});
 
   const [mentorProfile, setMentorProfile] = useState({
@@ -217,6 +235,24 @@ export default function DashboardMentor() {
       }
     }
     loadMessages();
+  }, [mentorProfile.email]);
+
+  // Check if mentor has a pending cancellation request
+  useEffect(() => {
+    async function checkCancellation() {
+      if (!mentorProfile.email) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/cancellation-status/${encodeURIComponent(mentorProfile.email)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setHasPendingCancellation(data.hasPendingCancellation);
+          setHasProcessedCancellation(data.hasProcessedCancellation);
+        }
+      } catch (error) {
+        console.error("Error checking cancellation status:", error);
+      }
+    }
+    checkCancellation();
   }, [mentorProfile.email]);
 
   // Load message threads (threaded conversations with entrepreneurs)
@@ -910,6 +946,33 @@ export default function DashboardMentor() {
                   </CardContent>
                 </Card>
               )}
+              {hasPendingCancellation && (
+                <Card className="mb-6 border-orange-300 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800">
+                  <CardContent className="pt-6 pb-6">
+                    <div className="flex items-start gap-4">
+                      <AlertCircle className="h-6 w-6 text-orange-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h3 className="text-lg font-semibold text-orange-800 dark:text-orange-300 mb-1">Cancellation Request Pending</h3>
+                        <p className="text-orange-700 dark:text-orange-400">Your cancellation request has been received and is being processed. You can still change your mind – just email us at <a href="mailto:hello@touchconnectpro.com" className="underline hover:text-orange-600">hello@touchconnectpro.com</a>.</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {hasProcessedCancellation && (
+                <Card className="mb-6 border-green-300 bg-green-50 dark:bg-green-950/20 dark:border-green-800">
+                  <CardContent className="pt-6 pb-6">
+                    <div className="flex items-start gap-4">
+                      <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 mb-1">Cancellation Approved</h3>
+                        <p className="text-green-700 dark:text-green-400">Your cancellation request has been received and approved. Thank you for being part of TouchConnectPro. If you ever wish to return, you're always welcome back!</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-xl font-bold overflow-hidden flex-shrink-0 shadow-lg">
                   {mentorProfile.profileImage ? (
@@ -1290,7 +1353,7 @@ export default function DashboardMentor() {
                                                           {resp.attachmentName || "Download File"}
                                                         </a>
                                                       )}
-                                                      <p className="text-xs text-slate-500 mt-1">{new Date(resp.timestamp).toLocaleString()}</p>
+                                                      <p className="text-xs text-slate-500 mt-1">{formatToPST(resp.timestamp)}</p>
                                                     </div>
                                                   ))}
                                                 </div>
@@ -1879,7 +1942,7 @@ export default function DashboardMentor() {
                                 <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-cyan-700 dark:text-cyan-400'}`}>
                                   {isFromMe ? 'You' : 'Admin'}
                                 </span>
-                                <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                                <span className="text-xs text-muted-foreground">{formatToPST(msg.created_at)}</span>
                               </div>
                               <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
                             </div>
@@ -1927,7 +1990,7 @@ export default function DashboardMentor() {
                         <div className="flex-1">
                           <p className="font-semibold text-slate-900 dark:text-white mb-2">{meeting.topic}</p>
                           <p className="text-sm text-muted-foreground mb-1">Status: {meeting.status}</p>
-                          {meeting.start_time && <p className="text-sm text-muted-foreground">{new Date(meeting.start_time).toLocaleString()}</p>}
+                          {meeting.start_time && <p className="text-sm text-muted-foreground">{formatToPST(meeting.start_time)}</p>}
                           <p className="text-sm text-muted-foreground">Duration: {meeting.duration} minutes</p>
                           {participantNames.length > 0 && (
                             <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
@@ -2487,6 +2550,106 @@ export default function DashboardMentor() {
         <div className="p-8">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">My Agreements</h2>
           {mentorProfile?.email && <MyAgreements userEmail={mentorProfile.email} />}
+          
+          {/* Cancellation Section */}
+          <div className="mt-12 pt-6 border-t border-slate-200 dark:border-slate-700">
+            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">Cancel Mentor Partnership</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+              If you wish to end your partnership with TouchConnectPro, please submit a cancellation request.
+            </p>
+            <Button 
+              variant="outline" 
+              className="border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+              onClick={() => setShowCancelModal(true)}
+              data-testid="button-cancel-partnership"
+            >
+              Request Cancellation
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Cancellation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-red-600">Cancel Mentor Partnership</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                We're sorry to see you go. Please let us know why you'd like to end your partnership.
+              </p>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Reason for cancellation</label>
+                <textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="Please share your reason..."
+                  className="w-full min-h-[100px] p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white resize-y"
+                  data-testid="input-cancel-reason"
+                />
+              </div>
+              <div className="flex gap-3 justify-end pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowCancelModal(false);
+                    setCancelReason("");
+                  }}
+                  data-testid="button-cancel-modal-close"
+                >
+                  Keep Partnership
+                </Button>
+                <Button 
+                  variant="destructive"
+                  disabled={isCancelling || !cancelReason.trim()}
+                  onClick={async () => {
+                    if (!cancelReason.trim()) {
+                      toast.error("Please provide a reason for cancellation");
+                      return;
+                    }
+                    setIsCancelling(true);
+                    try {
+                      const response = await fetch(`${API_BASE_URL}/api/cancellation-request`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          userType: 'mentor',
+                          userName: mentorProfile?.fullName || 'Mentor',
+                          userEmail: mentorProfile?.email || '',
+                          reason: cancelReason
+                        })
+                      });
+                      if (response.ok) {
+                        toast.success("Your cancellation request has been submitted. We will contact you shortly.");
+                        setShowCancelModal(false);
+                        setCancelReason("");
+                      } else {
+                        const data = await response.json();
+                        toast.error(data.error || "Failed to submit request");
+                      }
+                    } catch (error) {
+                      console.error("Cancellation error:", error);
+                      toast.error("Failed to submit request. Please try again.");
+                    } finally {
+                      setIsCancelling(false);
+                    }
+                  }}
+                  data-testid="button-confirm-cancel"
+                >
+                  {isCancelling ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Request"
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
       </div>

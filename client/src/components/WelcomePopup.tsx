@@ -48,38 +48,25 @@ export default function WelcomePopup() {
           </div>
           
           <h2 className="text-2xl font-bold mb-3 text-slate-900 dark:text-white">
-            Welcome to TouchConnectPro!
+            Great businesses are built by people, not algorithms.
           </h2>
           
-          <p className="text-muted-foreground mb-6 leading-relaxed">
-            We're actively looking for our <span className="font-semibold text-cyan-600 dark:text-cyan-400">first coaches</span> to join our growing community. If you have experience guiding entrepreneurs, we'd love to hear from you!
+          <p className="text-muted-foreground mb-4 leading-relaxed">
+            TouchConnectPro combines <span className="font-semibold text-cyan-600 dark:text-cyan-400">AI tools</span> to help entrepreneurs think and refine their ideas, with <span className="font-semibold text-cyan-600 dark:text-cyan-400">real human mentors</span> who bring experience, creativity, and judgment.
+          </p>
+          
+          <p className="text-muted-foreground mb-6 leading-relaxed font-medium">
+            Human connection comes first.<br />
+            <span className="text-sm font-normal">AI supports the process, it does not replace it.</span>
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={handleClose}
-              data-testid="button-continue-browsing"
-            >
-              Continue Browsing
-            </Button>
-            <Button
-              className="flex-1 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white"
-              onClick={() => {
-                handleClose();
-                window.location.href = "/become-coach";
-              }}
-              data-testid="button-become-coach"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              Become a Coach
-            </Button>
-          </div>
-
-          <p className="text-xs text-muted-foreground mt-4">
-            Or <a href="/become-mentor" className="text-cyan-600 hover:underline" onClick={handleClose}>become a mentor</a> for our volunteer program
-          </p>
+          <Button
+            className="w-full bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white"
+            onClick={handleClose}
+            data-testid="button-continue-browsing"
+          >
+            Continue
+          </Button>
         </CardContent>
       </Card>
     </div>

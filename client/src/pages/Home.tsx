@@ -68,7 +68,7 @@ export default function Home() {
             <br />AI tools help you structure and refine your ideas, but your mentor keeps them creative, personalized, and actionable. You'll never feel lost, every next step is guided, with clarity and purpose.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/coming-soon">
+            <Link href="/become-entrepreneur">
               <Button size="lg" className="h-14 px-8 text-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] transition-all hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.6)] hover:scale-105">
                 Start Free - No Credit Card <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -306,7 +306,7 @@ export default function Home() {
                      <span className="text-sm text-slate-400 ml-6">Prepare your materials so your mentor can give targeted, actionable feedback from day one.</span>
                    </li>
                  </ul>
-                 <Link href="/coming-soon">
+                 <Link href="/become-entrepreneur">
                    <Button className="w-full bg-slate-700 hover:bg-slate-600">Start Free - No Credit Card</Button>
                  </Link>
                </CardContent>

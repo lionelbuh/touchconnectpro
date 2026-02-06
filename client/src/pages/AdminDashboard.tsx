@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, CheckCircle, X, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus, Pencil } from "lucide-react";
+import { Check, CheckCircle, X, XCircle, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus, Pencil, Clock } from "lucide-react";
 import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,17 @@ import { API_BASE_URL } from "@/config";
 import { toast } from "sonner";
 import { IDEA_PROPOSAL_QUESTIONS } from "@/lib/constants";
 import { Switch } from "@/components/ui/switch";
+
+// Helper to format UTC timestamps from database to PST
+const formatToPST = (timestamp: string | Date) => {
+  if (!timestamp) return "—";
+  let dateStr = typeof timestamp === 'string' ? timestamp : timestamp.toISOString();
+  // If timestamp doesn't have timezone info, treat it as UTC
+  if (!dateStr.includes('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
+    dateStr = dateStr.replace(' ', 'T') + 'Z';
+  }
+  return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/Los_Angeles" }) + " PST";
+};
 
 interface MentorApplication {
   id: string;
@@ -49,6 +60,7 @@ interface CoachApplication {
   rejection_reason?: string;
   updated_at?: string;
   is_resubmitted?: boolean;
+  stripe_account_id?: string | null;
   externalReputation?: {
     platform_name: string;
     average_rating: number;
@@ -144,7 +156,8 @@ function ContractsSection() {
   const roleColors: Record<string, string> = {
     coach: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
     mentor: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
-    investor: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+    investor: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+    entrepreneur: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
   };
 
   return (
@@ -187,6 +200,14 @@ function ContractsSection() {
                 className={filterRole === "investor" ? "bg-amber-600 hover:bg-amber-700" : ""}
               >
                 Investors
+              </Button>
+              <Button
+                variant={filterRole === "entrepreneur" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterRole("entrepreneur")}
+                className={filterRole === "entrepreneur" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+              >
+                Entrepreneurs
               </Button>
             </div>
           </div>
@@ -263,7 +284,7 @@ export default function AdminDashboard() {
   const [loadingAdmins, setLoadingAdmins] = useState(false);
   const [activeMembersSubTab, setActiveMembersSubTab] = useState<"portfolio" | "messaging" | "management">("portfolio");
   const [activeApprovalsSubTab, setActiveApprovalsSubTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
-  const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled">("entrepreneurs");
+  const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled" | "coming-soon" | "cancellations">("entrepreneurs");
   const [mentorApplications, setMentorApplications] = useState<MentorApplication[]>([]);
   const [coachApplications, setCoachApplications] = useState<CoachApplication[]>([]);
   const [investorApplications, setInvestorApplications] = useState<InvestorApplication[]>([]);
@@ -336,6 +357,8 @@ export default function AdminDashboard() {
   const [newEmailValue, setNewEmailValue] = useState("");
   const [savingEmail, setSavingEmail] = useState(false);
   const [resendingInvite, setResendingInvite] = useState<string | null>(null);
+  const [cancellationRequests, setCancellationRequests] = useState<{id: string; user_type: string; user_email: string; user_name: string; reason: string; status: string; created_at: string}[]>([]);
+  const [cancelledEmails, setCancelledEmails] = useState<Set<string>>(new Set());
 
   const handleResendInvite = async (userId: string, userType: "entrepreneur" | "mentor" | "coach" | "investor", email: string) => {
     setResendingInvite(userId);
@@ -423,8 +446,10 @@ export default function AdminDashboard() {
               state: c.state,
               status: c.status === "submitted" ? "pending" : c.status,
               submittedAt: c.created_at,
+              updated_at: c.updated_at,
               is_resubmitted: c.is_resubmitted,
               is_disabled: c.is_disabled || false,
+              stripe_account_id: c.stripe_account_id || null,
               externalReputation: c.external_reputation || null
             }));
             setCoachApplications(mappedCoaches);
@@ -607,6 +632,24 @@ export default function AdminDashboard() {
         console.error("Error fetching contact requests:", err);
       } finally {
         setLoadingContactRequests(false);
+      }
+
+      // Load cancellation requests
+      try {
+        const adminToken = localStorage.getItem("tcp_adminToken");
+        const cancellationResponse = await fetch(`${API_BASE_URL}/api/admin/cancellation-requests`, {
+          headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {}
+        });
+        if (cancellationResponse.ok) {
+          const data = await cancellationResponse.json();
+          setCancellationRequests(data);
+          // Create a Set of emails with pending cancellations for quick lookup
+          const emails = new Set<string>(data.filter((r: any) => r.status === 'pending').map((r: any) => r.user_email.toLowerCase()));
+          setCancelledEmails(emails);
+          console.log("Cancellation requests loaded:", data.length, "Pending emails:", emails.size);
+        }
+      } catch (err) {
+        console.error("Error fetching cancellation requests:", err);
       }
     };
 
@@ -1331,8 +1374,9 @@ export default function AdminDashboard() {
               hourlyRate: c.hourly_rate, specializations: c.specializations || [],
               profileImage: c.profile_image, country: c.country, state: c.state,
               status: c.status === "submitted" ? "pending" : c.status,
-              submittedAt: c.created_at, is_resubmitted: c.is_resubmitted,
-              is_disabled: c.is_disabled || false, externalReputation: c.external_reputation || null
+              submittedAt: c.created_at, updated_at: c.updated_at, is_resubmitted: c.is_resubmitted,
+              is_disabled: c.is_disabled || false, stripe_account_id: c.stripe_account_id || null,
+              externalReputation: c.external_reputation || null
             }));
             setCoachApplications(mappedCoaches);
             setApprovedCoaches(mappedCoaches.filter((c: any) => c.status === "approved"));
@@ -1502,8 +1546,9 @@ export default function AdminDashboard() {
               hourlyRate: c.hourly_rate, specializations: c.specializations || [],
               profileImage: c.profile_image, country: c.country, state: c.state,
               status: c.status === "submitted" ? "pending" : c.status,
-              submittedAt: c.created_at, is_resubmitted: c.is_resubmitted,
-              is_disabled: c.is_disabled || false, externalReputation: c.external_reputation || null
+              submittedAt: c.created_at, updated_at: c.updated_at, is_resubmitted: c.is_resubmitted,
+              is_disabled: c.is_disabled || false, stripe_account_id: c.stripe_account_id || null,
+              externalReputation: c.external_reputation || null
             }));
             setCoachApplications(mappedCoaches);
             setApprovedCoaches(mappedCoaches.filter((c: any) => c.status === "approved"));
@@ -1569,8 +1614,9 @@ export default function AdminDashboard() {
               hourlyRate: c.hourly_rate, specializations: c.specializations || [],
               profileImage: c.profile_image, country: c.country, state: c.state,
               status: c.status === "submitted" ? "pending" : c.status,
-              submittedAt: c.created_at, is_resubmitted: c.is_resubmitted,
-              is_disabled: c.is_disabled || false, externalReputation: c.external_reputation || null
+              submittedAt: c.created_at, updated_at: c.updated_at, is_resubmitted: c.is_resubmitted,
+              is_disabled: c.is_disabled || false, stripe_account_id: c.stripe_account_id || null,
+              externalReputation: c.external_reputation || null
             }));
             setCoachApplications(mappedCoaches);
             setApprovedCoaches(mappedCoaches.filter((c: any) => c.status === "approved"));
@@ -2462,6 +2508,199 @@ export default function AdminDashboard() {
             {/* Coach Approvals */}
             {activeApprovalsSubTab === "coaches" && (
             <div>
+              <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Coach Approvals</h2>
+              {pendingCoachApplications.length === 0 ? (
+                <Card className="mb-8">
+                  <CardContent className="pt-12 pb-12 text-center">
+                    <p className="text-muted-foreground">No pending coach approvals</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4 mb-8">
+                  {pendingCoachApplications.map((app, idx) => {
+                    const actualIdx = coachApplications.findIndex(a => a === app);
+                    return (
+                      <Card key={actualIdx} className="border-l-4 border-l-cyan-500">
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-4 flex-1">
+                              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-lg font-bold overflow-hidden flex-shrink-0 shadow-md">
+                                {app.profileImage ? (
+                                  <img src={app.profileImage} alt={app.fullName} className="w-full h-full object-cover" />
+                                ) : (
+                                  app.fullName?.substring(0, 2).toUpperCase() || "CO"
+                                )}
+                              </div>
+                              <div>
+                                <CardTitle>{app.fullName}</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-1">{app.email}</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              {app.is_resubmitted && <Badge className="bg-purple-600">Resubmission</Badge>}
+                              <Badge className="bg-cyan-600">Pending</Badge>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
+                              <p className="text-slate-900 dark:text-white">{app.fullName}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
+                              <p className="text-slate-900 dark:text-white">{app.email}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                              <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
+                            </div>
+                            <div className="col-span-2">
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Rates</p>
+                              <div className="text-slate-900 dark:text-white">
+                                {(() => {
+                                  try {
+                                    const rates = JSON.parse(app.hourlyRate);
+                                    if (rates.introCallRate && rates.sessionRate && rates.monthlyRate) {
+                                      return (
+                                        <div className="flex gap-4 text-sm">
+                                          <span>Intro: ${rates.introCallRate}</span>
+                                          <span>Session: ${rates.sessionRate}</span>
+                                          <span>Monthly: ${rates.monthlyRate}</span>
+                                        </div>
+                                      );
+                                    }
+                                  } catch {}
+                                  return <span>${app.hourlyRate}/hr</span>;
+                                })()}
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
+                              <p className="text-slate-900 dark:text-white">{app.expertise}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
+                              <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
+                              <p className="text-slate-900 dark:text-white">{app.state || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
+                              <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" }) : "—"}</p>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
+                            <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.bio || "—"}</p>
+                          </div>
+                          {app.specializations && app.specializations.length > 0 && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Specializations</p>
+                              <div className="flex flex-wrap gap-2">
+                                {app.specializations.map((tag: string) => (
+                                  <Badge key={tag} variant="secondary" className="bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
+                            <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.focusAreas}</p>
+                          </div>
+                          {app.externalReputation && (
+                            <div className="border border-amber-200 dark:border-amber-800 rounded-lg p-4 bg-amber-50/50 dark:bg-amber-900/10">
+                              <div className="flex items-center justify-between mb-3">
+                                <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase flex items-center gap-2">
+                                  <Star className="h-4 w-4" /> External Reputation
+                                </p>
+                                {app.externalReputation.verified ? (
+                                  <Badge className="bg-green-600">Verified</Badge>
+                                ) : (
+                                  <Badge className="bg-slate-500">Pending Verification</Badge>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                                <div>
+                                  <p className="text-xs text-slate-500">Platform</p>
+                                  <p className="font-medium">{app.externalReputation.platform_name}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-slate-500">Rating</p>
+                                  <p className="font-medium">{app.externalReputation.average_rating} ({app.externalReputation.review_count} reviews)</p>
+                                </div>
+                                <div className="col-span-2">
+                                  <p className="text-xs text-slate-500">Verification URL (Admin Only)</p>
+                                  <a href={app.externalReputation.profile_url} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline text-sm truncate block">{app.externalReputation.profile_url}</a>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 pt-3 border-t border-amber-200 dark:border-amber-700">
+                                <Switch
+                                  checked={app.externalReputation.verified || false}
+                                  onCheckedChange={async (checked) => {
+                                    try {
+                                      const adminToken = localStorage.getItem("tcp_adminToken");
+                                      const response = await fetch(`${API_BASE_URL}/api/admin/coaches/${app.id}/verify-reputation`, {
+                                        method: "PUT",
+                                        headers: { 
+                                          "Content-Type": "application/json",
+                                          "Authorization": `Bearer ${adminToken}`
+                                        },
+                                        body: JSON.stringify({ verified: checked, adminEmail: localStorage.getItem("tcp_adminEmail") || "admin" })
+                                      });
+                                      if (response.ok) {
+                                        setCoachApplications(prev => prev.map(c => 
+                                          c.id === app.id && c.externalReputation
+                                            ? { ...c, externalReputation: { ...c.externalReputation, verified: checked, verified_at: checked ? new Date().toISOString() : null } }
+                                            : c
+                                        ));
+                                      }
+                                    } catch (err) {
+                                      console.error("Failed to update verification:", err);
+                                    }
+                                  }}
+                                  data-testid={`switch-verify-reputation-pending-${actualIdx}`}
+                                />
+                                <label className="text-sm font-medium">
+                                  {app.externalReputation.verified ? "Externally verified by TouchConnectPro" : "Mark as verified"}
+                                </label>
+                              </div>
+                              {app.externalReputation.verified_at && (
+                                <p className="text-xs text-slate-500 mt-2">Verified on {new Date(app.externalReputation.verified_at).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" })}</p>
+                              )}
+                            </div>
+                          )}
+                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700 relative z-10">
+                            <Button 
+                              type="button"
+                              className="flex-1 bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
+                              onClick={() => handleApproveCoach(actualIdx)}
+                              data-testid={`button-admin-approve-coach-${actualIdx}`}
+                            >
+                              <Check className="mr-2 h-4 w-4" /> Approve
+                            </Button>
+                            <Button 
+                              type="button"
+                              variant="outline"
+                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
+                              onClick={() => handleRejectCoach(actualIdx)}
+                              data-testid={`button-admin-reject-coach-${actualIdx}`}
+                            >
+                              <X className="mr-2 h-4 w-4" /> Reject
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* Verified External Reputations Section */}
               {(() => {
                 const verifiedCoaches = coachApplications.filter(
@@ -2560,199 +2799,6 @@ export default function AdminDashboard() {
                   </div>
                 );
               })()}
-              
-              <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Pending Coach Approvals</h2>
-              {pendingCoachApplications.length === 0 ? (
-                <Card>
-                  <CardContent className="pt-12 pb-12 text-center">
-                    <p className="text-muted-foreground">No pending coach approvals</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-4">
-                  {pendingCoachApplications.map((app, idx) => {
-                    const actualIdx = coachApplications.findIndex(a => a === app);
-                    return (
-                      <Card key={actualIdx} className="border-l-4 border-l-cyan-500">
-                        <CardHeader>
-                          <div className="flex justify-between items-start">
-                            <div className="flex items-center gap-4 flex-1">
-                              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-lg font-bold overflow-hidden flex-shrink-0 shadow-md">
-                                {app.profileImage ? (
-                                  <img src={app.profileImage} alt={app.fullName} className="w-full h-full object-cover" />
-                                ) : (
-                                  app.fullName?.substring(0, 2).toUpperCase() || "CO"
-                                )}
-                              </div>
-                              <div>
-                                <CardTitle>{app.fullName}</CardTitle>
-                                <p className="text-sm text-muted-foreground mt-1">{app.email}</p>
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              {app.is_resubmitted && <Badge className="bg-purple-600">Resubmission</Badge>}
-                              <Badge className="bg-cyan-600">Pending</Badge>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Full Name</p>
-                              <p className="text-slate-900 dark:text-white">{app.fullName}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Email</p>
-                              <p className="text-slate-900 dark:text-white">{app.email}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
-                              <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
-                            </div>
-                            <div className="col-span-2">
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Rates</p>
-                              <div className="text-slate-900 dark:text-white">
-                                {(() => {
-                                  try {
-                                    const rates = JSON.parse(app.hourlyRate);
-                                    if (rates.introCallRate && rates.sessionRate && rates.monthlyRate) {
-                                      return (
-                                        <div className="flex gap-4 text-sm">
-                                          <span>Intro: ${rates.introCallRate}</span>
-                                          <span>Session: ${rates.sessionRate}</span>
-                                          <span>Monthly: ${rates.monthlyRate}</span>
-                                        </div>
-                                      );
-                                    }
-                                  } catch {}
-                                  return <span>${app.hourlyRate}/hr</span>;
-                                })()}
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Expertise</p>
-                              <p className="text-slate-900 dark:text-white">{app.expertise}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
-                              <p className="text-slate-900 dark:text-white">{app.country || "—"}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
-                              <p className="text-slate-900 dark:text-white">{app.state || "—"}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Submitted</p>
-                              <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Bio</p>
-                            <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.bio || "—"}</p>
-                          </div>
-                          {app.specializations && app.specializations.length > 0 && (
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Specializations</p>
-                              <div className="flex flex-wrap gap-2">
-                                {app.specializations.map((tag: string) => (
-                                  <Badge key={tag} variant="secondary" className="bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300">
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Focus Areas</p>
-                            <p className="text-slate-900 dark:text-white text-sm bg-slate-50 dark:bg-slate-800/30 p-3 rounded">{app.focusAreas}</p>
-                          </div>
-                          {app.externalReputation && (
-                            <div className="border border-amber-200 dark:border-amber-800 rounded-lg p-4 bg-amber-50/50 dark:bg-amber-900/10">
-                              <div className="flex items-center justify-between mb-3">
-                                <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase flex items-center gap-2">
-                                  <Star className="h-4 w-4" /> External Reputation
-                                </p>
-                                {app.externalReputation.verified ? (
-                                  <Badge className="bg-green-600">Verified</Badge>
-                                ) : (
-                                  <Badge className="bg-slate-500">Pending Verification</Badge>
-                                )}
-                              </div>
-                              <div className="grid grid-cols-2 gap-3 text-sm mb-3">
-                                <div>
-                                  <p className="text-xs text-slate-500">Platform</p>
-                                  <p className="font-medium">{app.externalReputation.platform_name}</p>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-slate-500">Rating</p>
-                                  <p className="font-medium">{app.externalReputation.average_rating} ({app.externalReputation.review_count} reviews)</p>
-                                </div>
-                                <div className="col-span-2">
-                                  <p className="text-xs text-slate-500">Verification URL (Admin Only)</p>
-                                  <a href={app.externalReputation.profile_url} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline text-sm truncate block">{app.externalReputation.profile_url}</a>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3 pt-3 border-t border-amber-200 dark:border-amber-700">
-                                <Switch
-                                  checked={app.externalReputation.verified || false}
-                                  onCheckedChange={async (checked) => {
-                                    try {
-                                      const adminToken = localStorage.getItem("tcp_adminToken");
-                                      const response = await fetch(`${API_BASE_URL}/api/admin/coaches/${app.id}/verify-reputation`, {
-                                        method: "PUT",
-                                        headers: { 
-                                          "Content-Type": "application/json",
-                                          "Authorization": `Bearer ${adminToken}`
-                                        },
-                                        body: JSON.stringify({ verified: checked, adminEmail: localStorage.getItem("tcp_adminEmail") || "admin" })
-                                      });
-                                      if (response.ok) {
-                                        setCoachApplications(prev => prev.map(c => 
-                                          c.id === app.id && c.externalReputation
-                                            ? { ...c, externalReputation: { ...c.externalReputation, verified: checked, verified_at: checked ? new Date().toISOString() : null } }
-                                            : c
-                                        ));
-                                      }
-                                    } catch (err) {
-                                      console.error("Failed to update verification:", err);
-                                    }
-                                  }}
-                                  data-testid={`switch-verify-reputation-${actualIdx}`}
-                                />
-                                <label className="text-sm font-medium">
-                                  {app.externalReputation.verified ? "Externally verified by TouchConnectPro" : "Mark as verified"}
-                                </label>
-                              </div>
-                              {app.externalReputation.verified_at && (
-                                <p className="text-xs text-slate-500 mt-2">Verified on {new Date(app.externalReputation.verified_at).toLocaleDateString()}</p>
-                              )}
-                            </div>
-                          )}
-                          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700 relative z-10">
-                            <Button 
-                              type="button"
-                              className="flex-1 bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
-                              onClick={() => handleApproveCoach(actualIdx)}
-                              data-testid={`button-admin-approve-coach-${actualIdx}`}
-                            >
-                              <Check className="mr-2 h-4 w-4" /> Approve
-                            </Button>
-                            <Button 
-                              type="button"
-                              variant="outline"
-                              className="flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
-                              onClick={() => handleRejectCoach(actualIdx)}
-                              data-testid={`button-admin-reject-coach-${actualIdx}`}
-                            >
-                              <X className="mr-2 h-4 w-4" /> Reject
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
             </div>
             )}
 
@@ -2872,6 +2918,34 @@ export default function AdminDashboard() {
                 <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white">Members & Portfolio Management</h2>
               </div>
               
+              {/* Approved Member Counts Summary */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <Card className="border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20">
+                  <CardContent className="pt-4 pb-4 text-center">
+                    <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{entrepreneurApplications.filter(a => a.status === "approved" && !a.is_disabled).length}</p>
+                    <p className="text-xs text-muted-foreground">Approved Entrepreneurs</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
+                  <CardContent className="pt-4 pb-4 text-center">
+                    <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{mentorApplications.filter(a => a.status === "approved" && !(a as any).is_disabled).length}</p>
+                    <p className="text-xs text-muted-foreground">Approved Mentors</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-cyan-200 dark:border-cyan-800 bg-cyan-50/50 dark:bg-cyan-950/20">
+                  <CardContent className="pt-4 pb-4 text-center">
+                    <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-400">{coachApplications.filter(a => a.status === "approved" && !(a as any).is_disabled).length}</p>
+                    <p className="text-xs text-muted-foreground">Approved Coaches</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+                  <CardContent className="pt-4 pb-4 text-center">
+                    <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">{investorApplications.filter(a => a.status === "approved" && !(a as any).is_disabled).length}</p>
+                    <p className="text-xs text-muted-foreground">Approved Investors</p>
+                  </CardContent>
+                </Card>
+              </div>
+              
               {/* Category Sub-tabs - matching Approvals tab style */}
               <div className="flex gap-2 mb-6 flex-wrap border-b border-slate-200 dark:border-slate-700 pb-2">
                 <Button 
@@ -2897,6 +2971,22 @@ export default function AdminDashboard() {
                   data-testid="button-members-coaches-subtab"
                 >
                   Coaches
+                </Button>
+                <Button 
+                  variant={activeMembersCategoryTab === "coming-soon" ? "default" : "ghost"}
+                  onClick={() => { setActiveMembersCategoryTab("coming-soon"); setActiveMembersSubTab("management"); }}
+                  className={activeMembersCategoryTab === "coming-soon" ? "bg-orange-500 hover:bg-orange-600" : ""}
+                  data-testid="button-members-coming-soon-subtab"
+                >
+                  Coming Soon
+                  {(() => {
+                    const comingSoonCount = coachApplications.filter(a => a.status === "approved" && !(a as any).is_disabled && !a.stripe_account_id).length;
+                    return comingSoonCount > 0 ? (
+                      <span className="ml-2 bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 text-xs px-1.5 py-0.5 rounded-full">
+                        {comingSoonCount}
+                      </span>
+                    ) : null;
+                  })()}
                 </Button>
                 <Button 
                   variant={activeMembersCategoryTab === "investors" ? "default" : "ghost"}
@@ -2931,6 +3021,20 @@ export default function AdminDashboard() {
                       </span>
                     ) : null;
                   })()}
+                </Button>
+                <Button 
+                  variant={activeMembersCategoryTab === "cancellations" ? "default" : "ghost"}
+                  onClick={() => { setActiveMembersCategoryTab("cancellations"); setActiveMembersSubTab("management"); }}
+                  className={activeMembersCategoryTab === "cancellations" ? "bg-orange-600 hover:bg-orange-700" : ""}
+                  data-testid="button-members-cancellations-subtab"
+                >
+                  <XCircle className="mr-1 h-4 w-4" />
+                  Cancellations
+                  {cancellationRequests.filter(c => c.status === "pending").length > 0 && (
+                    <span className="ml-2 bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 text-xs px-1.5 py-0.5 rounded-full">
+                      {cancellationRequests.filter(c => c.status === "pending").length}
+                    </span>
+                  )}
                 </Button>
               </div>
               
@@ -3049,6 +3153,9 @@ export default function AdminDashboard() {
                                 )}
                                 {app.is_disabled && (
                                   <Badge className="bg-red-600">Disabled</Badge>
+                                )}
+                                {cancelledEmails.has(app.email?.toLowerCase()) && (
+                                  <Badge className="bg-orange-500">Cancelled</Badge>
                                 )}
                                 {mentorAssignments[app.id] ? (
                                   <div className="flex items-center gap-1">
@@ -3531,6 +3638,9 @@ export default function AdminDashboard() {
                                 {(app as any).is_disabled && (
                                   <Badge className="bg-red-600">Disabled</Badge>
                                 )}
+                                {cancelledEmails.has(app.email?.toLowerCase()) && (
+                                  <Badge className="bg-orange-500">Cancelled</Badge>
+                                )}
                               </div>
                             </div>
                           </CardHeader>
@@ -3786,6 +3896,9 @@ export default function AdminDashboard() {
                                 <Badge className="bg-cyan-600">Approved</Badge>
                                 {(app as any).is_disabled && (
                                   <Badge className="bg-red-600">Disabled</Badge>
+                                )}
+                                {cancelledEmails.has(app.email?.toLowerCase()) && (
+                                  <Badge className="bg-orange-500">Cancelled</Badge>
                                 )}
                               </div>
                             </div>
@@ -4089,6 +4202,9 @@ export default function AdminDashboard() {
                                 {(app as any).is_disabled && (
                                   <Badge className="bg-red-600">Disabled</Badge>
                                 )}
+                                {cancelledEmails.has(app.email?.toLowerCase()) && (
+                                  <Badge className="bg-orange-500">Cancelled</Badge>
+                                )}
                               </div>
                             </div>
                           </CardHeader>
@@ -4324,7 +4440,7 @@ export default function AdminDashboard() {
                                         <p className="text-slate-700 dark:text-slate-300">{msg.message}</p>
                                       </div>
                                       <p className="text-xs text-muted-foreground mt-2">
-                                        {new Date(msg.created_at).toLocaleString()}
+                                        {formatToPST(msg.created_at)}
                                       </p>
                                     </div>
                                     <div className="flex flex-col gap-2">
@@ -4896,6 +5012,63 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   )}
+                  {/* Coming Soon Coaches - approved but no Stripe setup */}
+                  {activeMembersCategoryTab === "coming-soon" && (
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-orange-500" />
+                      Coming Soon Coaches
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">Approved coaches who haven't completed their Stripe payment setup yet.</p>
+                    <div className="space-y-3">
+                      {(() => {
+                        const comingSoonCoaches = coachApplications.filter(a => a.status === "approved" && !(a as any).is_disabled && !a.stripe_account_id);
+                        
+                        if (comingSoonCoaches.length === 0) {
+                          return (
+                            <Card>
+                              <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                                <CheckCircle className="h-12 w-12 text-green-300 mx-auto mb-3" />
+                                All approved coaches have completed their payment setup!
+                              </CardContent>
+                            </Card>
+                          );
+                        }
+                        
+                        return comingSoonCoaches.map((coach, idx) => (
+                          <Card key={`coming-soon-${coach.id}`} className="border-l-4 border-l-orange-500">
+                            <CardContent className="pt-6">
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white font-bold overflow-hidden">
+                                    {coach.profileImage ? (
+                                      <img src={coach.profileImage} alt={coach.fullName} className="w-full h-full object-cover" />
+                                    ) : (
+                                      coach.fullName?.substring(0, 2).toUpperCase() || "CO"
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-semibold text-slate-900 dark:text-white">{coach.fullName}</p>
+                                    <p className="text-sm text-muted-foreground">{coach.email}</p>
+                                    <div className="flex gap-2 mt-1">
+                                      <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                                        <Clock className="h-3 w-3 mr-1" /> Stripe Pending
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-right text-sm text-muted-foreground">
+                                  <p>Approved: {coach.updated_at ? new Date(coach.updated_at).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" }) : "—"}</p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                  )}
+
                   {/* Disabled Users - show only when selected */}
                   {activeMembersCategoryTab === "disabled" && (
                   <div>
@@ -5015,6 +5188,97 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   )}
+
+                  {/* Cancellations Tab - show all cancellation requests */}
+                  {activeMembersCategoryTab === "cancellations" && (
+                  <div>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                      <XCircle className="h-5 w-5 text-orange-600" />
+                      Cancellation Requests
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      <strong>Entrepreneurs:</strong> Stripe subscriptions are automatically cancelled. Just mark as processed for record-keeping.
+                      <br />
+                      <strong>Others:</strong> Remove from platform manually, then mark as processed.
+                    </p>
+                    <div className="space-y-3">
+                      {cancellationRequests.length === 0 ? (
+                        <Card>
+                          <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
+                            <XCircle className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                            No cancellation requests. All members are active.
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        cancellationRequests.map((request, idx) => (
+                          <Card key={request.id} className={`border-l-4 ${request.status === 'pending' ? 'border-l-orange-500' : 'border-l-green-500'}`}>
+                            <CardContent className="pt-6">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <p className="font-semibold text-slate-900 dark:text-white">{request.user_name}</p>
+                                    <Badge variant="outline" className={`text-xs ${
+                                      request.user_type === 'entrepreneur' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                      request.user_type === 'mentor' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                      request.user_type === 'coach' ? 'bg-cyan-50 text-cyan-700 border-cyan-200' :
+                                      'bg-amber-50 text-amber-700 border-amber-200'
+                                    }`}>
+                                      {request.user_type.charAt(0).toUpperCase() + request.user_type.slice(1)}
+                                    </Badge>
+                                    <Badge className={request.status === 'pending' ? 'bg-orange-500' : 'bg-green-500'}>
+                                      {request.status === 'pending' ? 'Pending' : 'Processed'}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">{request.user_email}</p>
+                                  {request.reason && (
+                                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                                      <span className="font-medium">Reason:</span> {request.reason}
+                                    </p>
+                                  )}
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Requested: {new Date(request.created_at).toLocaleDateString()} at {new Date(request.created_at).toLocaleTimeString()}
+                                  </p>
+                                  {(request as any).processed_at && (
+                                    <p className="text-xs text-green-600 mt-1">
+                                      Processed: {new Date((request as any).processed_at).toLocaleDateString()} by {(request as any).processed_by}
+                                    </p>
+                                  )}
+                                </div>
+                                {request.status === 'pending' && (
+                                  <Button 
+                                    onClick={async () => {
+                                      try {
+                                        const token = localStorage.getItem("tcp_adminToken");
+                                        const response = await fetch(`${API_BASE_URL}/api/admin/cancellation-requests/${request.id}/process`, {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                          body: JSON.stringify({ processedBy: 'admin' })
+                                        });
+                                        if (response.ok) {
+                                          setCancellationRequests(prev => 
+                                            prev.map(r => r.id === request.id ? { ...r, status: 'processed' } : r)
+                                          );
+                                          toast.success(`Cancellation for ${request.user_name} marked as processed`);
+                                        }
+                                      } catch (error) {
+                                        toast.error("Failed to process cancellation");
+                                      }
+                                    }}
+                                    data-testid={`button-process-cancellation-${idx}`} 
+                                    size="sm" 
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    <CheckCircle className="mr-2 h-4 w-4" /> Mark Processed
+                                  </Button>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                  )}
                 </div>
               </div>
               )}
@@ -5108,7 +5372,7 @@ export default function AdminDashboard() {
                       <div className="flex-1">
                         <p className="font-semibold text-slate-900 dark:text-white mb-2">{meeting.topic}</p>
                         <p className="text-sm text-muted-foreground mb-1">Status: <Badge>{meeting.status}</Badge></p>
-                        {meeting.start_time && <p className="text-sm text-muted-foreground">Date/Time: {new Date(meeting.start_time).toLocaleString()}</p>}
+                        {meeting.start_time && <p className="text-sm text-muted-foreground">Date/Time: {formatToPST(meeting.start_time)}</p>}
                         <p className="text-sm text-muted-foreground">Duration: {meeting.duration} minutes</p>
                         {meeting.invitees && meeting.invitees.length > 0 && (
                           <div className="mt-2">
@@ -5222,7 +5486,7 @@ export default function AdminDashboard() {
                         {msg.from_email !== "admin@touchconnectpro.com" && <span className="ml-2 text-xs bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded">Reply</span>}
                       </p>
                       <p className="text-slate-600 dark:text-slate-400 mt-1">{msg.message}</p>
-                      <p className="text-slate-500 text-xs mt-1">{new Date(msg.created_at).toLocaleString()}</p>
+                      <p className="text-slate-500 text-xs mt-1">{formatToPST(msg.created_at)}</p>
                     </div>
                   ))}
                 </div>
@@ -5339,14 +5603,14 @@ export default function AdminDashboard() {
                           </Button>
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">{new Date(note.timestamp).toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground">{formatToPST(note.timestamp)}</p>
 
                       {note.responses && note.responses.length > 0 && (
                         <div className="mt-3 pl-4 border-l-2 border-slate-200 dark:border-slate-700 space-y-2">
                           {note.responses.map((resp: any) => (
                             <div key={resp.id} className={`p-2 rounded text-sm ${resp.fromAdmin ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-blue-50 dark:bg-blue-900/20'}`}>
                               <p className="font-semibold text-xs mb-1 text-slate-600 dark:text-slate-400">
-                                {resp.fromAdmin ? "Admin" : selectedInvestorForNotes.fullName} • {new Date(resp.timestamp).toLocaleString()}
+                                {resp.fromAdmin ? "Admin" : selectedInvestorForNotes.fullName} • {formatToPST(resp.timestamp)}
                               </p>
                               <p className="text-slate-800 dark:text-slate-200">{resp.text}</p>
                               {resp.attachmentUrl && (

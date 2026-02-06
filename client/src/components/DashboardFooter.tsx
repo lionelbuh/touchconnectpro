@@ -8,7 +8,7 @@ export function DashboardFooter() {
   const navLinks = [
     { href: "/", label: "Home", icon: Home },
     { href: "/how-it-works", label: "How It Works", icon: BookOpen },
-    { href: "/coming-soon", label: "Pricing", icon: BarChart3 },
+    { href: "/pricing", label: "Pricing", icon: BarChart3 },
     { href: "/qa", label: "Q&A", icon: HelpCircle }
   ];
 
@@ -41,7 +41,9 @@ export function DashboardFooter() {
             <span>•</span>
             <button onClick={() => (window as any).openCookieSettings?.()} className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Cookie Settings</button>
           </div>
-          © {new Date().getFullYear()} TouchConnectPro. All rights reserved.
+          © {new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.
+          <br />
+          <span className="text-xs">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span>
         </div>
       </div>
     </footer>

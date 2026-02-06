@@ -10,6 +10,18 @@ import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useLocation } from "wouter";
 import MyAgreements from "@/components/MyAgreements";
+import { COACH_CONTRACT, CONTRACT_VERSION } from "@/lib/contracts";
+
+// Helper to format UTC timestamps from database to PST
+const formatToPST = (timestamp: string | Date) => {
+  if (!timestamp) return "—";
+  let dateStr = typeof timestamp === 'string' ? timestamp : timestamp.toISOString();
+  // If timestamp doesn't have timezone info, treat it as UTC
+  if (!dateStr.includes('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
+    dateStr = dateStr.replace(' ', 'T') + 'Z';
+  }
+  return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/Los_Angeles" }) + " PST";
+};
 
 interface StripeConnectStatus {
   hasAccount: boolean;
@@ -155,6 +167,11 @@ export default function DashboardCoach() {
   
   // Profile edit mode state
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  
+  // Cancellation state
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
   const [originalProfileValues, setOriginalProfileValues] = useState<{
     expertise: string[];
     focusAreas: string;
@@ -167,6 +184,17 @@ export default function DashboardCoach() {
     profileImage: string;
   } | null>(null);
   
+  // Coach agreement state
+  const [needsAgreement, setNeedsAgreement] = useState(false);
+  const [checkingAgreement, setCheckingAgreement] = useState(true);
+  const [acceptingAgreement, setAcceptingAgreement] = useState(false);
+  const [agreementAlreadyChecked, setAgreementAlreadyChecked] = useState(false);
+  const [agreementCheckboxChecked, setAgreementCheckboxChecked] = useState(false);
+  
+  // Cancellation status
+  const [hasPendingCancellation, setHasPendingCancellation] = useState(false);
+  const [hasProcessedCancellation, setHasProcessedCancellation] = useState(false);
+
   // External reputation state
   const [externalPlatform, setExternalPlatform] = useState("");
   const [externalRating, setExternalRating] = useState("");
@@ -278,6 +306,48 @@ export default function DashboardCoach() {
 
     loadProfile();
   }, []);
+
+  // Check if coach needs to accept new agreement
+  useEffect(() => {
+    async function checkAgreement() {
+      if (!profile?.email) return;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/contract-acceptances/check-coach-agreement/${encodeURIComponent(profile.email)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setNeedsAgreement(!data.hasAccepted);
+        }
+      } catch (error) {
+        console.error("Error checking agreement:", error);
+      } finally {
+        setCheckingAgreement(false);
+        setAgreementAlreadyChecked(true);
+      }
+    }
+    
+    if (profile?.email && !agreementAlreadyChecked) {
+      checkAgreement();
+    }
+  }, [profile?.email, agreementAlreadyChecked]);
+
+  // Check if coach has a pending cancellation request
+  useEffect(() => {
+    async function checkCancellation() {
+      if (!profile?.email) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/cancellation-status/${encodeURIComponent(profile.email)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setHasPendingCancellation(data.hasPendingCancellation);
+          setHasProcessedCancellation(data.hasProcessedCancellation);
+        }
+      } catch (error) {
+        console.error("Error checking cancellation status:", error);
+      }
+    }
+    checkCancellation();
+  }, [profile?.email]);
 
   // Load read message IDs from localStorage
   useEffect(() => {
@@ -753,6 +823,34 @@ export default function DashboardCoach() {
                     <div>
                       <h3 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-1">Account Disabled</h3>
                       <p className="text-red-700 dark:text-red-400">Your coaching account has been disabled. Your profile is currently in view-only mode. Please use the Messages tab to contact the Admin team if you would like to reactivate your account.</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {hasPendingCancellation && (
+              <Card className="mb-6 border-orange-300 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800" data-testid="cancellation-banner">
+                <CardContent className="pt-6 pb-6">
+                  <div className="flex items-start gap-4">
+                    <AlertCircle className="h-6 w-6 text-orange-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-orange-800 dark:text-orange-300 mb-1">Cancellation Request Pending</h3>
+                      <p className="text-orange-700 dark:text-orange-400">You have submitted a cancellation request. Our team will process it within 2-3 business days. If you've changed your mind, please contact us at <a href="mailto:hello@touchconnectpro.com" className="underline font-medium">hello@touchconnectpro.com</a> to cancel your request.</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {hasProcessedCancellation && (
+              <Card className="mb-6 border-green-300 bg-green-50 dark:bg-green-950/20 dark:border-green-800" data-testid="cancellation-approved-banner">
+                <CardContent className="pt-6 pb-6">
+                  <div className="flex items-start gap-4">
+                    <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 mb-1">Cancellation Approved</h3>
+                      <p className="text-green-700 dark:text-green-400">Your cancellation request has been received and approved. Thank you for being part of TouchConnectPro. If you ever wish to return, you're always welcome back!</p>
                     </div>
                   </div>
                 </CardContent>
@@ -1410,7 +1508,7 @@ export default function DashboardCoach() {
                               <span className={`font-semibold ${isAdminEmail(msg.from_email) ? "text-cyan-700 dark:text-cyan-400" : "text-slate-700 dark:text-slate-300"}`}>
                                 {isAdminEmail(msg.from_email) ? "From Admin" : "You"}
                               </span>
-                              <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                              <span className="text-xs text-muted-foreground">{formatToPST(msg.created_at)}</span>
                             </div>
                             <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
                           </div>
@@ -1715,10 +1813,198 @@ export default function DashboardCoach() {
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">My Agreements</h2>
               {profile?.email && <MyAgreements userEmail={profile.email} />}
+              
+              {/* Cancellation Section */}
+              <div className="mt-12 pt-6 border-t border-slate-200 dark:border-slate-700">
+                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">Cancel Coach Partnership</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                  If you wish to end your partnership with TouchConnectPro, please submit a cancellation request.
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  onClick={() => setShowCancelModal(true)}
+                  data-testid="button-cancel-partnership"
+                >
+                  Request Cancellation
+                </Button>
+              </div>
             </div>
           )}
         </div>
       </main>
+
+      {/* Cancellation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-red-600">Cancel Coach Partnership</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                We're sorry to see you go. Please let us know why you'd like to end your partnership.
+              </p>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Reason for cancellation</label>
+                <textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="Please share your reason..."
+                  className="w-full min-h-[100px] p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white resize-y"
+                  data-testid="input-cancel-reason"
+                />
+              </div>
+              <div className="flex gap-3 justify-end pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowCancelModal(false);
+                    setCancelReason("");
+                  }}
+                  data-testid="button-cancel-modal-close"
+                >
+                  Keep Partnership
+                </Button>
+                <Button 
+                  variant="destructive"
+                  disabled={isCancelling || !cancelReason.trim()}
+                  onClick={async () => {
+                    if (!cancelReason.trim()) {
+                      toast.error("Please provide a reason for cancellation");
+                      return;
+                    }
+                    setIsCancelling(true);
+                    try {
+                      const response = await fetch(`${API_BASE_URL}/api/cancellation-request`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          userType: 'coach',
+                          userName: profile?.full_name || 'Coach',
+                          userEmail: profile?.email || '',
+                          reason: cancelReason
+                        })
+                      });
+                      if (response.ok) {
+                        toast.success("Your cancellation request has been submitted. We will contact you shortly.");
+                        setShowCancelModal(false);
+                        setCancelReason("");
+                      } else {
+                        const data = await response.json();
+                        toast.error(data.error || "Failed to submit request");
+                      }
+                    } catch (error) {
+                      console.error("Cancellation error:", error);
+                      toast.error("Failed to submit request. Please try again.");
+                    } finally {
+                      setIsCancelling(false);
+                    }
+                  }}
+                  data-testid="button-confirm-cancel"
+                >
+                  {isCancelling ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Request"
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Blocking Agreement Modal */}
+      {needsAgreement && !checkingAgreement && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <CardHeader className="bg-gradient-to-r from-cyan-600 to-teal-600 text-white">
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardCheck className="h-5 w-5" />
+                Coach Agreement Required
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-4">
+                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+                  <p className="text-amber-800 dark:text-amber-300 text-sm">
+                    <strong>Important:</strong> We have updated our Coach Agreement. Please review and accept the new terms to continue using your dashboard.
+                  </p>
+                </div>
+                
+                <div className="border rounded-lg bg-white dark:bg-slate-900 max-h-[40vh] overflow-y-auto">
+                  <div className="p-4">
+                    <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans leading-relaxed">
+                      {COACH_CONTRACT}
+                    </pre>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <input 
+                    type="checkbox" 
+                    id="agree-checkbox"
+                    checked={agreementCheckboxChecked}
+                    onChange={(e) => setAgreementCheckboxChecked(e.target.checked)}
+                    className="mt-1"
+                    data-testid="checkbox-agree"
+                  />
+                  <label htmlFor="agree-checkbox" className="text-sm text-slate-700 dark:text-slate-300">
+                    I have read and agree to the TouchConnectPro Coach Agreement. I understand and accept all terms and conditions.
+                  </label>
+                </div>
+              </div>
+            </CardContent>
+            <div className="p-4 border-t flex justify-end">
+              <Button
+                disabled={!agreementCheckboxChecked || acceptingAgreement}
+                className="bg-cyan-600 hover:bg-cyan-700"
+                onClick={async () => {
+                  setAcceptingAgreement(true);
+                  try {
+                    const response = await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        email: profile?.email,
+                        role: 'coach',
+                        contractVersion: CONTRACT_VERSION,
+                        contractText: COACH_CONTRACT,
+                        userAgent: navigator.userAgent
+                      })
+                    });
+                    if (response.ok) {
+                      toast.success("Thank you for accepting the Coach Agreement!");
+                      setNeedsAgreement(false);
+                    } else {
+                      toast.error("Failed to save agreement. Please try again.");
+                    }
+                  } catch (error) {
+                    console.error("Error accepting agreement:", error);
+                    toast.error("Failed to save agreement. Please try again.");
+                  } finally {
+                    setAcceptingAgreement(false);
+                  }
+                }}
+                data-testid="button-accept-agreement"
+              >
+                {acceptingAgreement ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Accept Agreement"
+                )}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
       </div>
     </div>
   );

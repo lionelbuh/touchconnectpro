@@ -35,7 +35,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
   const navLinks = [
     { href: "/", label: "Home", icon: Home },
     { href: "/how-it-works", label: "How It Works", icon: BookOpen },
-    { href: "/coming-soon", label: "Pricing", icon: BarChart3 },
+    { href: "/pricing", label: "Pricing", icon: BarChart3 },
     { href: "/qa", label: "Q&A", icon: HelpCircle }
   ];
 
