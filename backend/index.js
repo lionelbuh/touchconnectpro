@@ -8156,12 +8156,13 @@ app.get("/api/contract-acceptances/check-coach-agreement/:email", async (req, re
     }
 
     const { email } = req.params;
-    const CURRENT_COACH_AGREEMENT_VERSION = "coach_agreement_v2";
+    const CURRENT_COACH_AGREEMENT_VERSION = "2026-02-01 v2";
 
     const { data, error } = await supabase
       .from("contract_acceptances")
       .select("*")
       .eq("email", email)
+      .eq("role", "coach")
       .eq("contract_version", CURRENT_COACH_AGREEMENT_VERSION)
       .single();
 

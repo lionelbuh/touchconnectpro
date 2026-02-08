@@ -6471,12 +6471,13 @@ export async function registerRoutes(
       }
 
       const { email } = req.params;
-      const CURRENT_COACH_AGREEMENT_VERSION = "coach_agreement_v2";
+      const CURRENT_COACH_AGREEMENT_VERSION = "2026-02-01 v2";
 
       const { data, error } = await (client
         .from("contract_acceptances")
         .select("*")
         .eq("email", email)
+        .eq("role", "coach")
         .eq("contract_version", CURRENT_COACH_AGREEMENT_VERSION)
         .single() as any);
 
