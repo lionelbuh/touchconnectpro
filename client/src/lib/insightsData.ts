@@ -17,129 +17,151 @@ export const insightArticles: InsightArticle[] = [
   {
     slug: "business-idea-no-roadmap",
     title: "I Have a Business Idea but No Clear Roadmap. What Should I Do First?",
-    summary: "Learn how to move from idea confusion to structured clarity with a simple validation-first approach.",
+    summary: "If you have a business idea but feel stuck, you are not alone. The first thing you need is clarity, not a business plan.",
     audienceTag: "Idea stage",
-    shortAnswer: "If you have a business idea but no roadmap, your first priority is not a business plan. It is clarity. You need to define the problem, the customer, and the smallest operational path to validation.",
+    shortAnswer: "If you have a business idea but feel stuck, you are not alone. Most people think the next step is writing a business plan. It is not. The first thing you need is clarity.",
     sections: [
       {
-        heading: "Clarify the problem before the solution",
+        heading: "Get clear on the problem before thinking about the solution",
         content: [
-          "Many first-time entrepreneurs focus on what they want to build. Strong startups start with what problem they solve and who experiences it frequently."
+          "Many new founders spend too much time thinking about what they want to build. Strong businesses start the other way around.",
+          "Ask yourself:"
         ],
         list: [
-          "Who has this problem today?",
-          "How are they solving it now?",
-          "Why is that solution insufficient?"
+          "Who is dealing with this problem right now?",
+          "How are they solving it today?",
+          "What is frustrating or missing in their current solution?"
         ]
       },
       {
-        heading: "Define a simple validation path",
+        heading: "Define a simple way to validate the idea",
         content: [
-          "A roadmap at this stage is not a timeline. It is a sequence of learning steps:"
+          "At this stage, a roadmap is not a detailed timeline or product plan. It is a short list of things you need to learn.",
+          "Your early roadmap might look like this:",
+          "Learning comes before planning."
         ],
         list: [
-          "Talk to potential users",
-          "Validate willingness to pay",
-          "Test delivery before scaling"
+          "Talk to real people who might use your product or service",
+          "Find out if they would actually pay for a solution",
+          "Test how you would deliver it before trying to scale anything"
         ]
       },
       {
-        heading: "Avoid premature complexity",
+        heading: "Avoid making things complicated too early",
         content: [
-          "Common mistakes include:"
+          "A lot of early mistakes come from doing too much, too soon.",
+          "Common traps include:",
+          "Keep things simple until the idea proves itself."
         ],
         list: [
-          "Overbuilding",
-          "Registering complex structures too early",
-          "Hiring before validation"
+          "Building more than you need",
+          "Setting up complex legal or company structures before validation",
+          "Hiring people before you know what truly works"
         ]
       }
     ],
     practicalSteps: [
-      "Write a one-page problem statement",
-      "Identify 10 people to speak with this week",
-      "Define one measurable validation goal"
+      "Write a one-page description of the problem you want to solve.",
+      "Identify ten people you can speak with this week and book those conversations.",
+      "Define one clear, measurable goal that tells you whether the idea is worth pursuing.",
+      "Clarity first. Everything else comes after."
     ],
     howWeHelp: "We help entrepreneurs move from idea confusion to structured execution without overbuilding or wasting time."
   },
   {
     slug: "startup-roadmap-without-overthinking",
     title: "How First-Time Founders Can Build a Clear Startup Roadmap Without Overthinking",
-    summary: "Discover why a startup roadmap is a decision guide, not a detailed plan, and how to build one that works.",
+    summary: "A startup roadmap is not a detailed plan that tries to predict the future. It is a simple guide that helps you decide what to focus on right now.",
     audienceTag: "First-time founder",
-    shortAnswer: "A startup roadmap is not a detailed plan. It is a decision guide that helps founders focus on what matters now, not later.",
+    shortAnswer: "A startup roadmap is not a detailed plan that tries to predict the future. It is a simple guide that helps you decide what to focus on right now and what can wait.",
     sections: [
       {
-        heading: "What a roadmap is and is not",
+        heading: "What a roadmap is, and what it is not",
         content: [
-          "A good roadmap prioritizes learning, limits distractions, and evolves quickly.",
-          "A bad roadmap predicts years ahead, locks assumptions, and creates false certainty."
+          "A good roadmap helps you learn faster. It keeps distractions low and leaves room to change your mind when new information shows up.",
+          "A bad roadmap tries to map out years in advance. It locks in assumptions that have not been tested yet and creates a false sense of security.",
+          "If your roadmap makes you feel busy but not clearer, it is probably not helping."
         ]
       },
       {
-        heading: "The three layers of a founder roadmap",
-        content: [],
-        list: [
-          "Validation milestones",
-          "Operational basics",
-          "Growth readiness triggers"
+        heading: "The three layers of a founder's roadmap",
+        content: [
+          "Most early-stage roadmaps can be broken into three simple layers.",
+          "First, validation milestones. These are the proof points that tell you whether people actually want what you are building.",
+          "Second, operational basics. This covers how you deliver, support customers, and handle the day-to-day work without breaking things.",
+          "Third, growth readiness triggers. These are signals that tell you when it makes sense to invest more time, money, or people.",
+          "You do not need all three at once. You move through them as the business earns it."
         ]
       },
       {
-        heading: "Common first-time founder mistakes",
-        content: [],
+        heading: "Common mistakes first-time founders make",
+        content: [
+          "Many new founders overcomplicate their roadmap without realizing it.",
+          "Common mistakes include:",
+          "Simple decisions made early beat perfect plans made late."
+        ],
         list: [
-          "Copying large company processes",
-          "Confusing activity with progress",
-          "Avoiding hard decisions"
+          "Copying processes from big companies that do not fit an early startup",
+          "Confusing being busy with making real progress",
+          "Avoiding hard decisions by adding more planning"
         ]
       }
     ],
     practicalSteps: [
-      "Define one objective per phase",
-      "Eliminate non-essential tasks",
-      "Review weekly, not quarterly"
+      "Define one clear objective for your current phase.",
+      "Remove tasks that do not directly support that objective.",
+      "Review and adjust your roadmap every week, not once a quarter.",
+      "A clear roadmap should reduce stress, not add to it."
     ],
     howWeHelp: "We help first-time founders translate ambition into focused execution."
   },
   {
     slug: "experienced-guidance-for-founders",
-    title: "What Experienced Guidance Actually Means for Early-Stage Founders",
-    summary: "Understand the difference between advice and structured decision support from operators.",
+    title: "What Experienced Guidance Really Means for Early-Stage Founders",
+    summary: "Experienced guidance is not about giving advice or telling you what to do. It is about helping you make better decisions.",
     audienceTag: "First-time founder",
-    shortAnswer: "Experienced guidance is not advice. It is structured decision support based on pattern recognition and operational experience.",
+    shortAnswer: "Experienced guidance is not about giving advice or telling you what to do. It is about helping you make better decisions, based on patterns seen before and real operational experience.",
     sections: [
       {
-        heading: "Why founders struggle alone",
+        heading: "Why founders often struggle on their own",
         content: [
-          "Founders often face:"
+          "Early-stage founders are constantly making decisions, often without enough context.",
+          "Common challenges include:",
+          "When everything feels urgent, it becomes hard to see what actually matters."
         ],
         list: [
-          "Decision overload",
-          "Conflicting advice",
-          "Limited operational exposure"
+          "Too many decisions at the same time",
+          "Conflicting opinions from different people",
+          "Limited hands-on experience with operations, growth, or scaling"
         ]
       },
       {
-        heading: "What effective guidance looks like",
-        content: [],
-        list: [
-          "Asking the right questions",
-          "Highlighting tradeoffs",
-          "Preventing avoidable mistakes"
-        ]
-      },
-      {
-        heading: "Advisor vs operator guidance",
+        heading: "What effective guidance looks like in practice",
         content: [
-          "Advisors suggest. Operators help execute. The most effective guidance comes from people who have built and scaled businesses themselves."
+          "Strong guidance is less about answers and more about direction.",
+          "It usually involves:",
+          "The best guidance brings clarity, not pressure."
+        ],
+        list: [
+          "Asking the right questions at the right time",
+          "Making tradeoffs visible, not hidden",
+          "Helping you avoid mistakes that cost time, money, or momentum"
+        ]
+      },
+      {
+        heading: "Advisor guidance vs operator guidance",
+        content: [
+          "Advisors often give suggestions based on theory or past roles. That can be useful, but it has limits.",
+          "Operators think differently. They help you execute, not just plan. They understand constraints because they have lived them.",
+          "For early-stage founders, the most valuable guidance usually comes from people who have built and scaled businesses themselves."
         ]
       }
     ],
     practicalSteps: [
-      "Identify where you feel stuck",
-      "Seek guidance tied to execution",
-      "Avoid generic mentorship"
+      "Identify the area where you feel most stuck or uncertain.",
+      "Look for guidance that connects directly to execution, not just ideas.",
+      "Be selective and avoid generic mentorship that is not tied to your reality.",
+      "The right guidance should help you move forward with confidence, not add more noise."
     ],
     howWeHelp: "We provide hands-on operational guidance tailored to your stage."
   },
@@ -190,39 +212,49 @@ export const insightArticles: InsightArticle[] = [
   {
     slug: "when-to-scale-startup",
     title: "When Is the Right Time to Start Scaling an Early-Stage Startup?",
-    summary: "Learn the signals that indicate readiness to scale and how to do it without breaking what works.",
+    summary: "Scaling too early is one of the fastest ways to break a young startup. Growth only works when you can deliver value consistently.",
     audienceTag: "Early-stage startup",
-    shortAnswer: "You should scale only after you can deliver value consistently and predictably.",
+    shortAnswer: "Scaling too early is one of the fastest ways to break a young startup. Growth only works when you can deliver value in a consistent and predictable way.",
     sections: [
       {
-        heading: "Signs you are not ready to scale",
-        content: [],
+        heading: "Signs you are not ready to scale yet",
+        content: [
+          "Many founders think they are ready to grow when they are actually just busy.",
+          "Common warning signs:",
+          "These are signals to slow down, not speed up."
+        ],
         list: [
-          "Founder is involved in everything",
-          "Processes exist only in your head",
-          "Quality varies by situation"
+          "You are personally involved in almost everything",
+          "Important processes exist only in your head",
+          "Quality changes depending on the customer or situation"
         ]
       },
       {
-        heading: "Signs you may be ready",
-        content: [],
+        heading: "Signs you may be ready to scale",
+        content: [
+          "Scaling starts to make sense when patterns become reliable.",
+          "Look for:",
+          "Without these, growth is mostly guesswork."
+        ],
         list: [
-          "Repeating customer demand",
-          "Stable delivery process",
-          "Clear unit economics"
+          "Customers asking for the same thing repeatedly",
+          "A delivery process that works the same way each time",
+          "Clear unit economics so you know what growth will cost and return"
         ]
       },
       {
         heading: "Scaling the right way",
         content: [
-          "Scaling is about systems, not speed. The goal is to grow without losing the quality and consistency that got you here."
+          "Scaling is not about moving faster. It is about building systems that allow you to grow without losing what made your business work in the first place.",
+          "The goal is stability first, speed second."
         ]
       }
     ],
     practicalSteps: [
-      "Document key processes",
-      "Identify bottlenecks",
-      "Scale one function at a time"
+      "Write down your key processes so they are not locked in your head.",
+      "Identify where work slows down or breaks as volume increases.",
+      "Scale one function at a time instead of everything at once.",
+      "Sustainable growth comes from control, not pressure."
     ],
     howWeHelp: "We help founders scale responsibly without breaking what works."
   }
