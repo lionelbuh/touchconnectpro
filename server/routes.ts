@@ -6476,17 +6476,18 @@ export async function registerRoutes(
       const { data, error } = await (client
         .from("contract_acceptances")
         .select("*")
-        .eq("email", email)
+        .eq("email", email.toLowerCase())
         .eq("role", "coach")
         .eq("contract_version", CURRENT_COACH_AGREEMENT_VERSION)
-        .single() as any);
+        .order("accepted_at", { ascending: false })
+        .limit(1) as any);
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error("[CHECK COACH AGREEMENT] Error:", error);
         return res.status(400).json({ error: error.message });
       }
 
-      const hasAccepted = !!data;
+      const hasAccepted = data && data.length > 0;
       console.log("[CHECK COACH AGREEMENT] Has accepted:", hasAccepted);
       return res.json({ hasAccepted });
     } catch (error: any) {
