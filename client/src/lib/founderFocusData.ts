@@ -114,13 +114,14 @@ export function calculateResults(answers: number[]): QuizResult {
   });
 
   const maxPossible = 80;
-  const totalAnswered = answers.filter((a) => a >= 0).length;
-  const totalScore = Math.round((totalAnswered / 8) * 100);
 
   const categories: Category[] = ["Strategy", "Sales", "Operations", "Execution"];
   const primaryBlocker = categories.reduce((max, cat) =>
     scores[cat] > scores[max] ? cat : max
   , categories[0]);
+
+  const maxCategoryScore = scores[primaryBlocker];
+  const totalScore = Math.round(100 - ((maxCategoryScore / 80) * 40));
 
   const categoryResults: CategoryResult[] = categories.map((cat) => ({
     category: cat,

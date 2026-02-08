@@ -287,7 +287,9 @@ export default function FounderFocusScore() {
                     <span className="text-4xl font-display font-bold text-white" data-testid="text-score-value">{result.totalScore}</span>
                   </div>
                 </div>
-                <p className="text-slate-400 text-sm">Completion Score</p>
+                <p className="text-slate-400 text-sm">
+                  {result.totalScore >= 80 ? "Strong foundation" : result.totalScore >= 60 ? "Solid but blocked" : "High friction"}
+                </p>
               </CardContent>
             </Card>
 
