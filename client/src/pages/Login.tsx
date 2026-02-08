@@ -143,6 +143,20 @@ export default function Login() {
               role = "investor";
             }
           }
+
+          // Check trial_users
+          if (!role) {
+            const { data: trialUser } = await supabase
+              .from("trial_users")
+              .select("status")
+              .ilike("email", email)
+              .in("status", ["trial_active", "trial_expired"])
+              .limit(1);
+            
+            if (trialUser && trialUser.length > 0) {
+              role = "trial_entrepreneur";
+            }
+          }
           
           if (role) {
             setUserRole(role);
@@ -159,7 +173,8 @@ export default function Login() {
   }, []);
 
   const handleGoToDashboard = () => {
-    if (userRole === "entrepreneur") navigate("/dashboard-entrepreneur");
+    if (userRole === "trial_entrepreneur") navigate("/trial-dashboard");
+    else if (userRole === "entrepreneur") navigate("/dashboard-entrepreneur");
     else if (userRole === "mentor") navigate("/dashboard-mentor");
     else if (userRole === "coach") navigate("/dashboard-coach");
     else if (userRole === "investor") navigate("/dashboard-investor");
@@ -275,6 +290,21 @@ export default function Login() {
               console.log("[LOGIN] Found approved investor application");
             }
           }
+
+          // Check trial_users
+          if (!applicationRole) {
+            const { data: trialUser } = await supabase
+              .from("trial_users")
+              .select("status, email")
+              .ilike("email", userEmail)
+              .in("status", ["trial_active", "trial_expired"])
+              .limit(1);
+            
+            if (trialUser && trialUser.length > 0) {
+              applicationRole = "trial_entrepreneur";
+              console.log("[LOGIN] Found trial user, status:", trialUser[0].status);
+            }
+          }
         }
         
         // Use application role as source of truth, fallback to users table, then metadata
@@ -301,7 +331,8 @@ export default function Login() {
         
         let dashboardPath = "/dashboard-entrepreneur";
         
-        if (userRole === "mentor") dashboardPath = "/dashboard-mentor";
+        if (userRole === "trial_entrepreneur") dashboardPath = "/trial-dashboard";
+        else if (userRole === "mentor") dashboardPath = "/dashboard-mentor";
         else if (userRole === "coach") dashboardPath = "/dashboard-coach";
         else if (userRole === "investor") dashboardPath = "/dashboard-investor";
         
