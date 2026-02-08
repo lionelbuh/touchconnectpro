@@ -7774,17 +7774,22 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
       // Create password setup token
       const token = crypto.randomBytes(32).toString("hex");
       const tokenExpiry = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const trialTokenUuid = crypto.randomUUID();
 
-      await (client
+      const { error: tokenInsertError } = await (client
         .from("password_tokens")
         .insert({
           token,
           email: normalizedEmail,
           user_type: "trial_entrepreneur",
-          application_id: trialData?.[0]?.id?.toString() || "trial",
+          application_id: trialTokenUuid,
           expires_at: tokenExpiry.toISOString(),
           status: "pending"
         }) as any);
+
+      if (tokenInsertError) {
+        console.error("[TRIAL] Token insert error:", tokenInsertError);
+      }
 
       // Send welcome email with password setup link
       const resend = await getResendClient();
@@ -7999,6 +8004,88 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
     } catch (error: any) {
       console.error("[TRIAL] Save priorities error:", error.message);
       return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Regenerate trial token for a user
+  app.post("/api/trial/regenerate-token", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) return res.status(500).json({ error: "Not configured" });
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ error: "Email required" });
+      const normalizedEmail = email.toLowerCase().trim();
+
+      // Check trial exists
+      const { data: trialData } = await (client
+        .from("trial_users")
+        .select("*")
+        .eq("email", normalizedEmail)
+        .order("created_at", { ascending: false })
+        .limit(1) as any);
+      if (!trialData || trialData.length === 0) {
+        return res.status(404).json({ error: "No trial found for this email" });
+      }
+
+      // Expire old tokens
+      await (client
+        .from("password_tokens")
+        .update({ status: "expired" })
+        .eq("email", normalizedEmail)
+        .eq("status", "pending") as any);
+
+      // Create new token
+      const token = crypto.randomBytes(32).toString("hex");
+      const tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      const trialUuid = crypto.randomUUID();
+      const { data: insertData, error: insertError } = await (client
+        .from("password_tokens")
+        .insert({
+          token,
+          email: normalizedEmail,
+          user_type: "trial_entrepreneur",
+          application_id: trialUuid,
+          expires_at: tokenExpiry.toISOString(),
+          status: "pending"
+        })
+        .select() as any);
+
+      if (insertError) {
+        console.error("[TRIAL TOKEN] Insert error:", insertError);
+        return res.status(400).json({ error: "Failed to create token", details: insertError });
+      }
+
+      // Send new email
+      const resend = await getResendClient();
+      if (resend) {
+        const baseUrl = req.headers.origin || `${req.protocol}://${req.get("host")}`;
+        const setupUrl = `${baseUrl}/set-password?token=${token}`;
+        const name = trialData[0].name || "Founder";
+        const trialEnd = new Date(trialData[0].trial_end);
+
+        await resend.client.emails.send({
+          from: resend.fromEmail,
+          to: normalizedEmail,
+          subject: "TouchConnectPro - Set Up Your Password (New Link)",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h1 style="color: #0891b2;">Set Up Your Password</h1>
+              <p>Hi ${name},</p>
+              <p>Here is your new password setup link:</p>
+              <a href="${setupUrl}" style="display: inline-block; background-color: #0891b2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Set Up Your Password</a>
+              <p><strong>Your trial ends on ${trialEnd.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.</strong></p>
+              <p>If the button doesn't work, copy and paste this link into your browser:</p>
+              <p style="word-break: break-all; color: #666;">${setupUrl}</p>
+            </div>
+          `
+        });
+      }
+
+      return res.json({ success: true, tokenCreated: !!insertData });
+    } catch (e: any) {
+      console.error("[TRIAL TOKEN] Regenerate error:", e.message);
+      return res.status(500).json({ error: e.message });
     }
   });
 

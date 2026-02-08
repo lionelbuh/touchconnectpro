@@ -8945,17 +8945,22 @@ app.post("/api/trial/create", async (req, res) => {
 
     const token = crypto.randomBytes(32).toString("hex");
     const tokenExpiry = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const trialTokenUuid = crypto.randomUUID();
 
-    await supabase
+    const { error: tokenInsertError } = await supabase
       .from("password_tokens")
       .insert({
         token,
         email: normalizedEmail,
         user_type: "trial_entrepreneur",
-        application_id: trialData?.[0]?.id?.toString() || "trial",
+        application_id: trialTokenUuid,
         expires_at: tokenExpiry.toISOString(),
         status: "pending"
       });
+
+    if (tokenInsertError) {
+      console.error("[TRIAL] Token insert error:", tokenInsertError);
+    }
 
     const resendData = await getResendClient();
     if (resendData) {
@@ -8991,6 +8996,83 @@ app.post("/api/trial/create", async (req, res) => {
     return res.status(201).json({ success: true, id: trialData?.[0]?.id, trialEnd: trialEnd.toISOString() });
   } catch (error) {
     console.error("[TRIAL] Create error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/trial/regenerate-token - Regenerate trial password token
+app.post("/api/trial/regenerate-token", async (req, res) => {
+  try {
+    if (!supabase) return res.status(500).json({ error: "Database not configured" });
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email required" });
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const { data: trialData } = await supabase
+      .from("trial_users")
+      .select("*")
+      .eq("email", normalizedEmail)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (!trialData || trialData.length === 0) {
+      return res.status(404).json({ error: "No trial found for this email" });
+    }
+
+    await supabase
+      .from("password_tokens")
+      .update({ status: "expired" })
+      .eq("email", normalizedEmail)
+      .eq("status", "pending");
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const trialUuid = crypto.randomUUID();
+
+    const { error: insertError } = await supabase
+      .from("password_tokens")
+      .insert({
+        token,
+        email: normalizedEmail,
+        user_type: "trial_entrepreneur",
+        application_id: trialUuid,
+        expires_at: tokenExpiry.toISOString(),
+        status: "pending"
+      });
+
+    if (insertError) {
+      console.error("[TRIAL TOKEN] Insert error:", insertError);
+      return res.status(400).json({ error: "Failed to create token", details: insertError });
+    }
+
+    const resendData = await getResendClient();
+    if (resendData) {
+      const { client: resendClient, fromEmail } = resendData;
+      const baseUrl = req.headers.origin || `${req.protocol}://${req.get("host")}`;
+      const setupUrl = `${baseUrl}/set-password?token=${token}`;
+      const name = trialData[0].name || "Founder";
+      const trialEnd = new Date(trialData[0].trial_end);
+
+      await resendClient.emails.send({
+        from: fromEmail,
+        to: normalizedEmail,
+        subject: "TouchConnectPro - Set Up Your Password (New Link)",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #0891b2;">Set Up Your Password</h1>
+            <p>Hi ${name},</p>
+            <p>Here is your new password setup link:</p>
+            <a href="${setupUrl}" style="display: inline-block; background-color: #0891b2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Set Up Your Password</a>
+            <p><strong>Your trial ends on ${trialEnd.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.</strong></p>
+            <p>If the button doesn't work, copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #666;">${setupUrl}</p>
+          </div>
+        `
+      });
+    }
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("[TRIAL TOKEN] Regenerate error:", error.message);
     return res.status(500).json({ error: error.message });
   }
 });
