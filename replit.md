@@ -80,6 +80,22 @@ The platform uses a component-based approach with a responsive, mobile-first des
 3.  **Stripe**: Integrated for payment processing, handling subscription billing for memberships, and facilitating coach marketplace payments with destination charges and webhooks.
 4.  **Resend**: Used for sending transactional emails, including approval/rejection notifications and investor note communications.
 
+### Trial User Management
+-   **Admin Trials Tab**: Admin Dashboard has a "Trials" tab showing all registered trial entrepreneurs with their name, email, status (active/expired), trial dates, primary blocker, Focus Score, category results, weekly priorities, and mentor assignment controls.
+-   **Mentor Assignment**: Admins can assign approved mentors to trial users via dropdown selector. Once assigned, the trial user's Messages tab unlocks.
+-   **Trial Messaging**: Trial users can send/receive messages with their assigned mentor. Messages use the shared `messages` table so mentors see them in their existing inbox. Trial user messages include "(Trial)" suffix in sender name.
+-   **Backend Endpoints**:
+    - `GET /api/trial/all` - List all trial users
+    - `POST /api/trial/:id/assign-mentor` - Assign a mentor to a trial user
+    - `GET /api/trial/:id/mentor-info` - Get assigned mentor details
+    - `GET /api/trial/:id/messages` - Get conversation messages between trial user and mentor
+    - `POST /api/trial/:id/messages` - Send message from trial user to mentor
+    - `GET /api/trial/status/:email` - Get trial status for a user
+    - `POST /api/trial/create` - Create trial account from Founder Focus Score
+    - `POST /api/trial/regenerate-token` - Resend password setup email
+    - `POST /api/trial/save-priorities` - Save weekly priorities
+-   **Login Routing**: Trial users (user_type "trial_entrepreneur") route to `/trial-dashboard` instead of `/dashboard-entrepreneur`
+
 ### Insights Knowledge Hub
 -   **URL**: `/insights/` - Main hub page acting as a topical authority for SEO + AIO retrieval
 -   **Articles**: 5 SEO-optimized articles under `/insights/:slug`:
