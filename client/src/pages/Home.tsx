@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, ArrowRight, Sparkles, Users, FileText, TrendingUp, Shield, Target, ChevronDown } from "lucide-react";
+import { Check, ArrowRight, Sparkles, Users, FileText, TrendingUp, Shield, Target, ChevronDown, Lightbulb, UserCheck, Star, MessageCircle, Heart } from "lucide-react";
 import { Link } from "wouter";
 import heroBg from "@assets/generated_images/modern_abstract_network_connections_hero_background.png";
 import mentorFeature from "@assets/remember-why-you-started-poster_1768112021320.jpg";
@@ -87,8 +87,28 @@ export default function Home() {
         </div>
       </section>
 
+      {/* What Is TouchConnectPro? */}
+      <section className="py-24 bg-background" data-testid="section-what-is-tcp">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-slate-900 dark:text-white">What Is TouchConnectPro?</h2>
+          </div>
+          <div className="space-y-6 text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+            <p>
+              TouchConnectPro is a mentorship platform designed to support early stage entrepreneurs through structured, real world guidance.
+            </p>
+            <p>
+              We help founders move from idea to execution by connecting them with vetted mentors who understand the challenges of building a business from the ground up.
+            </p>
+            <p>
+              Whether you are validating an idea, launching a product, or preparing for growth, TouchConnectPro gives you access to experience that accelerates progress.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* The Journey Steps */}
-      <section className="py-24 bg-background">
+      <section className="py-24 bg-slate-50 dark:bg-slate-900/30 border-y border-slate-200 dark:border-slate-800">
         <div className="container px-4 mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-4 text-slate-900 dark:text-white">Your Path to Investor Readiness</h2>
@@ -129,6 +149,63 @@ export default function Home() {
               </Card>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-24 bg-background" data-testid="section-how-it-works">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="text-center mb-4">
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-3 text-slate-900 dark:text-white">How It Works</h2>
+            <p className="text-lg text-slate-500 dark:text-slate-400 italic">Simple. Practical. Human.</p>
+          </div>
+          <div className="mt-12 space-y-6">
+            {[
+              { num: "1", text: "Join the platform and describe your business idea or project" },
+              { num: "2", text: "Get matched with experienced mentors and coaches" },
+              { num: "3", text: "Receive focused, actionable guidance during mentorship sessions" },
+              { num: "4", text: "Make confident decisions and move your business forward" },
+            ].map((step) => (
+              <div key={step.num} className="flex items-start gap-5">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                  <span className="text-cyan-500 font-bold">{step.num}</span>
+                </div>
+                <p className="text-lg text-slate-700 dark:text-slate-300 pt-1.5">{step.text}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-10 text-center text-slate-600 dark:text-slate-400 text-lg italic">
+            Every conversation is designed to help you take the next concrete step.
+          </p>
+        </div>
+      </section>
+
+      {/* Who TouchConnectPro Is For (short version) */}
+      <section className="py-24 bg-slate-50 dark:bg-slate-900/30 border-y border-slate-200 dark:border-slate-800" data-testid="section-who-for-short">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-slate-900 dark:text-white">Who TouchConnectPro Is For</h2>
+            <p className="text-lg text-slate-600 dark:text-slate-400">TouchConnectPro is built for:</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6 mb-10">
+            {[
+              { icon: <Lightbulb className="h-6 w-6 text-cyan-500" />, text: "Entrepreneurs with an idea and no clear roadmap" },
+              { icon: <UserCheck className="h-6 w-6 text-indigo-500" />, text: "First time founders seeking experienced guidance" },
+              { icon: <TrendingUp className="h-6 w-6 text-emerald-500" />, text: "Early stage startups preparing to launch or scale" },
+            ].map((item, i) => (
+              <Card key={i} className="border-none shadow-md bg-white dark:bg-slate-800/50">
+                <CardContent className="pt-8 pb-8 px-6 text-center">
+                  <div className="mx-auto mb-4 p-3 bg-slate-50 dark:bg-slate-700/50 w-fit rounded-xl">
+                    {item.icon}
+                  </div>
+                  <p className="text-slate-700 dark:text-slate-300">{item.text}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <p className="text-center text-lg text-slate-600 dark:text-slate-400">
+            If you want clarity, direction, and execution focused advice, you are in the right place.
+          </p>
         </div>
       </section>
 
@@ -275,6 +352,76 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Who TouchConnectPro Is For (expanded) */}
+      <section className="py-24 bg-background" data-testid="section-who-for-expanded">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-slate-900 dark:text-white">Who TouchConnectPro Is For</h2>
+            <p className="text-lg text-slate-600 dark:text-slate-400">TouchConnectPro is built for:</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+            {[
+              { icon: <Lightbulb className="h-5 w-5 text-cyan-500" />, text: "Entrepreneurs with an idea and no clear roadmap" },
+              { icon: <UserCheck className="h-5 w-5 text-indigo-500" />, text: "First time founders seeking experienced guidance" },
+              { icon: <TrendingUp className="h-5 w-5 text-emerald-500" />, text: "Early stage startups preparing to launch or scale" },
+              { icon: <MessageCircle className="h-5 w-5 text-amber-500" />, text: "Professionals who want real feedback, not theory" },
+              { icon: <Heart className="h-5 w-5 text-rose-500" />, text: "Experienced founders and executives who want to mentor others" },
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-3 p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
+                <div className="shrink-0 mt-0.5">{item.icon}</div>
+                <p className="text-slate-700 dark:text-slate-300">{item.text}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-lg text-slate-600 dark:text-slate-400">
+            If you want clarity, direction, and execution focused advice, you are in the right place.
+          </p>
+        </div>
+      </section>
+
+      {/* Why Choose TouchConnectPro? */}
+      <section className="py-24 bg-slate-50 dark:bg-slate-900/30 border-y border-slate-200 dark:border-slate-800" data-testid="section-why-choose">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-slate-900 dark:text-white">Why Choose TouchConnectPro?</h2>
+          </div>
+          <div className="space-y-4 mb-12">
+            {[
+              "Mentors with real entrepreneurial and operational experience",
+              "Practical advice focused on action, not theory",
+              "Personalized guidance based on your business stage",
+              "A trusted community built on experience and integrity",
+              "Clear onboarding and transparent pricing",
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-4 p-4 rounded-lg bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-sm">
+                <Check className="h-5 w-5 text-cyan-500 shrink-0" />
+                <p className="text-slate-700 dark:text-slate-300">{item}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+            We believe progress happens faster when entrepreneurs learn directly from those who have already navigated the journey.
+          </p>
+        </div>
+      </section>
+
+      {/* Mentorship Powered by Experience */}
+      <section className="py-24 bg-background" data-testid="section-mentorship-experience">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-slate-900 dark:text-white">Mentorship Powered by Experience</h2>
+          </div>
+          <div className="space-y-6 text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+            <p>
+              TouchConnectPro is not an automated advice platform.
+            </p>
+            <p>
+              Mentorship is delivered by real people with proven backgrounds in entrepreneurship, business operations, leadership, and growth. Technology helps organize and connect, but experience drives the guidance.
+            </p>
           </div>
         </div>
       </section>
