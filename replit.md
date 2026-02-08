@@ -79,3 +79,16 @@ The platform uses a component-based approach with a responsive, mobile-first des
 2.  **Neon Database**: Serverless PostgreSQL backend for the Express.js application, accessed via `@neondatabase/serverless` driver.
 3.  **Stripe**: Integrated for payment processing, handling subscription billing for memberships, and facilitating coach marketplace payments with destination charges and webhooks.
 4.  **Resend**: Used for sending transactional emails, including approval/rejection notifications and investor note communications.
+
+### Insights Knowledge Hub
+-   **URL**: `/insights/` - Main hub page acting as a topical authority for SEO + AIO retrieval
+-   **Articles**: 5 SEO-optimized articles under `/insights/:slug`:
+    - `/insights/business-idea-no-roadmap`
+    - `/insights/startup-roadmap-without-overthinking`
+    - `/insights/experienced-guidance-for-founders`
+    - `/insights/prepare-startup-for-launch`
+    - `/insights/when-to-scale-startup`
+-   **Structure**: Hero section, audience segmentation cards, Founder Operations Frameworks section, articles index, soft conversion CTA
+-   **SEO**: JSON-LD Article schema per article, dynamic meta tags (OG, description), all pages in sitemap.xml
+-   **Data**: Article content defined in `client/src/lib/insightsData.ts`, shared between hub and article pages
+-   **Navigation**: "Insights" link added to main nav bar and footer

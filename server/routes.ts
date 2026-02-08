@@ -514,6 +514,13 @@ export async function registerRoutes(
         { url: "/apply/mentor", priority: "0.7", changefreq: "monthly" },
         { url: "/apply/coach", priority: "0.7", changefreq: "monthly" },
         { url: "/apply/investor", priority: "0.7", changefreq: "monthly" },
+        { url: "/insights", priority: "0.9", changefreq: "weekly" },
+        { url: "/insights/business-idea-no-roadmap", priority: "0.8", changefreq: "monthly" },
+        { url: "/insights/startup-roadmap-without-overthinking", priority: "0.8", changefreq: "monthly" },
+        { url: "/insights/experienced-guidance-for-founders", priority: "0.8", changefreq: "monthly" },
+        { url: "/insights/prepare-startup-for-launch", priority: "0.8", changefreq: "monthly" },
+        { url: "/insights/when-to-scale-startup", priority: "0.8", changefreq: "monthly" },
+        { url: "/founder-focus", priority: "0.8", changefreq: "monthly" },
       ];
 
       let urls = staticPages.map(page => `
