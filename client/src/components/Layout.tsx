@@ -31,7 +31,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <img 
               src={logoFull} 
               alt="TouchConnectPro" 
-              className="h-40 w-auto object-contain dark:invert dark:hue-rotate-180" 
+              className="h-40 w-auto object-contain dark:invert dark:hue-rotate-180"
+              width={612}
+              height={408}
             />
           </Link>
 
@@ -113,7 +115,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <img 
                 src={logoFull} 
                 alt="TouchConnectPro" 
-                className="h-32 w-auto object-contain dark:invert dark:hue-rotate-180" 
+                className="h-32 w-auto object-contain dark:invert dark:hue-rotate-180"
+                width={612}
+                height={408}
               />
             </div>
             <p className="text-sm text-muted-foreground">
