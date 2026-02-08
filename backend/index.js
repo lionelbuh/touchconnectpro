@@ -9135,6 +9135,108 @@ app.get("/api/trial/all", async (req, res) => {
   }
 });
 
+// GET /api/trial/:id/mentor-info - Get assigned mentor details for a trial user
+app.get("/api/trial/:id/mentor-info", async (req, res) => {
+  try {
+    if (!supabase) return res.status(500).json({ error: "Database not configured" });
+    const { id } = req.params;
+    const { data: trial, error: trialError } = await supabase.from("trial_users").select("mentor_id").eq("id", id).limit(1);
+    if (trialError || !trial || trial.length === 0) return res.status(404).json({ error: "Trial user not found" });
+    const mentorId = trial[0].mentor_id;
+    if (!mentorId) return res.json({ assigned: false });
+
+    const { data: mentor } = await supabase.from("mentor_applications").select("id, full_name, email").eq("id", mentorId).limit(1);
+    if (mentor && mentor.length > 0) {
+      return res.json({ assigned: true, mentorName: mentor[0].full_name, mentorEmail: mentor[0].email, mentorId: mentor[0].id });
+    }
+
+    const { data: mentorByEmail } = await supabase.from("mentor_applications").select("id, full_name, email").eq("email", mentorId).limit(1);
+    if (mentorByEmail && mentorByEmail.length > 0) {
+      return res.json({ assigned: true, mentorName: mentorByEmail[0].full_name, mentorEmail: mentorByEmail[0].email, mentorId: mentorByEmail[0].id });
+    }
+
+    return res.json({ assigned: true, mentorName: "Mentor", mentorEmail: mentorId, mentorId });
+  } catch (error) {
+    console.error("[TRIAL] Mentor info error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/trial/:id/messages - Get messages for trial user conversation with mentor
+app.get("/api/trial/:id/messages", async (req, res) => {
+  try {
+    if (!supabase) return res.status(500).json({ error: "Database not configured" });
+    const { id } = req.params;
+    const { data: trial } = await supabase.from("trial_users").select("email, mentor_id").eq("id", id).limit(1);
+    if (!trial || trial.length === 0) return res.status(404).json({ error: "Trial user not found" });
+    const trialEmail = trial[0].email;
+    const mentorId = trial[0].mentor_id;
+    if (!mentorId) return res.json({ messages: [] });
+
+    let mentorEmail = mentorId;
+    const { data: mentor } = await supabase.from("mentor_applications").select("email").eq("id", mentorId).limit(1);
+    if (mentor && mentor.length > 0) mentorEmail = mentor[0].email;
+
+    const { data: messages, error } = await supabase
+      .from("messages")
+      .select("*")
+      .or(`and(from_email.eq.${trialEmail},to_email.eq.${mentorEmail}),and(from_email.eq.${mentorEmail},to_email.eq.${trialEmail})`)
+      .order("created_at", { ascending: true });
+
+    if (error) return res.status(400).json({ error: error.message });
+    return res.json({ messages: messages || [] });
+  } catch (error) {
+    console.error("[TRIAL] Get messages error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/trial/:id/messages - Send a message from trial user to mentor
+app.post("/api/trial/:id/messages", async (req, res) => {
+  try {
+    if (!supabase) return res.status(500).json({ error: "Database not configured" });
+    const { id } = req.params;
+    const { message } = req.body;
+    if (!message || !message.trim()) return res.status(400).json({ error: "Message is required" });
+
+    const { data: trial } = await supabase.from("trial_users").select("email, name, mentor_id").eq("id", id).limit(1);
+    if (!trial || trial.length === 0) return res.status(404).json({ error: "Trial user not found" });
+    const trialEmail = trial[0].email;
+    const trialName = trial[0].name || "Trial Founder";
+    const mentorId = trial[0].mentor_id;
+    if (!mentorId) return res.status(400).json({ error: "No mentor assigned" });
+
+    let mentorEmail = mentorId;
+    let mentorName = "Mentor";
+    const { data: mentor } = await supabase.from("mentor_applications").select("email, full_name").eq("id", mentorId).limit(1);
+    if (mentor && mentor.length > 0) {
+      mentorEmail = mentor[0].email;
+      mentorName = mentor[0].full_name || "Mentor";
+    }
+
+    const { data: msgData, error } = await supabase
+      .from("messages")
+      .insert({
+        from_name: trialName + " (Trial)",
+        from_email: trialEmail,
+        to_name: mentorName,
+        to_email: mentorEmail,
+        message: message.trim(),
+        is_read: false
+      })
+      .select();
+
+    if (error) return res.status(400).json({ error: error.message });
+
+    sendMessageNotificationEmail(mentorEmail, mentorName, trialName + " (Trial)", trialEmail, message.trim()).catch(err => console.error("[EMAIL] Trial message notify failed:", err));
+
+    return res.json({ success: true, message: msgData?.[0] });
+  } catch (error) {
+    console.error("[TRIAL] Send message error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // POST /api/trial/save-priorities
 app.post("/api/trial/save-priorities", async (req, res) => {
   try {

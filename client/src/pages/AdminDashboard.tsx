@@ -274,7 +274,7 @@ function ContractsSection() {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings" | "earnings" | "contracts" | "admins">("approvals");
+  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings" | "earnings" | "contracts" | "trials" | "admins">("approvals");
   const [, setLocation] = useLocation();
   const [adminUsers, setAdminUsers] = useState<{id: string; email: string; name: string; created_at: string}[]>([]);
   const [newAdminEmail, setNewAdminEmail] = useState("");
@@ -359,6 +359,10 @@ export default function AdminDashboard() {
   const [resendingInvite, setResendingInvite] = useState<string | null>(null);
   const [cancellationRequests, setCancellationRequests] = useState<{id: string; user_type: string; user_email: string; user_name: string; reason: string; status: string; created_at: string}[]>([]);
   const [cancelledEmails, setCancelledEmails] = useState<Set<string>>(new Set());
+  const [trialUsers, setTrialUsers] = useState<any[]>([]);
+  const [loadingTrialUsers, setLoadingTrialUsers] = useState(false);
+  const [assigningMentor, setAssigningMentor] = useState<string | null>(null);
+  const [trialMentorSelection, setTrialMentorSelection] = useState<{[trialId: string]: string}>({});
 
   const handleResendInvite = async (userId: string, userType: "entrepreneur" | "mentor" | "coach" | "investor", email: string) => {
     setResendingInvite(userId);
@@ -643,13 +647,24 @@ export default function AdminDashboard() {
         if (cancellationResponse.ok) {
           const data = await cancellationResponse.json();
           setCancellationRequests(data);
-          // Create a Set of emails with pending cancellations for quick lookup
           const emails = new Set<string>(data.filter((r: any) => r.status === 'pending').map((r: any) => r.user_email.toLowerCase()));
           setCancelledEmails(emails);
           console.log("Cancellation requests loaded:", data.length, "Pending emails:", emails.size);
         }
       } catch (err) {
         console.error("Error fetching cancellation requests:", err);
+      }
+
+      // Load trial users
+      try {
+        const trialResponse = await fetch(`${API_BASE_URL}/api/trial/all`);
+        if (trialResponse.ok) {
+          const trialData = await trialResponse.json();
+          setTrialUsers(trialData || []);
+          console.log("Trial users loaded:", trialData?.length || 0);
+        }
+      } catch (err) {
+        console.error("Error fetching trial users:", err);
       }
     };
 
@@ -671,6 +686,35 @@ export default function AdminDashboard() {
       console.error("Error fetching admins:", err);
     } finally {
       setLoadingAdmins(false);
+    }
+  };
+
+  const handleAssignTrialMentor = async (trialId: string) => {
+    const mentorId = trialMentorSelection[trialId];
+    if (!mentorId) {
+      toast.error("Please select a mentor first");
+      return;
+    }
+    setAssigningMentor(trialId);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/trial/${trialId}/assign-mentor`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mentorId }),
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        toast.success("Mentor assigned successfully!");
+        setTrialUsers(prev => prev.map(t => t.id === parseInt(trialId) ? { ...t, mentor_id: mentorId } : t));
+        setTrialMentorSelection(prev => { const next = { ...prev }; delete next[trialId]; return next; });
+      } else {
+        toast.error(data.error || "Failed to assign mentor");
+      }
+    } catch (err) {
+      console.error("Error assigning trial mentor:", err);
+      toast.error("Failed to assign mentor");
+    } finally {
+      setAssigningMentor(null);
     }
   };
 
@@ -1813,6 +1857,7 @@ export default function AdminDashboard() {
     { id: "meetings", label: "Meetings", icon: <Calendar className="h-4 w-4" /> },
     { id: "earnings", label: "Earnings", icon: <DollarSign className="h-4 w-4" /> },
     { id: "contracts", label: "Contracts", icon: <ClipboardCheck className="h-4 w-4" /> },
+    { id: "trials", label: "Trials", icon: <Clock className="h-4 w-4" />, badge: trialUsers.filter(t => t.status === "trial_active").length > 0 ? <Badge className="bg-cyan-500 text-white">{trialUsers.filter(t => t.status === "trial_active").length}</Badge> : undefined },
     { id: "admins", label: "Admins", icon: <Shield className="h-4 w-4" /> },
   ];
 
@@ -1939,6 +1984,17 @@ export default function AdminDashboard() {
             data-testid="button-contracts-tab"
           >
             <FileText className="mr-2 h-4 w-4" /> Contracts
+          </Button>
+          <Button 
+            variant={activeTab === "trials" ? "default" : "outline"}
+            onClick={() => setActiveTab("trials")}
+            className={activeTab === "trials" ? "bg-cyan-600 hover:bg-cyan-700" : ""}
+            data-testid="button-trials-tab"
+          >
+            <Clock className="mr-2 h-4 w-4" /> Trials
+            {trialUsers.filter(t => t.status === "trial_active").length > 0 && (
+              <Badge className="ml-2 bg-cyan-500 text-white">{trialUsers.filter(t => t.status === "trial_active").length}</Badge>
+            )}
           </Button>
           <Button 
             variant={activeTab === "admins" ? "default" : "outline"}
@@ -5950,6 +6006,124 @@ export default function AdminDashboard() {
       {/* Contracts Tab */}
       {activeTab === "contracts" && (
         <ContractsSection />
+      )}
+
+      {/* Trials Tab */}
+      {activeTab === "trials" && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-cyan-600" />
+                Trial Entrepreneurs ({trialUsers.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {trialUsers.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No trial users registered yet.</p>
+              ) : (
+                <div className="space-y-4">
+                  {trialUsers.map((trial: any) => {
+                    const isActive = trial.status === "trial_active";
+                    const isExpired = trial.status === "trial_expired";
+                    const daysRemaining = isActive ? Math.max(0, Math.ceil((new Date(trial.trial_end).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : 0;
+                    const assignedMentor = trial.mentor_id ? approvedMentors.find((m: any) => String(m.id) === String(trial.mentor_id)) : null;
+
+                    return (
+                      <div key={trial.id} className="border rounded-lg p-4 space-y-3" data-testid={`trial-user-${trial.id}`}>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div>
+                            <h3 className="font-semibold text-lg">{trial.name || "Unknown"}</h3>
+                            <p className="text-sm text-gray-500">{trial.email}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className={isActive ? "bg-green-100 text-green-800" : isExpired ? "bg-amber-100 text-amber-800" : "bg-gray-100 text-gray-800"} data-testid={`badge-trial-status-${trial.id}`}>
+                              {isActive ? `Active (${daysRemaining}d left)` : isExpired ? "Expired" : trial.status}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                          <div>
+                            <span className="text-gray-500">Started:</span>{" "}
+                            <span>{trial.trial_start ? formatToPST(trial.trial_start) : "—"}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Ends:</span>{" "}
+                            <span>{trial.trial_end ? formatToPST(trial.trial_end) : "—"}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Primary Blocker:</span>{" "}
+                            <Badge variant="outline" className="ml-1">{trial.primary_blocker || "Not set"}</Badge>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Focus Score:</span>{" "}
+                            <span className="font-medium">{trial.quiz_result?.score ?? "—"}</span>
+                          </div>
+                        </div>
+
+                        {trial.quiz_result?.categoryResults && (
+                          <div className="flex flex-wrap gap-2">
+                            {trial.quiz_result.categoryResults.map((cat: any, idx: number) => (
+                              <Badge key={idx} variant="outline" className="text-xs">
+                                {cat.category}: {cat.score}/{cat.maxScore}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+
+                        {trial.weekly_priorities && trial.weekly_priorities.some((p: string) => p) && (
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <p className="text-xs font-medium text-gray-500 mb-1">Weekly Priorities:</p>
+                            <ul className="text-sm space-y-1">
+                              {trial.weekly_priorities.filter((p: string) => p).map((p: string, idx: number) => (
+                                <li key={idx}>• {p}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <div className="border-t pt-3">
+                          <p className="text-sm font-medium mb-2">Mentor Assignment</p>
+                          {assignedMentor ? (
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <span className="text-sm">Assigned to <strong>{assignedMentor.full_name || assignedMentor.fullName}</strong> ({assignedMentor.email})</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <select
+                                className="border rounded-md px-3 py-1.5 text-sm flex-1 min-w-[200px]"
+                                value={trialMentorSelection[String(trial.id)] || ""}
+                                onChange={(e) => setTrialMentorSelection(prev => ({ ...prev, [String(trial.id)]: e.target.value }))}
+                                data-testid={`select-mentor-${trial.id}`}
+                              >
+                                <option value="">Select a mentor...</option>
+                                {approvedMentors.map((mentor: any) => (
+                                  <option key={mentor.id} value={mentor.id}>
+                                    {mentor.full_name || mentor.fullName} ({mentor.email})
+                                  </option>
+                                ))}
+                              </select>
+                              <Button
+                                size="sm"
+                                onClick={() => handleAssignTrialMentor(String(trial.id))}
+                                disabled={!trialMentorSelection[String(trial.id)] || assigningMentor === String(trial.id)}
+                                data-testid={`button-assign-mentor-${trial.id}`}
+                              >
+                                {assigningMentor === String(trial.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "Assign Mentor"}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Admins Tab */}

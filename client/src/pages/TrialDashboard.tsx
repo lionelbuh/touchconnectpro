@@ -63,6 +63,8 @@ export default function TrialDashboard() {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [mentorInfo, setMentorInfo] = useState<{ mentorName: string; mentorEmail: string } | null>(null);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -99,8 +101,60 @@ export default function TrialDashboard() {
       }
 
       setTrialStatus(data);
+      if (data.exists && data.id && data.mentorId) {
+        fetchMentorInfo(data.id);
+        fetchMessages(data.id);
+      }
     } catch (err) {
       console.error("Failed to fetch trial status:", err);
+    }
+  };
+
+  const fetchMentorInfo = async (trialId: number) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/trial/${trialId}/mentor-info`);
+      const data = await res.json();
+      if (data.assigned) {
+        setMentorInfo({ mentorName: data.mentorName, mentorEmail: data.mentorEmail });
+      }
+    } catch (err) {
+      console.error("Failed to fetch mentor info:", err);
+    }
+  };
+
+  const fetchMessages = async (trialId: number) => {
+    setLoadingMessages(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/trial/${trialId}/messages`);
+      const data = await res.json();
+      setMessages(data.messages || []);
+    } catch (err) {
+      console.error("Failed to fetch messages:", err);
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !trialStatus?.id) return;
+    setSendingMessage(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/trial/${trialStatus.id}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: newMessage.trim() }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to send");
+      }
+      setNewMessage("");
+      toast.success("Message sent!");
+      await fetchMessages(trialStatus.id);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send message");
+    } finally {
+      setSendingMessage(false);
     }
   };
 
@@ -354,12 +408,20 @@ export default function TrialDashboard() {
               <CardTitle className="flex items-center gap-2 text-white">
                 <MessageSquare className="h-5 w-5 text-cyan-500" />
                 Mentor Messaging
+                {mentorInfo && (
+                  <span className="text-sm font-normal text-slate-400 ml-2">with {mentorInfo.mentorName}</span>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="min-h-[300px] flex flex-col">
-                <div className="flex-1 space-y-3 mb-4">
-                  {messages.length === 0 ? (
+                <div className="flex-1 space-y-3 mb-4 max-h-[400px] overflow-y-auto">
+                  {loadingMessages ? (
+                    <div className="text-center py-12 text-slate-500">
+                      <Loader2 className="h-8 w-8 mx-auto mb-3 animate-spin" />
+                      <p>Loading messages...</p>
+                    </div>
+                  ) : messages.length === 0 ? (
                     <div className="text-center py-12 text-slate-500">
                       <MessageSquare className="h-10 w-10 mx-auto mb-3 opacity-50" />
                       <p>No messages yet. Start a conversation with your mentor.</p>
@@ -368,12 +430,13 @@ export default function TrialDashboard() {
                   ) : (
                     messages.map((msg, i) => (
                       <div key={i} className={`p-3 rounded-lg max-w-[80%] ${
-                        msg.sender === "entrepreneur" 
+                        msg.from_email === userEmail 
                           ? "bg-cyan-500/10 border border-cyan-500/20 ml-auto" 
                           : "bg-slate-800 border border-slate-700"
                       }`}>
-                        <p className="text-sm text-white">{msg.text}</p>
-                        <p className="text-xs text-slate-500 mt-1">{msg.time}</p>
+                        <p className="text-xs text-slate-500 mb-1 font-medium">{msg.from_name}</p>
+                        <p className="text-sm text-white">{msg.message}</p>
+                        <p className="text-xs text-slate-500 mt-1">{new Date(msg.created_at).toLocaleString()}</p>
                       </div>
                     ))
                   )}
@@ -383,17 +446,18 @@ export default function TrialDashboard() {
                     <Input
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && !sendingMessage && newMessage.trim() && handleSendMessage()}
                       placeholder="Type a message..."
                       className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
                       data-testid="input-trial-message"
                     />
                     <Button
-                      onClick={() => toast.info("Messaging will be available once admin assigns a mentor")}
+                      onClick={handleSendMessage}
                       disabled={sendingMessage || !newMessage.trim()}
                       className="bg-cyan-500 hover:bg-cyan-400 text-slate-950"
                       data-testid="button-send-trial-message"
                     >
-                      <Send className="h-4 w-4" />
+                      {sendingMessage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     </Button>
                   </div>
                 )}
