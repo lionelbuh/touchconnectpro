@@ -152,6 +152,32 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Founder Focus Score CTA */}
+      <section className="py-16 bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 border-y border-cyan-800/30" data-testid="section-founder-focus-cta">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="md:w-2/3">
+              <Badge variant="secondary" className="mb-3 px-3 py-1 bg-cyan-500/10 text-cyan-300 border-cyan-500/30 text-xs">
+                Free Diagnostic Tool
+              </Badge>
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-3 text-white">
+                Discover Your Biggest Growth Blocker
+              </h2>
+              <p className="text-slate-300 leading-relaxed">
+                Take our 5-minute Founder Focus Score diagnostic and find out what's holding your business back. Get a personalized action plan, no signup required.
+              </p>
+            </div>
+            <div className="md:w-1/3 text-center md:text-right">
+              <Link href="/founder-focus">
+                <Button size="lg" className="h-12 px-8 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.6)] hover:scale-105 transition-all" data-testid="button-founder-focus-cta">
+                  Take the Free Test <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section className="py-24 bg-background" data-testid="section-how-it-works">
         <div className="container px-4 mx-auto max-w-4xl">

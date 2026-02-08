@@ -7678,5 +7678,322 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
     }
   });
 
+  // =============================================
+  // FOUNDER FOCUS SCORE & TRIAL ROUTES
+  // =============================================
+
+  // POST /api/trial/create - Create trial account from Founder Focus Score
+  app.post("/api/trial/create", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { email, name, quizResult } = req.body;
+      if (!email || !name) {
+        return res.status(400).json({ error: "Name and email are required" });
+      }
+
+      const normalizedEmail = email.toLowerCase().trim();
+
+      // Check if trial already exists
+      const { data: existing } = await (client
+        .from("trial_users")
+        .select("id, status, trial_end")
+        .eq("email", normalizedEmail)
+        .limit(1) as any);
+
+      if (existing && existing.length > 0) {
+        return res.status(409).json({ 
+          error: "A trial account already exists for this email",
+          status: existing[0].status
+        });
+      }
+
+      // Check if user already has an entrepreneur application
+      const { data: existingApp } = await (client
+        .from("ideas")
+        .select("id")
+        .eq("entrepreneur_email", normalizedEmail)
+        .limit(1) as any);
+
+      if (existingApp && existingApp.length > 0) {
+        return res.status(409).json({ 
+          error: "An entrepreneur account already exists for this email. Please log in instead."
+        });
+      }
+
+      const now = new Date();
+      const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+      // Create Supabase auth user with temporary password
+      const tempPassword = crypto.randomBytes(16).toString("hex");
+      const { data: authData, error: authError } = await (client.auth.admin.createUser({
+        email: normalizedEmail,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          user_type: "trial_entrepreneur",
+          full_name: name
+        }
+      }) as any);
+
+      if (authError && !authError.message.includes("already been registered")) {
+        console.error("[TRIAL] Auth error:", authError);
+        return res.status(400).json({ error: authError.message });
+      }
+
+      // Store trial user data
+      const { data: trialData, error: trialError } = await (client
+        .from("trial_users")
+        .insert({
+          email: normalizedEmail,
+          name: name,
+          status: "trial_active",
+          trial_start: now.toISOString(),
+          trial_end: trialEnd.toISOString(),
+          quiz_result: quizResult || null,
+          primary_blocker: quizResult?.primaryBlocker || null,
+          created_at: now.toISOString()
+        })
+        .select() as any);
+
+      if (trialError) {
+        console.error("[TRIAL] Insert error:", trialError);
+        return res.status(400).json({ error: trialError.message });
+      }
+
+      // Create password setup token
+      const token = crypto.randomBytes(32).toString("hex");
+      const tokenExpiry = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+      await (client
+        .from("password_tokens")
+        .insert({
+          token,
+          email: normalizedEmail,
+          user_type: "trial_entrepreneur",
+          application_id: trialData?.[0]?.id?.toString() || "trial",
+          expires_at: tokenExpiry.toISOString(),
+          status: "pending"
+        }) as any);
+
+      // Send welcome email with password setup link
+      const resend = await getResendClient();
+      if (resend) {
+        const baseUrl = req.headers.origin || `${req.protocol}://${req.get("host")}`;
+        const setupUrl = `${baseUrl}/set-password?token=${token}`;
+
+        await resend.client.emails.send({
+          from: resend.fromEmail,
+          to: normalizedEmail,
+          subject: "Welcome to TouchConnectPro - Your 7-Day Trial",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h1 style="color: #0891b2;">Welcome to TouchConnectPro!</h1>
+              <p>Hi ${name},</p>
+              <p>Your 7-day trial has been activated! Here's what you can do:</p>
+              <ul>
+                <li><strong>Clarity & Focus tools</strong> - Review your Founder Focus Score and set priorities</li>
+                <li><strong>Weekly focus exercises</strong> - Define and track your top priorities</li>
+                <li><strong>Mentor messaging</strong> - Once an admin assigns a mentor, you can message them directly</li>
+              </ul>
+              <p><strong>Your trial ends on ${trialEnd.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.</strong></p>
+              <p>Set up your password to log in:</p>
+              <a href="${setupUrl}" style="display: inline-block; background-color: #0891b2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Set Up Your Password</a>
+              <p style="color: #666; font-size: 12px;">This link expires in 7 days.</p>
+            </div>
+          `
+        });
+        console.log("[TRIAL] Welcome email sent to:", normalizedEmail);
+      }
+
+      // Notify admin
+      if (resend) {
+        await resend.client.emails.send({
+          from: resend.fromEmail,
+          to: ADMIN_EMAIL,
+          subject: `New Trial User: ${name}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2>New Trial User Activated</h2>
+              <p><strong>Name:</strong> ${name}</p>
+              <p><strong>Email:</strong> ${normalizedEmail}</p>
+              <p><strong>Primary Blocker:</strong> ${quizResult?.primaryBlocker || "N/A"}</p>
+              <p><strong>Trial Ends:</strong> ${trialEnd.toLocaleDateString()}</p>
+              <p>You can assign a mentor to this trial user from the Admin Dashboard.</p>
+            </div>
+          `
+        });
+      }
+
+      console.log("[TRIAL] Created for:", normalizedEmail, "ends:", trialEnd.toISOString());
+      return res.status(201).json({ 
+        success: true, 
+        id: trialData?.[0]?.id,
+        trialEnd: trialEnd.toISOString()
+      });
+    } catch (error: any) {
+      console.error("[TRIAL] Create error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // GET /api/trial/status/:email - Get trial status
+  app.get("/api/trial/status/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const email = decodeURIComponent(req.params.email).toLowerCase().trim();
+
+      const { data, error } = await (client
+        .from("trial_users")
+        .select("*")
+        .eq("email", email)
+        .order("created_at", { ascending: false })
+        .limit(1) as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      if (!data || data.length === 0) {
+        return res.json({ exists: false });
+      }
+
+      const trial = data[0];
+      const now = new Date();
+      const trialEnd = new Date(trial.trial_end);
+      const isExpired = now > trialEnd;
+
+      // Auto-update status if expired but still marked active
+      if (isExpired && trial.status === "trial_active") {
+        await (client
+          .from("trial_users")
+          .update({ status: "trial_expired" } as any)
+          .eq("id", trial.id) as any);
+        trial.status = "trial_expired";
+      }
+
+      const daysRemaining = isExpired ? 0 : Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+      return res.json({
+        exists: true,
+        id: trial.id,
+        status: trial.status,
+        trialStart: trial.trial_start,
+        trialEnd: trial.trial_end,
+        daysRemaining,
+        isExpired,
+        quizResult: trial.quiz_result,
+        primaryBlocker: trial.primary_blocker,
+        mentorId: trial.mentor_id || null
+      });
+    } catch (error: any) {
+      console.error("[TRIAL] Status error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // POST /api/trial/:id/assign-mentor - Admin assigns mentor to trial user
+  app.post("/api/trial/:id/assign-mentor", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { id } = req.params;
+      const { mentorId } = req.body;
+
+      if (!mentorId) {
+        return res.status(400).json({ error: "mentorId is required" });
+      }
+
+      const { data, error } = await (client
+        .from("trial_users")
+        .update({ mentor_id: mentorId } as any)
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      console.log("[TRIAL] Mentor assigned:", mentorId, "to trial:", id);
+      return res.json({ success: true, data: data?.[0] });
+    } catch (error: any) {
+      console.error("[TRIAL] Assign mentor error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // GET /api/trial/all - Get all trial users (admin)
+  app.get("/api/trial/all", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { data, error } = await (client
+        .from("trial_users")
+        .select("*")
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      // Auto-expire any active trials that have passed
+      const now = new Date();
+      const updatedData = (data || []).map((trial: any) => {
+        if (trial.status === "trial_active" && new Date(trial.trial_end) < now) {
+          trial.status = "trial_expired";
+        }
+        return trial;
+      });
+
+      return res.json(updatedData);
+    } catch (error: any) {
+      console.error("[TRIAL] List error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // POST /api/trial/save-priorities - Save weekly priorities for trial user
+  app.post("/api/trial/save-priorities", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { email, priorities } = req.body;
+      if (!email || !priorities) {
+        return res.status(400).json({ error: "Email and priorities are required" });
+      }
+
+      const { data, error } = await (client
+        .from("trial_users")
+        .update({ weekly_priorities: priorities, priorities_updated_at: new Date().toISOString() } as any)
+        .eq("email", email.toLowerCase().trim())
+        .select() as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true });
+    } catch (error: any) {
+      console.error("[TRIAL] Save priorities error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }

@@ -39,6 +39,8 @@ import ContactCoach from "@/pages/ContactCoach";
 import CoachProfile from "@/pages/CoachProfile";
 import RevenueCalculator from "@/pages/RevenueCalculator";
 import { TestForm } from "@/pages/TestForm";
+import FounderFocusScore from "@/pages/FounderFocusScore";
+import TrialDashboard from "@/pages/TrialDashboard";
 import NotFound from "@/pages/not-found";
 
 // Placeholder pages for now
@@ -98,6 +100,8 @@ function Router() {
             </AdminProtectedRoute>
           )}
         </Route>
+        <Route path="/founder-focus" component={FounderFocusScore} />
+        <Route path="/trial-dashboard" component={TrialDashboard} />
         <Route path="/test-form" component={TestForm} />
         <Route component={NotFound} />
       </Switch>
