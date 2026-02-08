@@ -8908,7 +8908,6 @@ app.post("/api/trial/create", async (req, res) => {
     const now = new Date();
     const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    const crypto = require("crypto");
     const tempPassword = crypto.randomBytes(16).toString("hex");
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: normalizedEmail,
@@ -8958,11 +8957,13 @@ app.post("/api/trial/create", async (req, res) => {
         status: "pending"
       });
 
-    if (resend) {
+    const resendData = await getResendClient();
+    if (resendData) {
+      const { client: resendClient, fromEmail } = resendData;
       const baseUrl = req.headers.origin || `${req.protocol}://${req.get("host")}`;
       const setupUrl = `${baseUrl}/set-password?token=${token}`;
 
-      await resend.emails.send({
+      await resendClient.emails.send({
         from: fromEmail,
         to: normalizedEmail,
         subject: "Welcome to TouchConnectPro - Your 7-Day Trial",
@@ -8978,7 +8979,7 @@ app.post("/api/trial/create", async (req, res) => {
         `
       });
 
-      await resend.emails.send({
+      await resendClient.emails.send({
         from: fromEmail,
         to: ADMIN_EMAIL,
         subject: `New Trial User: ${name}`,
