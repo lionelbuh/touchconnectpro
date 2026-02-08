@@ -88,7 +88,7 @@ export default function Home() {
       </section>
 
       {/* What Is TouchConnectPro? */}
-      <section className="py-24 bg-background" data-testid="section-what-is-tcp">
+      <section className="py-24 bg-gradient-to-br from-cyan-50 via-slate-50 to-indigo-50 dark:from-cyan-950/20 dark:via-slate-900/30 dark:to-indigo-950/20 border-y border-cyan-100 dark:border-cyan-900/30" data-testid="section-what-is-tcp">
         <div className="container px-4 mx-auto max-w-4xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-slate-900 dark:text-white">What Is TouchConnectPro?</h2>
@@ -357,21 +357,19 @@ export default function Home() {
       </section>
 
       {/* Who TouchConnectPro Is For (expanded) */}
-      <section className="py-24 bg-background" data-testid="section-who-for-expanded">
+      <section className="py-24 bg-gradient-to-br from-indigo-50 via-slate-50 to-cyan-50 dark:from-indigo-950/20 dark:via-slate-900/30 dark:to-cyan-950/20 border-y border-indigo-100 dark:border-indigo-900/30" data-testid="section-who-for-expanded">
         <div className="container px-4 mx-auto max-w-4xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-slate-900 dark:text-white">Who TouchConnectPro Is For</h2>
             <p className="text-lg text-slate-600 dark:text-slate-400">TouchConnectPro is built for:</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+          <div className="grid md:grid-cols-3 gap-5 mb-10">
             {[
               { icon: <Lightbulb className="h-5 w-5 text-cyan-500" />, text: "Entrepreneurs with an idea and no clear roadmap" },
               { icon: <UserCheck className="h-5 w-5 text-indigo-500" />, text: "First time founders seeking experienced guidance" },
               { icon: <TrendingUp className="h-5 w-5 text-emerald-500" />, text: "Early stage startups preparing to launch or scale" },
-              { icon: <MessageCircle className="h-5 w-5 text-amber-500" />, text: "Professionals who want real feedback, not theory" },
-              { icon: <Heart className="h-5 w-5 text-rose-500" />, text: "Experienced founders and executives who want to mentor others" },
             ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3 p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
+              <div key={i} className="flex items-start gap-3 p-4 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-800/30">
                 <div className="shrink-0 mt-0.5">{item.icon}</div>
                 <p className="text-slate-700 dark:text-slate-300">{item.text}</p>
               </div>
@@ -410,12 +408,12 @@ export default function Home() {
       </section>
 
       {/* Mentorship Powered by Experience */}
-      <section className="py-24 bg-background" data-testid="section-mentorship-experience">
+      <section className="py-24 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-y border-indigo-800/30" data-testid="section-mentorship-experience">
         <div className="container px-4 mx-auto max-w-4xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-slate-900 dark:text-white">Mentorship Powered by Experience</h2>
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-white">Mentorship Powered by Experience</h2>
           </div>
-          <div className="space-y-6 text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+          <div className="space-y-6 text-lg text-slate-300 leading-relaxed">
             <p>
               TouchConnectPro is not an automated advice platform.
             </p>
