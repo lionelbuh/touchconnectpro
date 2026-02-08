@@ -394,31 +394,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Who TouchConnectPro Is For (expanded) */}
-      <section className="py-24 bg-gradient-to-br from-indigo-50 via-slate-50 to-cyan-50 dark:from-indigo-950/20 dark:via-slate-900/30 dark:to-cyan-950/20 border-y border-indigo-100 dark:border-indigo-900/30" data-testid="section-who-for-expanded">
-        <div className="container px-4 mx-auto max-w-4xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-slate-900 dark:text-white">Who TouchConnectPro Is For</h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400">TouchConnectPro is built for:</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-5 mb-10">
-            {[
-              { icon: <Lightbulb className="h-5 w-5 text-cyan-500" />, text: "Entrepreneurs with an idea and no clear roadmap" },
-              { icon: <UserCheck className="h-5 w-5 text-indigo-500" />, text: "First time founders seeking experienced guidance" },
-              { icon: <TrendingUp className="h-5 w-5 text-emerald-500" />, text: "Early stage startups preparing to launch or scale" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3 p-4 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-800/30">
-                <div className="shrink-0 mt-0.5">{item.icon}</div>
-                <p className="text-slate-700 dark:text-slate-300">{item.text}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-center text-lg text-slate-600 dark:text-slate-400">
-            If you want clarity, direction, and execution focused advice, you are in the right place.
-          </p>
-        </div>
-      </section>
-
       {/* Why Choose TouchConnectPro? */}
       <section className="py-24 bg-slate-50 dark:bg-slate-900/30 border-y border-slate-200 dark:border-slate-800" data-testid="section-why-choose">
         <div className="container px-4 mx-auto max-w-4xl">
@@ -470,11 +445,37 @@ export default function Home() {
              For $49/month, your personalized mentor gives structured guidance and tailored feedback at every stage, from refining your idea to building a strong business foundation. Ask questions anytime and tap into optional expert coaches when needed, all without blocking your calendar with unnecessary meetings.
            </p>
            
-           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-             <Card className="bg-slate-800 border-slate-700 text-left relative overflow-hidden">
+           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+             <Card className="bg-gradient-to-br from-emerald-900/80 to-slate-900 border-emerald-500/40 text-left relative overflow-hidden" data-testid="card-free-diagnostic">
+               <CardContent className="p-8">
+                 <Badge className="mb-3 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30">No Account Needed</Badge>
+                 <h3 className="text-2xl font-bold mb-2 text-white">Free Diagnostic Tool</h3>
+                 <div className="text-4xl font-display font-bold mb-4 text-white">Free<span className="text-lg text-emerald-300 font-normal"> – Instant Results</span></div>
+                 <p className="text-emerald-200/80 text-sm mb-6">Test the platform before committing. Get your personalized Founder Focus Score in 2 minutes.</p>
+                 <ul className="space-y-4 mb-8">
+                   <li className="text-slate-300">
+                     <span className="flex items-center gap-2 font-semibold"><Target className="h-4 w-4 text-emerald-400"/> Founder Focus Score</span>
+                     <span className="text-sm text-slate-400 ml-6">Discover your biggest startup blocker with our quick diagnostic.</span>
+                   </li>
+                   <li className="text-slate-300">
+                     <span className="flex items-center gap-2 font-semibold"><Sparkles className="h-4 w-4 text-emerald-400"/> Personalized Insights</span>
+                     <span className="text-sm text-slate-400 ml-6">Get actionable recommendations tailored to your situation.</span>
+                   </li>
+                   <li className="text-slate-300">
+                     <span className="flex items-center gap-2 font-semibold"><ArrowRight className="h-4 w-4 text-emerald-400"/> 7-Day Trial Access</span>
+                     <span className="text-sm text-slate-400 ml-6">Unlock a trial dashboard to set priorities and connect with a mentor.</span>
+                   </li>
+                 </ul>
+                 <Link href="/founder-focus-score">
+                   <Button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white" data-testid="button-free-diagnostic">Take the Free Quiz <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                 </Link>
+               </CardContent>
+             </Card>
+
+             <Card className="bg-slate-800 border-slate-700 text-left relative overflow-hidden" data-testid="card-free-entry">
                <CardContent className="p-8">
                  <h3 className="text-2xl font-bold mb-2 text-white">Free Entry</h3>
-                 <div className="text-4xl font-display font-bold mb-4 text-white">$0<span className="text-lg text-slate-400 font-normal">/mo</span> <span className="text-base text-slate-400 font-normal">– No credit card required</span></div>
+                 <div className="text-4xl font-display font-bold mb-4 text-white">$0<span className="text-lg text-slate-400 font-normal">/mo</span> <span className="text-base text-slate-400 font-normal">– No credit card</span></div>
                  <ul className="space-y-4 mb-8">
                    <li className="text-slate-300">
                      <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Refine Your Idea</span>
@@ -490,7 +491,7 @@ export default function Home() {
                    </li>
                  </ul>
                  <Link href="/become-entrepreneur">
-                   <Button className="w-full bg-slate-700 hover:bg-slate-600">Start Free - No Credit Card</Button>
+                   <Button className="w-full bg-slate-700 hover:bg-slate-600" data-testid="button-free-entry">Start Free - No Credit Card</Button>
                  </Link>
                </CardContent>
              </Card>
