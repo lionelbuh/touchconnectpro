@@ -8060,10 +8060,24 @@ app.post("/api/contract-acceptances", async (req, res) => {
       return res.status(400).json({ error: "Invalid role. Must be coach, mentor, investor, or entrepreneur" });
     }
 
+    // Check if this user already accepted this version for this role
+    const { data: existing } = await supabase
+      .from("contract_acceptances")
+      .select("id")
+      .eq("email", email.toLowerCase())
+      .eq("role", role.toLowerCase())
+      .eq("contract_version", contractVersion)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      console.log("[CONTRACT] Already accepted by", email, role, contractVersion);
+      return res.status(200).json({ success: true, id: existing[0].id, alreadyAccepted: true });
+    }
+
     const { data, error } = await supabase
       .from("contract_acceptances")
       .insert({
-        email,
+        email: email.toLowerCase(),
         role: role.toLowerCase(),
         contract_version: contractVersion,
         contract_text: contractText,
@@ -8161,17 +8175,18 @@ app.get("/api/contract-acceptances/check-coach-agreement/:email", async (req, re
     const { data, error } = await supabase
       .from("contract_acceptances")
       .select("*")
-      .eq("email", email)
+      .eq("email", email.toLowerCase())
       .eq("role", "coach")
       .eq("contract_version", CURRENT_COACH_AGREEMENT_VERSION)
-      .single();
+      .order("accepted_at", { ascending: false })
+      .limit(1);
 
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
       console.error("[CHECK COACH AGREEMENT] Error:", error);
       return res.status(400).json({ error: error.message });
     }
 
-    const hasAccepted = !!data;
+    const hasAccepted = data && data.length > 0;
     console.log("[CHECK COACH AGREEMENT] Has accepted:", hasAccepted);
     return res.json({ hasAccepted });
   } catch (error) {
