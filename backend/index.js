@@ -8862,6 +8862,396 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
   }
 });
 
+// =============================================
+// FOUNDER FOCUS SCORE & TRIAL ROUTES
+// =============================================
+
+// POST /api/trial/create - Create trial account from Founder Focus Score
+app.post("/api/trial/create", async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+
+    const { email, name, quizResult } = req.body;
+    if (!email || !name) {
+      return res.status(400).json({ error: "Name and email are required" });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const { data: existing } = await supabase
+      .from("trial_users")
+      .select("id, status, trial_end")
+      .eq("email", normalizedEmail)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      return res.status(409).json({ 
+        error: "A trial account already exists for this email",
+        status: existing[0].status
+      });
+    }
+
+    const { data: existingApp } = await supabase
+      .from("ideas")
+      .select("id")
+      .eq("entrepreneur_email", normalizedEmail)
+      .limit(1);
+
+    if (existingApp && existingApp.length > 0) {
+      return res.status(409).json({ 
+        error: "An entrepreneur account already exists for this email. Please log in instead."
+      });
+    }
+
+    const now = new Date();
+    const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    const tempPassword = crypto.randomBytes(16).toString("hex");
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: normalizedEmail,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: {
+        user_type: "trial_entrepreneur",
+        full_name: name
+      }
+    });
+
+    if (authError && !authError.message.includes("already been registered")) {
+      console.error("[TRIAL] Auth error:", authError);
+      return res.status(400).json({ error: authError.message });
+    }
+
+    const { data: trialData, error: trialError } = await supabase
+      .from("trial_users")
+      .insert({
+        email: normalizedEmail,
+        name: name,
+        status: "trial_active",
+        trial_start: now.toISOString(),
+        trial_end: trialEnd.toISOString(),
+        quiz_result: quizResult || null,
+        primary_blocker: quizResult?.primaryBlocker || null,
+        created_at: now.toISOString()
+      })
+      .select();
+
+    if (trialError) {
+      console.error("[TRIAL] Insert error:", trialError);
+      return res.status(400).json({ error: trialError.message });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const tokenExpiry = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const trialTokenUuid = crypto.randomUUID();
+
+    const { error: tokenInsertError } = await supabase
+      .from("password_tokens")
+      .insert({
+        token,
+        email: normalizedEmail,
+        user_type: "trial_entrepreneur",
+        application_id: trialTokenUuid,
+        expires_at: tokenExpiry.toISOString(),
+        status: "pending"
+      });
+
+    if (tokenInsertError) {
+      console.error("[TRIAL] Token insert error:", tokenInsertError);
+    }
+
+    const resendData = await getResendClient();
+    if (resendData) {
+      const { client: resendClient, fromEmail } = resendData;
+      const baseUrl = req.headers.origin || `${req.protocol}://${req.get("host")}`;
+      const setupUrl = `${baseUrl}/set-password?token=${token}`;
+
+      await resendClient.emails.send({
+        from: fromEmail,
+        to: normalizedEmail,
+        subject: "Welcome to TouchConnectPro - Your 7-Day Trial",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #0891b2;">Welcome to TouchConnectPro!</h1>
+            <p>Hi ${name},</p>
+            <p>Your 7-day trial has been activated!</p>
+            <p><strong>Your trial ends on ${trialEnd.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.</strong></p>
+            <p>Set up your password to log in:</p>
+            <a href="${setupUrl}" style="display: inline-block; background-color: #0891b2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Set Up Your Password</a>
+          </div>
+        `
+      });
+
+      await resendClient.emails.send({
+        from: fromEmail,
+        to: ADMIN_EMAIL,
+        subject: `New Trial User: ${name}`,
+        html: `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${normalizedEmail}</p><p><strong>Primary Blocker:</strong> ${quizResult?.primaryBlocker || "N/A"}</p><p><strong>Trial Ends:</strong> ${trialEnd.toLocaleDateString()}</p>`
+      });
+    }
+
+    console.log("[TRIAL] Created for:", normalizedEmail);
+    return res.status(201).json({ success: true, id: trialData?.[0]?.id, trialEnd: trialEnd.toISOString() });
+  } catch (error) {
+    console.error("[TRIAL] Create error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/trial/regenerate-token - Regenerate trial password token
+app.post("/api/trial/regenerate-token", async (req, res) => {
+  try {
+    if (!supabase) return res.status(500).json({ error: "Database not configured" });
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email required" });
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const { data: trialData } = await supabase
+      .from("trial_users")
+      .select("*")
+      .eq("email", normalizedEmail)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (!trialData || trialData.length === 0) {
+      return res.status(404).json({ error: "No trial found for this email" });
+    }
+
+    await supabase
+      .from("password_tokens")
+      .update({ status: "expired" })
+      .eq("email", normalizedEmail)
+      .eq("status", "pending");
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const trialUuid = crypto.randomUUID();
+
+    const { error: insertError } = await supabase
+      .from("password_tokens")
+      .insert({
+        token,
+        email: normalizedEmail,
+        user_type: "trial_entrepreneur",
+        application_id: trialUuid,
+        expires_at: tokenExpiry.toISOString(),
+        status: "pending"
+      });
+
+    if (insertError) {
+      console.error("[TRIAL TOKEN] Insert error:", insertError);
+      return res.status(400).json({ error: "Failed to create token", details: insertError });
+    }
+
+    const resendData = await getResendClient();
+    if (resendData) {
+      const { client: resendClient, fromEmail } = resendData;
+      const baseUrl = req.headers.origin || `${req.protocol}://${req.get("host")}`;
+      const setupUrl = `${baseUrl}/set-password?token=${token}`;
+      const name = trialData[0].name || "Founder";
+      const trialEnd = new Date(trialData[0].trial_end);
+
+      await resendClient.emails.send({
+        from: fromEmail,
+        to: normalizedEmail,
+        subject: "TouchConnectPro - Set Up Your Password (New Link)",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #0891b2;">Set Up Your Password</h1>
+            <p>Hi ${name},</p>
+            <p>Here is your new password setup link:</p>
+            <a href="${setupUrl}" style="display: inline-block; background-color: #0891b2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Set Up Your Password</a>
+            <p><strong>Your trial ends on ${trialEnd.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.</strong></p>
+            <p>If the button doesn't work, copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #666;">${setupUrl}</p>
+          </div>
+        `
+      });
+    }
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("[TRIAL TOKEN] Regenerate error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/trial/status/:email
+app.get("/api/trial/status/:email", async (req, res) => {
+  try {
+    if (!supabase) return res.status(500).json({ error: "Database not configured" });
+    const email = decodeURIComponent(req.params.email).toLowerCase().trim();
+    const { data, error } = await supabase.from("trial_users").select("*").eq("email", email).order("created_at", { ascending: false }).limit(1);
+    if (error) return res.status(400).json({ error: error.message });
+    if (!data || data.length === 0) return res.json({ exists: false });
+    const trial = data[0];
+    const now = new Date();
+    const trialEnd = new Date(trial.trial_end);
+    const isExpired = now > trialEnd;
+    if (isExpired && trial.status === "trial_active") {
+      await supabase.from("trial_users").update({ status: "trial_expired" }).eq("id", trial.id);
+      trial.status = "trial_expired";
+    }
+    const daysRemaining = isExpired ? 0 : Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return res.json({ exists: true, id: trial.id, status: trial.status, trialStart: trial.trial_start, trialEnd: trial.trial_end, daysRemaining, isExpired, quizResult: trial.quiz_result, primaryBlocker: trial.primary_blocker, mentorId: trial.mentor_id || null, weeklyPriorities: trial.weekly_priorities || null });
+  } catch (error) {
+    console.error("[TRIAL] Status error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/trial/:id/assign-mentor
+app.post("/api/trial/:id/assign-mentor", async (req, res) => {
+  try {
+    if (!supabase) return res.status(500).json({ error: "Database not configured" });
+    const { id } = req.params;
+    const { mentorId } = req.body;
+    if (!mentorId) return res.status(400).json({ error: "mentorId is required" });
+    const { data, error } = await supabase.from("trial_users").update({ mentor_id: mentorId }).eq("id", id).select();
+    if (error) return res.status(400).json({ error: error.message });
+    return res.json({ success: true, data: data?.[0] });
+  } catch (error) {
+    console.error("[TRIAL] Assign mentor error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/trial/all
+app.get("/api/trial/all", async (req, res) => {
+  try {
+    if (!supabase) return res.status(500).json({ error: "Database not configured" });
+    const { data, error } = await supabase.from("trial_users").select("*").order("created_at", { ascending: false });
+    if (error) return res.status(400).json({ error: error.message });
+    const now = new Date();
+    const updatedData = (data || []).map(trial => {
+      if (trial.status === "trial_active" && new Date(trial.trial_end) < now) trial.status = "trial_expired";
+      return trial;
+    });
+    return res.json(updatedData);
+  } catch (error) {
+    console.error("[TRIAL] List error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/trial/:id/mentor-info - Get assigned mentor details for a trial user
+app.get("/api/trial/:id/mentor-info", async (req, res) => {
+  try {
+    if (!supabase) return res.status(500).json({ error: "Database not configured" });
+    const { id } = req.params;
+    const { data: trial, error: trialError } = await supabase.from("trial_users").select("mentor_id").eq("id", id).limit(1);
+    if (trialError || !trial || trial.length === 0) return res.status(404).json({ error: "Trial user not found" });
+    const mentorId = trial[0].mentor_id;
+    if (!mentorId) return res.json({ assigned: false });
+
+    const { data: mentor } = await supabase.from("mentor_applications").select("id, full_name, email").eq("id", mentorId).limit(1);
+    if (mentor && mentor.length > 0) {
+      return res.json({ assigned: true, mentorName: mentor[0].full_name, mentorEmail: mentor[0].email, mentorId: mentor[0].id });
+    }
+
+    const { data: mentorByEmail } = await supabase.from("mentor_applications").select("id, full_name, email").eq("email", mentorId).limit(1);
+    if (mentorByEmail && mentorByEmail.length > 0) {
+      return res.json({ assigned: true, mentorName: mentorByEmail[0].full_name, mentorEmail: mentorByEmail[0].email, mentorId: mentorByEmail[0].id });
+    }
+
+    return res.json({ assigned: true, mentorName: "Mentor", mentorEmail: mentorId, mentorId });
+  } catch (error) {
+    console.error("[TRIAL] Mentor info error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/trial/:id/messages - Get messages for trial user conversation with mentor
+app.get("/api/trial/:id/messages", async (req, res) => {
+  try {
+    if (!supabase) return res.status(500).json({ error: "Database not configured" });
+    const { id } = req.params;
+    const { data: trial } = await supabase.from("trial_users").select("email, mentor_id").eq("id", id).limit(1);
+    if (!trial || trial.length === 0) return res.status(404).json({ error: "Trial user not found" });
+    const trialEmail = trial[0].email;
+    const mentorId = trial[0].mentor_id;
+    if (!mentorId) return res.json({ messages: [] });
+
+    let mentorEmail = mentorId;
+    const { data: mentor } = await supabase.from("mentor_applications").select("email").eq("id", mentorId).limit(1);
+    if (mentor && mentor.length > 0) mentorEmail = mentor[0].email;
+
+    const { data: messages, error } = await supabase
+      .from("messages")
+      .select("*")
+      .or(`and(from_email.eq.${trialEmail},to_email.eq.${mentorEmail}),and(from_email.eq.${mentorEmail},to_email.eq.${trialEmail})`)
+      .order("created_at", { ascending: true });
+
+    if (error) return res.status(400).json({ error: error.message });
+    return res.json({ messages: messages || [] });
+  } catch (error) {
+    console.error("[TRIAL] Get messages error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/trial/:id/messages - Send a message from trial user to mentor
+app.post("/api/trial/:id/messages", async (req, res) => {
+  try {
+    if (!supabase) return res.status(500).json({ error: "Database not configured" });
+    const { id } = req.params;
+    const { message } = req.body;
+    if (!message || !message.trim()) return res.status(400).json({ error: "Message is required" });
+
+    const { data: trial } = await supabase.from("trial_users").select("email, name, mentor_id").eq("id", id).limit(1);
+    if (!trial || trial.length === 0) return res.status(404).json({ error: "Trial user not found" });
+    const trialEmail = trial[0].email;
+    const trialName = trial[0].name || "Trial Founder";
+    const mentorId = trial[0].mentor_id;
+    if (!mentorId) return res.status(400).json({ error: "No mentor assigned" });
+
+    let mentorEmail = mentorId;
+    let mentorName = "Mentor";
+    const { data: mentor } = await supabase.from("mentor_applications").select("email, full_name").eq("id", mentorId).limit(1);
+    if (mentor && mentor.length > 0) {
+      mentorEmail = mentor[0].email;
+      mentorName = mentor[0].full_name || "Mentor";
+    }
+
+    const { data: msgData, error } = await supabase
+      .from("messages")
+      .insert({
+        from_name: trialName + " (Trial)",
+        from_email: trialEmail,
+        to_name: mentorName,
+        to_email: mentorEmail,
+        message: message.trim(),
+        is_read: false
+      })
+      .select();
+
+    if (error) return res.status(400).json({ error: error.message });
+
+    sendMessageNotificationEmail(mentorEmail, mentorName, trialName + " (Trial)", trialEmail, message.trim()).catch(err => console.error("[EMAIL] Trial message notify failed:", err));
+
+    return res.json({ success: true, message: msgData?.[0] });
+  } catch (error) {
+    console.error("[TRIAL] Send message error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/trial/save-priorities
+app.post("/api/trial/save-priorities", async (req, res) => {
+  try {
+    if (!supabase) return res.status(500).json({ error: "Database not configured" });
+    const { email, priorities } = req.body;
+    if (!email || !priorities) return res.status(400).json({ error: "Email and priorities are required" });
+    const { data, error } = await supabase.from("trial_users").update({ weekly_priorities: priorities, priorities_updated_at: new Date().toISOString() }).eq("email", email.toLowerCase().trim()).select();
+    if (error) return res.status(400).json({ error: error.message });
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("[TRIAL] Save priorities error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
   console.log("SUPABASE_URL:", process.env.SUPABASE_URL ? "Loaded" : "MISSING");

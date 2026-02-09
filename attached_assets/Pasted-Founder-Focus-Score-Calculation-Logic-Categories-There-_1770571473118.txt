@@ -1,0 +1,147 @@
+Founder Focus Score Calculation Logic
+Categories
+
+There are 4 categories:
+
+Strategy
+
+Sales
+
+Operations
+
+Execution
+
+Each question answer contributes to one category only.
+
+Points Assignment
+
+Total questions: 8
+
+Each answer = +10 points to its mapped category
+
+Maximum points per category = 80
+
+Minimum points per category = 0
+
+Step by Step Calculation
+Step 1: Initialize category scores
+
+Set all category scores to 0.
+
+strategy = 0
+sales = 0
+operations = 0
+execution = 0
+
+Step 2: Add points per answer
+
+For each answered question:
+
+Identify the category mapped to the selected answer
+
+Add +10 points to that category
+
+Example:
+
+if answer.category == "strategy":
+    strategy += 10
+
+
+Repeat for all questions.
+
+Step 3: Identify the primary blocker
+
+Find the category with the highest score.
+
+maxCategoryScore = max(strategy, sales, operations, execution)
+
+
+That category is the primary growth blocker.
+
+If there is a tie:
+
+Select the category that appears earliest in the question order
+This ensures deterministic behavior.
+
+Step 4: Convert to Founder Focus Score (0 to 100)
+
+The Founder Focus Score represents how focused and balanced the founder is.
+
+Formula
+FounderFocusScore = round(
+  100 - ((maxCategoryScore / 80) * 40)
+)
+
+Why this formula
+
+maxCategoryScore / 80 normalizes the strongest blocker (0 to 1)
+
+Multiply by 40 limits the penalty range
+
+Subtracting from 100 creates a positive score
+
+This produces:
+
+100 when no strong blocker exists
+
+60 when one category dominates strongly
+
+Lower scores when focus is heavily unbalanced
+
+Example Calculations
+Example 1: Moderate imbalance
+Strategy = 40
+Sales = 20
+Operations = 10
+Execution = 10
+
+maxCategoryScore = 40
+
+FounderFocusScore = 100 - ((40 / 80) * 40)
+FounderFocusScore = 100 - 20
+FounderFocusScore = 80
+
+Example 2: Strong blocker
+Strategy = 60
+Sales = 10
+Operations = 10
+Execution = 0
+
+FounderFocusScore = 100 - ((60 / 80) * 40)
+FounderFocusScore = 100 - 30
+FounderFocusScore = 70
+
+Example 3: Severe focus issue
+Execution = 80
+Others = 0
+
+FounderFocusScore = 100 - ((80 / 80) * 40)
+FounderFocusScore = 60
+
+Interpretation Ranges
+
+80 to 100 → Strong foundation
+
+60 to 79 → Solid but blocked
+
+40 to 59 → High friction
+
+Below 40 → Not expected with current setup
+
+Output Requirements
+
+On the results page, display:
+
+Founder Focus Score (integer, no decimals)
+
+Primary blocker category
+
+Short explanation text tied to the blocker
+
+Key Notes for Implementation
+
+Keep scoring logic isolated for easy tuning
+
+Question count and weights may change later
+
+Ensure consistent results for repeated inputs

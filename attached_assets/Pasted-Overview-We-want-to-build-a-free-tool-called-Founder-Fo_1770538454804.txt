@@ -1,0 +1,216 @@
+Overview
+
+We want to build a free tool called Founder Focus Score and connect it to a controlled dashboard access flow that converts qualified founders into paid members.
+
+The idea is:
+
+Founder completes a 5 minute diagnostic tool
+
+Founder gets immediate value and clarity
+
+Founder receives limited dashboard access for 7 days
+
+Founder must apply and become a paid member to continue
+
+Part 1: Founder Focus Score Tool
+Purpose
+
+The Founder Focus Score is a short diagnostic tool that identifies a founder’s single biggest growth blocker and tells them what to fix next.
+
+It must feel:
+
+Fast
+
+Useful
+
+Personalized
+
+No signup required to see results
+
+Tool Flow
+
+Public landing page
+Short explanation of the tool and a start button.
+
+Questionnaire
+
+8 questions
+
+Each question has 4 answers
+
+Each answer maps to one of 4 categories:
+
+Strategy
+
+Sales
+
+Operations
+
+Execution
+
+Scoring
+
+Each selected answer adds +10 points to its category
+
+The category with the highest total is the founder’s primary blocker
+
+Results page
+Immediately show:
+
+Founder Focus Score (0 to 100)
+
+Primary blocker category
+
+Short explanation of what this means
+
+One concrete action they should take next
+
+No email or account is required up to this point.
+
+Part 2: Dashboard Trial Access
+Entry Point
+
+On the results page, show a CTA:
+
+“Unlock the Entrepreneur Dashboard for 7 days”
+
+Only at this point:
+
+Ask for email
+
+Create a user account
+
+Trial Account Setup
+
+When a user activates the trial:
+
+Status = Trial Entrepreneur
+
+Trial length = 7 days from activation
+
+No payment required
+
+Trial Permissions
+
+During the 7 day trial, the user can access:
+
+Dashboard Section: Clarity and Focus
+
+Their Founder Focus Score recap
+
+Weekly priority definition tools
+
+Focus and decision exercises
+
+All other dashboard sections:
+
+Visible but locked
+
+Clearly labeled as available after membership
+
+Mentor Messaging
+
+Admin manually assigns a mentor to the trial user
+
+Once assigned, the user can:
+
+Message the mentor inside the platform
+
+Messaging rules:
+
+Text only
+
+One to one
+
+No file uploads
+
+This creates value without giving full coaching access.
+
+Part 3: Trial Expiration Logic
+During Trial
+
+Show countdown banner: “Trial ends in X days”
+
+Automated reminders:
+
+Day 5: Trial ending soon
+
+Day 7: Trial ending today
+
+After Trial Ends
+
+When the 7 days are over:
+
+Dashboard becomes read only
+
+Mentor messaging is disabled
+
+User status changes to Trial Expired
+
+Part 4: Entrepreneur Application Flow
+
+After trial expiration:
+
+User gains access to the Entrepreneur Application Form
+
+Same application used by regular entrepreneurs
+
+Submission:
+
+Status becomes Application Submitted
+
+Admin reviews manually
+
+Part 5: Approval and Paid Membership
+
+If admin approves the application:
+
+User status = Approved Awaiting Payment
+
+User is prompted to:
+
+Choose a membership plan
+
+Complete payment
+
+After payment:
+
+Status becomes Active Entrepreneur
+
+Full dashboard access unlocked
+
+Full mentor interaction enabled
+
+Status and Permission Summary
+
+Statuses to implement:
+
+Trial Entrepreneur
+
+Trial Expired
+
+Application Submitted
+
+Approved Awaiting Payment
+
+Active Entrepreneur
+
+Each status controls:
+
+Dashboard access
+
+Messaging access
+
+Application visibility
+
+Key Principles
+
+No signup before value is delivered
+
+Trial is valuable but clearly limited
+
+Clear upgrade path
+
+Simple admin control
+
+Easy to iterate later

@@ -4,9 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, ArrowRight, Sparkles, Users, FileText, TrendingUp, Shield, Target, ChevronDown, Lightbulb, UserCheck, Star, MessageCircle, Heart } from "lucide-react";
 import { Link } from "wouter";
-import heroBg from "@assets/generated_images/modern_abstract_network_connections_hero_background.png";
-import mentorFeature from "@assets/remember-why-you-started-poster_1768112021320.jpg";
-import step1Image from "@assets/Startup_1768112021321.png";
+import heroBg from "@assets/generated_images/hero-bg.webp";
+import mentorFeature from "@assets/remember-why-you-started-poster.webp";
+import step1Image from "@assets/startup-step1.webp";
 
 interface ExpandableItemProps {
   title: string;
@@ -52,11 +52,15 @@ export default function Home() {
             src={heroBg} 
             alt="Background" 
             className="w-full h-full object-cover opacity-60"
+            width={1200}
+            height={1200}
+            fetchPriority="high"
+            decoding="async"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-950/50 to-background"></div>
         </div>
 
-        <div className="container relative z-10 px-4 text-center max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-1000">
+        <div className="container relative z-10 px-4 text-center max-w-5xl mx-auto">
           <Badge variant="secondary" className="mb-6 px-4 py-2 md:px-6 md:py-3 text-xs md:text-lg bg-white/10 text-cyan-300 border-cyan-500/30 backdrop-blur-sm hover:bg-white/20 inline-block max-w-full">
             <span className="block md:inline">AI prepares your thinking. Mentors guide your decisions.</span>
           </Badge>
@@ -69,7 +73,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/become-entrepreneur">
-              <Button size="lg" className="h-14 px-8 text-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] transition-all hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.6)] hover:scale-105">
+              <Button size="lg" className="h-14 px-8 text-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] transition-shadow hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.6)]">
                 Start Free - No Credit Card <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -138,7 +142,7 @@ export default function Home() {
                 desc: "Refine pitch deck and fundraising strategy for angel investors."
               }
             ].map((step, i) => (
-              <Card key={i} className="relative overflow-hidden border-none shadow-lg bg-slate-50 dark:bg-slate-900/50 hover:-translate-y-1 transition-transform duration-300">
+              <Card key={i} className="relative overflow-hidden border-none shadow-lg bg-slate-50 dark:bg-slate-900/50">
                 <CardContent className="pt-8 pb-8 px-6">
                   <div className="mb-4 p-3 bg-white dark:bg-slate-800 w-fit rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
                     {step.icon}
@@ -148,6 +152,32 @@ export default function Home() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Founder Focus Score CTA */}
+      <section className="py-16 bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 border-y border-cyan-800/30" data-testid="section-founder-focus-cta">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="md:w-2/3">
+              <Badge variant="secondary" className="mb-3 px-3 py-1 bg-cyan-500/10 text-cyan-300 border-cyan-500/30 text-xs">
+                Free Diagnostic Tool
+              </Badge>
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-3 text-white">
+                Discover Your Biggest Growth Blocker
+              </h2>
+              <p className="text-slate-300 leading-relaxed">
+                Take our 5-minute Founder Focus Score diagnostic and find out what's holding your business back. Get a personalized action plan, no signup required.
+              </p>
+            </div>
+            <div className="md:w-1/3 text-center md:text-right">
+              <Link href="/founder-focus">
+                <Button size="lg" className="h-12 px-8 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.6)] transition-shadow" data-testid="button-founder-focus-cta">
+                  Take the Free Test <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -267,7 +297,11 @@ export default function Home() {
                 <img 
                   src={step1Image} 
                   alt="AI Business Planning with Human Guidance" 
-                  className="w-full h-auto transform transition-transform duration-700 group-hover:scale-105"
+                  className="w-full h-auto"
+                  width={640}
+                  height={360}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
               </div>
@@ -347,37 +381,16 @@ export default function Home() {
                 <img 
                   src={mentorFeature} 
                   alt="Mentorship Connection" 
-                  className="w-full h-auto transform transition-transform duration-700 group-hover:scale-105"
+                  className="w-full h-auto"
+                  width={800}
+                  height={533}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Who TouchConnectPro Is For (expanded) */}
-      <section className="py-24 bg-gradient-to-br from-indigo-50 via-slate-50 to-cyan-50 dark:from-indigo-950/20 dark:via-slate-900/30 dark:to-cyan-950/20 border-y border-indigo-100 dark:border-indigo-900/30" data-testid="section-who-for-expanded">
-        <div className="container px-4 mx-auto max-w-4xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-slate-900 dark:text-white">Who TouchConnectPro Is For</h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400">TouchConnectPro is built for:</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-5 mb-10">
-            {[
-              { icon: <Lightbulb className="h-5 w-5 text-cyan-500" />, text: "Entrepreneurs with an idea and no clear roadmap" },
-              { icon: <UserCheck className="h-5 w-5 text-indigo-500" />, text: "First time founders seeking experienced guidance" },
-              { icon: <TrendingUp className="h-5 w-5 text-emerald-500" />, text: "Early stage startups preparing to launch or scale" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3 p-4 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-800/30">
-                <div className="shrink-0 mt-0.5">{item.icon}</div>
-                <p className="text-slate-700 dark:text-slate-300">{item.text}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-center text-lg text-slate-600 dark:text-slate-400">
-            If you want clarity, direction, and execution focused advice, you are in the right place.
-          </p>
         </div>
       </section>
 
@@ -432,11 +445,37 @@ export default function Home() {
              For $49/month, your personalized mentor gives structured guidance and tailored feedback at every stage, from refining your idea to building a strong business foundation. Ask questions anytime and tap into optional expert coaches when needed, all without blocking your calendar with unnecessary meetings.
            </p>
            
-           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-             <Card className="bg-slate-800 border-slate-700 text-left relative overflow-hidden">
+           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+             <Card className="bg-gradient-to-br from-emerald-900/80 to-slate-900 border-emerald-500/40 text-left relative overflow-hidden" data-testid="card-free-diagnostic">
+               <CardContent className="p-8">
+                 <Badge className="mb-3 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30">No Account Needed</Badge>
+                 <h3 className="text-2xl font-bold mb-2 text-white">Free Diagnostic Tool</h3>
+                 <div className="text-4xl font-display font-bold mb-4 text-white">Free<span className="text-lg text-emerald-300 font-normal"> – Instant Results</span></div>
+                 <p className="text-emerald-200/80 text-sm mb-6">Test the platform before committing. Get your personalized Founder Focus Score in 2 minutes.</p>
+                 <ul className="space-y-4 mb-8">
+                   <li className="text-slate-300">
+                     <span className="flex items-center gap-2 font-semibold"><Target className="h-4 w-4 text-emerald-400"/> Founder Focus Score</span>
+                     <span className="text-sm text-slate-400 ml-6">Discover your biggest startup blocker with our quick diagnostic.</span>
+                   </li>
+                   <li className="text-slate-300">
+                     <span className="flex items-center gap-2 font-semibold"><Sparkles className="h-4 w-4 text-emerald-400"/> Personalized Insights</span>
+                     <span className="text-sm text-slate-400 ml-6">Get actionable recommendations tailored to your situation.</span>
+                   </li>
+                   <li className="text-slate-300">
+                     <span className="flex items-center gap-2 font-semibold"><ArrowRight className="h-4 w-4 text-emerald-400"/> 7-Day Trial Access</span>
+                     <span className="text-sm text-slate-400 ml-6">Unlock a trial dashboard to set priorities and connect with a mentor.</span>
+                   </li>
+                 </ul>
+                 <Link href="/founder-focus">
+                   <Button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white" data-testid="button-free-diagnostic">Take the Free Quiz <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                 </Link>
+               </CardContent>
+             </Card>
+
+             <Card className="bg-slate-800 border-slate-700 text-left relative overflow-hidden" data-testid="card-free-entry">
                <CardContent className="p-8">
                  <h3 className="text-2xl font-bold mb-2 text-white">Free Entry</h3>
-                 <div className="text-4xl font-display font-bold mb-4 text-white">$0<span className="text-lg text-slate-400 font-normal">/mo</span> <span className="text-base text-slate-400 font-normal">– No credit card required</span></div>
+                 <div className="text-4xl font-display font-bold mb-4 text-white">$0<span className="text-lg text-slate-400 font-normal">/mo</span> <span className="text-base text-slate-400 font-normal">– No credit card</span></div>
                  <ul className="space-y-4 mb-8">
                    <li className="text-slate-300">
                      <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Refine Your Idea</span>
@@ -452,7 +491,7 @@ export default function Home() {
                    </li>
                  </ul>
                  <Link href="/become-entrepreneur">
-                   <Button className="w-full bg-slate-700 hover:bg-slate-600">Start Free - No Credit Card</Button>
+                   <Button className="w-full bg-slate-700 hover:bg-slate-600" data-testid="button-free-entry">Start Free - No Credit Card</Button>
                  </Link>
                </CardContent>
              </Card>

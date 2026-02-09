@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Check, ShieldCheck, ChevronDown } from "lucide-react";
+import { Check, ShieldCheck, ChevronDown, Target, Sparkles, ArrowRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 
 export default function Pricing() {
@@ -17,7 +18,34 @@ export default function Pricing() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16">
+          {/* Free Diagnostic Tool */}
+          <Card className="bg-gradient-to-br from-emerald-900/80 to-slate-900 border-emerald-500/40 text-left relative overflow-hidden" data-testid="card-free-diagnostic-pricing">
+            <CardContent className="p-8">
+              <Badge className="mb-3 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30">No Account Needed</Badge>
+              <h3 className="text-2xl font-bold mb-2 text-white">Free Diagnostic Tool</h3>
+              <div className="text-4xl font-display font-bold mb-4 text-white">Free<span className="text-lg text-emerald-300 font-normal"> – Instant Results</span></div>
+              <p className="text-emerald-200/80 text-sm mb-6">Test the platform before committing. Get your personalized Founder Focus Score in 2 minutes.</p>
+              <ul className="space-y-4 mb-8">
+                <li className="text-slate-300">
+                  <span className="flex items-center gap-2 font-semibold"><Target className="h-4 w-4 text-emerald-400"/> Founder Focus Score</span>
+                  <span className="text-sm text-slate-400 ml-6">Discover your biggest startup blocker with our quick diagnostic.</span>
+                </li>
+                <li className="text-slate-300">
+                  <span className="flex items-center gap-2 font-semibold"><Sparkles className="h-4 w-4 text-emerald-400"/> Personalized Insights</span>
+                  <span className="text-sm text-slate-400 ml-6">Get actionable recommendations tailored to your situation.</span>
+                </li>
+                <li className="text-slate-300">
+                  <span className="flex items-center gap-2 font-semibold"><ArrowRight className="h-4 w-4 text-emerald-400"/> 7-Day Trial Access</span>
+                  <span className="text-sm text-slate-400 ml-6">Unlock a trial dashboard to set priorities and connect with a mentor.</span>
+                </li>
+              </ul>
+              <Link href="/founder-focus">
+                <Button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white" data-testid="button-free-diagnostic-pricing">Take the Free Quiz <ArrowRight className="ml-2 h-4 w-4" /></Button>
+              </Link>
+            </CardContent>
+          </Card>
+
           {/* Free Tier - matching homepage */}
           <Card className="bg-slate-800 border-slate-700 text-left relative overflow-hidden">
             <CardContent className="p-8">
