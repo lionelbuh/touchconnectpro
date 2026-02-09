@@ -101,6 +101,10 @@ export default function TrialDashboard() {
       }
 
       setTrialStatus(data);
+      if (data.weeklyPriorities && Array.isArray(data.weeklyPriorities)) {
+        const loaded = data.weeklyPriorities;
+        setPriorities([loaded[0] || "", loaded[1] || "", loaded[2] || ""]);
+      }
       if (data.exists && data.id && data.mentorId) {
         fetchMentorInfo(data.id);
         fetchMessages(data.id);

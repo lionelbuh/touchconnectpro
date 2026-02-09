@@ -9094,7 +9094,7 @@ app.get("/api/trial/status/:email", async (req, res) => {
       trial.status = "trial_expired";
     }
     const daysRemaining = isExpired ? 0 : Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return res.json({ exists: true, id: trial.id, status: trial.status, trialStart: trial.trial_start, trialEnd: trial.trial_end, daysRemaining, isExpired, quizResult: trial.quiz_result, primaryBlocker: trial.primary_blocker, mentorId: trial.mentor_id || null });
+    return res.json({ exists: true, id: trial.id, status: trial.status, trialStart: trial.trial_start, trialEnd: trial.trial_end, daysRemaining, isExpired, quizResult: trial.quiz_result, primaryBlocker: trial.primary_blocker, mentorId: trial.mentor_id || null, weeklyPriorities: trial.weekly_priorities || null });
   } catch (error) {
     console.error("[TRIAL] Status error:", error.message);
     return res.status(500).json({ error: error.message });
