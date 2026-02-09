@@ -6541,48 +6541,100 @@ app.post("/api/stripe/confirm-payment", async (req, res) => {
     return res.status(500).json({ error: "Stripe not configured" });
   }
 
-  const { sessionId } = req.body;
+  const { sessionId, entrepreneurEmail } = req.body;
   
-  if (!sessionId) {
-    return res.status(400).json({ error: "Missing sessionId" });
+  if (!sessionId && !entrepreneurEmail) {
+    return res.status(400).json({ error: "Missing sessionId or entrepreneurEmail" });
   }
 
   try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    console.log("[STRIPE] Session retrieved:", session.id, "status:", session.payment_status);
+    let session = null;
 
-    if (session.payment_status !== "paid") {
-      return res.status(400).json({ error: "Payment not completed", status: session.payment_status });
+    if (sessionId) {
+      session = await stripe.checkout.sessions.retrieve(sessionId);
+      console.log("[STRIPE] Session retrieved by ID:", session.id, "status:", session.payment_status);
+    } else if (entrepreneurEmail) {
+      console.log("[STRIPE] Looking up recent checkout sessions for email:", entrepreneurEmail);
+      const sessions = await stripe.checkout.sessions.list({ limit: 10 });
+      session = sessions.data.find(s => 
+        s.payment_status === "paid" && 
+        (s.metadata?.email?.toLowerCase() === entrepreneurEmail.toLowerCase() ||
+         s.customer_email?.toLowerCase() === entrepreneurEmail.toLowerCase())
+      );
+      if (session) {
+        console.log("[STRIPE] Found paid session for email:", session.id);
+      } else {
+        console.log("[STRIPE] No paid session found for email, checking Stripe customers...");
+        const customers = await stripe.customers.list({ email: entrepreneurEmail, limit: 1 });
+        if (customers.data.length > 0) {
+          const customer = customers.data[0];
+          const subscriptions = await stripe.subscriptions.list({ customer: customer.id, status: "active", limit: 1 });
+          if (subscriptions.data.length > 0) {
+            console.log("[STRIPE] Found active subscription for customer:", customer.id);
+            const { error: updateError } = await supabase
+              .from("ideas")
+              .update({ 
+                payment_status: "paid",
+                stripe_customer_id: customer.id,
+                stripe_subscription_id: subscriptions.data[0].id,
+                payment_date: new Date().toISOString()
+              })
+              .ilike("entrepreneur_email", entrepreneurEmail);
+
+            if (updateError) {
+              console.error("[STRIPE] Error updating payment status by email:", updateError);
+              return res.status(500).json({ error: "Failed to update payment status" });
+            }
+            console.log("[STRIPE] Payment status updated to paid for:", entrepreneurEmail);
+            return res.json({ success: true, method: "subscription_lookup" });
+          }
+        }
+        return res.status(404).json({ error: "No paid session or active subscription found for this email" });
+      }
+    }
+
+    if (!session || session.payment_status !== "paid") {
+      return res.status(400).json({ error: "Payment not completed", status: session?.payment_status });
     }
 
     const entrepreneurId = session.metadata?.entrepreneurId;
     const email = session.metadata?.email || session.customer_email;
 
-    if (entrepreneurId) {
-      // Update payment_status only - admin will manually approve after assigning mentor
-      const { error: updateError } = await supabase
+    if (entrepreneurId || email) {
+      let updateQuery = supabase
         .from("ideas")
         .update({ 
           payment_status: "paid",
           stripe_customer_id: session.customer,
           stripe_subscription_id: session.subscription,
           payment_date: new Date().toISOString()
-        })
-        .eq("id", entrepreneurId);
+        });
+      
+      if (entrepreneurId) {
+        updateQuery = updateQuery.eq("id", entrepreneurId);
+      } else {
+        updateQuery = updateQuery.ilike("entrepreneur_email", email);
+      }
+
+      const { error: updateError } = await updateQuery;
 
       if (updateError) {
         console.error("[STRIPE] Error updating payment status:", updateError);
       } else {
-        console.log("[STRIPE] Entrepreneur", entrepreneurId, "payment_status updated to paid (status remains pre-approved)");
+        console.log("[STRIPE] Payment status updated to paid for:", entrepreneurId || email, "(status remains pre-approved)");
       }
 
       // Send welcome email
       try {
-        const { data: entrepreneur } = await supabase
+        let entrepreneurQuery = supabase
           .from("ideas")
-          .select("entrepreneur_name, entrepreneur_email")
-          .eq("id", entrepreneurId)
-          .single();
+          .select("entrepreneur_name, entrepreneur_email");
+        if (entrepreneurId) {
+          entrepreneurQuery = entrepreneurQuery.eq("id", entrepreneurId);
+        } else {
+          entrepreneurQuery = entrepreneurQuery.ilike("entrepreneur_email", email);
+        }
+        const { data: entrepreneur } = await entrepreneurQuery.single();
 
         if (entrepreneur) {
           const resendData = await getResendClient();

@@ -336,6 +336,16 @@ export default function Login() {
         else if (userRole === "coach") dashboardPath = "/dashboard-coach";
         else if (userRole === "investor") dashboardPath = "/dashboard-investor";
         
+        const currentParams = new URLSearchParams(window.location.search);
+        const paymentStatus = currentParams.get("payment");
+        const sessionId = currentParams.get("session_id");
+        if (paymentStatus && dashboardPath === "/dashboard-entrepreneur") {
+          const params = new URLSearchParams();
+          params.set("payment", paymentStatus);
+          if (sessionId) params.set("session_id", sessionId);
+          dashboardPath = `${dashboardPath}?${params.toString()}`;
+        }
+        
         toast.success("Logged in successfully!");
         navigate(dashboardPath);
       }
