@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, ChevronUp, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText, ClipboardCheck, Paperclip, RefreshCw, X, Search, Sparkles, CheckCircle } from "lucide-react";
+import { Users, MessageSquare, Calendar, Settings, ChevronRight, ChevronDown, ChevronUp, Plus, LogOut, Briefcase, AlertCircle, Save, Loader2, ExternalLink, Send, GraduationCap, Camera, User, Download, Reply, FileText, ClipboardCheck, Paperclip, RefreshCw, X, Search, Sparkles, CheckCircle, Clock } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -1837,6 +1837,180 @@ export default function DashboardMentor() {
                   })()}
                 </CardContent>
               </Card>
+
+              {/* Trial Entrepreneurs Section */}
+              {(() => {
+                const entrepreneurEmails = new Set(allEntrepreneurs.map(e => e.email.toLowerCase()));
+                const trialMsgs = adminMessages.filter((m: any) => {
+                  const fromEmail = (m.from_email || '').toLowerCase();
+                  const toEmail = (m.to_email || '').toLowerCase();
+                  const mentorEmail = mentorProfile.email.toLowerCase();
+                  const isTrial = (m.from_name || '').includes('(Trial)') || (m.to_name || '').includes('(Trial)');
+                  const isNotAdmin = !isAdminEmail(fromEmail) && !isAdminEmail(toEmail);
+                  const isNotEntrepreneur = !entrepreneurEmails.has(fromEmail) && !entrepreneurEmails.has(toEmail);
+                  const involvesMe = fromEmail === mentorEmail || toEmail === mentorEmail;
+                  return involvesMe && (isTrial || (isNotAdmin && isNotEntrepreneur && fromEmail !== "system@touchconnectpro.com"));
+                });
+                
+                const trialConversations = new Map<string, { email: string; name: string; messages: any[] }>();
+                trialMsgs.forEach((m: any) => {
+                  const otherEmail = m.from_email.toLowerCase() === mentorProfile.email.toLowerCase() ? m.to_email : m.from_email;
+                  const otherName = m.from_email.toLowerCase() === mentorProfile.email.toLowerCase() ? m.to_name : m.from_name;
+                  const key = otherEmail.toLowerCase();
+                  if (!trialConversations.has(key)) {
+                    trialConversations.set(key, { email: otherEmail, name: (otherName || '').replace(' (Trial)', ''), messages: [] });
+                  }
+                  trialConversations.get(key)!.messages.push(m);
+                });
+                
+                trialConversations.forEach(conv => {
+                  conv.messages.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+                });
+
+                const trialUnread = trialMsgs.filter((m: any) => m.to_email === mentorProfile.email && !m.is_read).length;
+
+                if (trialConversations.size === 0) return null;
+                
+                return (
+                  <Card className="mb-6 border-amber-200 dark:border-amber-900/30">
+                    <CardHeader className="bg-amber-50/50 dark:bg-amber-950/20">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-amber-600" />
+                        Trial Entrepreneurs
+                        {trialUnread > 0 && (
+                          <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" data-testid="badge-trial-unread">
+                            {trialUnread} new
+                          </span>
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                      {Array.from(trialConversations.values()).map((conv) => {
+                        const convUnread = conv.messages.filter((m: any) => m.to_email === mentorProfile.email && !m.is_read).length;
+                        return (
+                          <div key={conv.email} className="border rounded-lg p-3 space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-sm text-amber-700 dark:text-amber-400">{conv.name || conv.email}</span>
+                                <Badge variant="outline" className="text-xs border-amber-300 text-amber-600">Trial</Badge>
+                                {convUnread > 0 && (
+                                  <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{convUnread}</span>
+                                )}
+                              </div>
+                              <span className="text-xs text-muted-foreground">{conv.email}</span>
+                            </div>
+                            <div className="space-y-2 max-h-64 overflow-y-auto">
+                              {conv.messages.map((msg: any) => {
+                                const isFromMe = msg.from_email === mentorProfile.email;
+                                return (
+                                  <div key={msg.id} onClick={async () => {
+                                    if (!isFromMe && !msg.is_read) {
+                                      try {
+                                        await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PATCH" });
+                                        const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
+                                        if (loadResponse.ok) {
+                                          const data = await loadResponse.json();
+                                          setAdminMessages(data.messages || []);
+                                        }
+                                      } catch (e) { console.error("Error marking as read:", e); }
+                                    }
+                                  }} className={`p-2 rounded-lg text-sm ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-amber-50 dark:bg-amber-950/30'} ${!isFromMe && !msg.is_read ? 'cursor-pointer ring-1 ring-amber-300' : ''}`}>
+                                    <div className="flex justify-between items-start mb-1">
+                                      <span className={`text-xs font-semibold ${isFromMe ? 'text-slate-600' : 'text-amber-700 dark:text-amber-400'}`}>
+                                        {isFromMe ? 'You' : conv.name}
+                                      </span>
+                                      <span className="text-xs text-muted-foreground">{formatToPST(msg.created_at)}</span>
+                                    </div>
+                                    <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <div className="flex gap-2 pt-2 border-t">
+                              <Input
+                                placeholder={`Reply to ${conv.name}...`}
+                                className="flex-1 bg-white dark:bg-slate-900"
+                                data-testid={`input-trial-reply-${conv.email}`}
+                                onKeyDown={async (e) => {
+                                  if (e.key === 'Enter') {
+                                    const input = e.target as HTMLInputElement;
+                                    const msg = input.value.trim();
+                                    if (!msg) return;
+                                    try {
+                                      const response = await fetch(`${API_BASE_URL}/api/messages`, {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                          fromName: mentorProfile.fullName,
+                                          fromEmail: mentorProfile.email,
+                                          toName: conv.name,
+                                          toEmail: conv.email,
+                                          message: msg
+                                        })
+                                      });
+                                      if (response.ok) {
+                                        input.value = '';
+                                        toast.success("Reply sent!");
+                                        const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
+                                        if (loadResponse.ok) {
+                                          const data = await loadResponse.json();
+                                          setAdminMessages(data.messages || []);
+                                        }
+                                      } else {
+                                        toast.error("Failed to send reply");
+                                      }
+                                    } catch (error) {
+                                      toast.error("Error sending reply");
+                                    }
+                                  }
+                                }}
+                              />
+                              <Button
+                                size="sm"
+                                className="bg-amber-600 hover:bg-amber-700"
+                                data-testid={`button-trial-reply-${conv.email}`}
+                                onClick={async (e) => {
+                                  const input = (e.target as HTMLElement).closest('.flex')?.querySelector('input') as HTMLInputElement;
+                                  const msg = input?.value?.trim();
+                                  if (!msg) return;
+                                  try {
+                                    const response = await fetch(`${API_BASE_URL}/api/messages`, {
+                                      method: "POST",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({
+                                        fromName: mentorProfile.fullName,
+                                        fromEmail: mentorProfile.email,
+                                        toName: conv.name,
+                                        toEmail: conv.email,
+                                        message: msg
+                                      })
+                                    });
+                                    if (response.ok) {
+                                      if (input) input.value = '';
+                                      toast.success("Reply sent!");
+                                      const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(mentorProfile.email)}`);
+                                      if (loadResponse.ok) {
+                                        const data = await loadResponse.json();
+                                        setAdminMessages(data.messages || []);
+                                      }
+                                    } else {
+                                      toast.error("Failed to send reply");
+                                    }
+                                  } catch (error) {
+                                    toast.error("Error sending reply");
+                                  }
+                                }}
+                              >
+                                <Send className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </CardContent>
+                  </Card>
+                );
+              })()}
 
               {/* Admin Section */}
               <Card className="mb-6 border-cyan-200 dark:border-cyan-900/30">
