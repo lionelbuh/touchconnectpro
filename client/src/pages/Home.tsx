@@ -466,7 +466,7 @@ export default function Home() {
                      <span className="text-sm text-slate-400 ml-6">Unlock a trial dashboard to set priorities and connect with a mentor.</span>
                    </li>
                  </ul>
-                 <Link href="/founder-focus-score">
+                 <Link href="/founder-focus">
                    <Button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white" data-testid="button-free-diagnostic">Take the Free Quiz <ArrowRight className="ml-2 h-4 w-4" /></Button>
                  </Link>
                </CardContent>
