@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { 
   GraduationCap, Star, ChevronLeft, Send, CreditCard, Loader2, 
-  Share2, Copy, Check, ExternalLink, Calendar, MessageCircle, UserPlus
+  Share2, Copy, Check, ExternalLink, Calendar, MessageCircle, UserPlus, ArrowRight
 } from "lucide-react";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -306,82 +306,82 @@ export default function CoachProfile() {
               <div>
                 <h2 className="text-lg font-semibold mb-4">Coaching Services</h2>
                 <div className="grid md:grid-cols-3 gap-4">
-                  <Card className={`${canPurchase ? 'border-purple-200 dark:border-purple-800' : 'border-gray-200 opacity-75'}`}>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <MessageCircle className="h-4 w-4 text-purple-600" />
-                        Intro Call
-                      </CardTitle>
-                      <CardDescription>30-minute discovery session</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-3xl font-bold text-purple-600 mb-3">${rates.introCallRate}</p>
-                      <Button 
-                        className={`w-full ${canPurchase ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-400'}`}
-                        disabled={!canPurchase}
-                        data-testid="button-book-intro"
-                      >
-                        {canPurchase ? "Book Now" : "Coming Soon"}
-                      </Button>
-                    </CardContent>
-                  </Card>
-
-                  <Card className={`${canPurchase ? 'border-purple-200 dark:border-purple-800' : 'border-gray-200 opacity-75'}`}>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-purple-600" />
-                        Single Session
-                      </CardTitle>
-                      <CardDescription>1-hour coaching session</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-3xl font-bold text-purple-600 mb-3">${rates.sessionRate}</p>
-                      <Button 
-                        className={`w-full ${canPurchase ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-400'}`}
-                        disabled={!canPurchase}
-                        data-testid="button-book-session"
-                      >
-                        {canPurchase ? "Book Now" : "Coming Soon"}
-                      </Button>
-                    </CardContent>
-                  </Card>
-
-                  <Card className={`${canPurchase ? 'border-purple-200 dark:border-purple-800 ring-2 ring-purple-200' : 'border-gray-200 opacity-75'}`}>
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center justify-between">
+                  <a href="https://www.touchconnectpro.com/founder-focus" className="block">
+                    <Card className="border-purple-200 dark:border-purple-800 hover:shadow-lg hover:border-purple-400 transition-all cursor-pointer">
+                      <CardHeader className="pb-2">
                         <CardTitle className="text-base flex items-center gap-2">
-                          <GraduationCap className="h-4 w-4 text-purple-600" />
-                          Monthly Coaching Retainer
+                          <MessageCircle className="h-4 w-4 text-purple-600" />
+                          Intro Call
                         </CardTitle>
-                        {canPurchase && <Badge className="bg-purple-600">Best Value</Badge>}
-                      </div>
-                      <CardDescription>Monthly fee for ongoing coaching across multiple sessions</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-3xl font-bold text-purple-600 mb-2">${rates.monthlyRate}<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
-                      {rates.monthlyRetainerDescription && (
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 bg-purple-50 dark:bg-purple-900/20 p-2 rounded">{rates.monthlyRetainerDescription}</p>
-                      )}
-                      <Button 
-                        className={`w-full ${canPurchase ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-400'}`}
-                        disabled={!canPurchase}
-                        data-testid="button-book-monthly"
-                      >
-                        {canPurchase ? "Get Started" : "Coming Soon"}
-                      </Button>
-                    </CardContent>
-                  </Card>
+                        <CardDescription>30-minute discovery session</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-3xl font-bold text-purple-600 mb-3">${rates.introCallRate}</p>
+                        <Button 
+                          className="w-full bg-purple-600 hover:bg-purple-700"
+                          data-testid="button-book-intro"
+                          asChild
+                        >
+                          <span>Get Started</span>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </a>
+
+                  <a href="https://www.touchconnectpro.com/founder-focus" className="block">
+                    <Card className="border-purple-200 dark:border-purple-800 hover:shadow-lg hover:border-purple-400 transition-all cursor-pointer">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-purple-600" />
+                          Single Session
+                        </CardTitle>
+                        <CardDescription>1-hour coaching session</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-3xl font-bold text-purple-600 mb-3">${rates.sessionRate}</p>
+                        <Button 
+                          className="w-full bg-purple-600 hover:bg-purple-700"
+                          data-testid="button-book-session"
+                          asChild
+                        >
+                          <span>Get Started</span>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </a>
+
+                  <a href="https://www.touchconnectpro.com/founder-focus" className="block">
+                    <Card className="border-purple-200 dark:border-purple-800 ring-2 ring-purple-200 hover:shadow-lg hover:border-purple-400 transition-all cursor-pointer">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <GraduationCap className="h-4 w-4 text-purple-600" />
+                            Monthly Coaching Retainer
+                          </CardTitle>
+                          <Badge className="bg-purple-600">Best Value</Badge>
+                        </div>
+                        <CardDescription>Monthly fee for ongoing coaching across multiple sessions</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-3xl font-bold text-purple-600 mb-2">${rates.monthlyRate}<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                        {rates.monthlyRetainerDescription && (
+                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 bg-purple-50 dark:bg-purple-900/20 p-2 rounded">{rates.monthlyRetainerDescription}</p>
+                        )}
+                        <Button 
+                          className="w-full bg-purple-600 hover:bg-purple-700"
+                          data-testid="button-book-monthly"
+                          asChild
+                        >
+                          <span>Get Started</span>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </a>
                 </div>
                 
                 <p className="text-sm text-muted-foreground text-center mt-4">
-                  {canPurchase ? (
-                    <>
-                      <CreditCard className="inline h-4 w-4 mr-1" />
-                      Secure checkout via Stripe. Book a session to get started.
-                    </>
-                  ) : (
-                    <span className="text-amber-600">This coach is currently setting up their payment system. Check back soon!</span>
-                  )}
+                  <ArrowRight className="inline h-4 w-4 mr-1" />
+                  <a href="https://www.touchconnectpro.com/founder-focus" className="text-purple-600 hover:underline">Take the free Founder Focus Score</a> to get started and unlock coaching sessions.
                 </p>
               </div>
             )}
