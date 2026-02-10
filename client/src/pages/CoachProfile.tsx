@@ -387,25 +387,12 @@ export default function CoachProfile() {
             )}
 
             <div className="pt-4 border-t">
-              {isLoggedIn ? (
-                <Link href={`/contact-coach/${coach.id}`}>
-                  <Button variant="outline" size="lg" className="w-full md:w-auto border-cyan-300 text-cyan-700 hover:bg-cyan-50" data-testid="button-contact-coach">
-                    <Send className="mr-2 h-4 w-4" />
-                    Send a Message
-                  </Button>
-                </Link>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="w-full md:w-auto border-cyan-300 text-cyan-700 hover:bg-cyan-50" 
-                  onClick={() => setShowRegisterDialog(true)}
-                  data-testid="button-contact-coach"
-                >
+              <a href="https://www.touchconnectpro.com/founder-focus">
+                <Button variant="outline" size="lg" className="w-full md:w-auto border-cyan-300 text-cyan-700 hover:bg-cyan-50" data-testid="button-contact-coach">
                   <Send className="mr-2 h-4 w-4" />
                   Send a Message
                 </Button>
-              )}
+              </a>
             </div>
           </CardContent>
         </Card>
