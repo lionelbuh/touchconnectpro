@@ -19,11 +19,11 @@ export default function Pricing() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16">
-          {/* Free Diagnostic Tool */}
+          {/* Focus Score */}
           <Card className="bg-gradient-to-br from-emerald-900/80 to-slate-900 border-emerald-500/40 text-left relative overflow-hidden" data-testid="card-free-diagnostic-pricing">
             <CardContent className="p-8">
               <Badge className="mb-3 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30">No Account Needed</Badge>
-              <h3 className="text-2xl font-bold mb-2 text-white">Free Diagnostic Tool</h3>
+              <h3 className="text-2xl font-bold mb-2 text-white">Focus Score</h3>
               <div className="text-4xl font-display font-bold mb-4 text-white">Free<span className="text-lg text-emerald-300 font-normal"> – Instant Results</span></div>
               <p className="text-emerald-200/80 text-sm mb-6">Test the platform before committing. Get your personalized Founder Focus Score in 2 minutes.</p>
               <ul className="space-y-4 mb-8">

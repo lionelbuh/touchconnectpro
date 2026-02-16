@@ -46,9 +46,9 @@ const tagColors: Record<string, string> = {
 
 export default function Insights() {
   useEffect(() => {
-    document.title = "Insights for Founders and Early-Stage Startups | TouchConnectPro";
+    document.title = "Startup Radar – Insights for Founders and Early-Stage Startups | TouchConnectPro";
     setMetaTag("description", "Practical operational guidance for first-time founders and early-stage startups. Frameworks for decision clarity, execution systems, and operational discipline.");
-    setMetaTag("og:title", "Insights for Founders and Early-Stage Startups | TouchConnectPro");
+    setMetaTag("og:title", "Startup Radar – Insights for Founders and Early-Stage Startups | TouchConnectPro");
     setMetaTag("og:description", "Practical operational guidance for first-time founders and early-stage startups. Frameworks for decision clarity, execution systems, and operational discipline.");
     setMetaTag("og:type", "website");
     setMetaTag("og:url", "https://www.touchconnectpro.com/insights");
@@ -61,7 +61,7 @@ export default function Insights() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent" />
         <div className="container px-4 mx-auto max-w-4xl relative z-10">
           <Badge variant="secondary" className="mb-4 px-3 py-1 bg-cyan-500/10 text-cyan-300 border-cyan-500/30 text-xs">
-            Knowledge Hub
+            Startup Radar
           </Badge>
           <h1 className="text-3xl md:text-5xl font-display font-bold mb-6 text-white leading-tight" data-testid="text-insights-h1">
             Operational Guidance for First-Time Founders and Early-Stage Startups
@@ -71,7 +71,7 @@ export default function Insights() {
           </p>
           <Link href={`/insights/${insightArticles[0].slug}`} data-testid="link-explore-insights">
             <Button size="lg" className="h-12 px-8 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full" data-testid="button-explore-insights">
-              Explore Founder Insights <ArrowRight className="ml-2 h-5 w-5" />
+              Explore Startup Radar <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
         </div>
