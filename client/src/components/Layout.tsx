@@ -17,8 +17,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { href: "/", label: "Home", testId: "nav-home" },
     { href: "/how-it-works", label: "How it works", testId: "nav-how-it-works" },
     { href: "/pricing", label: "Pricing", testId: "nav-pricing" },
-    { href: "/insights", label: "Insights", testId: "nav-insights" },
-    { href: "/founder-focus", label: "Free Diagnostic Tool", testId: "nav-founder-focus" },
+    { href: "/insights", label: "Startup Radar", testId: "nav-insights" },
+    { href: "/founder-focus", label: "Focus Score", testId: "nav-founder-focus" },
     { href: "/qa", label: "Q&A", testId: "nav-qa" },
   ];
 
@@ -134,8 +134,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/how-it-works" data-testid="link-footer-how-it-works">How it works</Link></li>
               <li><Link href="/pricing" data-testid="link-footer-pricing">Pricing</Link></li>
-              <li><Link href="/insights" data-testid="link-footer-insights">Insights</Link></li>
-              <li><Link href="/founder-focus" data-testid="link-footer-founder-focus">Free Diagnostic Tool</Link></li>
+              <li><Link href="/insights" data-testid="link-footer-insights">Startup Radar</Link></li>
+              <li><Link href="/founder-focus" data-testid="link-footer-founder-focus">Focus Score</Link></li>
               <li><Link href="/qa" data-testid="link-footer-qa">Q&A</Link></li>
             </ul>
           </div>

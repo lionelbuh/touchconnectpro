@@ -108,7 +108,7 @@ export default function FounderFocusScore() {
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-3xl mx-auto text-center">
               <Badge variant="secondary" className="mb-6 px-4 py-2 bg-cyan-500/10 text-cyan-300 border-cyan-500/30" data-testid="badge-free-tool">
-                Free Diagnostic Tool
+                Focus Score
               </Badge>
               <h1 className="text-4xl md:text-6xl font-display font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-100 to-cyan-400" data-testid="text-quiz-title">
                 Founder Focus Score
