@@ -9,28 +9,16 @@ import { rephraseAnswers, generateBusinessPlan, generateMeetingQuestions, genera
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
 
 let supabase: ReturnType<typeof createClient> | null = null;
-let resendClient: Resend | null = null;
-
 async function getResendClient(): Promise<{ client: Resend; fromEmail: string } | null> {
   try {
-    if (resendClient) {
-      return {
-        client: resendClient,
-        fromEmail: process.env.RESEND_FROM_EMAIL || "hello@touchconnectpro.com"
-      };
-    }
-
-    // First try direct RESEND_API_KEY (for production deployments like Render)
     if (process.env.RESEND_API_KEY) {
       console.log("[RESEND] Using RESEND_API_KEY environment variable");
-      resendClient = new Resend(process.env.RESEND_API_KEY);
       return {
-        client: resendClient,
+        client: new Resend(process.env.RESEND_API_KEY),
         fromEmail: process.env.RESEND_FROM_EMAIL || "hello@touchconnectpro.com"
       };
     }
 
-    // Fallback to Replit connectors (for development on Replit)
     const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
     const xReplitToken = process.env.REPL_IDENTITY 
       ? 'repl ' + process.env.REPL_IDENTITY 
@@ -54,7 +42,7 @@ async function getResendClient(): Promise<{ client: Resend; fromEmail: string } 
     );
 
     if (!response.ok) {
-      console.log("[RESEND] Failed to fetch connection settings");
+      console.log("[RESEND] Failed to fetch connection settings, status:", response.status);
       return null;
     }
 
@@ -66,9 +54,9 @@ async function getResendClient(): Promise<{ client: Resend; fromEmail: string } 
       return null;
     }
 
-    resendClient = new Resend(connectionSettings.settings.api_key);
+    console.log("[RESEND] Using Replit connector, from:", connectionSettings.settings.from_email);
     return {
-      client: resendClient,
+      client: new Resend(connectionSettings.settings.api_key),
       fromEmail: connectionSettings.settings.from_email || "hello@touchconnectpro.com"
     };
   } catch (error) {
@@ -472,6 +460,27 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  app.get("/api/test-resend", async (_req, res) => {
+    try {
+      const resendData = await getResendClient();
+      if (!resendData) {
+        return res.json({ status: "error", message: "Resend not configured - no API key or connector available" });
+      }
+      const { client, fromEmail } = resendData;
+      const result = await client.emails.send({
+        from: fromEmail,
+        to: "buhler.lionel@gmail.com",
+        subject: "TouchConnectPro - Email Test",
+        html: "<p>This is a test email from TouchConnectPro to verify Resend is working correctly.</p><p>Sent at: " + new Date().toISOString() + "</p>"
+      });
+      console.log("[RESEND TEST] Result:", JSON.stringify(result));
+      return res.json({ status: "ok", fromEmail, result });
+    } catch (error: any) {
+      console.error("[RESEND TEST] Error:", error);
+      return res.json({ status: "error", message: error.message });
+    }
+  });
+
   // Config endpoint - serves Supabase credentials to frontend
   app.get("/api/config", (_req, res) => {
     // Prefer VITE_ prefixed vars (shared env), fallback to secrets, then hardcoded
