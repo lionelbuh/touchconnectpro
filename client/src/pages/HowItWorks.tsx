@@ -7,7 +7,7 @@ export default function HowItWorks() {
   const steps = [
     {
       id: "01",
-      title: "Free Entry & Idea Refinement",
+      title: "Free Community & Idea Refinement",
       subtitle: "Zero-Barrier Entry Point",
       desc: "Start shaping your idea immediately: [BOLD]no credit card required.[/BOLD] Our tools help you clarify your value proposition and create a structured draft business plan.",
       icon: <Sparkles className="h-8 w-8 text-cyan-500" />,
@@ -26,8 +26,8 @@ export default function HowItWorks() {
     {
       id: "03",
       title: "Active Development",
-      subtitle: "Membership - $49/month",
-      desc: "Unlock the full support system: monthly coaching, community learning, and optional access to experts in Finance, Legal, and Marketing. [BOLD]Only for entrepreneurs approved by a mentor. You have 5 days after approval to activate.[/BOLD]",
+      subtitle: "Membership - $9.99/month",
+      desc: "Unlock the full support system: monthly coaching, community learning, and optional access to experts in Finance, Legal, and Marketing. [BOLD]Only for founders ready to turn momentum into action.[/BOLD]",
       icon: <Users className="h-8 w-8 text-emerald-500" />,
       features: ["Quick Start Guide: Step-by-step resources to hit the ground running.", "Ongoing Mentor Access: Ask questions, receive feedback, and get guidance throughout the month.", "Specialized Marketplace Access: Connect with expert services to accelerate your business."],
       color: "cyan"
@@ -35,7 +35,7 @@ export default function HowItWorks() {
     {
       id: "04",
       title: "Investor Ready",
-      subtitle: "Angel-Stage Support",
+      subtitle: "Membership - $49/month \u2013 Angel-Stage Support",
       desc: "When you're ready to raise, we intensify support. We help with pitch decks and fundraising strategy. We have established relationships with Angel Investors who will review all final projects to determine if they want to invest.",
       icon: <TrendingUp className="h-8 w-8 text-cyan-500" />,
       features: ["Investor-Grade Pitch Deck", "Fundraising Strategy", "Angel Network Access"],

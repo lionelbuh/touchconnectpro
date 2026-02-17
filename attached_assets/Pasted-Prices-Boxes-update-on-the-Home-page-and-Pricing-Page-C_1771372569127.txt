@@ -1,0 +1,50 @@
+Prices Boxes update on the Home page and Pricing Page :
+« Community – Free » Link the « Start Free – No Credit Card” to the page “/founder-focus”
+“Founders’Circle”: Add a point like “all the “Community – Free” values +…
+“Capital Circle” : Delete the Box “How It Works”
+ 
+Home page updates:
+
+Replace “1. Free Entry” with “1. Community – Free”
+Replace “For $49/month, your personalized mentor gives structured guidance and tailored feedback at every stage, from refining your idea to building a strong business foundation. Ask questions anytime and tap into optional expert coaches when needed, all without blocking your calendar with unnecessary meetings.“  with “Community – Free
+Access the founder network, clarity tools, and shared coaching opportunities. Designed for entrepreneurs who want guidance and connection, without personalized mentor follow-up.
+
+For $9.99/month, get personalized guidance and support to move your idea forward. Work closely with a dedicated mentor, receive structured feedback, and get access to expert coaches when you need it. Connect deeper with the community, build momentum, and turn inspiration into action.”
+
+
+
+“How it Works Page” updates:
+Replace “.01Free Entry & Idea Refinement” with “.01Free Community & Idea Refinement”
+Replace “Membership - $49/month
+.03Active Development
+Unlock the full support system: monthly coaching, community learning, and optional access to experts in Finance, Legal, and Marketing. Only for entrepreneurs approved by a mentor. You have 5 days after approval to activate.” With “Membership - $9.99/month
+.03Active Development
+Unlock the full support system: monthly coaching, community learning, and optional access to experts in Finance, Legal, and Marketing. Only for founders ready to turn momentum into action.”
+
+Replace “Angel-Stage Support
+.04Investor Ready
+When you're ready to raise, we intensify support. We help with pitch decks and fundraising strategy. We have established relationships with Angel Investors who will review all final projects to determine if they want to invest.
+
+Investor-Grade Pitch Deck
+Fundraising Strategy
+Angel Network Access” with “Membership - $49/month 
+Angel-Stage Support
+.04Investor Ready
+When you're ready to raise, we intensify support. We help with pitch decks and fundraising strategy. We have established relationships with Angel Investors who will review all final projects to determine if they want to invest.
+
+Investor-Grade Pitch Deck
+Fundraising Strategy
+Angel Network Access”
+
+Updates of the Page /qa:
+
+Replace “When does billing start?
+Billing for the $49/month membership begins only after a mentor reviews your materials and approves you into their portfolio.” With “Community – Free
+No billing. Get started immediately and explore the community and coaching sessions at your own pace.
+
+Founders Circle – $9.99/month
+Billing starts immediately upon signup. Gain full access to personalized mentorship, structured feedback, and expert coaching support.
+
+Capital Circle – $49/month
+Billing begins only after your application is reviewed and approved by a mentor. This ensures your project is ready for focused guidance and investor access.”
+

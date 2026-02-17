@@ -123,7 +123,7 @@ export default function Home() {
             {[
               {
                 icon: <Sparkles className="h-6 w-6 text-cyan-500" />,
-                title: "1. Free Entry",
+                title: "1. Community – Free",
                 desc: "Step-by-step idea refinement and draft business plan generation for clear, structured thinking."
               },
               {
@@ -441,8 +441,14 @@ export default function Home() {
       <section id="free-entry" className="py-24 bg-slate-900 text-white scroll-smooth">
         <div className="container px-4 mx-auto text-center">
            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">Choose Your Path</h2>
-           <p className="text-slate-400 text-lg max-w-3xl mx-auto mb-12">
-             From exploring your idea to raising capital, pick the tier that matches where you are in your journey.
+           <p className="text-slate-400 text-lg max-w-3xl mx-auto mb-4">
+             Community – Free
+           </p>
+           <p className="text-slate-400 text-base max-w-3xl mx-auto mb-4">
+             Access the founder network, clarity tools, and shared coaching opportunities. Designed for entrepreneurs who want guidance and connection, without personalized mentor follow-up.
+           </p>
+           <p className="text-slate-400 text-base max-w-3xl mx-auto mb-12">
+             For $9.99/month, get personalized guidance and support to move your idea forward. Work closely with a dedicated mentor, receive structured feedback, and get access to expert coaches when you need it. Connect deeper with the community, build momentum, and turn inspiration into action.
            </p>
            
            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -476,7 +482,7 @@ export default function Home() {
                      <span className="text-sm text-slate-400 ml-6">Access to specialist coaches in legal, finance, and growth (paid separately).</span>
                    </li>
                  </ul>
-                 <Link href="/become-entrepreneur">
+                 <Link href="/founder-focus">
                    <Button className="w-full bg-slate-700 hover:bg-slate-600" data-testid="button-community-free">Start Free – No Credit Card</Button>
                  </Link>
                </CardContent>
@@ -496,6 +502,7 @@ export default function Home() {
                      </div>
                    </div>
                  </div>
+                 <p className="text-sm text-indigo-200/70 mb-4 italic">All Community – Free features, plus:</p>
                  <h4 className="text-sm font-semibold text-indigo-200 uppercase tracking-wide mb-4">What's Included</h4>
                  <ul className="space-y-3 mb-6">
                    {[
@@ -534,16 +541,6 @@ export default function Home() {
                  </div>
                  <div className="text-4xl font-display font-bold mb-2 text-white">$49<span className="text-lg text-amber-300 font-normal">/month</span></div>
                  <p className="text-amber-200/80 text-sm mb-6">Raise capital with structure and support. For committed founders preparing to raise funding. Access is selective.</p>
-                 <div className="mb-6 p-4 bg-amber-500/10 border border-amber-400/30 rounded-lg">
-                   <h4 className="text-sm font-semibold text-amber-200 uppercase tracking-wide mb-3">How It Works</h4>
-                   <div className="flex items-center gap-3 text-sm text-amber-100/80">
-                     <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full bg-amber-500/30 text-amber-300 text-xs flex items-center justify-center font-bold">1</span> Apply</span>
-                     <ArrowRight className="h-3 w-3 text-amber-400/60" />
-                     <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full bg-amber-500/30 text-amber-300 text-xs flex items-center justify-center font-bold">2</span> Review</span>
-                     <ArrowRight className="h-3 w-3 text-amber-400/60" />
-                     <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full bg-amber-500/30 text-amber-300 text-xs flex items-center justify-center font-bold">3</span> Access</span>
-                   </div>
-                 </div>
                  <h4 className="text-sm font-semibold text-amber-200 uppercase tracking-wide mb-4">Included</h4>
                  <ul className="space-y-3 mb-6">
                    {[

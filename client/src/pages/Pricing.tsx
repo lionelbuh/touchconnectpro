@@ -50,7 +50,7 @@ export default function Pricing() {
                   <span className="text-sm text-slate-400 ml-6">Access to specialist coaches in legal, finance, and growth (paid separately).</span>
                 </li>
               </ul>
-              <Link href="/become-entrepreneur">
+              <Link href="/founder-focus">
                 <Button className="w-full bg-slate-700 hover:bg-slate-600 text-white" data-testid="button-community-free-pricing">Start Free – No Credit Card</Button>
               </Link>
             </CardContent>
@@ -71,6 +71,7 @@ export default function Pricing() {
                   </div>
                 </div>
               </div>
+              <p className="text-sm text-indigo-200/70 mb-4 italic">All Community – Free features, plus:</p>
               <h4 className="text-sm font-semibold text-indigo-200 uppercase tracking-wide mb-4">What's Included</h4>
               <ul className="space-y-3 mb-6">
                 {[
@@ -110,16 +111,6 @@ export default function Pricing() {
               </div>
               <div className="text-4xl font-display font-bold mb-2 text-white">$49<span className="text-lg text-amber-300 font-normal">/month</span></div>
               <p className="text-amber-200/80 text-sm mb-6">Raise capital with structure and support. For committed founders preparing to raise funding. Access is selective.</p>
-              <div className="mb-6 p-4 bg-amber-500/10 border border-amber-400/30 rounded-lg">
-                <h4 className="text-sm font-semibold text-amber-200 uppercase tracking-wide mb-3">How It Works</h4>
-                <div className="flex items-center gap-3 text-sm text-amber-100/80">
-                  <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full bg-amber-500/30 text-amber-300 text-xs flex items-center justify-center font-bold">1</span> Apply</span>
-                  <ArrowRight className="h-3 w-3 text-amber-400/60" />
-                  <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full bg-amber-500/30 text-amber-300 text-xs flex items-center justify-center font-bold">2</span> Review</span>
-                  <ArrowRight className="h-3 w-3 text-amber-400/60" />
-                  <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full bg-amber-500/30 text-amber-300 text-xs flex items-center justify-center font-bold">3</span> Access</span>
-                </div>
-              </div>
               <h4 className="text-sm font-semibold text-amber-200 uppercase tracking-wide mb-4">Included</h4>
               <ul className="space-y-3 mb-6">
                 {[

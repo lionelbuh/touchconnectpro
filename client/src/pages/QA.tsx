@@ -104,7 +104,7 @@ const faqSections = [
     items: [
       {
         question: "When does billing start?",
-        answer: "Billing for the $49/month membership begins only after a mentor reviews your materials and approves you into their portfolio."
+        answer: "Community \u2013 Free: No billing. Get started immediately and explore the community and coaching sessions at your own pace.\n\nFounders Circle \u2013 $9.99/month: Billing starts immediately upon signup. Gain full access to personalized mentorship, structured feedback, and expert coaching support.\n\nCapital Circle \u2013 $49/month: Billing begins only after your application is reviewed and approved by a mentor. This ensures your project is ready for focused guidance and investor access."
       },
       {
         question: "Are the coaching sessions included in the membership fee?",
