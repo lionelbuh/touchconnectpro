@@ -1690,12 +1690,12 @@ export default function DashboardEntrepreneur() {
     const statusDisplay = isAccountDisabled 
       ? "Disabled" 
       : isPreApproved
-        ? (ideaSubmitted ? "Community Member" : "Community Free")
+        ? (hasPaid ? "Founders Circle" : (ideaSubmitted ? "Community Member" : "Community Free"))
         : (entrepreneurStatus === "approved" ? (hasActiveMentor ? "Active Member" : "Approved - Awaiting Mentor") : "On Waiting List");
     const statusColor = isAccountDisabled 
       ? "text-red-600 dark:text-red-400" 
       : isPreApproved
-        ? (ideaSubmitted ? "text-cyan-600 dark:text-cyan-400" : "text-cyan-600 dark:text-cyan-400")
+        ? (hasPaid ? "text-emerald-600 dark:text-emerald-400" : "text-cyan-600 dark:text-cyan-400")
         : (entrepreneurStatus === "approved" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400");
     const avatarColor = isAccountDisabled 
       ? "bg-red-500" 
@@ -1990,8 +1990,7 @@ export default function DashboardEntrepreneur() {
                       <CardTitle className="text-sm font-medium text-muted-foreground">Status</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className={`text-2xl font-bold ${entrepreneurStatus === "approved" ? "text-emerald-600" : ""}`}>{statusDisplay}</div>
-                      <p className="text-xs text-muted-foreground mt-1">{entrepreneurStatus === "approved" ? "Full platform access" : "Pending mentor selection"}</p>
+                      <div className={`text-2xl font-bold ${statusColor}`}>{statusDisplay}</div>
                     </CardContent>
                   </Card>
 
