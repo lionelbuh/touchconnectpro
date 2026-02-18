@@ -2511,7 +2511,7 @@ app.get("/api/admin/subscription-revenue", async (req, res) => {
       return res.json({ subscriptions: [], totals: { totalRevenue: 0, count: 0 } });
     }
     
-    const subscriptionAmount = 49; // $49/month per subscription
+    const subscriptionAmount = 9.99; // $9.99/month Founders Circle subscription
     const subscriptions = (paidEntrepreneurs || []).map(e => ({
       id: e.id,
       entrepreneurName: e.entrepreneur_name || 'Entrepreneur',
@@ -7538,7 +7538,7 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
                   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2>Payment Confirmed!</h2>
                     <p>Hi ${entrepreneurName},</p>
-                    <p>Your $49/month membership payment has been received. A mentor will be assigned to you shortly.</p>
+                    <p>Your membership payment has been received. A mentor will be assigned to you shortly.</p>
                     <p>You'll receive a notification once your mentor is ready to connect with you.</p>
                     <p>Best regards,<br>The TouchConnectPro Team</p>
                   </div>

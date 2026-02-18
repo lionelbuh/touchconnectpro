@@ -3757,7 +3757,7 @@ CREATE POLICY "Allow service role full access on mentor_questions" ON public.men
         return res.json({ subscriptions: [], totals: { totalRevenue: 0, count: 0 } });
       }
       
-      const subscriptionAmount = 49; // $49/month per subscription
+      const subscriptionAmount = 9.99; // $9.99/month Founders Circle subscription
       const subscriptions = (paidEntrepreneurs || []).map((e: any) => ({
         id: e.id,
         entrepreneurName: e.entrepreneur_name || 'Entrepreneur',
@@ -6386,13 +6386,14 @@ CREATE POLICY "Allow service role full access on mentor_questions" ON public.men
   // Stripe: Create checkout session for entrepreneur subscription
   app.post("/api/stripe/create-checkout-session", async (req, res) => {
     try {
-      const { entrepreneurEmail, entrepreneurName } = req.body;
+      const { email, entrepreneurEmail, entrepreneurId, entrepreneurName, successUrl, cancelUrl } = req.body;
+      const userEmail = email || entrepreneurEmail;
       
-      if (!entrepreneurEmail) {
+      if (!userEmail) {
         return res.status(400).json({ error: "Entrepreneur email required" });
       }
 
-      console.log("[STRIPE] Creating checkout session for:", entrepreneurEmail);
+      console.log("[STRIPE] Creating checkout session for:", userEmail);
 
       const { stripeService } = await import('./stripeService');
       
@@ -6400,16 +6401,19 @@ CREATE POLICY "Allow service role full access on mentor_questions" ON public.men
       const baseUrl = process.env.FRONTEND_URL || 
         (replitDomain ? `https://${replitDomain}` : "http://localhost:5000");
       
+      const finalSuccessUrl = successUrl || `${baseUrl}/login?payment=success&session_id={CHECKOUT_SESSION_ID}`;
+      const finalCancelUrl = cancelUrl || `${baseUrl}/login?payment=cancelled`;
+      
       const { url, customerId } = await stripeService.createCheckoutSession(
-        entrepreneurEmail,
+        userEmail,
         entrepreneurName || "Entrepreneur",
-        `${baseUrl}/dashboard-entrepreneur?payment=success`,
-        `${baseUrl}/dashboard-entrepreneur?payment=cancelled`
+        finalSuccessUrl,
+        finalCancelUrl
       );
 
       console.log("[STRIPE] Checkout session created, customer:", customerId);
       
-      return res.json({ url, customerId });
+      return res.json({ url, customerId, sessionId: url });
     } catch (error: any) {
       console.error("[STRIPE] Checkout error:", error.message);
       return res.status(500).json({ error: error.message });
@@ -6548,7 +6552,7 @@ CREATE POLICY "Allow service role full access on mentor_questions" ON public.men
             from_email: "system@touchconnectpro.com",
             to_name: "Admin",
             to_email: "admin@touchconnectpro.com",
-            message: `${entrepreneurName} (${entrepreneurEmail}) has completed their $49/month subscription payment and is now a paid member. Please assign a mentor.`,
+            message: `${entrepreneurName} (${entrepreneurEmail}) has completed their subscription payment and is now a paid member. Please assign a mentor.`,
             is_read: false
           } as any));
         console.log("[STRIPE CONFIRM] Admin notification sent about payment from:", entrepreneurEmail);
@@ -7164,7 +7168,7 @@ Full terms available at: https://touchconnectpro.com/coach-agreement`;
                         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                           <h2>Payment Confirmed!</h2>
                           <p>Hi ${entrepreneurName},</p>
-                          <p>Your $49/month membership payment has been received. A mentor will be assigned to you shortly.</p>
+                          <p>Your membership payment has been received. A mentor will be assigned to you shortly.</p>
                           <p>You'll receive a notification once your mentor is ready to connect with you.</p>
                           <p>Best regards,<br>The TouchConnectPro Team</p>
                         </div>

@@ -20,14 +20,22 @@ export class StripeService {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID || 'price_1SdZpuIzajgsohRkDXQlR7xZ',
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "TouchConnectPro Membership",
+              description: "Monthly membership with mentor access, AI business planning tools, and investor connections"
+            },
+            unit_amount: 999,
+            recurring: { interval: "month" }
+          },
           quantity: 1
         }
       ],
       mode: 'subscription',
       success_url: successUrl,
       cancel_url: cancelUrl,
-      metadata: { entrepreneurEmail },
+      metadata: { entrepreneurEmail, source: "touchconnectpro" },
     });
 
     return { url: session.url, customerId: customer.id };
