@@ -410,7 +410,7 @@ export default function Login() {
       }
       
       toast.success("Account created! Redirecting to application form...");
-      if (selectedRole === "entrepreneur") navigate("/become-entrepreneur");
+      if (selectedRole === "entrepreneur") navigate("/founder-focus");
       else if (selectedRole === "mentor") navigate("/become-mentor");
       else if (selectedRole === "coach") navigate("/become-coach");
       else if (selectedRole === "investor") navigate("/investors");
@@ -423,7 +423,7 @@ export default function Login() {
 
   const handleRoleSelection = (role: string) => {
     setSelectedRole(role);
-    if (role === "entrepreneur") navigate("/become-entrepreneur");
+    if (role === "entrepreneur") navigate("/founder-focus");
     else if (role === "mentor") navigate("/become-mentor");
     else if (role === "coach") navigate("/become-coach");
     else if (role === "investor") navigate("/investors");
