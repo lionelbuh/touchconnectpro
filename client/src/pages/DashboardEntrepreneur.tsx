@@ -14,6 +14,7 @@ import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { ENTREPRENEUR_CONTRACT, ENTREPRENEUR_CONTRACT_VERSION } from "@/lib/contracts";
+import { BLOCKER_INFO, type Category } from "@/lib/founderFocusData";
 
 // Helper to format UTC timestamps from database to PST
 const formatToPST = (timestamp: string | Date) => {
@@ -1905,7 +1906,27 @@ export default function DashboardEntrepreneur() {
                   </Card>
                 </div>
 
-                {isPreApproved && focusScoreData && (
+                {isPreApproved && focusScoreData && (() => {
+                  const score = focusScoreData.totalScore || focusScoreData.overallScore || 0;
+                  const blocker = focusScoreData.primaryBlocker as Category;
+                  const blockerInfo = blocker ? BLOCKER_INFO[blocker] : null;
+                  const scoreLabel = score >= 80 ? "Strong foundation" : score >= 60 ? "Solid but blocked" : "High friction";
+                  const scoreColor = score >= 80 ? "text-emerald-600" : score >= 60 ? "text-amber-600" : "text-red-600";
+                  const scoreBg = score >= 80 ? "bg-emerald-100 dark:bg-emerald-950/30" : score >= 60 ? "bg-amber-100 dark:bg-amber-950/30" : "bg-red-100 dark:bg-red-950/30";
+                  const categoryColors: Record<string, string> = {
+                    Strategy: "from-indigo-500 to-indigo-600",
+                    Sales: "from-emerald-500 to-emerald-600",
+                    Operations: "from-amber-500 to-amber-600",
+                    Execution: "from-cyan-500 to-cyan-600",
+                  };
+                  const categoryTextColors: Record<string, string> = {
+                    Strategy: "text-indigo-600 dark:text-indigo-400",
+                    Sales: "text-emerald-600 dark:text-emerald-400",
+                    Operations: "text-amber-600 dark:text-amber-400",
+                    Execution: "text-cyan-600 dark:text-cyan-400",
+                  };
+
+                  return (
                   <Card className="mb-6 border-l-4 border-l-purple-500" data-testid="card-focus-score">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
@@ -1914,15 +1935,60 @@ export default function DashboardEntrepreneur() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className="text-4xl font-bold text-purple-600">{focusScoreData.totalScore || focusScoreData.overallScore || "--"}</div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{focusScoreData.primaryBlocker ? `Primary Focus: ${focusScoreData.primaryBlocker}` : "Focus Score Complete"}</p>
+                      <div className="flex items-center gap-4 mb-5">
+                        <div className="relative w-20 h-20 flex-shrink-0">
+                          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="8" className="text-slate-200 dark:text-slate-700" />
+                            <circle
+                              cx="50" cy="50" r="42" fill="none"
+                              stroke="url(#dashScoreGradient)" strokeWidth="8"
+                              strokeLinecap="round"
+                              strokeDasharray={`${(score / 100) * 264} 264`}
+                            />
+                            <defs>
+                              <linearGradient id="dashScoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#06b6d4" />
+                                <stop offset="100%" stopColor="#8b5cf6" />
+                              </linearGradient>
+                            </defs>
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-2xl font-bold text-purple-600" data-testid="text-focus-score-value">{score}</span>
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${scoreBg} ${scoreColor}`}>{scoreLabel}</span>
+                          </div>
+                          <p className="text-sm font-medium text-foreground" data-testid="text-primary-focus">
+                            {blocker ? `Primary Focus: ${blocker}` : "Focus Score Complete"}
+                          </p>
                           <p className="text-xs text-muted-foreground">Based on your diagnostic quiz responses</p>
                         </div>
                       </div>
-                      {focusScoreData.categories && (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+
+                      {focusScoreData.categoryResults && focusScoreData.categoryResults.length > 0 && (
+                        <div className="space-y-3 mb-5">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Score Breakdown</p>
+                          {focusScoreData.categoryResults.map((cat: any) => (
+                            <div key={cat.category} data-testid={`score-breakdown-${cat.category}`}>
+                              <div className="flex items-center justify-between mb-1">
+                                <span className={`text-sm font-medium ${categoryTextColors[cat.category] || "text-foreground"}`}>{cat.category}</span>
+                                <span className="text-xs text-muted-foreground">{cat.score} pts ({cat.percentage}%)</span>
+                              </div>
+                              <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                                <div
+                                  className={`h-2 rounded-full bg-gradient-to-r ${categoryColors[cat.category] || "from-purple-500 to-purple-600"}`}
+                                  style={{ width: `${Math.max(cat.percentage, 5)}%` }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {!focusScoreData.categoryResults && focusScoreData.categories && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
                           {Object.entries(focusScoreData.categories).map(([category, data]: [string, any]) => (
                             <div key={category} className="bg-purple-50 dark:bg-purple-950/20 rounded-lg p-3 text-center">
                               <p className="text-xs text-muted-foreground mb-1">{category}</p>
@@ -1931,9 +1997,28 @@ export default function DashboardEntrepreneur() {
                           ))}
                         </div>
                       )}
+
+                      {blockerInfo && (
+                        <div className="space-y-3">
+                          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">What This Means</p>
+                            <p className="text-sm text-muted-foreground leading-relaxed" data-testid="text-blocker-explanation">{blockerInfo.explanation}</p>
+                          </div>
+                          <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                            <div className="flex items-start gap-2">
+                              <Target className="h-4 w-4 text-purple-600 flex-shrink-0 mt-0.5" />
+                              <div>
+                                <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 mb-1">Your Next Action</p>
+                                <p className="text-sm text-purple-600 dark:text-purple-400" data-testid="text-next-action">{blockerInfo.action}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
-                )}
+                  );
+                })()}
 
                 {mentorNotes && mentorNotes.length > 0 && (() => {
                   // Sort notes oldest first
