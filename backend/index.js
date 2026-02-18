@@ -8915,10 +8915,138 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
 });
 
 // =============================================
-// FOUNDER FOCUS SCORE & TRIAL ROUTES
+// COMMUNITY FREE SIGNUP & TRIAL ROUTES
 // =============================================
 
-// POST /api/trial/create - Create trial account from Founder Focus Score
+// POST /api/community/signup - Create Community-Free account from Founder Focus Score
+app.post("/api/community/signup", async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+
+    const { email, name, password, quizResult } = req.body;
+    if (!email || !name || !password) {
+      return res.status(400).json({ error: "Name, email, and password are required" });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if user already has an entrepreneur application
+    const { data: existingApp } = await supabase
+      .from("ideas")
+      .select("id, status")
+      .eq("entrepreneur_email", normalizedEmail)
+      .limit(1);
+
+    if (existingApp && existingApp.length > 0) {
+      return res.status(409).json({ 
+        error: "An account already exists for this email. Please log in instead."
+      });
+    }
+
+    // Create Supabase auth user with provided password
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: normalizedEmail,
+      password: password,
+      email_confirm: true,
+      user_metadata: {
+        user_type: "entrepreneur",
+        full_name: name
+      }
+    });
+
+    if (authError) {
+      if (authError.message.includes("already been registered")) {
+        return res.status(409).json({ error: "An account already exists for this email. Please log in instead." });
+      }
+      console.error("[COMMUNITY SIGNUP] Auth error:", authError);
+      return res.status(400).json({ error: authError.message });
+    }
+
+    // Insert into ideas table with pre-approved status
+    const { data: ideaData, error: ideaError } = await supabase
+      .from("ideas")
+      .insert({
+        status: "pre-approved",
+        entrepreneur_email: normalizedEmail,
+        entrepreneur_name: name,
+        data: quizResult ? { focusScore: quizResult } : {},
+        business_plan: {},
+        linkedin_profile: "",
+        user_id: authData?.user?.id || null,
+      })
+      .select();
+
+    if (ideaError) {
+      console.error("[COMMUNITY SIGNUP] Ideas insert error:", ideaError);
+      return res.status(400).json({ error: ideaError.message });
+    }
+
+    // Also insert into users table for messaging/profile features
+    try {
+      await supabase
+        .from("users")
+        .upsert({
+          email: normalizedEmail,
+          name: name,
+          user_type: "entrepreneur",
+          status: "pre-approved",
+          created_at: new Date().toISOString()
+        }, { onConflict: "email" });
+    } catch (e) {
+      console.error("[COMMUNITY SIGNUP] Users upsert warning:", e);
+    }
+
+    console.log("[COMMUNITY SIGNUP] Account created for:", normalizedEmail);
+
+    // Send welcome email
+    try {
+      const resendData = await getResendClient();
+      if (resendData) {
+        const { client: resendClient, fromEmail } = resendData;
+        await resendClient.emails.send({
+          from: fromEmail,
+          to: normalizedEmail,
+          subject: "Welcome to TouchConnectPro Community!",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #0ea5e9;">Welcome to TouchConnectPro, ${name}!</h2>
+              <p>Your free Community account is ready. You can now log in to access your entrepreneur dashboard.</p>
+              ${quizResult ? `<p>Your Focus Score results have been saved to your profile.</p>` : ""}
+              <p>As a Community member, you have access to:</p>
+              <ul>
+                <li>AI-powered business planning tools</li>
+                <li>Coach marketplace browsing</li>
+                <li>Focus Score diagnostics</li>
+              </ul>
+              <p>Ready to upgrade? Our Founders Circle ($9.99/month) and Capital Circle ($49/month) tiers unlock mentor access and investor connections.</p>
+              <p><a href="https://touchconnectpro.com/login" style="display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold;">Log In to Your Dashboard</a></p>
+              <p style="color: #94a3b8; font-size: 12px;">Touch Equity Partners LLC</p>
+            </div>
+          `
+        });
+        console.log("[COMMUNITY SIGNUP] Welcome email sent to:", normalizedEmail);
+      }
+    } catch (emailErr) {
+      console.error("[COMMUNITY SIGNUP] Email send error (non-blocking):", emailErr);
+    }
+
+    return res.json({ 
+      success: true, 
+      id: ideaData?.[0]?.id,
+      message: "Community account created successfully"
+    });
+  } catch (error) {
+    console.error("[COMMUNITY SIGNUP] Error:", error);
+    return res.status(500).json({ error: error.message || "Server error" });
+  }
+});
+
+// POST /api/trial/create - Create trial account from Founder Focus Score (legacy)
 app.post("/api/trial/create", async (req, res) => {
   try {
     if (!supabase) {
