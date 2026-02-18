@@ -1785,7 +1785,8 @@ export default function DashboardEntrepreneur() {
                         <CheckCircle className="h-6 w-6 text-cyan-500 flex-shrink-0 mt-0.5" />
                         <div className="flex-1">
                           <h3 className="text-lg font-semibold text-cyan-800 dark:text-cyan-300 mb-1">Idea Submitted - Explore Your Dashboard</h3>
-                          <p className="text-cyan-700 dark:text-cyan-400">Your idea has been submitted! You can now explore coaches, refine your business plan, and connect with the community. Upgrade to a paid plan for dedicated mentor access and investor connections.</p>
+                          <p className="text-cyan-700 dark:text-cyan-400">Your idea has been submitted! You can now explore coaches, refine your business plan, and connect with the community. Upgrade to a paid plan for dedicated mentor access.</p>
+                          <a href="/become-entrepreneur" className="inline-block mt-2 text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 underline">Upgrade to Founders Circle Plan →</a>
                         </div>
                       </div>
                     </CardContent>
@@ -2011,8 +2012,8 @@ export default function DashboardEntrepreneur() {
                         <div className="h-16 w-16 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center mx-auto mb-4">
                           <Users className="h-8 w-8 text-cyan-600" />
                         </div>
-                        <p className="text-slate-600 dark:text-slate-400 mb-2">Once your project is approved and a mentor accepts you, their profile will appear here.</p>
-                        <p className="text-sm text-muted-foreground mb-4">You'll be able to schedule meetings and receive personalized guidance.</p>
+                        <p className="text-slate-600 dark:text-slate-400 mb-2">Once you upgrade to the Founders Circle plan and your project is reviewed, a dedicated mentor will be assigned to you.</p>
+                        <a href="/become-entrepreneur" className="inline-block mt-2 mb-4 text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 underline">Upgrade to Founders Circle Plan →</a>
                         {ideaSubmitted && !hasPaid && (
                           <Button
                             variant="outline"
