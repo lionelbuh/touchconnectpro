@@ -188,7 +188,7 @@ export default function Insights() {
           <p className="text-slate-300 leading-relaxed mb-8 max-w-2xl mx-auto">
             TouchConnectPro supports founders at different stages with hands-on operational guidance from experienced operators. No pitch required. Just a willingness to take the next step.
           </p>
-          <Link href="/become-entrepreneur" data-testid="link-insights-talk">
+          <Link href="/founder-focus" data-testid="link-insights-talk">
             <Button size="lg" className="h-12 px-8 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full" data-testid="button-insights-talk">
               Talk with an experienced operator <ArrowRight className="ml-2 h-5 w-5" />
             </Button>

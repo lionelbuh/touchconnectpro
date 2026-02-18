@@ -1664,7 +1664,7 @@ export default function DashboardEntrepreneur() {
           </div>
         </aside>
 
-        <main className="flex-1 p-8 overflow-y-auto flex items-center justify-center">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto flex items-center justify-center">
           <div className="max-w-md text-center">
             <div className="flex justify-center mb-6">
               <div className="h-16 w-16 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full flex items-center justify-center">
@@ -1716,7 +1716,7 @@ export default function DashboardEntrepreneur() {
     ];
 
     return (
-      <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
+      <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950 overflow-x-hidden">
         <DashboardMobileNav
           tabs={entrepreneurNavTabs}
           activeTab={activeTab}
@@ -1726,7 +1726,7 @@ export default function DashboardEntrepreneur() {
           userRole={statusDisplay}
           onLogout={handleLogout}
         />
-        <div className="flex flex-1">
+        <div className="flex flex-1 overflow-hidden">
         <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col justify-between">
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
@@ -1852,8 +1852,8 @@ export default function DashboardEntrepreneur() {
           </div>
         </aside>
 
-        <main className="flex-1 p-8 overflow-y-auto">
-          <div className="max-w-4xl">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden">
+          <div className="max-w-4xl w-full">
             {/* Overview Tab */}
             {activeTab === "overview" && (
               <div>
@@ -1956,7 +1956,7 @@ export default function DashboardEntrepreneur() {
                       )}
                     </div>
                     <div>
-                      <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Welcome, {profileData.fullName?.split(" ")[0] || "Entrepreneur"}!</h1>
+                      <h1 className="text-xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Welcome, {profileData.fullName?.split(" ")[0] || "Entrepreneur"}!</h1>
                       <p className="text-muted-foreground">Here's what's happening with <span className="font-semibold text-foreground">{formData.ideaName || entrepreneurData?.data?.ideaName || "Your Idea"}</span>.</p>
                     </div>
                   </div>
@@ -3286,17 +3286,17 @@ export default function DashboardEntrepreneur() {
                     {coachPurchases.map((purchase) => (
                       <Card key={purchase.id} className="border-l-4 border-l-green-500" data-testid={`card-purchase-${purchase.id}`}>
                         <CardContent className="pt-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                                <CreditCard className="h-6 w-6 text-green-600" />
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div className="flex items-center gap-3 sm:gap-4">
+                              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                               </div>
-                              <div>
-                                <p className="font-semibold text-slate-900 dark:text-white">{purchase.serviceName}</p>
-                                <p className="text-sm text-muted-foreground">Coach: {purchase.coachName}</p>
+                              <div className="min-w-0">
+                                <p className="font-semibold text-slate-900 dark:text-white truncate">{purchase.serviceName}</p>
+                                <p className="text-sm text-muted-foreground truncate">Coach: {purchase.coachName}</p>
                               </div>
                             </div>
-                            <div className="text-right">
+                            <div className="sm:text-right flex sm:flex-col items-center sm:items-end gap-2 sm:gap-0 pl-13 sm:pl-0">
                               <p className="text-lg font-bold text-green-600">${purchase.amount.toFixed(2)}</p>
                               <p className="text-xs text-muted-foreground">{new Date(purchase.date).toLocaleDateString()}</p>
                               <Badge className={purchase.status === "completed" ? "bg-green-600" : "bg-amber-500"}>
@@ -3672,10 +3672,10 @@ export default function DashboardEntrepreneur() {
 
             {activeTab === "profile" && !(isPreApproved && !ideaSubmitted) && (
               <div>
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 sm:mb-8">
                   <div>
-                    <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Entrepreneur Profile</h1>
-                    <p className="text-muted-foreground">Your profile is visible to mentors and admins on our platform.</p>
+                    <h1 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white mb-1 sm:mb-2">Entrepreneur Profile</h1>
+                    <p className="text-sm sm:text-base text-muted-foreground">Your profile is visible to mentors and admins on our platform.</p>
                   </div>
                   <Button 
                     onClick={() => setIsEditingProfile(!isEditingProfile)}
@@ -3855,8 +3855,8 @@ export default function DashboardEntrepreneur() {
                   <div className="space-y-6">
                     <Card className="border-cyan-200 dark:border-cyan-900/30">
                       <CardContent className="pt-6">
-                        <div className="flex gap-6">
-                          <div className="w-24 h-24 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-5xl flex-shrink-0 overflow-hidden">
+                        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-4xl sm:text-5xl flex-shrink-0 overflow-hidden mx-auto sm:mx-0">
                             {profileData.profileImage ? (
                               <img src={profileData.profileImage} alt="Profile" className="w-full h-full object-cover" />
                             ) : "👤"}
@@ -4094,7 +4094,7 @@ export default function DashboardEntrepreneur() {
           </div>
         </aside>
 
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden">
           <div className="max-w-3xl mx-auto">
             <button 
               onClick={() => setShowAIReview(false)} 
@@ -4193,7 +4193,7 @@ export default function DashboardEntrepreneur() {
           </div>
         </aside>
 
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden">
           <div className="max-w-2xl mx-auto">
             <button 
               onClick={() => setShowReview(false)} 
@@ -4285,7 +4285,7 @@ export default function DashboardEntrepreneur() {
         </div>
       </aside>
 
-      <main className="flex-1 p-8 overflow-y-auto flex items-center justify-center">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden flex items-center justify-center">
         <div className="w-full max-w-lg">
           {/* Progress */}
           <div className="mb-8">
