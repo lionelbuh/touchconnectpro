@@ -607,3 +607,145 @@ By selecting the checkbox labeled "I agree to the Entrepreneur Membership Agreem
 • You consent to electronic contracting
 
 • You acknowledge that this constitutes your legal electronic signature`;
+
+export const COMMUNITY_FREE_CONTRACT_VERSION = "2026-02-17 v1";
+
+export const COMMUNITY_FREE_CONTRACT = `TouchConnectPro
+
+Community Free Membership Agreement
+
+Last Updated: February 17, 2026
+
+This Membership Agreement ("Agreement") is entered into between Touch Equity Partners LLC, a limited liability company ("Company", "we", "us", or "our"), which operates the TouchConnectPro platform ("TouchConnectPro" or the "Platform"), and the individual registering as a member ("Member", "you", or "your").
+
+By registering for the Community Free membership and using the Platform, you acknowledge that you have read, understood, and agree to be legally bound by this Agreement.
+
+1. Purpose of the Platform
+
+TouchConnectPro provides a technology platform that facilitates connections between entrepreneurs, mentors, coaches, and other founders. The Platform offers tools for
+
+Accessing clarity and focus tools
+
+Building and refining business ideas and plans
+
+Participating in open coaching sessions
+
+Connecting with the founder community
+
+Accessing resources for business growth, strategy, and learning
+
+Note: Touch Equity Partners LLC does not guarantee funding, business outcomes, or coaching results. The Platform is a support and guidance service only.
+
+2. Membership
+
+Membership for the Community Free begins immediately upon registration
+
+No payment or approval is required for Community Free access
+
+Community Free members have access to shared coaching sessions and the community network. Dedicated one on one mentorship is only available for paid membership tiers
+
+You may cancel your membership at any time from your account. Cancellation stops all future activity under your profile, but you may remain in the community as long as your account is active
+
+3. Account Responsibility
+
+You must provide accurate and complete information when creating your account
+
+You are responsible for maintaining the security of your login credentials
+
+You are responsible for all activity that occurs under your account
+
+You agree not to share your login credentials or allow unauthorized use of your account
+
+4. Use of the Platform
+
+You agree to
+
+Use the Platform professionally, ethically, and lawfully
+
+Respect mentors, coaches, and other users
+
+Avoid harassment, discrimination, or abusive behavior
+
+Not circumvent the Platform to contact mentors, coaches, or users outside the system in a way that violates policies
+
+Touch Equity Partners LLC reserves the right to suspend or terminate your access for violations of this Agreement
+
+5. Intellectual Property
+
+All content, software, branding, guides, templates, and digital assets on TouchConnectPro are owned by Touch Equity Partners LLC
+
+You may not reproduce, copy, distribute, or create derivative works for commercial purposes without prior written consent
+
+Materials you create on the Platform for example business documents and pitch decks remain your property, but you grant Touch Equity Partners LLC a non exclusive, worldwide, royalty free license to display or use them solely for Platform operation and promotion
+
+6. Confidentiality
+
+Any non public information shared with you by mentors, coaches, or other users is confidential
+
+You agree not to disclose or use this information outside of the Platform except as necessary for your engagement with the Platform
+
+7. Use of AI Tools
+
+By submitting content, forms, or communications through the Platform, you acknowledge and agree that
+
+TouchConnectPro may process your submissions using AI tools, including language models for example OpenAI, to assist with drafting or improving text
+
+Your content may be temporarily processed, stored, or analyzed by AI tools to provide services
+
+Touch Equity Partners LLC does not claim ownership of content you submit, but the Platform may retain AI generated outputs as part of your account or project
+
+You should not submit confidential or sensitive information that you do not want to be processed by AI tools
+
+AI generated outputs are suggestions only. You remain responsible for reviewing and using them appropriately
+
+8. Disclaimers
+
+TouchConnectPro is a guidance platform. Results, funding, or outcomes are not guaranteed
+
+Mentors and coaches are independent contractors. Touch Equity Partners LLC does not supervise, direct, or guarantee their services
+
+Coaching or mentorship does not constitute legal, financial, medical, or professional advice
+
+9. Limitation of Liability
+
+To the maximum extent permitted by law
+
+Touch Equity Partners LLC is not liable for indirect, incidental, consequential, or special damages arising from your use of the Platform
+
+Total liability shall not exceed the value of services you have received as a Community Free member, which is zero
+
+10. Indemnification
+
+You agree to indemnify, defend, and hold harmless Touch Equity Partners LLC from any claims, losses, liabilities, damages, or expenses arising from
+
+Your use of the Platform
+
+Your interactions with mentors, coaches, or other users
+
+Your violation of this Agreement or applicable laws
+
+11. Termination
+
+Either party may terminate this Agreement at any time
+
+Upon termination, your access to the Platform will end
+
+Sections related to intellectual property, confidentiality, liability, and indemnification survive termination
+
+12. Modifications
+
+Touch Equity Partners LLC may update this Agreement from time to time. Continued use of the Platform after changes constitutes acceptance of the revised Agreement
+
+13. Governing Law
+
+This Agreement shall be governed by and construed in accordance with the laws of the State of California, without regard to conflict of law principles
+
+14. Acceptance and Electronic Signature
+
+By registering for the Community Free membership and submitting your registration
+
+You confirm your intent to be legally bound
+
+You consent to electronic contracting
+
+You acknowledge that this constitutes your legal electronic signature`;

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowRight, ArrowLeft, Target, Compass, DollarSign, Settings, Rocket, CheckCircle, Loader2, Zap, Clock, BarChart3, Users } from "lucide-react";
 import { Link } from "wouter";
 import { QUIZ_QUESTIONS, calculateResults, BLOCKER_INFO, type QuizResult, type Category } from "@/lib/founderFocusData";
+import { COMMUNITY_FREE_CONTRACT, COMMUNITY_FREE_CONTRACT_VERSION } from "@/lib/contracts";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 
@@ -50,6 +51,8 @@ export default function FounderFocusScore() {
   const [signupPassword, setSignupPassword] = useState("");
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [accountCreated, setAccountCreated] = useState(false);
+  const [agreedToContract, setAgreedToContract] = useState(false);
+  const [showContractText, setShowContractText] = useState(false);
   const prevPhaseRef = useRef<Phase>("landing");
   const prevQuestionRef = useRef(0);
 
@@ -90,6 +93,10 @@ export default function FounderFocusScore() {
       toast.error("Password must be at least 6 characters");
       return;
     }
+    if (!agreedToContract) {
+      toast.error("Please agree to the Community Free Membership Agreement to continue");
+      return;
+    }
 
     setIsCreatingAccount(true);
     try {
@@ -106,6 +113,23 @@ export default function FounderFocusScore() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create account");
+
+      // Save contract acceptance
+      try {
+        await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: signupEmail.toLowerCase().trim(),
+            role: "entrepreneur",
+            contractVersion: COMMUNITY_FREE_CONTRACT_VERSION,
+            contractText: COMMUNITY_FREE_CONTRACT,
+            userAgent: navigator.userAgent,
+          }),
+        });
+      } catch (contractErr) {
+        console.error("Contract acceptance save error (non-blocking):", contractErr);
+      }
 
       setAccountCreated(true);
       toast.success("Account created! You can now log in to your dashboard.");
@@ -416,6 +440,33 @@ export default function FounderFocusScore() {
                     className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 h-12"
                     data-testid="input-signup-password"
                   />
+                  <div className="text-left">
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={agreedToContract}
+                        onChange={(e) => setAgreedToContract(e.target.checked)}
+                        className="mt-1 h-4 w-4 rounded border-white/30 accent-cyan-500"
+                        data-testid="checkbox-agree-contract"
+                      />
+                      <span className="text-sm text-slate-300">
+                        I agree to the{" "}
+                        <button
+                          type="button"
+                          onClick={() => setShowContractText(!showContractText)}
+                          className="text-cyan-400 underline hover:text-cyan-300"
+                          data-testid="button-view-contract"
+                        >
+                          Community Free Membership Agreement
+                        </button>
+                      </span>
+                    </label>
+                    {showContractText && (
+                      <div className="mt-3 max-h-48 overflow-y-auto bg-white/5 border border-white/10 rounded-lg p-4 text-xs text-slate-400 whitespace-pre-wrap">
+                        {COMMUNITY_FREE_CONTRACT}
+                      </div>
+                    )}
+                  </div>
                   <Button
                     type="submit"
                     size="lg"

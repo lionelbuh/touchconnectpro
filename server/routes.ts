@@ -6477,6 +6477,96 @@ export async function registerRoutes(
     }
   });
 
+  // POST /api/contract-acceptances - Save contract acceptance
+  app.post("/api/contract-acceptances", async (req, res) => {
+    console.log("[POST /api/contract-acceptances] Saving contract acceptance");
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { email, role, contractVersion, contractText, userAgent } = req.body;
+      const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
+
+      if (!email || !role || !contractVersion || !contractText) {
+        return res.status(400).json({ error: "Missing required fields: email, role, contractVersion, contractText" });
+      }
+
+      const validRoles = ['coach', 'mentor', 'investor', 'entrepreneur'];
+      if (!validRoles.includes(role.toLowerCase())) {
+        return res.status(400).json({ error: "Invalid role. Must be coach, mentor, investor, or entrepreneur" });
+      }
+
+      const { data: existing } = await (client
+        .from("contract_acceptances")
+        .select("id")
+        .eq("email", email.toLowerCase())
+        .eq("role", role.toLowerCase())
+        .eq("contract_version", contractVersion)
+        .limit(1) as any);
+
+      if (existing && existing.length > 0) {
+        return res.status(200).json({ success: true, id: existing[0].id, alreadyAccepted: true });
+      }
+
+      const { data, error } = await (client
+        .from("contract_acceptances")
+        .insert({
+          email: email.toLowerCase(),
+          role: role.toLowerCase(),
+          contract_version: contractVersion,
+          contract_text: contractText,
+          ip_address: ipAddress,
+          user_agent: userAgent || null,
+          accepted_at: new Date().toISOString()
+        })
+        .select() as any);
+
+      if (error) {
+        console.error("[CONTRACT] Insert error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      console.log("[CONTRACT] Saved for", email, role);
+      return res.status(201).json({ success: true, id: data?.[0]?.id });
+    } catch (error: any) {
+      console.error("[CONTRACT] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // GET /api/contract-acceptances - Get all contract acceptances (admin)
+  app.get("/api/contract-acceptances", async (req, res) => {
+    console.log("[GET /api/contract-acceptances] Fetching all contracts");
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { role } = req.query;
+      let query = client
+        .from("contract_acceptances")
+        .select("*")
+        .order("accepted_at", { ascending: false });
+
+      if (role && role !== 'all') {
+        query = query.eq("role", (role as string).toLowerCase());
+      }
+
+      const { data, error } = await (query as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json(data || []);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Check if coach has accepted latest agreement
   app.get("/api/contract-acceptances/check-coach-agreement/:email", async (req, res) => {
     console.log("[CHECK COACH AGREEMENT] Checking for:", req.params.email);

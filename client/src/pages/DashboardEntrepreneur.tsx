@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, CheckCircle, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply, ShoppingCart, CreditCard, X } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, CheckCircle, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply, ShoppingCart, CreditCard, X, Rocket, BarChart3 } from "lucide-react";
 import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -1490,20 +1490,22 @@ export default function DashboardEntrepreneur() {
   if (submitted) {
     const hasActiveMentor = mentorData && mentorData.status === "active";
     const entrepreneurStatus = entrepreneurData?.status || "pending";
+    const ideaSubmitted = !!(formData.ideaName || entrepreneurData?.data?.ideaName);
+    const focusScoreData = entrepreneurData?.data?.focusScore;
     const statusDisplay = isAccountDisabled 
       ? "Disabled" 
       : isPreApproved
-        ? "Pre-Approved"
+        ? (ideaSubmitted ? "Community Member" : "Community Free")
         : (entrepreneurStatus === "approved" ? (hasActiveMentor ? "Active Member" : "Approved - Awaiting Mentor") : "On Waiting List");
     const statusColor = isAccountDisabled 
       ? "text-red-600 dark:text-red-400" 
       : isPreApproved
-        ? "text-amber-600 dark:text-amber-400"
+        ? (ideaSubmitted ? "text-cyan-600 dark:text-cyan-400" : "text-cyan-600 dark:text-cyan-400")
         : (entrepreneurStatus === "approved" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400");
     const avatarColor = isAccountDisabled 
       ? "bg-red-500" 
       : isPreApproved
-        ? "bg-amber-500"
+        ? "bg-cyan-500"
         : (entrepreneurStatus === "approved" ? "bg-emerald-500" : "bg-amber-500");
 
     const entrepreneurNavTabs: NavTab[] = [
@@ -1673,31 +1675,36 @@ export default function DashboardEntrepreneur() {
                     </CardContent>
                   </Card>
                 )}
-                {isPreApproved && !hasPaid && (
-                  <Card className="mb-6 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+                {isPreApproved && !hasPaid && !ideaSubmitted && (
+                  <Card className="mb-6 border-cyan-300 bg-cyan-50 dark:bg-cyan-950/20 dark:border-cyan-800">
                     <CardContent className="pt-6 pb-6">
                       <div className="flex items-start gap-4">
-                        <ClipboardList className="h-6 w-6 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <Rocket className="h-6 w-6 text-cyan-500 flex-shrink-0 mt-0.5" />
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-300 mb-1">Pre-Approved - Payment Required</h3>
-                          <p className="text-amber-700 dark:text-amber-400 mb-4">Congratulations! Your application has been pre-approved. To activate your full membership and access all features including coaches, mentor assignment, and more, please complete your $49/month membership payment.</p>
-                          <Button 
-                            className="bg-amber-600 hover:bg-amber-700 text-white"
-                            onClick={handleSubscribe}
-                            disabled={isSubscribing}
-                            data-testid="button-subscribe"
+                          <h3 className="text-lg font-semibold text-cyan-800 dark:text-cyan-300 mb-1" data-testid="text-community-welcome">Welcome to the Community!</h3>
+                          <p className="text-cyan-700 dark:text-cyan-400 mb-4">You're part of the TouchConnectPro Community Free plan. To unlock your full dashboard, submit your business idea. Once submitted, you'll be able to explore coaches, build your business plan, and more.</p>
+                          <a 
+                            href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}
+                            data-testid="link-submit-idea"
                           >
-                            {isSubscribing ? (
-                              <>
-                                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                                Redirecting to payment...
-                              </>
-                            ) : (
-                              <>
-                                Subscribe $49/month
-                              </>
-                            )}
-                          </Button>
+                            <Button className="bg-cyan-600 hover:bg-cyan-700 text-white">
+                              <Rocket className="mr-2 h-4 w-4" />
+                              Submit Your Business Idea
+                            </Button>
+                          </a>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                {isPreApproved && !hasPaid && ideaSubmitted && (
+                  <Card className="mb-6 border-cyan-300 bg-cyan-50 dark:bg-cyan-950/20 dark:border-cyan-800">
+                    <CardContent className="pt-6 pb-6">
+                      <div className="flex items-start gap-4">
+                        <CheckCircle className="h-6 w-6 text-cyan-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-cyan-800 dark:text-cyan-300 mb-1">Idea Submitted - Explore Your Dashboard</h3>
+                          <p className="text-cyan-700 dark:text-cyan-400">Your idea has been submitted! You can now explore coaches, refine your business plan, and connect with the community. Upgrade to a paid plan for dedicated mentor access and investor connections.</p>
                         </div>
                       </div>
                     </CardContent>
@@ -1743,16 +1750,16 @@ export default function DashboardEntrepreneur() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <Card className={`border-l-4 ${isAccountDisabled ? "border-l-red-500" : isPreApproved ? "border-l-amber-500" : "border-l-cyan-500"} shadow-sm`}>
+                  <Card className={`border-l-4 ${isAccountDisabled ? "border-l-red-500" : isPreApproved ? "border-l-cyan-500" : "border-l-cyan-500"} shadow-sm`}>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Current Stage</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : (isPreApproved && !hasPaid) ? "text-amber-600" : (isPreApproved && hasPaid) ? "text-emerald-600" : ""}`}>
-                        {isAccountDisabled ? "Disabled Member" : (isPreApproved && !hasPaid) ? "Pre-Approved" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
+                      <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : (isPreApproved && !ideaSubmitted) ? "text-cyan-600" : (isPreApproved && ideaSubmitted && !hasPaid) ? "text-cyan-600" : (isPreApproved && hasPaid) ? "text-emerald-600" : ""}`}>
+                        {isAccountDisabled ? "Disabled Member" : (isPreApproved && !ideaSubmitted) ? "Getting Started" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Idea Submitted" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {isAccountDisabled ? "Contact admin to reactivate" : (isPreApproved && !hasPaid) ? "Awaiting membership payment" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
+                        {isAccountDisabled ? "Contact admin to reactivate" : (isPreApproved && !ideaSubmitted) ? "Submit your idea to unlock features" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Community Free - explore coaches & build plans" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
                       </p>
                     </CardContent>
                   </Card>
@@ -1777,6 +1784,36 @@ export default function DashboardEntrepreneur() {
                     </CardContent>
                   </Card>
                 </div>
+
+                {isPreApproved && focusScoreData && (
+                  <Card className="mb-6 border-l-4 border-l-purple-500" data-testid="card-focus-score">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5 text-purple-600" />
+                        Your Founder Focus Score
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="text-4xl font-bold text-purple-600">{focusScoreData.totalScore || focusScoreData.overallScore || "--"}</div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{focusScoreData.primaryBlocker ? `Primary Focus: ${focusScoreData.primaryBlocker}` : "Focus Score Complete"}</p>
+                          <p className="text-xs text-muted-foreground">Based on your diagnostic quiz responses</p>
+                        </div>
+                      </div>
+                      {focusScoreData.categories && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {Object.entries(focusScoreData.categories).map(([category, data]: [string, any]) => (
+                            <div key={category} className="bg-purple-50 dark:bg-purple-950/20 rounded-lg p-3 text-center">
+                              <p className="text-xs text-muted-foreground mb-1">{category}</p>
+                              <p className="text-lg font-bold text-purple-600">{data.score || data}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
 
                 {mentorNotes && mentorNotes.length > 0 && (() => {
                   // Sort notes oldest first
@@ -2006,7 +2043,7 @@ export default function DashboardEntrepreneur() {
                 <p className="text-muted-foreground mb-4">Browse our approved coaches who can help accelerate your startup journey with specialized expertise.</p>
 
                 {/* Areas of Expertise Filter */}
-                {shuffledCoaches.length > 0 && !isAccountDisabled && !isPreApproved && (() => {
+                {shuffledCoaches.length > 0 && !isAccountDisabled && !(isPreApproved && !ideaSubmitted) && (() => {
                   const allExpertiseAreas = Array.from(new Set(shuffledCoaches.flatMap(c => {
                     const areas = c.focus_areas || "";
                     return areas.split(",").map((a: string) => a.trim()).filter((a: string) => a);
@@ -2061,12 +2098,18 @@ export default function DashboardEntrepreneur() {
                       <p className="text-red-700 dark:text-red-400">Your account is currently disabled. Please contact the Admin team via the Messages tab to reactivate your membership and access the coaches list.</p>
                     </CardContent>
                   </Card>
-                ) : isPreApproved ? (
-                  <Card className="border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+                ) : (isPreApproved && !ideaSubmitted) ? (
+                  <Card className="border-cyan-300 bg-cyan-50 dark:bg-cyan-950/20 dark:border-cyan-800">
                     <CardContent className="pt-6 pb-6 text-center">
-                      <ClipboardList className="h-12 w-12 text-amber-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-300 mb-2">Payment Required</h3>
-                      <p className="text-amber-700 dark:text-amber-400">You have been pre-approved! To access the coaches list and other premium features, please complete your membership payment. Contact the Admin team via the Messages tab for payment instructions.</p>
+                      <Rocket className="h-12 w-12 text-cyan-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-cyan-800 dark:text-cyan-300 mb-2">Submit Your Idea to Unlock Coaches</h3>
+                      <p className="text-cyan-700 dark:text-cyan-400 mb-4">Complete your business idea submission to browse our coaches, get feedback, and access all community features.</p>
+                      <a href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}>
+                        <Button className="bg-cyan-600 hover:bg-cyan-700 text-white" data-testid="button-submit-idea-coaches">
+                          <Rocket className="mr-2 h-4 w-4" />
+                          Submit Your Business Idea
+                        </Button>
+                      </a>
                     </CardContent>
                   </Card>
                 ) : shuffledCoaches.length > 0 ? (
@@ -2785,7 +2828,21 @@ export default function DashboardEntrepreneur() {
             })()}
 
             {/* My Idea Tab */}
-            {activeTab === "idea" && (
+            {activeTab === "idea" && isPreApproved && !ideaSubmitted && (
+              <div className="text-center py-16">
+                <Lightbulb className="h-16 w-16 text-cyan-400 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Submit Your Idea First</h2>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">Complete your business idea submission to view and manage your idea details here.</p>
+                <a href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}>
+                  <Button className="bg-cyan-600 hover:bg-cyan-700 text-white" data-testid="button-submit-idea-tab">
+                    <Rocket className="mr-2 h-4 w-4" />
+                    Submit Your Business Idea
+                  </Button>
+                </a>
+              </div>
+            )}
+
+            {activeTab === "idea" && !(isPreApproved && !ideaSubmitted) && (
               <div>
                 <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Your Idea Submission</h1>
                 <p className="text-muted-foreground mb-8">Here's a complete summary of your business idea that was submitted to our mentors.</p>
@@ -2814,7 +2871,21 @@ export default function DashboardEntrepreneur() {
             )}
 
             {/* Business Plan Tab */}
-            {activeTab === "plan" && (
+            {activeTab === "plan" && isPreApproved && !ideaSubmitted && (
+              <div className="text-center py-16">
+                <Target className="h-16 w-16 text-cyan-400 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Submit Your Idea First</h2>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">Your business plan will be generated after you submit your idea. Start by telling us about your business.</p>
+                <a href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}>
+                  <Button className="bg-cyan-600 hover:bg-cyan-700 text-white" data-testid="button-submit-idea-plan-tab">
+                    <Rocket className="mr-2 h-4 w-4" />
+                    Submit Your Business Idea
+                  </Button>
+                </a>
+              </div>
+            )}
+
+            {activeTab === "plan" && !(isPreApproved && !ideaSubmitted) && (
               <div>
                 <div className="flex justify-between items-center mb-8">
                   <div>
@@ -3130,7 +3201,21 @@ export default function DashboardEntrepreneur() {
             )}
 
             {/* Profile Tab */}
-            {activeTab === "profile" && (
+            {activeTab === "profile" && isPreApproved && !ideaSubmitted && (
+              <div className="text-center py-16">
+                <User className="h-16 w-16 text-cyan-400 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Submit Your Idea First</h2>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">Your profile will become available after you submit your business idea.</p>
+                <a href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}>
+                  <Button className="bg-cyan-600 hover:bg-cyan-700 text-white" data-testid="button-submit-idea-profile-tab">
+                    <Rocket className="mr-2 h-4 w-4" />
+                    Submit Your Business Idea
+                  </Button>
+                </a>
+              </div>
+            )}
+
+            {activeTab === "profile" && !(isPreApproved && !ideaSubmitted) && (
               <div>
                 <div className="flex justify-between items-center mb-8">
                   <div>

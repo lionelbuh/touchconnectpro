@@ -101,10 +101,15 @@ const generateBusinessPlan = (formData: any) => {
 };
 
 export default function BecomeaEntrepreneur() {
-  const [showForm, setShowForm] = useState(false);
+  const urlParams = new URLSearchParams(window.location.search);
+  const prefillName = urlParams.get("name") || "";
+  const prefillEmail = urlParams.get("email") || "";
+  const isPreApprovedUser = !!(prefillName && prefillEmail);
+
+  const [showForm, setShowForm] = useState(isPreApprovedUser);
   const [currentStep, setCurrentStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
-  const [agreementAccepted, setAgreementAccepted] = useState(false);
+  const [agreementAccepted, setAgreementAccepted] = useState(isPreApprovedUser);
   const [aiReview, setAiReview] = useState<any>({});
   const [editedReview, setEditedReview] = useState<any>({});
   const [showingAiReview, setShowingAiReview] = useState(false);
@@ -127,8 +132,8 @@ export default function BecomeaEntrepreneur() {
 
   const [formData, setFormData] = useState({
     // Step 0: Basic Info
-    fullName: "",
-    email: "",
+    fullName: prefillName,
+    email: prefillEmail,
     linkedin: "",
     website: "",
     fullBio: "",
@@ -911,32 +916,38 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                       </p>
                       
                       {/* Entrepreneur Agreement Section */}
-                      <div className="mt-4">
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Entrepreneur Membership Agreement</h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                          Please review and accept the agreement below before submitting your application.
-                        </p>
-                        <div className="border rounded-lg bg-white dark:bg-slate-900 max-h-[30vh] overflow-y-auto mb-4">
-                          <div className="p-4">
-                            <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans leading-relaxed">
-                              {ENTREPRENEUR_CONTRACT}
-                            </pre>
+                      {isPreApprovedUser ? (
+                        <div className="mt-4 p-4 bg-cyan-50 dark:bg-cyan-950/20 border border-cyan-200 dark:border-cyan-800 rounded-lg">
+                          <p className="text-sm text-cyan-700 dark:text-cyan-400">You accepted the Community Free Membership Agreement when you created your account. No additional agreement is required for this submission.</p>
+                        </div>
+                      ) : (
+                        <div className="mt-4">
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Entrepreneur Membership Agreement</h3>
+                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                            Please review and accept the agreement below before submitting your application.
+                          </p>
+                          <div className="border rounded-lg bg-white dark:bg-slate-900 max-h-[30vh] overflow-y-auto mb-4">
+                            <div className="p-4">
+                              <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans leading-relaxed">
+                                {ENTREPRENEUR_CONTRACT}
+                              </pre>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                            <input 
+                              type="checkbox" 
+                              id="entrepreneur-agree-checkbox"
+                              checked={agreementAccepted}
+                              onChange={(e) => setAgreementAccepted(e.target.checked)}
+                              className="mt-1"
+                              data-testid="checkbox-entrepreneur-agree"
+                            />
+                            <label htmlFor="entrepreneur-agree-checkbox" className="text-sm text-slate-700 dark:text-slate-300">
+                              I have read and agree to the TouchConnectPro Entrepreneur Membership Agreement. I understand and accept all terms and conditions.
+                            </label>
                           </div>
                         </div>
-                        <div className="flex items-start gap-2 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                          <input 
-                            type="checkbox" 
-                            id="entrepreneur-agree-checkbox"
-                            checked={agreementAccepted}
-                            onChange={(e) => setAgreementAccepted(e.target.checked)}
-                            className="mt-1"
-                            data-testid="checkbox-entrepreneur-agree"
-                          />
-                          <label htmlFor="entrepreneur-agree-checkbox" className="text-sm text-slate-700 dark:text-slate-300">
-                            I have read and agree to the TouchConnectPro Entrepreneur Membership Agreement. I understand and accept all terms and conditions.
-                          </label>
-                        </div>
-                      </div>
+                      )}
 
                       <div className="flex gap-3">
                         <Button
@@ -972,6 +983,11 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                     </div>
 
                     <form className="space-y-6">
+                      {isPreApprovedUser && (
+                        <div className="mb-4 p-3 bg-cyan-50 dark:bg-cyan-950/20 border border-cyan-200 dark:border-cyan-800 rounded-lg">
+                          <p className="text-sm text-cyan-700 dark:text-cyan-400">You're submitting your business idea as a Community Free member. Your name and email are pre-filled from your account.</p>
+                        </div>
+                      )}
                       <div>
                         <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Full Name *</label>
                         <Input
@@ -980,7 +996,8 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                           value={formData.fullName}
                           onChange={handleInputChange}
                           placeholder="Your full name"
-                          className="w-full"
+                          className={`w-full ${isPreApprovedUser ? "bg-slate-100 dark:bg-slate-800 cursor-not-allowed" : ""}`}
+                          readOnly={isPreApprovedUser}
                           data-testid="input-entrepreneur-fullname"
                         />
                       </div>
@@ -993,7 +1010,8 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
                           value={formData.email}
                           onChange={handleInputChange}
                           placeholder="your@email.com"
-                          className="w-full"
+                          className={`w-full ${isPreApprovedUser ? "bg-slate-100 dark:bg-slate-800 cursor-not-allowed" : ""}`}
+                          readOnly={isPreApprovedUser}
                           data-testid="input-entrepreneur-email"
                         />
                       </div>
