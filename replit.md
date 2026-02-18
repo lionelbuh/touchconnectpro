@@ -96,6 +96,16 @@ The platform uses a component-based approach with a responsive, mobile-first des
     - `POST /api/trial/save-priorities` - Save weekly priorities
 -   **Login Routing**: Trial users (user_type "trial_entrepreneur") route to `/trial-dashboard` instead of `/dashboard-entrepreneur`
 
+### Community-Free Membership Flow
+-   **Signup via /founder-focus**: After completing Founder Focus Score quiz, users can sign up for Community-Free ($0) membership. Creates Supabase auth user + ideas row with status "pre-approved" and empty data (focusScore saved in data.focusScore). Welcome email sent via Resend.
+-   **Contract Acceptance**: Community Free Membership Agreement (version "2026-02-17 v1") must be accepted during signup. Saved to contract_acceptances table via POST /api/contract-acceptances with role "entrepreneur".
+-   **Pre-approved Dashboard Logic**: Uses `ideaSubmitted` boolean (checks if `formData.ideaName` or `entrepreneurData?.data?.ideaName` has content) to gate features:
+    - **Before idea submission**: Shows welcome banner with CTA to /become-entrepreneur, blocks coaches/idea/plan/profile tabs with "Submit Your Idea" prompts
+    - **After idea submission**: Unlocks all tabs, shows "Idea Submitted" status, coaches accessible
+-   **Focus Score Display**: Dashboard overview shows Founder Focus Score results card (categories, scores, primary blocker) from `entrepreneurData?.data?.focusScore`
+-   **Pre-filled Idea Form**: /become-entrepreneur accepts `?name=X&email=Y` query params to pre-fill and lock name/email fields for pre-approved users. Contract acceptance skipped (already accepted Community Free agreement).
+-   **Contract Text**: Defined in `client/src/lib/contracts.ts` as `COMMUNITY_FREE_CONTRACT` and `COMMUNITY_FREE_CONTRACT_VERSION`
+
 ### Insights Knowledge Hub
 -   **URL**: `/insights/` - Main hub page acting as a topical authority for SEO + AIO retrieval
 -   **Articles**: 5 SEO-optimized articles under `/insights/:slug`:
