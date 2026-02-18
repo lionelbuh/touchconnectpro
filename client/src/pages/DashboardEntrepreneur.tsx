@@ -4433,89 +4433,106 @@ export default function DashboardEntrepreneur() {
         document.body
       )}
 
-      {showUpgradeAgreement && (
-      <Dialog open={showUpgradeAgreement} onOpenChange={setShowUpgradeAgreement}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Rocket className="h-5 w-5 text-indigo-600" />
-              Upgrade to Founders Circle — $9.99/mo
-            </DialogTitle>
-            <DialogDescription>
-              Please review and accept the Entrepreneur Membership Agreement before proceeding to payment.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 mt-2">
-            <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
-              <h4 className="font-semibold text-indigo-900 dark:text-indigo-200 mb-2">Founders Circle includes:</h4>
-              <ul className="space-y-1 text-sm text-indigo-800 dark:text-indigo-300">
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Dedicated mentor assigned to your project</li>
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Structured feedback and personalized guidance</li>
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> AI-powered business planning tools</li>
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Access to expert coaches</li>
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Cancel anytime from your dashboard</li>
-              </ul>
-            </div>
-
-            <div className="border border-slate-200 dark:border-slate-700 rounded-lg">
+      {showUpgradeAgreement && createPortal(
+        <div
+          className="fixed inset-0 flex items-center justify-center"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999, backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowUpgradeAgreement(false); }}
+          data-testid="upgrade-modal-overlay"
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4 p-6"
+            style={{ position: 'relative', zIndex: 100000 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+                <Rocket className="h-5 w-5 text-indigo-600" />
+                Upgrade to Founders Circle — $9.99/mo
+              </h2>
               <button
-                type="button"
-                onClick={() => setShowUpgradeContractText(!showUpgradeContractText)}
-                className="w-full flex items-center justify-between p-3 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                data-testid="button-toggle-agreement-text"
-              >
-                <span className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Entrepreneur Membership Agreement
-                </span>
-                {showUpgradeContractText ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </button>
-              {showUpgradeContractText && (
-                <div className="px-4 pb-4 max-h-60 overflow-y-auto">
-                  <pre className="whitespace-pre-wrap text-xs text-slate-600 dark:text-slate-400 font-sans leading-relaxed">{ENTREPRENEUR_CONTRACT}</pre>
-                </div>
-              )}
-            </div>
-
-            <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <input
-                type="checkbox"
-                checked={agreedToUpgradeContract}
-                onChange={(e) => setAgreedToUpgradeContract(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                data-testid="checkbox-agree-upgrade-contract"
-              />
-              <span className="text-sm text-slate-700 dark:text-slate-300">
-                I have read and agree to the <strong>Entrepreneur Membership Agreement</strong>. I understand this constitutes my legal electronic signature.
-              </span>
-            </label>
-
-            <div className="flex gap-3 pt-2">
-              <Button
-                variant="outline"
                 onClick={() => setShowUpgradeAgreement(false)}
-                className="flex-1"
-                data-testid="button-cancel-upgrade"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                data-testid="button-close-upgrade-modal"
               >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSubscribe}
-                disabled={!agreedToUpgradeContract || isSubscribing}
-                className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
-                data-testid="button-proceed-to-payment"
-              >
-                {isSubscribing ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
-                ) : (
-                  <><CreditCard className="mr-2 h-4 w-4" /> Proceed to Payment</>
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+              Please review and accept the Entrepreneur Membership Agreement before proceeding to payment.
+            </p>
+
+            <div className="space-y-4">
+              <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
+                <h4 className="font-semibold text-indigo-900 dark:text-indigo-200 mb-2">Founders Circle includes:</h4>
+                <ul className="space-y-1 text-sm text-indigo-800 dark:text-indigo-300">
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Dedicated mentor assigned to your project</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Structured feedback and personalized guidance</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> AI-powered business planning tools</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Access to expert coaches</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Cancel anytime from your dashboard</li>
+                </ul>
+              </div>
+
+              <div className="border border-slate-200 dark:border-slate-700 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setShowUpgradeContractText(!showUpgradeContractText)}
+                  className="w-full flex items-center justify-between p-3 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                  data-testid="button-toggle-agreement-text"
+                >
+                  <span className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Entrepreneur Membership Agreement
+                  </span>
+                  {showUpgradeContractText ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </button>
+                {showUpgradeContractText && (
+                  <div className="px-4 pb-4 max-h-60 overflow-y-auto">
+                    <pre className="whitespace-pre-wrap text-xs text-slate-600 dark:text-slate-400 font-sans leading-relaxed">{ENTREPRENEUR_CONTRACT}</pre>
+                  </div>
                 )}
-              </Button>
+              </div>
+
+              <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={agreedToUpgradeContract}
+                  onChange={(e) => setAgreedToUpgradeContract(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  data-testid="checkbox-agree-upgrade-contract"
+                />
+                <span className="text-sm text-slate-700 dark:text-slate-300">
+                  I have read and agree to the <strong>Entrepreneur Membership Agreement</strong>. I understand this constitutes my legal electronic signature.
+                </span>
+              </label>
+
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowUpgradeAgreement(false)}
+                  className="flex-1"
+                  data-testid="button-cancel-upgrade"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSubscribe}
+                  disabled={!agreedToUpgradeContract || isSubscribing}
+                  className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                  data-testid="button-proceed-to-payment"
+                >
+                  {isSubscribing ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+                  ) : (
+                    <><CreditCard className="mr-2 h-4 w-4" /> Proceed to Payment</>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>,
+        document.body
       )}
     </div>
   );
