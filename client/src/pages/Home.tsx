@@ -448,7 +448,7 @@ export default function Home() {
              Access the founder network, clarity tools, and shared coaching opportunities. Designed for entrepreneurs who want guidance and connection, without personalized mentor follow-up.
            </p>
            <p className="text-slate-400 text-base max-w-3xl mx-auto mb-12">
-             For $9.99/month, get personalized guidance and support to move your idea forward. Work closely with a dedicated mentor, receive structured feedback, and get access to expert coaches when you need it. Connect deeper with the community, build momentum, and turn inspiration into action.
+             Our Founders Circle Plan gives you personalized guidance and support to move your idea forward. Work closely with a dedicated mentor, receive structured feedback, and get access to expert coaches when you need it. Connect more deeply with the community, build momentum, and turn inspiration into action.
            </p>
            
            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
