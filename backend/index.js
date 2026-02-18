@@ -1333,6 +1333,55 @@ app.post("/api/ideas", async (req, res) => {
         }
 
         console.log("[UPDATE SUCCESS] Application updated with id:", updatedData?.[0]?.id);
+
+        // Send confirmation email to user and notify admin for idea submission/resubmission
+        const emailIdeaNameUpdate = ideaName || formData?.ideaName || "their business idea";
+        try {
+          const resendData = await getResendClient();
+          if (resendData) {
+            const { client: resendClient, fromEmail } = resendData;
+            await resendClient.emails.send({
+              from: fromEmail,
+              to: email,
+              subject: "Idea Submission Received - TouchConnectPro",
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <h2 style="color: #0ea5e9;">Your Idea Has Been Submitted!</h2>
+                  <p>Hi ${fullName},</p>
+                  <p>Thank you for submitting your business idea${emailIdeaNameUpdate !== "their business idea" ? ` "<strong>${emailIdeaNameUpdate}</strong>"` : ""} to TouchConnectPro.</p>
+                  <p>Our team will review your submission and get back to you shortly. You'll receive an email once your application has been reviewed.</p>
+                  <p><a href="https://touchconnectpro.com/login" style="display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold;">Log In to Your Dashboard</a></p>
+                  <p style="color: #94a3b8; font-size: 12px;">Touch Equity Partners LLC</p>
+                </div>
+              `
+            });
+            console.log("[POST /api/ideas] Confirmation email sent to:", email);
+
+            await resendClient.emails.send({
+              from: fromEmail,
+              to: ADMIN_EMAIL,
+              subject: `Idea Submission: ${fullName} - ${emailIdeaNameUpdate}`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <h2 style="color: #0ea5e9;">New Idea Submission</h2>
+                  <p>An entrepreneur has submitted their business idea for review.</p>
+                  <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+                    <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">Name</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${fullName}</td></tr>
+                    <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">Email</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${email}</td></tr>
+                    <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">Idea</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${emailIdeaNameUpdate}</td></tr>
+                    <tr><td style="padding: 8px; font-weight: bold;">Previous Status</td><td style="padding: 8px;">${existingApp.status}</td></tr>
+                  </table>
+                  <p><a href="https://touchconnectpro.com/admin-dashboard" style="display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold;">Review in Admin Dashboard</a></p>
+                  <p style="color: #94a3b8; font-size: 12px;">Touch Equity Partners LLC</p>
+                </div>
+              `
+            });
+            console.log("[POST /api/ideas] Admin notification sent for idea submission from:", email);
+          }
+        } catch (emailErr) {
+          console.error("[POST /api/ideas] Email error (non-blocking):", emailErr);
+        }
+
         return res.json({ success: true, id: updatedData?.[0]?.id, resubmitted: true });
       } else {
         // If already submitted/pending/approved, don't allow duplicate

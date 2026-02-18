@@ -853,8 +853,7 @@ export async function registerRoutes(
               data: mergedData,
               business_plan: businessPlan || {},
               linkedin_profile: linkedinWebsite || "",
-              status: "pre-approved",
-              resubmitted_at: new Date().toISOString()
+              status: "pre-approved"
             } as any)
             .eq("id", existing.id)
             .select() as any);
