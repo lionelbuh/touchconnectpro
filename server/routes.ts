@@ -2390,6 +2390,255 @@ export async function registerRoutes(
   });
 
   // =====================================================
+  // ASK A MENTOR - Community Questions & Answers
+  // =====================================================
+
+  app.post("/api/mentor-questions", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { entrepreneurEmail, entrepreneurName, question, ideaId } = req.body;
+      console.log("[POST /api/mentor-questions] Creating question from:", entrepreneurEmail);
+
+      const { data, error } = await (client
+        .from("mentor_questions")
+        .insert({
+          entrepreneur_email: entrepreneurEmail,
+          entrepreneur_name: entrepreneurName,
+          question,
+          idea_id: ideaId || null,
+          status: "pending",
+          created_at: new Date().toISOString(),
+          admin_reply: null,
+          replied_at: null,
+          ai_draft: null,
+          is_read_by_admin: false
+        })
+        .select() as any);
+
+      if (error) {
+        console.error("[POST /api/mentor-questions] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      console.log("[POST /api/mentor-questions] Question created successfully");
+      return res.json({ success: true, question: data?.[0] });
+    } catch (error: any) {
+      console.error("[POST /api/mentor-questions] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/mentor-questions/entrepreneur/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { email } = req.params;
+      const decodedEmail = decodeURIComponent(email);
+      console.log("[GET /api/mentor-questions/entrepreneur] Fetching for:", decodedEmail);
+
+      const { data, error } = await (client
+        .from("mentor_questions")
+        .select("*")
+        .eq("entrepreneur_email", decodedEmail)
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[GET /api/mentor-questions/entrepreneur] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.json({ success: true, questions: data || [] });
+    } catch (error: any) {
+      console.error("[GET /api/mentor-questions/entrepreneur] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/mentor-questions", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      console.log("[GET /api/mentor-questions] Fetching all questions for admin");
+
+      const { data: questions, error } = await (client
+        .from("mentor_questions")
+        .select("*")
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[GET /api/mentor-questions] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      const enrichedQuestions = [];
+      for (const q of (questions || [])) {
+        let ideaData = null;
+        if (q.idea_id) {
+          const { data: idea } = await (client
+            .from("ideas")
+            .select("*")
+            .eq("id", q.idea_id)
+            .single() as any);
+          ideaData = idea;
+        } else if (q.entrepreneur_email) {
+          const { data: idea } = await (client
+            .from("ideas")
+            .select("*")
+            .eq("email", q.entrepreneur_email)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single() as any);
+          ideaData = idea;
+        }
+        enrichedQuestions.push({ ...q, idea: ideaData });
+      }
+
+      return res.json({ success: true, questions: enrichedQuestions });
+    } catch (error: any) {
+      console.error("[GET /api/mentor-questions] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/mentor-questions/:id/reply", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      const { reply } = req.body;
+      console.log("[POST /api/mentor-questions/:id/reply] Replying to question:", id);
+
+      const { data, error } = await (client
+        .from("mentor_questions")
+        .update({
+          admin_reply: reply,
+          replied_at: new Date().toISOString(),
+          status: "answered"
+        })
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        console.error("[POST /api/mentor-questions/:id/reply] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      console.log("[POST /api/mentor-questions/:id/reply] Reply saved successfully");
+      return res.json({ success: true, question: data?.[0] });
+    } catch (error: any) {
+      console.error("[POST /api/mentor-questions/:id/reply] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/mentor-questions/:id/generate-draft", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      console.log("[POST /api/mentor-questions/:id/generate-draft] Generating AI draft for question:", id);
+
+      const { data: questionData, error: qError } = await (client
+        .from("mentor_questions")
+        .select("*")
+        .eq("id", id)
+        .single() as any);
+
+      if (qError || !questionData) {
+        console.error("[POST /api/mentor-questions/:id/generate-draft] Question not found:", qError);
+        return res.status(404).json({ error: "Question not found" });
+      }
+
+      let ideaData = null;
+      if (questionData.idea_id) {
+        const { data: idea } = await (client
+          .from("ideas")
+          .select("*")
+          .eq("id", questionData.idea_id)
+          .single() as any);
+        ideaData = idea;
+      } else if (questionData.entrepreneur_email) {
+        const { data: idea } = await (client
+          .from("ideas")
+          .select("*")
+          .eq("email", questionData.entrepreneur_email)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single() as any);
+        ideaData = idea;
+      }
+
+      const draftResult = await generateMentorDraftResponse({
+        entrepreneurName: questionData.entrepreneur_name,
+        threadSubject: "Ask a Mentor Question",
+        ideaProposal: ideaData?.answers || ideaData || undefined,
+        businessPlan: ideaData?.business_plan || undefined,
+        entrepreneurQuestion: questionData.question,
+        mentorName: "TouchConnectPro Mentor"
+      });
+
+      const { error: updateError } = await (client
+        .from("mentor_questions")
+        .update({ ai_draft: draftResult.draft })
+        .eq("id", id) as any);
+
+      if (updateError) {
+        console.error("[POST /api/mentor-questions/:id/generate-draft] Update error:", updateError);
+      }
+
+      console.log("[POST /api/mentor-questions/:id/generate-draft] AI draft generated successfully");
+      return res.json({ success: true, draft: draftResult.draft });
+    } catch (error: any) {
+      console.error("[POST /api/mentor-questions/:id/generate-draft] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/mentor-questions/:id/read", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      console.log("[PATCH /api/mentor-questions/:id/read] Marking as read:", id);
+
+      const { data, error } = await (client
+        .from("mentor_questions")
+        .update({ is_read_by_admin: true })
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        console.error("[PATCH /api/mentor-questions/:id/read] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.json({ success: true, question: data?.[0] });
+    } catch (error: any) {
+      console.error("[PATCH /api/mentor-questions/:id/read] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // =====================================================
   // MESSAGE THREADS - Threaded Conversations (Entrepreneur <-> Mentor)
   // =====================================================
 
