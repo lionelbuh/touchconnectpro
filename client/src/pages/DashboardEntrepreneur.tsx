@@ -1334,9 +1334,16 @@ export default function DashboardEntrepreneur() {
                 <li>✓ Cancel anytime from your dashboard</li>
               </ul>
             </div>
+            <div id="upgrade-contract-section" style="border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px;">
+              <button id="upgrade-toggle-contract" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px;font-size:14px;font-weight:500;color:#475569;background:none;border:none;cursor:pointer;">
+                <span>📄 Entrepreneur Membership Agreement</span>
+                <span id="upgrade-contract-arrow">▼</span>
+              </button>
+              <div id="upgrade-contract-text" style="display:none;padding:0 16px 16px;max-height:240px;overflow-y:auto;"></div>
+            </div>
             <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px;">
               <input type="checkbox" id="upgrade-agree-checkbox" style="margin-top:2px;" />
-              <span style="font-size:14px;color:#475569;">I have read and agree to the <strong>Entrepreneur Membership Agreement</strong>. I understand this constitutes my legal electronic signature.</span>
+              <span style="font-size:14px;color:#475569;">I have read and agree to the <a id="upgrade-agreement-link" href="#" style="color:#4f46e5;text-decoration:underline;font-weight:600;">Entrepreneur Membership Agreement</a>. I understand this constitutes my legal electronic signature.</span>
             </label>
             <div style="display:flex;gap:12px;">
               <button id="upgrade-cancel-btn" style="flex:1;padding:10px;border:1px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;font-size:14px;">Cancel</button>
@@ -1359,6 +1366,30 @@ export default function DashboardEntrepreneur() {
         
         if (closeBtn) closeBtn.addEventListener('click', () => { overlay.remove(); setShowUpgradeAgreement(false); });
         if (cancelBtn) cancelBtn.addEventListener('click', () => { overlay.remove(); setShowUpgradeAgreement(false); });
+        
+        const contractTextDiv = document.getElementById('upgrade-contract-text');
+        const contractArrow = document.getElementById('upgrade-contract-arrow');
+        const toggleContractBtn = document.getElementById('upgrade-toggle-contract');
+        const agreementLink = document.getElementById('upgrade-agreement-link');
+        
+        if (contractTextDiv) {
+          const pre = document.createElement('pre');
+          pre.style.cssText = 'white-space:pre-wrap;font-size:12px;color:#64748b;font-family:inherit;line-height:1.6;margin:0;';
+          pre.textContent = ENTREPRENEUR_CONTRACT;
+          contractTextDiv.appendChild(pre);
+        }
+        
+        const toggleContract = () => {
+          if (contractTextDiv) {
+            const isVisible = contractTextDiv.style.display !== 'none';
+            contractTextDiv.style.display = isVisible ? 'none' : 'block';
+            if (contractArrow) contractArrow.textContent = isVisible ? '▼' : '▲';
+          }
+        };
+        
+        if (toggleContractBtn) toggleContractBtn.addEventListener('click', toggleContract);
+        if (agreementLink) agreementLink.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleContract(); });
+        
         if (agreeCheckbox && proceedBtn) {
           agreeCheckbox.addEventListener('change', () => {
             (proceedBtn as HTMLButtonElement).disabled = !agreeCheckbox.checked;
