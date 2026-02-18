@@ -285,6 +285,7 @@ export default function AdminDashboard() {
   const [activeMembersSubTab, setActiveMembersSubTab] = useState<"portfolio" | "messaging" | "management">("portfolio");
   const [activeApprovalsSubTab, setActiveApprovalsSubTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors">("entrepreneurs");
   const [activeMembersCategoryTab, setActiveMembersCategoryTab] = useState<"entrepreneurs" | "mentors" | "coaches" | "investors" | "disabled" | "coming-soon" | "cancellations">("entrepreneurs");
+  const [entrepreneurTierFilter, setEntrepreneurTierFilter] = useState<"all" | "community" | "paid">("all");
   const [mentorApplications, setMentorApplications] = useState<MentorApplication[]>([]);
   const [coachApplications, setCoachApplications] = useState<CoachApplication[]>([]);
   const [investorApplications, setInvestorApplications] = useState<InvestorApplication[]>([]);
@@ -1541,12 +1542,12 @@ export default function AdminDashboard() {
         const updated = [...entrepreneurApplications];
         updated[index].status = "pre-approved" as any;
         setEntrepreneurApplications(updated);
-        toast.success(`${entrepreneur.fullName} has been pre-approved. Awaiting payment confirmation.`);
-        console.log("Entrepreneur pre-approved:", data);
+        toast.success(`${entrepreneur.fullName} has been added as a Community Member.`);
+        console.log("Entrepreneur added as community member:", data);
       }
     } catch (err) {
-      console.error("Error pre-approving entrepreneur:", err);
-      toast.error("Failed to pre-approve entrepreneur");
+      console.error("Error adding community member:", err);
+      toast.error("Failed to add as community member");
     }
   };
 
@@ -1561,7 +1562,7 @@ export default function AdminDashboard() {
       });
       
       if (response.ok) {
-        toast.success(`${name} has been reverted to Pre-Approved status.`);
+        toast.success(`${name} has been reverted to Community Member status.`);
         // Reload the applications
         if (type === "entrepreneur") {
           const res = await fetch(`${API_BASE_URL}/api/ideas`);
@@ -1609,7 +1610,7 @@ export default function AdminDashboard() {
         toast.error("Failed to revert status");
       }
     } catch (err) {
-      console.error("Error reverting to pre-approved:", err);
+      console.error("Error reverting to community member:", err);
       toast.error("Error reverting status");
     }
   };
@@ -1793,7 +1794,7 @@ export default function AdminDashboard() {
   };
 
   const pendingEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "pending" || app.status === "submitted");
-  const preApprovedEntrepreneurApplications = entrepreneurApplications.filter(app => app.status === "pre-approved");
+  const communityMemberApplications = entrepreneurApplications.filter(app => app.status === "pre-approved");
   const pendingMentorApplications = mentorApplications.filter(app => app.status === "pending");
   const pendingCoachApplications = coachApplications.filter(app => app.status === "pending");
   const pendingInvestorApplications = investorApplications.filter(app => app.status === "pending");
@@ -2325,15 +2326,15 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* Pre-Approved Entrepreneurs - Awaiting Payment */}
-              {preApprovedEntrepreneurApplications.length > 0 && (
+              {/* Community Members - Free Tier */}
+              {communityMemberApplications.length > 0 && (
                 <div className="mt-8">
                   <h2 className="text-2xl font-display font-bold text-amber-700 dark:text-amber-400 mb-4">
-                    Pre-Approved Entrepreneurs ({preApprovedEntrepreneurApplications.length})
+                    Community Members ({communityMemberApplications.length})
                   </h2>
-                  <p className="text-muted-foreground mb-4">These entrepreneurs have been pre-approved and are awaiting payment confirmation.</p>
+                  <p className="text-muted-foreground mb-4">These entrepreneurs have joined as Community Members (free tier).</p>
                   <div className="space-y-4">
-                    {preApprovedEntrepreneurApplications.map((app, idx) => {
+                    {communityMemberApplications.map((app, idx) => {
                       const actualIdx = entrepreneurApplications.findIndex(a => a === app);
                       return (
                         <Card key={actualIdx} className="border-l-4 border-l-amber-500">
@@ -2343,7 +2344,7 @@ export default function AdminDashboard() {
                                 <CardTitle>{app.fullName}</CardTitle>
                                 <p className="text-sm text-muted-foreground mt-2">{app.email}</p>
                               </div>
-                              <Badge className="bg-amber-500">Pre-Approved</Badge>
+                              <Badge className="bg-amber-500">Community Member</Badge>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
@@ -2361,11 +2362,11 @@ export default function AdminDashboard() {
                                 <p className="text-slate-900 dark:text-white truncate">{app.linkedin || "—"}</p>
                               </div>
                               <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Pre-Approved On</p>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Joined On</p>
                                 <p className="text-slate-900 dark:text-white text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
                               </div>
                             </div>
-                            {/* AI Meeting Questions Section for Pre-Approved */}
+                            {/* AI Meeting Questions Section for Community Members */}
                             <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
                               <div className="flex items-center justify-between mb-2">
                                 <Button 
@@ -3173,16 +3174,53 @@ export default function AdminDashboard() {
               {/* Entrepreneurs - Full Details */}
               {activeMembersCategoryTab === "entrepreneurs" && (
                 <div>
-                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">Approved & Pre-Approved Entrepreneurs</h2>
-                  {entrepreneurApplications.filter(app => app.status === "approved" || app.status === "pre-approved").length === 0 ? (
+                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-4">All Entrepreneurs</h2>
+                  <div className="flex gap-2 mb-4 flex-wrap">
+                    <Button
+                      variant={entrepreneurTierFilter === "all" ? "default" : "outline"}
+                      onClick={() => setEntrepreneurTierFilter("all")}
+                      size="sm"
+                      className={entrepreneurTierFilter === "all" ? "bg-slate-700 hover:bg-slate-800" : ""}
+                      data-testid="button-tier-filter-all"
+                    >
+                      All ({entrepreneurApplications.filter(app => app.status === "approved" || app.status === "pre-approved").length})
+                    </Button>
+                    <Button
+                      variant={entrepreneurTierFilter === "community" ? "default" : "outline"}
+                      onClick={() => setEntrepreneurTierFilter("community")}
+                      size="sm"
+                      className={entrepreneurTierFilter === "community" ? "bg-amber-500 hover:bg-amber-600" : "text-amber-600 border-amber-300"}
+                      data-testid="button-tier-filter-community"
+                    >
+                      Community Members ({entrepreneurApplications.filter(app => app.status === "pre-approved").length})
+                    </Button>
+                    <Button
+                      variant={entrepreneurTierFilter === "paid" ? "default" : "outline"}
+                      onClick={() => setEntrepreneurTierFilter("paid")}
+                      size="sm"
+                      className={entrepreneurTierFilter === "paid" ? "bg-emerald-600 hover:bg-emerald-700" : "text-emerald-600 border-emerald-300"}
+                      data-testid="button-tier-filter-paid"
+                    >
+                      Founders & Capital Circle ({entrepreneurApplications.filter(app => app.status === "approved").length})
+                    </Button>
+                  </div>
+                  {entrepreneurApplications.filter(app => {
+                    if (entrepreneurTierFilter === "community") return app.status === "pre-approved";
+                    if (entrepreneurTierFilter === "paid") return app.status === "approved";
+                    return app.status === "approved" || app.status === "pre-approved";
+                  }).length === 0 ? (
                     <Card>
                       <CardContent className="pt-12 pb-12 text-center">
-                        <p className="text-muted-foreground">No approved or pre-approved entrepreneur applications</p>
+                        <p className="text-muted-foreground">No entrepreneur members found</p>
                       </CardContent>
                     </Card>
                   ) : (
                     <div className="space-y-6">
-                      {filterAndSort(entrepreneurApplications.filter(app => app.status === "approved" || app.status === "pre-approved"), "fullName").map((app, idx) => (
+                      {filterAndSort(entrepreneurApplications.filter(app => {
+                        if (entrepreneurTierFilter === "community") return app.status === "pre-approved";
+                        if (entrepreneurTierFilter === "paid") return app.status === "approved";
+                        return app.status === "approved" || app.status === "pre-approved";
+                      }), "fullName").map((app, idx) => (
                         <Card key={idx} className={`border-l-4 ${app.status === "pre-approved" ? "border-l-amber-500" : "border-l-emerald-500"}`}>
                           <CardHeader>
                             <div className="flex justify-between items-start">
@@ -3203,7 +3241,7 @@ export default function AdminDashboard() {
                               </div>
                               <div className="flex gap-2">
                                 {app.status === "pre-approved" ? (
-                                  <Badge className="bg-amber-500">Pre-Approved</Badge>
+                                  <Badge className="bg-amber-500">Community Member</Badge>
                                 ) : (
                                   <Badge className="bg-emerald-600">Approved</Badge>
                                 )}
@@ -4425,7 +4463,7 @@ export default function AdminDashboard() {
                     if (email === "system@touchconnectpro.com") return "System";
                     const entrepreneur = entrepreneurApplications.find(e => e.email === email);
                     if (entrepreneur) {
-                      if (entrepreneur.status === "pre-approved") return "Pre-Approved";
+                      if (entrepreneur.status === "pre-approved") return "Community Member";
                       return "Entrepreneur";
                     }
                     if (mentorApplications.find(m => m.email === email)) return "Mentor";
@@ -4437,7 +4475,7 @@ export default function AdminDashboard() {
                   const getBadgeColor = (type: string): string => {
                     switch(type) {
                       case "System": return "bg-cyan-500";
-                      case "Pre-Approved": return "bg-amber-500";
+                      case "Community Member": return "bg-amber-500";
                       case "Entrepreneur": return "bg-emerald-500";
                       case "Mentor": return "bg-blue-500";
                       case "Coach": return "bg-purple-500";
@@ -4565,29 +4603,29 @@ export default function AdminDashboard() {
                   {/* Entrepreneurs - show only when selected */}
                   {activeMembersCategoryTab === "entrepreneurs" && (
                   <div>
-                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 Approved & Pre-Approved Entrepreneurs</h4>
+                    <h4 className="text-md font-semibold text-slate-900 dark:text-white mb-3">👨‍💼 All Entrepreneurs</h4>
                     <div className="space-y-3">
                       {filterAndSort(entrepreneurApplications.filter(app => app.status === "approved" || app.status === "pre-approved"), "fullName").length === 0 ? (
                         <Card>
                           <CardContent className="pt-6 pb-6 text-center text-muted-foreground">
-                            No approved or pre-approved entrepreneurs to message
+                            No entrepreneurs to message
                           </CardContent>
                         </Card>
                       ) : (
                         filterAndSort(entrepreneurApplications.filter(app => app.status === "approved" || app.status === "pre-approved"), "fullName").map((entrepreneur, idx) => {
                           const unreadReplies = messageHistory.filter((m: any) => m.from_email === entrepreneur.email && (m.to_email === "admin@touchconnectpro.com" || m.to_name === "Admin" || m.to_email?.includes("+admin")) && !m.is_read).length;
                           const hasUnreadReplies = unreadReplies > 0;
-                          const isPreApproved = entrepreneur.status === "pre-approved";
+                          const isCommunityMember = entrepreneur.status === "pre-approved";
                           return (
-                          <Card key={`msg-${entrepreneur.id}`} className={`${hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""} ${isPreApproved && !hasUnreadReplies ? "border-l-4 border-l-amber-400" : ""}`}>
+                          <Card key={`msg-${entrepreneur.id}`} className={`${hasUnreadReplies ? "border-l-4 border-l-amber-500" : ""} ${isCommunityMember && !hasUnreadReplies ? "border-l-4 border-l-amber-400" : ""}`}>
                             <CardContent className="pt-6">
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-3">
                                   <div>
                                     <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                                       {entrepreneur.fullName}
-                                      {isPreApproved && (
-                                        <Badge className="bg-amber-500 text-xs">Pre-Approved</Badge>
+                                      {isCommunityMember && (
+                                        <Badge className="bg-amber-500 text-xs">Community Member</Badge>
                                       )}
                                       {hasUnreadReplies && (
                                         <span className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 text-xs px-2 py-0.5 rounded-full animate-pulse">
@@ -4938,7 +4976,7 @@ export default function AdminDashboard() {
                                   </span>
                                 </div>
                                 <div className="flex gap-2 flex-wrap">
-                                  <Button variant="outline" onClick={() => handleRevertToPreApproved("entrepreneur", entrepreneur.id, entrepreneur.fullName)} data-testid={`button-revert-entrepreneur-${idx}`} size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50">Revert to Pre-Approved</Button>
+                                  <Button variant="outline" onClick={() => handleRevertToPreApproved("entrepreneur", entrepreneur.id, entrepreneur.fullName)} data-testid={`button-revert-entrepreneur-${idx}`} size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50">Revert to Community Member</Button>
                                   <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("entrepreneur", entrepreneur.id)} data-testid={`button-toggle-entrepreneur-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
                                   <Button variant="outline" onClick={() => handleTerminateMember("entrepreneur", entrepreneur.id, entrepreneur.fullName)} data-testid={`button-terminate-entrepreneur-${idx}`} size="sm" className="text-red-700 border-red-300 hover:bg-red-50">Terminate</Button>
                                 </div>
@@ -4977,7 +5015,7 @@ export default function AdminDashboard() {
                                   </span>
                                 </div>
                                 <div className="flex gap-2 flex-wrap">
-                                  <Button variant="outline" onClick={() => handleRevertToPreApproved("mentor", mentor.id, mentor.fullName)} data-testid={`button-revert-mentor-${idx}`} size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50">Revert to Pre-Approved</Button>
+                                  <Button variant="outline" onClick={() => handleRevertToPreApproved("mentor", mentor.id, mentor.fullName)} data-testid={`button-revert-mentor-${idx}`} size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50">Revert to Community Member</Button>
                                   <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("mentor", mentor.id)} data-testid={`button-toggle-mentor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
                                   <Button variant="outline" onClick={() => handleTerminateMember("mentor", mentor.id, mentor.fullName)} data-testid={`button-terminate-mentor-${idx}`} size="sm" className="text-red-700 border-red-300 hover:bg-red-50">Terminate</Button>
                                 </div>
@@ -5016,7 +5054,7 @@ export default function AdminDashboard() {
                                   </span>
                                 </div>
                                 <div className="flex gap-2 flex-wrap">
-                                  <Button variant="outline" onClick={() => handleRevertToPreApproved("coach", coach.id, coach.fullName)} data-testid={`button-revert-coach-${idx}`} size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50">Revert to Pre-Approved</Button>
+                                  <Button variant="outline" onClick={() => handleRevertToPreApproved("coach", coach.id, coach.fullName)} data-testid={`button-revert-coach-${idx}`} size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50">Revert to Community Member</Button>
                                   <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("coach", coach.id)} data-testid={`button-toggle-coach-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
                                   <Button variant="outline" onClick={() => handleTerminateMember("coach", coach.id, coach.fullName)} data-testid={`button-terminate-coach-${idx}`} size="sm" className="text-red-700 border-red-300 hover:bg-red-50">Terminate</Button>
                                 </div>
@@ -5055,7 +5093,7 @@ export default function AdminDashboard() {
                                   </span>
                                 </div>
                                 <div className="flex gap-2 flex-wrap">
-                                  <Button variant="outline" onClick={() => handleRevertToPreApproved("investor", investor.id, investor.fullName)} data-testid={`button-revert-investor-${idx}`} size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50">Revert to Pre-Approved</Button>
+                                  <Button variant="outline" onClick={() => handleRevertToPreApproved("investor", investor.id, investor.fullName)} data-testid={`button-revert-investor-${idx}`} size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50">Revert to Community Member</Button>
                                   <Button variant={isDisabled ? "default" : "destructive"} onClick={() => handleToggleProfessionalStatus("investor", investor.id)} data-testid={`button-toggle-investor-${idx}`} size="sm">{isDisabled ? "Enable" : "Disable"}</Button>
                                   <Button variant="outline" onClick={() => handleTerminateMember("investor", investor.id, investor.fullName)} data-testid={`button-terminate-investor-${idx}`} size="sm" className="text-red-700 border-red-300 hover:bg-red-50">Terminate</Button>
                                 </div>
