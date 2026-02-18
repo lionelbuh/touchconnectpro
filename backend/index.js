@@ -9422,6 +9422,32 @@ app.post("/api/community/signup", async (req, res) => {
           `
         });
         console.log("[COMMUNITY SIGNUP] Welcome email sent to:", normalizedEmail);
+
+        // Notify admin of new free registration
+        try {
+          await resendClient.emails.send({
+            from: fromEmail,
+            to: ADMIN_EMAIL,
+            subject: `New Community-Free Signup: ${name}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #0ea5e9;">New Community-Free Registration</h2>
+                <p>A new entrepreneur has registered for a free Community account.</p>
+                <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+                  <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">Name</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${name}</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">Email</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${normalizedEmail}</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">Focus Score</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${quizResult ? (quizResult.totalScore || 'Completed') : 'Not taken'}</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold;">Membership</td><td style="padding: 8px;">Community-Free</td></tr>
+                </table>
+                <p><a href="https://touchconnectpro.com/admin-dashboard" style="display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold;">View in Admin Dashboard</a></p>
+                <p style="color: #94a3b8; font-size: 12px;">Touch Equity Partners LLC</p>
+              </div>
+            `
+          });
+          console.log("[COMMUNITY SIGNUP] Admin notification sent to:", ADMIN_EMAIL);
+        } catch (adminEmailErr) {
+          console.error("[COMMUNITY SIGNUP] Admin email error (non-blocking):", adminEmailErr);
+        }
       }
     } catch (emailErr) {
       console.error("[COMMUNITY SIGNUP] Email send error (non-blocking):", emailErr);
