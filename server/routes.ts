@@ -2494,13 +2494,13 @@ export async function registerRoutes(
           const { data: idea } = await (client
             .from("ideas")
             .select("*")
-            .eq("email", q.entrepreneur_email)
+            .eq("entrepreneur_email", q.entrepreneur_email)
             .order("created_at", { ascending: false })
             .limit(1)
             .single() as any);
           ideaData = idea;
         }
-        enrichedQuestions.push({ ...q, idea: ideaData });
+        enrichedQuestions.push({ ...q, ideaData });
       }
 
       return res.json({ success: true, questions: enrichedQuestions });
@@ -2577,7 +2577,7 @@ export async function registerRoutes(
         const { data: idea } = await (client
           .from("ideas")
           .select("*")
-          .eq("email", questionData.entrepreneur_email)
+          .eq("entrepreneur_email", questionData.entrepreneur_email)
           .order("created_at", { ascending: false })
           .limit(1)
           .single() as any);
@@ -2634,6 +2634,57 @@ export async function registerRoutes(
       return res.json({ success: true, question: data?.[0] });
     } catch (error: any) {
       console.error("[PATCH /api/mentor-questions/:id/read] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Create mentor_questions table if it doesn't exist
+  app.post("/api/admin/create-mentor-questions-table", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const createTableSQL = `
+CREATE TABLE IF NOT EXISTS public.mentor_questions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  entrepreneur_email TEXT NOT NULL,
+  entrepreneur_name TEXT,
+  question TEXT NOT NULL,
+  idea_id TEXT,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  admin_reply TEXT,
+  replied_at TIMESTAMPTZ,
+  ai_draft TEXT,
+  is_read_by_admin BOOLEAN DEFAULT FALSE
+);
+
+CREATE INDEX IF NOT EXISTS idx_mentor_questions_email ON public.mentor_questions(entrepreneur_email);
+CREATE INDEX IF NOT EXISTS idx_mentor_questions_status ON public.mentor_questions(status);
+
+ALTER TABLE public.mentor_questions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow service role full access on mentor_questions" ON public.mentor_questions
+  FOR ALL USING (true) WITH CHECK (true);
+`;
+
+      const { error } = await (client.rpc("exec_sql", { sql: createTableSQL }) as any);
+      
+      if (error) {
+        console.log("[CREATE MENTOR_QUESTIONS TABLE] RPC failed, returning SQL for manual creation");
+        return res.json({
+          success: false,
+          message: "Please run this SQL in Supabase SQL Editor to create the mentor_questions table:",
+          sql: createTableSQL
+        });
+      }
+
+      console.log("[CREATE MENTOR_QUESTIONS TABLE] Table created successfully");
+      return res.json({ success: true, message: "mentor_questions table created" });
+    } catch (error: any) {
+      console.error("[CREATE MENTOR_QUESTIONS TABLE] Error:", error);
       return res.status(500).json({ error: error.message });
     }
   });

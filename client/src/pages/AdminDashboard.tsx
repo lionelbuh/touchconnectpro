@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, CheckCircle, X, XCircle, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus, Pencil, Clock } from "lucide-react";
+import { Check, CheckCircle, X, XCircle, MessageSquare, Users, Settings, Trash2, Power, Mail, ShieldAlert, ClipboardCheck, Calendar, ExternalLink, Star, FileText, Paperclip, Upload, Send, Download, Plus, Loader2, Video, RefreshCw, DollarSign, LogOut, Shield, UserPlus, Pencil, Clock, HelpCircle, Sparkles } from "lucide-react";
 import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
@@ -274,7 +274,7 @@ function ContractsSection() {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings" | "earnings" | "contracts" | "trials" | "admins">("approvals");
+  const [activeTab, setActiveTab] = useState<"approvals" | "members" | "meetings" | "earnings" | "contracts" | "trials" | "admins" | "mentor-questions">("approvals");
   const [, setLocation] = useLocation();
   const [adminUsers, setAdminUsers] = useState<{id: string; email: string; name: string; created_at: string}[]>([]);
   const [newAdminEmail, setNewAdminEmail] = useState("");
@@ -364,6 +364,10 @@ export default function AdminDashboard() {
   const [loadingTrialUsers, setLoadingTrialUsers] = useState(false);
   const [assigningMentor, setAssigningMentor] = useState<string | null>(null);
   const [trialMentorSelection, setTrialMentorSelection] = useState<{[trialId: string]: string}>({});
+  const [mentorQuestions, setMentorQuestions] = useState<any[]>([]);
+  const [mentorQuestionReply, setMentorQuestionReply] = useState<{[key: string]: string}>({});
+  const [generatingDraft, setGeneratingDraft] = useState<{[key: string]: boolean}>({});
+  const [sendingReply, setSendingReply] = useState<{[key: string]: boolean}>({});
 
   const handleResendInvite = async (userId: string, userType: "entrepreneur" | "mentor" | "coach" | "investor", email: string) => {
     setResendingInvite(userId);
@@ -666,6 +670,17 @@ export default function AdminDashboard() {
         }
       } catch (err) {
         console.error("Error fetching trial users:", err);
+      }
+
+      // Load mentor questions
+      try {
+        const mqResponse = await fetch(`${API_BASE_URL}/api/mentor-questions`);
+        if (mqResponse.ok) {
+          const mqData = await mqResponse.json();
+          setMentorQuestions(mqData.questions || []);
+        }
+      } catch (err) {
+        console.error("Error loading mentor questions:", err);
       }
     };
 
@@ -1859,6 +1874,7 @@ export default function AdminDashboard() {
     { id: "earnings", label: "Earnings", icon: <DollarSign className="h-4 w-4" /> },
     { id: "contracts", label: "Contracts", icon: <ClipboardCheck className="h-4 w-4" /> },
     { id: "trials", label: "Trials", icon: <Clock className="h-4 w-4" />, badge: trialUsers.filter(t => t.status === "trial_active").length > 0 ? <Badge className="bg-cyan-500 text-white">{trialUsers.filter(t => t.status === "trial_active").length}</Badge> : undefined },
+    { id: "mentor-questions", label: "Ask a Mentor", icon: <HelpCircle className="h-4 w-4" />, badge: mentorQuestions.filter((q: any) => q.status === "pending").length > 0 ? <Badge className="bg-red-500 text-white">{mentorQuestions.filter((q: any) => q.status === "pending").length}</Badge> : undefined },
     { id: "admins", label: "Admins", icon: <Shield className="h-4 w-4" /> },
   ];
 
@@ -1995,6 +2011,19 @@ export default function AdminDashboard() {
             <Clock className="mr-2 h-4 w-4" /> Trials
             {trialUsers.filter(t => t.status === "trial_active").length > 0 && (
               <Badge className="ml-2 bg-cyan-500 text-white">{trialUsers.filter(t => t.status === "trial_active").length}</Badge>
+            )}
+          </Button>
+          <Button 
+            variant={activeTab === "mentor-questions" ? "default" : "outline"}
+            onClick={() => setActiveTab("mentor-questions")}
+            className={activeTab === "mentor-questions" ? "bg-purple-600 hover:bg-purple-700" : ""}
+            data-testid="button-mentor-questions-tab"
+          >
+            <HelpCircle className="mr-2 h-4 w-4" /> Ask a Mentor
+            {mentorQuestions.filter(q => q.status === "pending").length > 0 && (
+              <Badge className="ml-2 bg-red-500 text-white animate-pulse">
+                {mentorQuestions.filter(q => q.status === "pending").length}
+              </Badge>
             )}
           </Button>
           <Button 
@@ -6161,6 +6190,189 @@ export default function AdminDashboard() {
               )}
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Ask a Mentor Tab */}
+      {activeTab === "mentor-questions" && (
+        <div>
+          <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-2">Ask a Mentor - Community Questions</h2>
+          <p className="text-muted-foreground mb-6">Questions from community members who don't have an assigned mentor. Review, generate AI answers, and respond.</p>
+          
+          <div className="flex gap-2 mb-6">
+            <Button variant="outline" size="sm" onClick={() => {}} className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-300" data-testid="button-mq-filter-pending">
+              Pending ({mentorQuestions.filter(q => q.status === "pending").length})
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => {}} className="text-emerald-600 border-emerald-300" data-testid="button-mq-filter-answered">
+              Answered ({mentorQuestions.filter(q => q.status === "answered").length})
+            </Button>
+          </div>
+
+          {mentorQuestions.length === 0 ? (
+            <Card>
+              <CardContent className="pt-12 pb-12 text-center">
+                <HelpCircle className="h-12 w-12 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
+                <p className="text-muted-foreground">No mentor questions yet. Community members will submit questions here.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {mentorQuestions.map((q: any, idx: number) => (
+                <Card key={q.id || idx} className={`border-l-4 ${q.status === "answered" ? "border-l-emerald-500" : "border-l-purple-500"}`}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{q.entrepreneur_name || "Community Member"}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{q.entrepreneur_email}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={q.status === "answered" ? "bg-emerald-600" : "bg-purple-600"}>
+                          {q.status === "answered" ? "Answered" : "Pending"}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {q.created_at ? new Date(q.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : ""}
+                        </span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-purple-50 dark:bg-purple-950/20 p-4 rounded-lg">
+                      <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase mb-1">Question</p>
+                      <p className="text-slate-900 dark:text-white whitespace-pre-wrap">{q.question}</p>
+                    </div>
+
+                    {q.ideaData && (
+                      <div className="bg-slate-50 dark:bg-slate-800/30 p-3 rounded-lg text-sm">
+                        <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Entrepreneur's Idea</p>
+                        <p className="text-slate-700 dark:text-slate-300">{q.ideaData.ideaName || q.ideaData.data?.ideaName || "Not submitted yet"}</p>
+                      </div>
+                    )}
+
+                    {q.admin_reply && (
+                      <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                        <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase mb-1">Your Reply</p>
+                        <p className="text-slate-900 dark:text-white whitespace-pre-wrap">{q.admin_reply}</p>
+                        {q.replied_at && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Replied {new Date(q.replied_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {q.status !== "answered" && (
+                      <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-purple-600 border-purple-300 hover:bg-purple-50"
+                            onClick={async () => {
+                              setGeneratingDraft(prev => ({...prev, [q.id]: true}));
+                              try {
+                                const response = await fetch(`${API_BASE_URL}/api/mentor-questions/${q.id}/generate-draft`, {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" }
+                                });
+                                if (response.ok) {
+                                  const data = await response.json();
+                                  setMentorQuestionReply(prev => ({...prev, [q.id]: data.draft}));
+                                  toast.success("AI draft generated! Review and edit before sending.");
+                                } else {
+                                  toast.error("Failed to generate AI draft");
+                                }
+                              } catch (err) {
+                                console.error("Error generating draft:", err);
+                                toast.error("Failed to generate AI draft");
+                              } finally {
+                                setGeneratingDraft(prev => ({...prev, [q.id]: false}));
+                              }
+                            }}
+                            disabled={generatingDraft[q.id]}
+                            data-testid={`button-generate-draft-${idx}`}
+                          >
+                            {generatingDraft[q.id] ? (
+                              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+                            ) : (
+                              <><Sparkles className="mr-2 h-4 w-4" /> Generate Answer</>
+                            )}
+                          </Button>
+                          {q.ai_draft && !mentorQuestionReply[q.id] && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-sm text-purple-600"
+                              onClick={() => setMentorQuestionReply(prev => ({...prev, [q.id]: q.ai_draft}))}
+                              data-testid={`button-use-saved-draft-${idx}`}
+                            >
+                              Use Saved Draft
+                            </Button>
+                          )}
+                        </div>
+
+                        <textarea
+                          value={mentorQuestionReply[q.id] || ""}
+                          onChange={(e) => setMentorQuestionReply(prev => ({...prev, [q.id]: e.target.value}))}
+                          placeholder="Write your reply or generate an AI draft first..."
+                          className="w-full min-h-32 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          data-testid={`textarea-reply-${idx}`}
+                        />
+
+                        <div className="flex justify-end">
+                          <Button
+                            className="bg-emerald-600 hover:bg-emerald-700"
+                            onClick={async () => {
+                              const reply = mentorQuestionReply[q.id]?.trim();
+                              if (!reply) {
+                                toast.error("Please write a reply first");
+                                return;
+                              }
+                              setSendingReply(prev => ({...prev, [q.id]: true}));
+                              try {
+                                const response = await fetch(`${API_BASE_URL}/api/mentor-questions/${q.id}/reply`, {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ reply })
+                                });
+                                if (response.ok) {
+                                  toast.success("Reply sent successfully!");
+                                  setMentorQuestionReply(prev => {
+                                    const updated = {...prev};
+                                    delete updated[q.id];
+                                    return updated;
+                                  });
+                                  const refreshResponse = await fetch(`${API_BASE_URL}/api/mentor-questions`);
+                                  if (refreshResponse.ok) {
+                                    const data = await refreshResponse.json();
+                                    setMentorQuestions(data.questions || []);
+                                  }
+                                } else {
+                                  toast.error("Failed to send reply");
+                                }
+                              } catch (err) {
+                                console.error("Error sending reply:", err);
+                                toast.error("Failed to send reply");
+                              } finally {
+                                setSendingReply(prev => ({...prev, [q.id]: false}));
+                              }
+                            }}
+                            disabled={!mentorQuestionReply[q.id]?.trim() || sendingReply[q.id]}
+                            data-testid={`button-send-reply-${idx}`}
+                          >
+                            {sendingReply[q.id] ? (
+                              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
+                            ) : (
+                              <><Send className="mr-2 h-4 w-4" /> Send Reply</>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

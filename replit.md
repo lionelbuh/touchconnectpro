@@ -2,7 +2,7 @@
 
 ## Overview
 
-TouchConnectPro is a platform connecting entrepreneurs with mentors, coaches, and investors to develop ideas into fundable businesses. It combines AI-powered business planning with human mentorship, guiding founders from concept to an investor-ready stage. The platform operates on a freemium model, offering free AI tools and an optional $49/month membership for mentor access. It also features marketplaces for coaches offering paid courses and investors seeking vetted deals, aiming to foster innovation and business growth.
+TouchConnectPro is a platform designed to connect entrepreneurs with mentors, coaches, and investors, facilitating the development of business ideas into fundable ventures. It integrates AI-powered business planning tools with human mentorship to guide founders from concept to an investor-ready stage. The platform operates on a freemium model, offering free AI tools and a premium membership for mentor access. It also hosts marketplaces for coaches offering paid courses and for investors seeking vetted deals, fostering innovation and business growth.
 
 ## User Preferences
 
@@ -12,109 +12,46 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend
 
-Built with React and TypeScript, using Vite, Wouter for routing, and TanStack React Query for state management. Styling uses Tailwind CSS and shadcn/ui. Supabase client handles authentication and direct database operations. The design is component-based, responsive, mobile-first, includes custom fonts, and supports dark mode. Key pages include public marketing, role-based dashboards (Entrepreneur, Mentor, Coach, Investor), application flows, an admin dashboard, and an AI-assisted business plan builder.
+The frontend is built with React and TypeScript, leveraging Vite for development, Wouter for routing, and TanStack React Query for state management. Styling is handled by Tailwind CSS and shadcn/ui. Supabase client manages authentication and direct database interactions. The design emphasizes a component-based, responsive, and mobile-first approach, incorporating custom fonts and dark mode support. Key features include public marketing pages, role-based dashboards (Entrepreneur, Mentor, Coach, Investor, Admin), application workflows, and an AI-assisted business plan builder. A client-side SaaS revenue calculator is also implemented.
 
 ### Backend
 
-An Express.js server developed with TypeScript, utilizing Drizzle ORM for PostgreSQL (Neon Database serverless driver) interactions. Session management uses `connect-pg-simple`. It follows a RESTful API design under an `/api` prefix, with clear separation of concerns. Custom build scripts with esbuild bundle the server.
+The backend is an Express.js server developed with TypeScript, using Drizzle ORM for PostgreSQL interactions (Neon Database serverless driver). Session management is handled by `connect-pg-simple`. It follows a RESTful API design under an `/api` prefix, with a clear separation of concerns.
 
 ### Data Storage
 
-PostgreSQL, hosted on Neon, is the primary database, with Drizzle ORM for type-safe queries. Supabase handles user authentication, application data, and business plans. `shared/schema.ts` defines the database schema. LocalStorage is used for client-side persistence.
+PostgreSQL, hosted on Neon, serves as the primary database, with Drizzle ORM providing type-safe queries. Supabase is utilized for user authentication, application-specific data, and business plans. Client-side persistence uses LocalStorage.
 
 ### Authentication & Authorization
 
-Supabase Auth manages email/password authentication and password resets, implementing role-based access control (Entrepreneur, Mentor, Coach, Investor, Admin). Express sessions are stored in PostgreSQL. Authorization determines access to dashboard routes and functionalities, including an admin approval workflow.
+Supabase Auth handles email/password authentication and password resets, implementing role-based access control (Entrepreneur, Mentor, Coach, Investor, Admin). Express sessions are stored in PostgreSQL. An admin approval workflow is in place for user authorization. Admin authentication uses dedicated `admin_users` and `admin_sessions` tables, protecting `/admin-dashboard` and `/calculator` routes.
 
 ### UI/UX Decisions
 
-The platform uses a component-based approach with a responsive, mobile-first design. It incorporates custom fonts (Space Grotesk, Inter) and includes dark mode support. Coach dashboards and profile displays are structured to showcase coach expertise, rates, and profile images effectively.
+The platform adopts a component-based, responsive, and mobile-first design. It incorporates custom fonts (Space Grotesk, Inter) and supports dark mode. Coach dashboards and profiles are designed to clearly display expertise, rates, and profile images.
 
 ### Feature Specifications
 
 -   **Three-Tier Coach Pricing**: Coaches can set Intro Call, Per Session, and Per Month/Full Courses rates.
--   **Investor Notes**: Admins can track and respond to investor notes, with email notifications for all interactions.
--   **Coach Profile Enhancements**: Coaches can add bios, select from predefined focus areas, and upload profile pictures.
--   **Stripe Connect for Coach Marketplace**: Facilitates payments to coaches with a 20% platform fee via destination charges. Coaches onboard through a standard Stripe Connect flow.
--   **Admin Earnings Tab**: Provides a comprehensive view of revenue from coach marketplace and subscriptions.
--   **One-Time Coach Contact Requests**: Entrepreneurs can send one initial contact message per coach via "Get in Touch" button. Coaches can send one reply, then the conversation closes. All interactions trigger email notifications to coach, entrepreneur, and admin. Table: `coach_contact_requests` in Supabase. Endpoints: POST `/api/coach-contact-requests`, POST `/api/coach-contact-requests/:id/reply`, GET `/api/coaches/:coachId/contact-requests`, GET `/api/entrepreneurs/:email/contact-requests`, GET `/api/admin/contact-requests`, GET `/api/coach-contact-requests/check`.
--   **Public Coach Profile Pages**: Shareable coach profile pages at `/coach/:coachId` featuring large profile photos with gradient header, three-tier service pricing cards, reviews section, share button with clipboard support, and CTA for contacting the coach. Coaches can share their profile URL for marketing purposes. Endpoint: GET `/api/coaches/:coachId` (must be ordered after all other `/api/coaches/:coachId/*` routes to avoid intercepting profile-by-email endpoints).
--   **Enhanced Coach Cards**: Entrepreneur dashboard displays coach cards in single-column layout with larger profile photos (128px avatars), side panel design, gradient backgrounds, and "View Profile" buttons linking to public coach pages. Shows verified external reputation (stars, reviews, platform source, "Verified by TouchConnectPro" badge) for coaches with verified external ratings.
--   **External Reputation Verification**: Coaches can submit ratings from other platforms (e.g., MentorCruise). Admins verify via toggle in the Coaches sub-tab. The Admin Dashboard includes a "Verified External Reputations" summary section showing all verified coaches with their verification links for periodic spot-checking. Public endpoints strip the profile_url for privacy.
--   **SEO Optimization**: Comprehensive SEO implementation including:
-    - Enhanced meta tags (Open Graph, Twitter Cards, keywords, canonical URL)
-    - Dynamic sitemap.xml at `/sitemap.xml` with static pages + approved mentors/coaches
-    - robots.txt at `/robots.txt` with sitemap reference
-    - JSON-LD structured data endpoints: `/api/seo/organization-schema`, `/api/seo/mentor-schema/:mentorId`, `/api/seo/coach-schema/:coachId`
--   **SaaS Revenue Calculator**: A frontend-only financial modeling tool at `/calculator` with two modes:
-    - **Internal (Founder View)**: Full control over all inputs including traffic, conversion, pricing, churn, Stripe fees, fixed/variable costs, marketing spend, coaching marketplace settings, and mentor compensation. Features complete cost breakdown, 36-month projections, and break-even analysis.
-    - **Public (Educational View)**: Simplified educational view with only 3 editable inputs (visitors, conversion, price) + optional coaching toggle. Two sections: "Month 1 Estimate" (new members + revenue from first month) and "Steady-State Monthly Estimate" (equilibrium metrics). Includes 24-month subscriber growth chart with neutral styling. No promotional language, no internal metrics exposed (costs, margins, mentor payouts). Fixed coaching assumptions (20% adoption, $200/month, 20% commission) with explanatory note. Educational disclaimers throughout.
-    - **36-Month Projections (Founder Only)**: Month-by-month subscriber evolution with churn modeling. Includes month selector slider (1-36), three line charts (Subscribers, Revenue vs Costs, Net Profit), collapsible detailed table, CSV export, and break-even month indicator.
-    - **Coaching Marketplace Income**: Models coaching adoption rate, average spend per user, and platform commission (default 20%). GMV and commission revenue tracked separately.
-    - **Mentor Compensation**: Two separate payout streams: (1) Mentor Payout Rate on Subscriptions (default 30%) applies only to $49/mo membership revenue; (2) Mentor Payout on Coaches Profit (0-50%, default 0%) applies to the platform's coaching commission. Both appear as COGS. The coaching payout is gated behind the coaching toggle.
-    - **Stripe Fee Accuracy**: Stripe percentage fees calculated on full processed volume (subscriptions + gross coaching GMV), not just platform revenue.
-    - **Monthly/Yearly Toggle**: Switch between monthly and yearly views. Monetary values (revenue, costs, profit) are annualized (×12) in yearly mode while subscriber counts remain as monthly rates. Labels update dynamically to indicate the active period.
-    - **localStorage Persistence**: Inputs saved per mode (internal vs public) with separate storage keys. Settings persist between sessions.
-    - **Design Principle**: One calculator, one logic (`client/src/lib/calculatorLogic.ts`), two views. Founder view = truth; Public view = education + motivation (not promises).
-    - No backend required - all calculations happen client-side with instant recalculation.
-
-### Admin Authentication
--   **Protected Routes**: `/admin-dashboard` and `/calculator` require admin login
--   **Login URL**: `/admin-login` with email/password authentication
--   **Session Duration**: 24 hours with token-based sessions
--   **Tables**: `admin_users` (credentials), `admin_sessions` (active sessions)
--   **First Admin**: buhler.lionel@gmail.com
--   **Adding New Admins**: Use POST `/api/admin/create` with existing admin token
-
-### Admin Email Management
--   **Edit User Email**: Admins can edit user emails via pencil icons in Members > Messaging section. Updates 3 systems: application table, Supabase Auth, and users table.
--   **Resend Invite**: Admins can resend registration emails via mail icons next to user emails. Two behaviors:
-    - If user has NOT set up login: Expires old tokens, creates new 7-day token, sends password setup email
-    - If user HAS existing auth: Sends login reminder instead (with link to reset password if needed)
--   **Endpoint**: POST `/api/admin/resend-invite` with body `{userType, userId}`. Requires admin token.
+-   **Investor Notes**: Admins can track and respond to investor notes with email notifications.
+-   **Coach Profile Enhancements**: Coaches can add bios, focus areas, and profile pictures.
+-   **Stripe Connect for Coach Marketplace**: Facilitates payments to coaches with a 20% platform fee via destination charges.
+-   **Admin Earnings Tab**: Provides a consolidated view of revenue from the coach marketplace and subscriptions.
+-   **One-Time Coach Contact Requests**: Entrepreneurs can send an initial contact message to coaches, with a single reply allowed before conversation closure. Email notifications are sent to all parties.
+-   **Public Coach Profile Pages**: Shareable profile pages display coach details, pricing, reviews, and a contact CTA.
+-   **Enhanced Coach Cards**: Entrepreneur dashboards show detailed coach cards with larger images, side panel design, and "View Profile" buttons.
+-   **External Reputation Verification**: Coaches can submit ratings from other platforms, which are verified by admins.
+-   **SEO Optimization**: Comprehensive SEO features including enhanced meta tags, dynamic sitemap.xml, robots.txt, and JSON-LD structured data.
+-   **SaaS Revenue Calculator**: A client-side financial modeling tool with an "Internal (Founder View)" for detailed projections and a "Public (Educational View)" for simplified estimations. It includes 36-month projections, churn modeling, coaching marketplace income, mentor compensation, and accurate Stripe fee calculation.
+-   **Admin Email Management**: Admins can edit user emails across systems and resend registration/login reminder emails.
+-   **Trial User Management**: The Admin Dashboard includes a "Trials" tab to manage trial entrepreneurs, assign mentors, and facilitate messaging between trial users and mentors.
+-   **Community-Free Membership Flow**: Users can sign up for a free membership after completing a Founder Focus Score quiz, requiring agreement to a contract. Dashboard logic adapts based on idea submission status.
+-   **Ask a Mentor (Community Questions)**: Entrepreneurs can submit questions for mentor guidance. Admins can generate, review, and send AI-prepared answers.
+-   **Insights Knowledge Hub**: A section for SEO-optimized articles on startup guidance, acting as a topical authority.
 
 ## External Dependencies
 
-1.  **Supabase**: Provides PostgreSQL database hosting, authentication, user management, real-time subscriptions, and storage for user-uploaded files (e.g., profile images).
-2.  **Neon Database**: Serverless PostgreSQL backend for the Express.js application, accessed via `@neondatabase/serverless` driver.
-3.  **Stripe**: Integrated for payment processing, handling subscription billing for memberships, and facilitating coach marketplace payments with destination charges and webhooks.
-4.  **Resend**: Used for sending transactional emails, including approval/rejection notifications and investor note communications.
-
-### Trial User Management
--   **Admin Trials Tab**: Admin Dashboard has a "Trials" tab showing all registered trial entrepreneurs with their name, email, status (active/expired), trial dates, primary blocker, Focus Score, category results, weekly priorities, and mentor assignment controls.
--   **Mentor Assignment**: Admins can assign approved mentors to trial users via dropdown selector. Once assigned, the trial user's Messages tab unlocks.
--   **Trial Messaging**: Trial users can send/receive messages with their assigned mentor. Messages use the shared `messages` table so mentors see them in their existing inbox. Trial user messages include "(Trial)" suffix in sender name.
--   **Backend Endpoints**:
-    - `GET /api/trial/all` - List all trial users
-    - `POST /api/trial/:id/assign-mentor` - Assign a mentor to a trial user
-    - `GET /api/trial/:id/mentor-info` - Get assigned mentor details
-    - `GET /api/trial/:id/messages` - Get conversation messages between trial user and mentor
-    - `POST /api/trial/:id/messages` - Send message from trial user to mentor
-    - `GET /api/trial/status/:email` - Get trial status for a user
-    - `POST /api/trial/create` - Create trial account from Founder Focus Score
-    - `POST /api/trial/regenerate-token` - Resend password setup email
-    - `POST /api/trial/save-priorities` - Save weekly priorities
--   **Login Routing**: Trial users (user_type "trial_entrepreneur") route to `/trial-dashboard` instead of `/dashboard-entrepreneur`
-
-### Community-Free Membership Flow
--   **Signup via /founder-focus**: After completing Founder Focus Score quiz, users can sign up for Community-Free ($0) membership. Creates Supabase auth user + ideas row with status "pre-approved" and empty data (focusScore saved in data.focusScore). Welcome email sent via Resend.
--   **Contract Acceptance**: Community Free Membership Agreement (version "2026-02-17 v1") must be accepted during signup. Saved to contract_acceptances table via POST /api/contract-acceptances with role "entrepreneur".
--   **Pre-approved Dashboard Logic**: Uses `ideaSubmitted` boolean (checks if `formData.ideaName` or `entrepreneurData?.data?.ideaName` has content) to gate features:
-    - **Before idea submission**: Shows welcome banner with CTA to /become-entrepreneur, blocks coaches/idea/plan/profile tabs with "Submit Your Idea" prompts
-    - **After idea submission**: Unlocks all tabs, shows "Idea Submitted" status, coaches accessible
--   **Focus Score Display**: Dashboard overview shows Founder Focus Score results card (categories, scores, primary blocker) from `entrepreneurData?.data?.focusScore`
--   **Pre-filled Idea Form**: /become-entrepreneur accepts `?name=X&email=Y` query params to pre-fill and lock name/email fields for pre-approved users. Contract acceptance skipped (already accepted Community Free agreement).
--   **Contract Text**: Defined in `client/src/lib/contracts.ts` as `COMMUNITY_FREE_CONTRACT` and `COMMUNITY_FREE_CONTRACT_VERSION`
-
-### Insights Knowledge Hub
--   **URL**: `/insights/` - Main hub page acting as a topical authority for SEO + AIO retrieval
--   **Articles**: 5 SEO-optimized articles under `/insights/:slug`:
-    - `/insights/business-idea-no-roadmap`
-    - `/insights/startup-roadmap-without-overthinking`
-    - `/insights/experienced-guidance-for-founders`
-    - `/insights/prepare-startup-for-launch`
-    - `/insights/when-to-scale-startup`
--   **Structure**: Hero section, audience segmentation cards, Founder Operations Frameworks section, articles index, soft conversion CTA
--   **SEO**: JSON-LD Article schema per article, dynamic meta tags (OG, description), all pages in sitemap.xml
--   **Data**: Article content defined in `client/src/lib/insightsData.ts`, shared between hub and article pages
--   **Navigation**: "Insights" link added to main nav bar and footer
+1.  **Supabase**: Utilized for PostgreSQL database hosting, user authentication, real-time subscriptions, and storage for user-uploaded files.
+2.  **Neon Database**: Provides serverless PostgreSQL backend for the Express.js application.
+3.  **Stripe**: Integrated for payment processing, handling subscription billing, and facilitating coach marketplace payments via destination charges and webhooks.
+4.  **Resend**: Used for sending transactional emails, including notifications and communications.

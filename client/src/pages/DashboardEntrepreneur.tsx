@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, CheckCircle, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply, ShoppingCart, CreditCard, X, Rocket, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, CheckCircle, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply, ShoppingCart, CreditCard, X, Rocket, BarChart3, HelpCircle } from "lucide-react";
 import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -34,13 +34,13 @@ export default function DashboardEntrepreneur() {
   const [showSuccessPage, setShowSuccessPage] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile" | "notes" | "messages" | "meetings" | "purchases">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile" | "notes" | "messages" | "meetings" | "purchases" | "ask-mentor">("overview");
   
   // Read tab from URL query params on mount (preserve other params like payment=success)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get("tab");
-    if (tabParam && ["overview", "coaches", "idea", "plan", "profile", "notes", "messages", "meetings", "purchases"].includes(tabParam)) {
+    if (tabParam && ["overview", "coaches", "idea", "plan", "profile", "notes", "messages", "meetings", "purchases", "ask-mentor"].includes(tabParam)) {
       setActiveTab(tabParam as any);
       // Remove only the tab param, preserve others (like payment=success)
       urlParams.delete("tab");
@@ -70,6 +70,9 @@ export default function DashboardEntrepreneur() {
   const [mentorNotes, setMentorNotes] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [mentorQuestions, setMentorQuestions] = useState<any[]>([]);
+  const [newMentorQuestion, setNewMentorQuestion] = useState("");
+  const [sendingMentorQuestion, setSendingMentorQuestion] = useState(false);
   const [adminMessageText, setAdminMessageText] = useState("");
   const [entrepreneurReadMessageIds, setEntrepreneurReadMessageIds] = useState<number[]>([]);
   const [meetings, setMeetings] = useState<any[]>([]);
@@ -744,6 +747,20 @@ export default function DashboardEntrepreneur() {
       }
     }
     loadMessages();
+
+    async function loadMentorQuestions() {
+      if (!userEmail) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/mentor-questions/entrepreneur/${encodeURIComponent(userEmail)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setMentorQuestions(data.questions || []);
+        }
+      } catch (error) {
+        console.error("Error loading mentor questions:", error);
+      }
+    }
+    loadMentorQuestions();
   }, [userEmail]);
 
   // Load message threads (threaded conversations with mentor)
@@ -1555,6 +1572,7 @@ export default function DashboardEntrepreneur() {
       { id: "purchases", label: "My Purchases", icon: <ShoppingCart className="h-4 w-4" />, badge: coachPurchases.length > 0 ? <span className="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 text-xs px-2 py-0.5 rounded-full">{coachPurchases.length}</span> : undefined },
       { id: "notes", label: "Mentor Notes", icon: <ClipboardList className="h-4 w-4" />, badge: mentorNotes.length > 0 ? <span className="bg-cyan-100 dark:bg-cyan-900 text-cyan-600 dark:text-cyan-400 text-xs px-2 py-0.5 rounded-full">{mentorNotes.length}</span> : undefined },
       { id: "messages", label: "Messages", icon: <MessageSquare className="h-4 w-4" />, badge: unreadMessageCount > 0 ? <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{unreadMessageCount}</span> : undefined },
+      ...(ideaSubmitted ? [{ id: "ask-mentor", label: "Ask a Mentor", icon: <HelpCircle className="h-4 w-4" /> }] : []),
       { id: "profile", label: "Profile", icon: <Settings className="h-4 w-4" /> },
     ];
 
@@ -1647,6 +1665,16 @@ export default function DashboardEntrepreneur() {
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{unreadMessageCount}</span>
                 )}
               </Button>
+              {ideaSubmitted && (
+                <Button 
+                  variant={activeTab === "ask-mentor" ? "secondary" : "ghost"}
+                  className="w-full justify-start font-medium text-slate-600"
+                  onClick={() => setActiveTab("ask-mentor")}
+                  data-testid="button-ask-mentor-tab"
+                >
+                  <HelpCircle className="mr-2 h-4 w-4" /> Ask a Mentor
+                </Button>
+              )}
               {/* Hidden for now - keep for future use
               <Button 
                 variant={activeTab === "meetings" ? "secondary" : "ghost"}
@@ -3236,6 +3264,125 @@ export default function DashboardEntrepreneur() {
                     </Card>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Ask a Mentor Tab */}
+            {activeTab === "ask-mentor" && (
+              <div>
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Ask a Mentor</h1>
+                <p className="text-muted-foreground mb-6">Have a question about your business? Ask our mentor community and get expert guidance. While you don't have a dedicated mentor with your current plan, our team will review your question and provide a helpful answer.</p>
+                
+                <Card className="mb-6 border-purple-200 dark:border-purple-900/30">
+                  <CardHeader className="bg-purple-50/50 dark:bg-purple-950/20">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <HelpCircle className="h-5 w-5 text-purple-600" />
+                      Submit a Question
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4 space-y-4">
+                    <textarea
+                      value={newMentorQuestion}
+                      onChange={(e) => setNewMentorQuestion(e.target.value)}
+                      placeholder="What would you like to ask a mentor? Be specific about your challenge or question..."
+                      className="w-full min-h-32 p-3 rounded-lg border border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      data-testid="textarea-mentor-question"
+                    />
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-muted-foreground">Our team will review your question and provide guidance as soon as possible.</p>
+                      <Button
+                        onClick={async () => {
+                          if (!newMentorQuestion.trim()) return;
+                          setSendingMentorQuestion(true);
+                          try {
+                            const response = await fetch(`${API_BASE_URL}/api/mentor-questions`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                entrepreneurEmail: userEmail,
+                                entrepreneurName: profileData.fullName || "Entrepreneur",
+                                question: newMentorQuestion.trim(),
+                                ideaId: entrepreneurData?.id || null
+                              })
+                            });
+                            if (response.ok) {
+                              toast.success("Your question has been submitted! We'll get back to you soon.");
+                              setNewMentorQuestion("");
+                              const refreshResponse = await fetch(`${API_BASE_URL}/api/mentor-questions/entrepreneur/${encodeURIComponent(userEmail)}`);
+                              if (refreshResponse.ok) {
+                                const data = await refreshResponse.json();
+                                setMentorQuestions(data.questions || []);
+                              }
+                            } else {
+                              const error = await response.json();
+                              toast.error(error.error || "Failed to submit question");
+                            }
+                          } catch (error) {
+                            console.error("Error submitting mentor question:", error);
+                            toast.error("Failed to submit question. Please try again.");
+                          } finally {
+                            setSendingMentorQuestion(false);
+                          }
+                        }}
+                        disabled={!newMentorQuestion.trim() || sendingMentorQuestion}
+                        className="bg-purple-600 hover:bg-purple-700"
+                        data-testid="button-submit-mentor-question"
+                      >
+                        {sendingMentorQuestion ? (
+                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
+                        ) : (
+                          <><Send className="mr-2 h-4 w-4" /> Submit Question</>
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <h2 className="text-xl font-display font-bold text-slate-900 dark:text-white mb-4">Your Questions</h2>
+                {mentorQuestions.length === 0 ? (
+                  <Card>
+                    <CardContent className="pt-12 pb-12 text-center">
+                      <HelpCircle className="h-12 w-12 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
+                      <p className="text-muted-foreground">You haven't asked any questions yet. Use the form above to get started!</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {mentorQuestions.map((q: any, idx: number) => (
+                      <Card key={q.id || idx} className={`border-l-4 ${q.status === "answered" ? "border-l-emerald-500" : "border-l-purple-500"}`}>
+                        <CardContent className="pt-6 space-y-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge className={q.status === "answered" ? "bg-emerald-600" : "bg-purple-600"}>
+                                  {q.status === "answered" ? "Answered" : "Pending"}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  {q.created_at ? new Date(q.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : ""}
+                                </span>
+                              </div>
+                              <div className="bg-purple-50 dark:bg-purple-950/20 p-4 rounded-lg">
+                                <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase mb-1">Your Question</p>
+                                <p className="text-slate-900 dark:text-white whitespace-pre-wrap">{q.question}</p>
+                              </div>
+                            </div>
+                          </div>
+                          {q.admin_reply && (
+                            <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                              <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase mb-1">Mentor Response</p>
+                              <p className="text-slate-900 dark:text-white whitespace-pre-wrap">{q.admin_reply}</p>
+                              {q.replied_at && (
+                                <p className="text-xs text-muted-foreground mt-2">
+                                  Replied {new Date(q.replied_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
