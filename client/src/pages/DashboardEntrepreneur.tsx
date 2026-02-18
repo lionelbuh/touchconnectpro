@@ -1689,14 +1689,18 @@ export default function DashboardEntrepreneur() {
     const focusScoreData = entrepreneurData?.data?.focusScore;
     const statusDisplay = isAccountDisabled 
       ? "Disabled" 
-      : isPreApproved
-        ? (hasPaid ? "Founders Circle" : (ideaSubmitted ? "Community Member" : "Community Free"))
-        : (entrepreneurStatus === "approved" ? (hasActiveMentor ? "Active Member" : "Approved - Awaiting Mentor") : "On Waiting List");
+      : hasPaid
+        ? "Founders Circle"
+        : isPreApproved
+          ? (ideaSubmitted ? "Community Member" : "Community Free")
+          : (entrepreneurStatus === "approved" ? (hasActiveMentor ? "Active Member" : "Approved - Awaiting Mentor") : "On Waiting List");
     const statusColor = isAccountDisabled 
       ? "text-red-600 dark:text-red-400" 
-      : isPreApproved
-        ? (hasPaid ? "text-emerald-600 dark:text-emerald-400" : "text-cyan-600 dark:text-cyan-400")
-        : (entrepreneurStatus === "approved" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400");
+      : hasPaid
+        ? "text-emerald-600 dark:text-emerald-400"
+        : isPreApproved
+          ? "text-cyan-600 dark:text-cyan-400"
+          : (entrepreneurStatus === "approved" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400");
     const avatarColor = isAccountDisabled 
       ? "bg-red-500" 
       : isPreApproved
