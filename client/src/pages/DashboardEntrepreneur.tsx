@@ -763,6 +763,17 @@ export default function DashboardEntrepreneur() {
     loadMentorQuestions();
   }, [userEmail]);
 
+  const unreadMentorAnswers = mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length;
+  useEffect(() => {
+    if (activeTab === "ask-mentor" && userEmail && unreadMentorAnswers > 0) {
+      fetch(`${API_BASE_URL}/api/mentor-questions/mark-read-entrepreneur/${encodeURIComponent(userEmail)}`, { method: "PATCH" })
+        .then(() => {
+          setMentorQuestions(prev => prev.map(q => q.status === "answered" ? { ...q, is_read_by_entrepreneur: true } : q));
+        })
+        .catch(err => console.error("Error marking questions as read:", err));
+    }
+  }, [activeTab, userEmail, unreadMentorAnswers]);
+
   // Load message threads (threaded conversations with mentor)
   useEffect(() => {
     async function loadMessageThreads() {
@@ -1572,7 +1583,7 @@ export default function DashboardEntrepreneur() {
       { id: "purchases", label: "My Purchases", icon: <ShoppingCart className="h-4 w-4" />, badge: coachPurchases.length > 0 ? <span className="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 text-xs px-2 py-0.5 rounded-full">{coachPurchases.length}</span> : undefined },
       { id: "notes", label: "Mentor Notes", icon: <ClipboardList className="h-4 w-4" />, badge: mentorNotes.length > 0 ? <span className="bg-cyan-100 dark:bg-cyan-900 text-cyan-600 dark:text-cyan-400 text-xs px-2 py-0.5 rounded-full">{mentorNotes.length}</span> : undefined },
       { id: "messages", label: "Messages", icon: <MessageSquare className="h-4 w-4" />, badge: unreadMessageCount > 0 ? <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{unreadMessageCount}</span> : undefined },
-      ...(ideaSubmitted ? [{ id: "ask-mentor", label: "Ask a Mentor", icon: <HelpCircle className="h-4 w-4" /> }] : []),
+      ...(ideaSubmitted ? [{ id: "ask-mentor", label: "Ask a Mentor", icon: <HelpCircle className="h-4 w-4" />, badge: mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length > 0 ? <span className="bg-emerald-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length}</span> : undefined }] : []),
       { id: "profile", label: "Profile", icon: <Settings className="h-4 w-4" /> },
     ];
 
@@ -1668,11 +1679,14 @@ export default function DashboardEntrepreneur() {
               {ideaSubmitted && (
                 <Button 
                   variant={activeTab === "ask-mentor" ? "secondary" : "ghost"}
-                  className="w-full justify-start font-medium text-slate-600"
+                  className="w-full justify-start font-medium text-slate-600 relative"
                   onClick={() => setActiveTab("ask-mentor")}
                   data-testid="button-ask-mentor-tab"
                 >
                   <HelpCircle className="mr-2 h-4 w-4" /> Ask a Mentor
+                  {mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length > 0 && (
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-emerald-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length}</span>
+                  )}
                 </Button>
               )}
               {/* Hidden for now - keep for future use
@@ -1998,7 +2012,20 @@ export default function DashboardEntrepreneur() {
                           <Users className="h-8 w-8 text-cyan-600" />
                         </div>
                         <p className="text-slate-600 dark:text-slate-400 mb-2">Once your project is approved and a mentor accepts you, their profile will appear here.</p>
-                        <p className="text-sm text-muted-foreground">You'll be able to schedule meetings and receive personalized guidance.</p>
+                        <p className="text-sm text-muted-foreground mb-4">You'll be able to schedule meetings and receive personalized guidance.</p>
+                        {ideaSubmitted && !hasPaid && (
+                          <Button
+                            variant="outline"
+                            className="border-purple-300 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20"
+                            onClick={() => setActiveTab("ask-mentor")}
+                            data-testid="button-ask-mentor-from-overview"
+                          >
+                            <HelpCircle className="mr-2 h-4 w-4" /> Ask a Mentor a Question
+                            {mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length > 0 && (
+                              <Badge className="ml-2 bg-emerald-500 text-white">{mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length} new</Badge>
+                            )}
+                          </Button>
+                        )}
                       </div>
                     )}
                   </CardContent>
@@ -3271,79 +3298,86 @@ export default function DashboardEntrepreneur() {
             {activeTab === "ask-mentor" && (
               <div>
                 <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Ask a Mentor</h1>
-                <p className="text-muted-foreground mb-6">Have a question about your business? Ask our mentor community and get expert guidance. While you don't have a dedicated mentor with your current plan, our team will review your question and provide a helpful answer.</p>
+                <p className="text-muted-foreground mb-6">
+                  {hasPaid 
+                    ? "Your previous community questions and answers are shown below. Since you now have a paid membership, you can message your dedicated mentor directly through the Messages tab."
+                    : "Have a question about your business? Ask our mentor community and get expert guidance. While you don't have a dedicated mentor with your current plan, our team will review your question and provide a helpful answer."
+                  }
+                </p>
                 
-                <Card className="mb-6 border-purple-200 dark:border-purple-900/30">
-                  <CardHeader className="bg-purple-50/50 dark:bg-purple-950/20">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <HelpCircle className="h-5 w-5 text-purple-600" />
-                      Submit a Question
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-4 space-y-4">
-                    <textarea
-                      value={newMentorQuestion}
-                      onChange={(e) => setNewMentorQuestion(e.target.value)}
-                      placeholder="What would you like to ask a mentor? Be specific about your challenge or question..."
-                      className="w-full min-h-32 p-3 rounded-lg border border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      data-testid="textarea-mentor-question"
-                    />
-                    <div className="flex justify-between items-center">
-                      <p className="text-xs text-muted-foreground">Our team will review your question and provide guidance as soon as possible.</p>
-                      <Button
-                        onClick={async () => {
-                          if (!newMentorQuestion.trim()) return;
-                          setSendingMentorQuestion(true);
-                          try {
-                            const response = await fetch(`${API_BASE_URL}/api/mentor-questions`, {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({
-                                entrepreneurEmail: userEmail,
-                                entrepreneurName: profileData.fullName || "Entrepreneur",
-                                question: newMentorQuestion.trim(),
-                                ideaId: entrepreneurData?.id || null
-                              })
-                            });
-                            if (response.ok) {
-                              toast.success("Your question has been submitted! We'll get back to you soon.");
-                              setNewMentorQuestion("");
-                              const refreshResponse = await fetch(`${API_BASE_URL}/api/mentor-questions/entrepreneur/${encodeURIComponent(userEmail)}`);
-                              if (refreshResponse.ok) {
-                                const data = await refreshResponse.json();
-                                setMentorQuestions(data.questions || []);
+                {!hasPaid && (
+                  <Card className="mb-6 border-purple-200 dark:border-purple-900/30">
+                    <CardHeader className="bg-purple-50/50 dark:bg-purple-950/20">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <HelpCircle className="h-5 w-5 text-purple-600" />
+                        Submit a Question
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                      <textarea
+                        value={newMentorQuestion}
+                        onChange={(e) => setNewMentorQuestion(e.target.value)}
+                        placeholder="What would you like to ask a mentor? Be specific about your challenge or question..."
+                        className="w-full min-h-32 p-3 rounded-lg border border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        data-testid="textarea-mentor-question"
+                      />
+                      <div className="flex justify-between items-center">
+                        <p className="text-xs text-muted-foreground">Our team will review your question and provide guidance as soon as possible.</p>
+                        <Button
+                          onClick={async () => {
+                            if (!newMentorQuestion.trim()) return;
+                            setSendingMentorQuestion(true);
+                            try {
+                              const response = await fetch(`${API_BASE_URL}/api/mentor-questions`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  entrepreneurEmail: userEmail,
+                                  entrepreneurName: profileData.fullName || "Entrepreneur",
+                                  question: newMentorQuestion.trim(),
+                                  ideaId: entrepreneurData?.id || null
+                                })
+                              });
+                              if (response.ok) {
+                                toast.success("Your question has been submitted! We'll get back to you soon.");
+                                setNewMentorQuestion("");
+                                const refreshResponse = await fetch(`${API_BASE_URL}/api/mentor-questions/entrepreneur/${encodeURIComponent(userEmail)}`);
+                                if (refreshResponse.ok) {
+                                  const data = await refreshResponse.json();
+                                  setMentorQuestions(data.questions || []);
+                                }
+                              } else {
+                                const error = await response.json();
+                                toast.error(error.error || "Failed to submit question");
                               }
-                            } else {
-                              const error = await response.json();
-                              toast.error(error.error || "Failed to submit question");
+                            } catch (error) {
+                              console.error("Error submitting mentor question:", error);
+                              toast.error("Failed to submit question. Please try again.");
+                            } finally {
+                              setSendingMentorQuestion(false);
                             }
-                          } catch (error) {
-                            console.error("Error submitting mentor question:", error);
-                            toast.error("Failed to submit question. Please try again.");
-                          } finally {
-                            setSendingMentorQuestion(false);
-                          }
-                        }}
-                        disabled={!newMentorQuestion.trim() || sendingMentorQuestion}
-                        className="bg-purple-600 hover:bg-purple-700"
-                        data-testid="button-submit-mentor-question"
-                      >
-                        {sendingMentorQuestion ? (
-                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
-                        ) : (
-                          <><Send className="mr-2 h-4 w-4" /> Submit Question</>
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                          }}
+                          disabled={!newMentorQuestion.trim() || sendingMentorQuestion}
+                          className="bg-purple-600 hover:bg-purple-700"
+                          data-testid="button-submit-mentor-question"
+                        >
+                          {sendingMentorQuestion ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
+                          ) : (
+                            <><Send className="mr-2 h-4 w-4" /> Submit Question</>
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-                <h2 className="text-xl font-display font-bold text-slate-900 dark:text-white mb-4">Your Questions</h2>
+                <h2 className="text-xl font-display font-bold text-slate-900 dark:text-white mb-4">{hasPaid ? "Previous Questions" : "Your Questions"}</h2>
                 {mentorQuestions.length === 0 ? (
                   <Card>
                     <CardContent className="pt-12 pb-12 text-center">
                       <HelpCircle className="h-12 w-12 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-                      <p className="text-muted-foreground">You haven't asked any questions yet. Use the form above to get started!</p>
+                      <p className="text-muted-foreground">{hasPaid ? "No previous community questions to display." : "You haven't asked any questions yet. Use the form above to get started!"}</p>
                     </CardContent>
                   </Card>
                 ) : (

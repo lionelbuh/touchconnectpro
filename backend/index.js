@@ -5200,7 +5200,8 @@ app.post("/api/mentor-questions/:id/reply", async (req, res) => {
       .update({
         admin_reply: reply,
         replied_at: new Date().toISOString(),
-        status: "answered"
+        status: "answered",
+        is_read_by_entrepreneur: false
       })
       .eq("id", id)
       .select();
@@ -5316,6 +5317,32 @@ app.patch("/api/mentor-questions/:id/read", async (req, res) => {
   }
 });
 
+app.patch("/api/mentor-questions/mark-read-entrepreneur/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const decodedEmail = decodeURIComponent(email);
+    console.log("[PATCH /api/mentor-questions/mark-read-entrepreneur] Marking all answered as read for:", decodedEmail);
+
+    const { data, error } = await supabase
+      .from("mentor_questions")
+      .update({ is_read_by_entrepreneur: true })
+      .eq("entrepreneur_email", decodedEmail)
+      .eq("status", "answered")
+      .eq("is_read_by_entrepreneur", false)
+      .select();
+
+    if (error) {
+      console.error("[PATCH /api/mentor-questions/mark-read-entrepreneur] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.json({ success: true, updated: data?.length || 0 });
+  } catch (error) {
+    console.error("[PATCH /api/mentor-questions/mark-read-entrepreneur] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.post("/api/admin/create-mentor-questions-table", async (req, res) => {
   try {
     const createTableSQL = `
@@ -5330,7 +5357,8 @@ CREATE TABLE IF NOT EXISTS public.mentor_questions (
   admin_reply TEXT,
   replied_at TIMESTAMPTZ,
   ai_draft TEXT,
-  is_read_by_admin BOOLEAN DEFAULT FALSE
+  is_read_by_admin BOOLEAN DEFAULT FALSE,
+  is_read_by_entrepreneur BOOLEAN DEFAULT TRUE
 );
 
 CREATE INDEX IF NOT EXISTS idx_mentor_questions_email ON public.mentor_questions(entrepreneur_email);
