@@ -72,7 +72,7 @@ export default function Home() {
             <br />AI tools help you structure and refine your ideas, but your mentor keeps them creative, personalized, and actionable. You'll never feel lost, every next step is guided, with clarity and purpose.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/become-entrepreneur">
+            <Link href="/founder-focus">
               <Button size="lg" className="h-14 px-8 text-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] transition-shadow hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.6)]">
                 Start Free - No Credit Card <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
