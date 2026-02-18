@@ -841,17 +841,19 @@ export async function registerRoutes(
           return res.status(400).json({ error: "You already have a pending application. Please wait for admin review." });
         }
         
-        // If rejected, update the existing record to allow resubmission
-        if (existing.status === "rejected") {
-          console.log("[UPDATE] Resubmitting rejected entrepreneur application for:", email);
+        // If rejected or pre-approved (Community Free), update the existing record
+        if (existing.status === "rejected" || existing.status === "pre-approved") {
+          console.log("[UPDATE] Updating", existing.status, "entrepreneur application for:", email);
+          const existingData = existing.status === "pre-approved" ? (await (client.from("ideas").select("data").eq("id", existing.id).single() as any))?.data?.data : {};
+          const mergedData = { ...(existingData || {}), ...(formData || {}) };
           const { data, error } = await (client
             .from("ideas")
             .update({
               entrepreneur_name: fullName,
-              data: formData || {},
+              data: mergedData,
               business_plan: businessPlan || {},
               linkedin_profile: linkedinWebsite || "",
-              status: "submitted",
+              status: "pre-approved",
               resubmitted_at: new Date().toISOString()
             } as any)
             .eq("id", existing.id)
@@ -862,7 +864,7 @@ export async function registerRoutes(
             return res.status(400).json({ error: error.message });
           }
 
-          console.log("[SUCCESS] Entrepreneur application resubmitted");
+          console.log("[SUCCESS] Entrepreneur application updated");
           return res.json({ success: true, id: data?.[0]?.id, resubmission: true });
         }
       }
@@ -2388,6 +2390,424 @@ export async function registerRoutes(
   });
 
   // =====================================================
+  // ASK A MENTOR - Community Questions & Answers
+  // =====================================================
+
+  app.post("/api/mentor-questions", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { entrepreneurEmail, entrepreneurName, question, ideaId } = req.body;
+      console.log("[POST /api/mentor-questions] Creating question from:", entrepreneurEmail);
+
+      const { data, error } = await (client
+        .from("mentor_questions")
+        .insert({
+          entrepreneur_email: entrepreneurEmail,
+          entrepreneur_name: entrepreneurName,
+          question,
+          idea_id: ideaId || null,
+          status: "pending",
+          created_at: new Date().toISOString(),
+          admin_reply: null,
+          replied_at: null,
+          ai_draft: null,
+          is_read_by_admin: false
+        })
+        .select() as any);
+
+      if (error) {
+        console.error("[POST /api/mentor-questions] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      console.log("[POST /api/mentor-questions] Question created successfully");
+
+      try {
+        const resendData = await getResendClient();
+        if (resendData) {
+          const { client: resend, fromEmail } = resendData;
+          const FRONTEND_URL = process.env.FRONTEND_URL || (process.env.NODE_ENV === "development" ? "http://localhost:5000" : "https://touchconnectpro.com");
+          await resend.emails.send({
+            from: fromEmail,
+            to: ADMIN_EMAIL,
+            subject: `New "Ask a Mentor" Question from ${entrepreneurName || entrepreneurEmail}`,
+            html: `
+              <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 24px; border-radius: 10px 10px 0 0; text-align: center;">
+                  <h2 style="margin: 0;">New Mentor Question</h2>
+                </div>
+                <div style="background: #f8fafc; padding: 24px; border-radius: 0 0 10px 10px;">
+                  <p><strong>From:</strong> ${entrepreneurName || "Unknown"} (${entrepreneurEmail})</p>
+                  <div style="background: white; border-left: 4px solid #6366f1; padding: 16px; margin: 16px 0; border-radius: 4px;">
+                    <p style="margin: 0; white-space: pre-wrap;">${question}</p>
+                  </div>
+                  <a href="${FRONTEND_URL}/admin-dashboard" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">View in Admin Dashboard</a>
+                </div>
+              </div>
+            `
+          });
+          console.log("[POST /api/mentor-questions] Admin notification email sent to:", ADMIN_EMAIL);
+        }
+      } catch (emailError: any) {
+        console.error("[POST /api/mentor-questions] Failed to send admin notification email:", emailError.message);
+      }
+
+      return res.json({ success: true, question: data?.[0] });
+    } catch (error: any) {
+      console.error("[POST /api/mentor-questions] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/mentor-questions/entrepreneur/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { email } = req.params;
+      const decodedEmail = decodeURIComponent(email);
+      console.log("[GET /api/mentor-questions/entrepreneur] Fetching for:", decodedEmail);
+
+      const { data, error } = await (client
+        .from("mentor_questions")
+        .select("*")
+        .eq("entrepreneur_email", decodedEmail)
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[GET /api/mentor-questions/entrepreneur] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.json({ success: true, questions: data || [] });
+    } catch (error: any) {
+      console.error("[GET /api/mentor-questions/entrepreneur] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/mentor-questions", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      console.log("[GET /api/mentor-questions] Fetching all questions for admin");
+
+      const { data: questions, error } = await (client
+        .from("mentor_questions")
+        .select("*")
+        .order("created_at", { ascending: false }) as any);
+
+      if (error) {
+        console.error("[GET /api/mentor-questions] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      const enrichedQuestions = [];
+      for (const q of (questions || [])) {
+        let ideaData = null;
+        if (q.idea_id) {
+          const { data: idea } = await (client
+            .from("ideas")
+            .select("*")
+            .eq("id", q.idea_id)
+            .single() as any);
+          ideaData = idea;
+        } else if (q.entrepreneur_email) {
+          const { data: idea } = await (client
+            .from("ideas")
+            .select("*")
+            .eq("entrepreneur_email", q.entrepreneur_email)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single() as any);
+          ideaData = idea;
+        }
+        enrichedQuestions.push({ ...q, ideaData });
+      }
+
+      return res.json({ success: true, questions: enrichedQuestions });
+    } catch (error: any) {
+      console.error("[GET /api/mentor-questions] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/mentor-questions/:id/reply", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      const { reply } = req.body;
+      console.log("[POST /api/mentor-questions/:id/reply] Replying to question:", id);
+
+      let result = await (client
+        .from("mentor_questions")
+        .update({
+          admin_reply: reply,
+          replied_at: new Date().toISOString(),
+          status: "answered",
+          is_read_by_entrepreneur: false
+        })
+        .eq("id", id)
+        .select() as any);
+
+      if (result.error) {
+        console.log("[POST /api/mentor-questions/:id/reply] Retrying without is_read_by_entrepreneur column");
+        result = await (client
+          .from("mentor_questions")
+          .update({
+            admin_reply: reply,
+            replied_at: new Date().toISOString(),
+            status: "answered"
+          })
+          .eq("id", id)
+          .select() as any);
+      }
+
+      if (result.error) {
+        console.error("[POST /api/mentor-questions/:id/reply] Error:", result.error);
+        return res.status(500).json({ error: result.error.message });
+      }
+
+      console.log("[POST /api/mentor-questions/:id/reply] Reply saved successfully");
+
+      const answeredQuestion = result.data?.[0];
+      if (answeredQuestion?.entrepreneur_email) {
+        try {
+          const resendData = await getResendClient();
+          if (resendData) {
+            const { client: resend, fromEmail } = resendData;
+            const FRONTEND_URL = process.env.FRONTEND_URL || (process.env.NODE_ENV === "development" ? "http://localhost:5000" : "https://touchconnectpro.com");
+            await resend.emails.send({
+              from: fromEmail,
+              to: answeredQuestion.entrepreneur_email,
+              subject: "Your Mentor Question Has Been Answered - TouchConnectPro",
+              html: `
+                <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <div style="background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 24px; border-radius: 10px 10px 0 0; text-align: center;">
+                    <h2 style="margin: 0;">Your Question Has Been Answered!</h2>
+                  </div>
+                  <div style="background: #f8fafc; padding: 24px; border-radius: 0 0 10px 10px;">
+                    <p>Hi ${answeredQuestion.entrepreneur_name || "there"},</p>
+                    <p>A mentor has responded to your question on TouchConnectPro.</p>
+                    <div style="background: #f1f5f9; border-left: 4px solid #94a3b8; padding: 16px; margin: 16px 0; border-radius: 4px;">
+                      <p style="margin: 0 0 4px 0; font-weight: 600; color: #64748b;">Your Question:</p>
+                      <p style="margin: 0; white-space: pre-wrap;">${answeredQuestion.question}</p>
+                    </div>
+                    <div style="background: #d1fae5; border-left: 4px solid #10b981; padding: 16px; margin: 16px 0; border-radius: 4px;">
+                      <p style="margin: 0 0 4px 0; font-weight: 600; color: #065f46;">Mentor's Answer:</p>
+                      <p style="margin: 0; white-space: pre-wrap;">${reply}</p>
+                    </div>
+                    <a href="${FRONTEND_URL}/login" style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">View in Your Dashboard</a>
+                    <p style="margin-top: 20px; color: #64748b; font-size: 14px;">Keep building. We're here to help you succeed.</p>
+                  </div>
+                </div>
+              `
+            });
+            console.log("[POST /api/mentor-questions/:id/reply] Entrepreneur notification email sent to:", answeredQuestion.entrepreneur_email);
+          }
+        } catch (emailError: any) {
+          console.error("[POST /api/mentor-questions/:id/reply] Failed to send entrepreneur notification email:", emailError.message);
+        }
+      }
+
+      return res.json({ success: true, question: answeredQuestion });
+    } catch (error: any) {
+      console.error("[POST /api/mentor-questions/:id/reply] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/mentor-questions/:id/generate-draft", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      console.log("[POST /api/mentor-questions/:id/generate-draft] Generating AI draft for question:", id);
+
+      const { data: questionData, error: qError } = await (client
+        .from("mentor_questions")
+        .select("*")
+        .eq("id", id)
+        .single() as any);
+
+      if (qError || !questionData) {
+        console.error("[POST /api/mentor-questions/:id/generate-draft] Question not found:", qError);
+        return res.status(404).json({ error: "Question not found" });
+      }
+
+      let ideaData = null;
+      if (questionData.idea_id) {
+        const { data: idea } = await (client
+          .from("ideas")
+          .select("*")
+          .eq("id", questionData.idea_id)
+          .single() as any);
+        ideaData = idea;
+      } else if (questionData.entrepreneur_email) {
+        const { data: idea } = await (client
+          .from("ideas")
+          .select("*")
+          .eq("entrepreneur_email", questionData.entrepreneur_email)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single() as any);
+        ideaData = idea;
+      }
+
+      const draftResult = await generateMentorDraftResponse({
+        entrepreneurName: questionData.entrepreneur_name,
+        threadSubject: "Ask a Mentor Question",
+        ideaProposal: ideaData?.answers || ideaData || undefined,
+        businessPlan: ideaData?.business_plan || undefined,
+        entrepreneurQuestion: questionData.question,
+        mentorName: "TouchConnectPro Mentor"
+      });
+
+      const { error: updateError } = await (client
+        .from("mentor_questions")
+        .update({ ai_draft: draftResult.draft })
+        .eq("id", id) as any);
+
+      if (updateError) {
+        console.error("[POST /api/mentor-questions/:id/generate-draft] Update error:", updateError);
+      }
+
+      console.log("[POST /api/mentor-questions/:id/generate-draft] AI draft generated successfully");
+      return res.json({ success: true, draft: draftResult.draft });
+    } catch (error: any) {
+      console.error("[POST /api/mentor-questions/:id/generate-draft] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/mentor-questions/:id/read", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { id } = req.params;
+      console.log("[PATCH /api/mentor-questions/:id/read] Marking as read:", id);
+
+      const { data, error } = await (client
+        .from("mentor_questions")
+        .update({ is_read_by_admin: true })
+        .eq("id", id)
+        .select() as any);
+
+      if (error) {
+        console.error("[PATCH /api/mentor-questions/:id/read] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.json({ success: true, question: data?.[0] });
+    } catch (error: any) {
+      console.error("[PATCH /api/mentor-questions/:id/read] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/mentor-questions/mark-read-entrepreneur/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { email } = req.params;
+      const decodedEmail = decodeURIComponent(email);
+      console.log("[PATCH /api/mentor-questions/mark-read-entrepreneur] Marking all answered as read for:", decodedEmail);
+
+      const { data, error } = await (client
+        .from("mentor_questions")
+        .update({ is_read_by_entrepreneur: true })
+        .eq("entrepreneur_email", decodedEmail)
+        .eq("status", "answered")
+        .eq("is_read_by_entrepreneur", false)
+        .select() as any);
+
+      if (error) {
+        console.error("[PATCH /api/mentor-questions/mark-read-entrepreneur] Error:", error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.json({ success: true, updated: data?.length || 0 });
+    } catch (error: any) {
+      console.error("[PATCH /api/mentor-questions/mark-read-entrepreneur] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Create mentor_questions table if it doesn't exist
+  app.post("/api/admin/create-mentor-questions-table", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const createTableSQL = `
+CREATE TABLE IF NOT EXISTS public.mentor_questions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  entrepreneur_email TEXT NOT NULL,
+  entrepreneur_name TEXT,
+  question TEXT NOT NULL,
+  idea_id TEXT,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  admin_reply TEXT,
+  replied_at TIMESTAMPTZ,
+  ai_draft TEXT,
+  is_read_by_admin BOOLEAN DEFAULT FALSE,
+  is_read_by_entrepreneur BOOLEAN DEFAULT TRUE
+);
+
+CREATE INDEX IF NOT EXISTS idx_mentor_questions_email ON public.mentor_questions(entrepreneur_email);
+CREATE INDEX IF NOT EXISTS idx_mentor_questions_status ON public.mentor_questions(status);
+
+ALTER TABLE public.mentor_questions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow service role full access on mentor_questions" ON public.mentor_questions
+  FOR ALL USING (true) WITH CHECK (true);
+`;
+
+      const { error } = await (client.rpc("exec_sql", { sql: createTableSQL }) as any);
+      
+      if (error) {
+        console.log("[CREATE MENTOR_QUESTIONS TABLE] RPC failed, returning SQL for manual creation");
+        return res.json({
+          success: false,
+          message: "Please run this SQL in Supabase SQL Editor to create the mentor_questions table:",
+          sql: createTableSQL
+        });
+      }
+
+      console.log("[CREATE MENTOR_QUESTIONS TABLE] Table created successfully");
+      return res.json({ success: true, message: "mentor_questions table created" });
+    } catch (error: any) {
+      console.error("[CREATE MENTOR_QUESTIONS TABLE] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // =====================================================
   // MESSAGE THREADS - Threaded Conversations (Entrepreneur <-> Mentor)
   // =====================================================
 
@@ -3337,7 +3757,7 @@ export async function registerRoutes(
         return res.json({ subscriptions: [], totals: { totalRevenue: 0, count: 0 } });
       }
       
-      const subscriptionAmount = 49; // $49/month per subscription
+      const subscriptionAmount = 9.99; // $9.99/month Founders Circle subscription
       const subscriptions = (paidEntrepreneurs || []).map((e: any) => ({
         id: e.id,
         entrepreneurName: e.entrepreneur_name || 'Entrepreneur',
@@ -5966,13 +6386,14 @@ export async function registerRoutes(
   // Stripe: Create checkout session for entrepreneur subscription
   app.post("/api/stripe/create-checkout-session", async (req, res) => {
     try {
-      const { entrepreneurEmail, entrepreneurName } = req.body;
+      const { email, entrepreneurEmail, entrepreneurId, entrepreneurName, successUrl, cancelUrl } = req.body;
+      const userEmail = email || entrepreneurEmail;
       
-      if (!entrepreneurEmail) {
+      if (!userEmail) {
         return res.status(400).json({ error: "Entrepreneur email required" });
       }
 
-      console.log("[STRIPE] Creating checkout session for:", entrepreneurEmail);
+      console.log("[STRIPE] Creating checkout session for:", userEmail);
 
       const { stripeService } = await import('./stripeService');
       
@@ -5980,16 +6401,19 @@ export async function registerRoutes(
       const baseUrl = process.env.FRONTEND_URL || 
         (replitDomain ? `https://${replitDomain}` : "http://localhost:5000");
       
+      const finalSuccessUrl = successUrl || `${baseUrl}/login?payment=success&session_id={CHECKOUT_SESSION_ID}`;
+      const finalCancelUrl = cancelUrl || `${baseUrl}/login?payment=cancelled`;
+      
       const { url, customerId } = await stripeService.createCheckoutSession(
-        entrepreneurEmail,
+        userEmail,
         entrepreneurName || "Entrepreneur",
-        `${baseUrl}/dashboard-entrepreneur?payment=success`,
-        `${baseUrl}/dashboard-entrepreneur?payment=cancelled`
+        finalSuccessUrl,
+        finalCancelUrl
       );
 
       console.log("[STRIPE] Checkout session created, customer:", customerId);
       
-      return res.json({ url, customerId });
+      return res.json({ url, customerId, sessionId: url });
     } catch (error: any) {
       console.error("[STRIPE] Checkout error:", error.message);
       return res.status(500).json({ error: error.message });
@@ -6128,7 +6552,7 @@ export async function registerRoutes(
             from_email: "system@touchconnectpro.com",
             to_name: "Admin",
             to_email: "admin@touchconnectpro.com",
-            message: `${entrepreneurName} (${entrepreneurEmail}) has completed their $49/month subscription payment and is now a paid member. Please assign a mentor.`,
+            message: `${entrepreneurName} (${entrepreneurEmail}) has completed their subscription payment and is now a paid member. Please assign a mentor.`,
             is_read: false
           } as any));
         console.log("[STRIPE CONFIRM] Admin notification sent about payment from:", entrepreneurEmail);
@@ -6477,6 +6901,96 @@ export async function registerRoutes(
     }
   });
 
+  // POST /api/contract-acceptances - Save contract acceptance
+  app.post("/api/contract-acceptances", async (req, res) => {
+    console.log("[POST /api/contract-acceptances] Saving contract acceptance");
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { email, role, contractVersion, contractText, userAgent } = req.body;
+      const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
+
+      if (!email || !role || !contractVersion || !contractText) {
+        return res.status(400).json({ error: "Missing required fields: email, role, contractVersion, contractText" });
+      }
+
+      const validRoles = ['coach', 'mentor', 'investor', 'entrepreneur'];
+      if (!validRoles.includes(role.toLowerCase())) {
+        return res.status(400).json({ error: "Invalid role. Must be coach, mentor, investor, or entrepreneur" });
+      }
+
+      const { data: existing } = await (client
+        .from("contract_acceptances")
+        .select("id")
+        .eq("email", email.toLowerCase())
+        .eq("role", role.toLowerCase())
+        .eq("contract_version", contractVersion)
+        .limit(1) as any);
+
+      if (existing && existing.length > 0) {
+        return res.status(200).json({ success: true, id: existing[0].id, alreadyAccepted: true });
+      }
+
+      const { data, error } = await (client
+        .from("contract_acceptances")
+        .insert({
+          email: email.toLowerCase(),
+          role: role.toLowerCase(),
+          contract_version: contractVersion,
+          contract_text: contractText,
+          ip_address: ipAddress,
+          user_agent: userAgent || null,
+          accepted_at: new Date().toISOString()
+        })
+        .select() as any);
+
+      if (error) {
+        console.error("[CONTRACT] Insert error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      console.log("[CONTRACT] Saved for", email, role);
+      return res.status(201).json({ success: true, id: data?.[0]?.id });
+    } catch (error: any) {
+      console.error("[CONTRACT] Error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // GET /api/contract-acceptances - Get all contract acceptances (admin)
+  app.get("/api/contract-acceptances", async (req, res) => {
+    console.log("[GET /api/contract-acceptances] Fetching all contracts");
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { role } = req.query;
+      let query = client
+        .from("contract_acceptances")
+        .select("*")
+        .order("accepted_at", { ascending: false });
+
+      if (role && role !== 'all') {
+        query = query.eq("role", (role as string).toLowerCase());
+      }
+
+      const { data, error } = await (query as any);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json(data || []);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Check if coach has accepted latest agreement
   app.get("/api/contract-acceptances/check-coach-agreement/:email", async (req, res) => {
     console.log("[CHECK COACH AGREEMENT] Checking for:", req.params.email);
@@ -6654,7 +7168,7 @@ Full terms available at: https://touchconnectpro.com/coach-agreement`;
                         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                           <h2>Payment Confirmed!</h2>
                           <p>Hi ${entrepreneurName},</p>
-                          <p>Your $49/month membership payment has been received. A mentor will be assigned to you shortly.</p>
+                          <p>Your membership payment has been received. A mentor will be assigned to you shortly.</p>
                           <p>You'll receive a notification once your mentor is ready to connect with you.</p>
                           <p>Best regards,<br>The TouchConnectPro Team</p>
                         </div>
@@ -7695,10 +8209,139 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
   });
 
   // =============================================
-  // FOUNDER FOCUS SCORE & TRIAL ROUTES
+  // COMMUNITY FREE SIGNUP & TRIAL ROUTES
   // =============================================
 
-  // POST /api/trial/create - Create trial account from Founder Focus Score
+  // POST /api/community/signup - Create Community-Free account from Founder Focus Score
+  app.post("/api/community/signup", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { email, name, password, quizResult } = req.body;
+      if (!email || !name || !password) {
+        return res.status(400).json({ error: "Name, email, and password are required" });
+      }
+      if (password.length < 6) {
+        return res.status(400).json({ error: "Password must be at least 6 characters" });
+      }
+
+      const normalizedEmail = email.toLowerCase().trim();
+
+      // Check if user already has an entrepreneur application
+      const { data: existingApp } = await (client
+        .from("ideas")
+        .select("id, status")
+        .eq("entrepreneur_email", normalizedEmail)
+        .limit(1) as any);
+
+      if (existingApp && existingApp.length > 0) {
+        return res.status(409).json({ 
+          error: "An account already exists for this email. Please log in instead."
+        });
+      }
+
+      // Create Supabase auth user with provided password
+      const { data: authData, error: authError } = await (client.auth.admin.createUser({
+        email: normalizedEmail,
+        password: password,
+        email_confirm: true,
+        user_metadata: {
+          user_type: "entrepreneur",
+          full_name: name
+        }
+      }) as any);
+
+      if (authError) {
+        if (authError.message.includes("already been registered")) {
+          return res.status(409).json({ error: "An account already exists for this email. Please log in instead." });
+        }
+        console.error("[COMMUNITY SIGNUP] Auth error:", authError);
+        return res.status(400).json({ error: authError.message });
+      }
+
+      // Insert into ideas table with pre-approved status
+      const { data: ideaData, error: ideaError } = await (client
+        .from("ideas")
+        .insert({
+          status: "pre-approved",
+          entrepreneur_email: normalizedEmail,
+          entrepreneur_name: name,
+          data: quizResult ? { focusScore: quizResult } : {},
+          business_plan: {},
+          linkedin_profile: "",
+          user_id: authData?.user?.id || null,
+        } as any)
+        .select() as any);
+
+      if (ideaError) {
+        console.error("[COMMUNITY SIGNUP] Ideas insert error:", ideaError);
+        return res.status(400).json({ error: ideaError.message });
+      }
+
+      // Also insert into users table for messaging/profile features
+      try {
+        await (client
+          .from("users")
+          .upsert({
+            email: normalizedEmail,
+            name: name,
+            user_type: "entrepreneur",
+            status: "pre-approved",
+            created_at: new Date().toISOString()
+          }, { onConflict: "email" }) as any);
+      } catch (e) {
+        console.error("[COMMUNITY SIGNUP] Users upsert warning:", e);
+      }
+
+      console.log("[COMMUNITY SIGNUP] Account created for:", normalizedEmail);
+
+      // Send welcome email
+      try {
+        const resendData = await getResendClient();
+        if (resendData) {
+          const { client: resendClient, fromEmail } = resendData;
+          await resendClient.emails.send({
+            from: fromEmail,
+            to: normalizedEmail,
+            subject: "Welcome to TouchConnectPro Community!",
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #0ea5e9;">Welcome to TouchConnectPro, ${name}!</h2>
+                <p>Your free Community account is ready. You can now log in to access your entrepreneur dashboard.</p>
+                ${quizResult ? `<p>Your Focus Score results have been saved to your profile.</p>` : ""}
+                <p>As a Community member, you have access to:</p>
+                <ul>
+                  <li>AI-powered business planning tools</li>
+                  <li>Coach marketplace browsing</li>
+                  <li>Focus Score diagnostics</li>
+                </ul>
+                <p>Ready to upgrade? Our Founders Circle ($9.99/month) and Capital Circle ($49/month) tiers unlock mentor access and investor connections.</p>
+                <p><a href="https://touchconnectpro.com/login" style="display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold;">Log In to Your Dashboard</a></p>
+                <p style="color: #94a3b8; font-size: 12px;">Touch Equity Partners LLC</p>
+              </div>
+            `
+          });
+          console.log("[COMMUNITY SIGNUP] Welcome email sent to:", normalizedEmail);
+        }
+      } catch (emailErr) {
+        console.error("[COMMUNITY SIGNUP] Email send error (non-blocking):", emailErr);
+      }
+
+      return res.json({ 
+        success: true, 
+        id: ideaData?.[0]?.id,
+        message: "Community account created successfully"
+      });
+    } catch (error: any) {
+      console.error("[COMMUNITY SIGNUP] Error:", error);
+      return res.status(500).json({ error: error.message || "Server error" });
+    }
+  });
+
+  // POST /api/trial/create - Create trial account from Founder Focus Score (legacy)
   app.post("/api/trial/create", async (req, res) => {
     try {
       const client = getSupabaseClient();

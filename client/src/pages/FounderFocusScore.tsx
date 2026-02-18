@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, ArrowLeft, Target, Compass, DollarSign, Settings, Rocket, CheckCircle, Loader2, Zap, Clock, BarChart3 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Target, Compass, DollarSign, Settings, Rocket, CheckCircle, Loader2, Zap, Clock, BarChart3, Users } from "lucide-react";
 import { Link } from "wouter";
 import { QUIZ_QUESTIONS, calculateResults, BLOCKER_INFO, type QuizResult, type Category } from "@/lib/founderFocusData";
+import { COMMUNITY_FREE_CONTRACT, COMMUNITY_FREE_CONTRACT_VERSION } from "@/lib/contracts";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 
@@ -38,17 +39,30 @@ const categoryBgColors: Record<Category, string> = {
   Execution: "bg-cyan-500/10 border-cyan-500/30",
 };
 
-type Phase = "landing" | "quiz" | "results" | "trial-signup";
+type Phase = "landing" | "quiz" | "results" | "community-signup";
 
 export default function FounderFocusScore() {
   const [phase, setPhase] = useState<Phase>("landing");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<number[]>(new Array(8).fill(-1));
   const [result, setResult] = useState<QuizResult | null>(null);
-  const [trialEmail, setTrialEmail] = useState("");
-  const [trialName, setTrialName] = useState("");
-  const [isCreatingTrial, setIsCreatingTrial] = useState(false);
-  const [trialCreated, setTrialCreated] = useState(false);
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupName, setSignupName] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const [accountCreated, setAccountCreated] = useState(false);
+  const [agreedToContract, setAgreedToContract] = useState(false);
+  const [showContractText, setShowContractText] = useState(false);
+  const prevPhaseRef = useRef<Phase>("landing");
+  const prevQuestionRef = useRef(0);
+
+  useEffect(() => {
+    if (phase !== prevPhaseRef.current || currentQuestion !== prevQuestionRef.current) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      prevPhaseRef.current = phase;
+      prevQuestionRef.current = currentQuestion;
+    }
+  }, [phase, currentQuestion]);
 
   const handleAnswer = (answerIndex: number) => {
     const newAnswers = [...answers];
@@ -70,33 +84,59 @@ export default function FounderFocusScore() {
     }
   };
 
-  const handleTrialSignup = async () => {
-    if (!trialEmail || !trialName) {
-      toast.error("Please enter your name and email");
+  const handleCommunitySignup = async () => {
+    if (!signupEmail || !signupName || !signupPassword) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    if (signupPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (!agreedToContract) {
+      toast.error("Please agree to the Community Free Membership Agreement to continue");
       return;
     }
 
-    setIsCreatingTrial(true);
+    setIsCreatingAccount(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/trial/create`, {
+      const res = await fetch(`${API_BASE_URL}/api/community/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: trialEmail,
-          name: trialName,
+          email: signupEmail,
+          name: signupName,
+          password: signupPassword,
           quizResult: result,
         }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to create trial");
+      if (!res.ok) throw new Error(data.error || "Failed to create account");
 
-      setTrialCreated(true);
-      toast.success("Trial activated! Check your email for login instructions.");
+      // Save contract acceptance
+      try {
+        await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: signupEmail.toLowerCase().trim(),
+            role: "entrepreneur",
+            contractVersion: COMMUNITY_FREE_CONTRACT_VERSION,
+            contractText: COMMUNITY_FREE_CONTRACT,
+            userAgent: navigator.userAgent,
+          }),
+        });
+      } catch (contractErr) {
+        console.error("Contract acceptance save error (non-blocking):", contractErr);
+      }
+
+      setAccountCreated(true);
+      toast.success("Account created! You can now log in to your dashboard.");
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");
     } finally {
-      setIsCreatingTrial(false);
+      setIsCreatingAccount(false);
     }
   };
 
@@ -347,18 +387,18 @@ export default function FounderFocusScore() {
 
           <Card className="bg-gradient-to-br from-indigo-900/80 to-cyan-900/80 border-indigo-500/30 overflow-hidden">
             <CardContent className="p-8 md:p-12 text-center">
-              <BarChart3 className="h-10 w-10 text-cyan-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-display font-bold text-white mb-3" data-testid="text-trial-cta">
-                Unlock the Entrepreneur Dashboard for 7 Days
+              <Users className="h-10 w-10 text-cyan-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-display font-bold text-white mb-3" data-testid="text-community-cta">
+                Join the Free Entrepreneur Community
               </h3>
               <p className="text-slate-300 mb-6 max-w-xl mx-auto">
-                Get free access to clarity and focus tools, priority setting exercises, and direct mentor messaging to accelerate your next steps.
+                Sign up with your email and password to unlock your dashboard. Access clarity and focus tools, priority-setting exercises, and connect with coaches and other founders to accelerate your next steps.
               </p>
               <div className="grid grid-cols-3 gap-3 max-w-md mx-auto mb-8">
                 {[
                   { label: "Focus tools", icon: <Target className="h-4 w-4" /> },
-                  { label: "Mentor messaging", icon: <CheckCircle className="h-4 w-4" /> },
-                  { label: "7 days free", icon: <Clock className="h-4 w-4" /> },
+                  { label: "Coach access", icon: <CheckCircle className="h-4 w-4" /> },
+                  { label: "100% free", icon: <Zap className="h-4 w-4" /> },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-1.5 text-xs text-indigo-200 bg-white/5 rounded-lg px-3 py-2 justify-center">
                     {item.icon}
@@ -366,47 +406,91 @@ export default function FounderFocusScore() {
                   </div>
                 ))}
               </div>
-              {!trialCreated ? (
-                <div className="max-w-md mx-auto space-y-3">
+              {!accountCreated ? (
+                <form className="max-w-md mx-auto space-y-3" onSubmit={(e) => { e.preventDefault(); handleCommunitySignup(); }} autoComplete="off">
                   <Input
+                    name="signup-name"
+                    id="signup-name"
                     placeholder="Your full name"
-                    value={trialName}
-                    onChange={(e) => setTrialName(e.target.value)}
+                    value={signupName}
+                    onChange={(e) => setSignupName(e.target.value)}
+                    autoComplete="name"
                     className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 h-12"
-                    data-testid="input-trial-name"
+                    data-testid="input-signup-name"
                   />
                   <Input
+                    name="signup-email"
+                    id="signup-email"
                     type="email"
                     placeholder="Your email address"
-                    value={trialEmail}
-                    onChange={(e) => setTrialEmail(e.target.value)}
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    autoComplete="email"
                     className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 h-12"
-                    data-testid="input-trial-email"
+                    data-testid="input-signup-email"
                   />
+                  <Input
+                    name="signup-password"
+                    id="signup-password"
+                    type="password"
+                    placeholder="Choose a password (min 6 characters)"
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
+                    autoComplete="new-password"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 h-12"
+                    data-testid="input-signup-password"
+                  />
+                  <div className="text-left">
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={agreedToContract}
+                        onChange={(e) => setAgreedToContract(e.target.checked)}
+                        className="mt-1 h-4 w-4 rounded border-white/30 accent-cyan-500"
+                        data-testid="checkbox-agree-contract"
+                      />
+                      <span className="text-sm text-slate-300">
+                        I agree to the{" "}
+                        <button
+                          type="button"
+                          onClick={() => setShowContractText(!showContractText)}
+                          className="text-cyan-400 underline hover:text-cyan-300"
+                          data-testid="button-view-contract"
+                        >
+                          Community Free Membership Agreement
+                        </button>
+                      </span>
+                    </label>
+                    {showContractText && (
+                      <div className="mt-3 max-h-48 overflow-y-auto bg-white/5 border border-white/10 rounded-lg p-4 text-xs text-slate-400 whitespace-pre-wrap">
+                        {COMMUNITY_FREE_CONTRACT}
+                      </div>
+                    )}
+                  </div>
                   <Button
+                    type="submit"
                     size="lg"
                     className="w-full h-12 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full"
-                    onClick={handleTrialSignup}
-                    disabled={isCreatingTrial}
-                    data-testid="button-activate-trial"
+                    disabled={isCreatingAccount}
+                    data-testid="button-join-community"
                   >
-                    {isCreatingTrial ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating your trial...</>
+                    {isCreatingAccount ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating your account...</>
                     ) : (
-                      <>Activate Free Trial <ArrowRight className="ml-2 h-5 w-5" /></>
+                      <>Join the Community – Free <ArrowRight className="ml-2 h-5 w-5" /></>
                     )}
                   </Button>
                   <p className="text-xs text-slate-400 text-center">No credit card required. No commitment.</p>
-                </div>
+                </form>
               ) : (
-                <div className="max-w-md mx-auto bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6" data-testid="text-trial-success">
+                <div className="max-w-md mx-auto bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6" data-testid="text-signup-success">
                   <CheckCircle className="h-10 w-10 text-emerald-400 mx-auto mb-3" />
-                  <h4 className="text-lg font-bold text-white mb-2">Trial Activated!</h4>
+                  <h4 className="text-lg font-bold text-white mb-2">Welcome to the Community!</h4>
                   <p className="text-slate-300 text-sm mb-4">
-                    Check your email for login instructions. Your 7-day trial starts now.
+                    Your account is ready. Log in to access your entrepreneur dashboard.
                   </p>
                   <Link href="/login">
-                    <Button className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-full" data-testid="button-login-trial">
+                    <Button className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-full" data-testid="button-login-community">
                       Log In to Your Dashboard <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>

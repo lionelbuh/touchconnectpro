@@ -1310,16 +1310,17 @@ app.post("/api/ideas", async (req, res) => {
       .single();
 
     if (existingApp) {
-      // If rejected, allow resubmission by updating existing record
-      if (existingApp.status === "rejected") {
-        console.log("[RESUBMIT] Updating rejected application for:", email);
-        const updatedFormData = { ...(formData || {}), isResubmission: true };
+      // If rejected or pre-approved (Community Free), allow update
+      if (existingApp.status === "rejected" || existingApp.status === "pre-approved") {
+        console.log("[UPDATE] Updating", existingApp.status, "application for:", email);
+        const mergedData = { ...(existingApp.data || {}), ...(formData || {}) };
+        const newStatus = existingApp.status === "pre-approved" ? "pre-approved" : "submitted";
         const { data: updatedData, error: updateError } = await supabase
           .from("ideas")
           .update({
-            status: "submitted",
+            status: newStatus,
             entrepreneur_name: fullName,
-            data: updatedFormData,
+            data: mergedData,
             business_plan: businessPlan || {},
             linkedin_profile: linkedinWebsite || ""
           })
@@ -1331,7 +1332,7 @@ app.post("/api/ideas", async (req, res) => {
           return res.status(400).json({ error: updateError.message });
         }
 
-        console.log("[RESUBMIT SUCCESS] Application updated with id:", updatedData?.[0]?.id);
+        console.log("[UPDATE SUCCESS] Application updated with id:", updatedData?.[0]?.id);
         return res.json({ success: true, id: updatedData?.[0]?.id, resubmitted: true });
       } else {
         // If already submitted/pending/approved, don't allow duplicate
@@ -2510,7 +2511,7 @@ app.get("/api/admin/subscription-revenue", async (req, res) => {
       return res.json({ subscriptions: [], totals: { totalRevenue: 0, count: 0 } });
     }
     
-    const subscriptionAmount = 49; // $49/month per subscription
+    const subscriptionAmount = 9.99; // $9.99/month Founders Circle subscription
     const subscriptions = (paidEntrepreneurs || []).map(e => ({
       id: e.id,
       entrepreneurName: e.entrepreneur_name || 'Entrepreneur',
@@ -5083,6 +5084,397 @@ app.patch("/api/messages/:id/read", async (req, res) => {
 });
 
 // =============================================
+// ASK A MENTOR - Mentor Questions
+// =============================================
+
+app.post("/api/mentor-questions", async (req, res) => {
+  try {
+    const { entrepreneurEmail, entrepreneurName, question, ideaId } = req.body;
+    console.log("[POST /api/mentor-questions] Creating question from:", entrepreneurEmail);
+
+    const { data, error } = await supabase
+      .from("mentor_questions")
+      .insert({
+        entrepreneur_email: entrepreneurEmail,
+        entrepreneur_name: entrepreneurName,
+        question,
+        idea_id: ideaId || null,
+        status: "pending",
+        created_at: new Date().toISOString(),
+        admin_reply: null,
+        replied_at: null,
+        ai_draft: null,
+        is_read_by_admin: false
+      })
+      .select();
+
+    if (error) {
+      console.error("[POST /api/mentor-questions] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    console.log("[POST /api/mentor-questions] Question created successfully");
+
+    try {
+      const resendData = await getResendClient();
+      if (resendData) {
+        const { client: resendClient, fromEmail } = resendData;
+        const baseUrl = process.env.FRONTEND_URL || "https://touchconnectpro.com";
+        await resendClient.emails.send({
+          from: fromEmail,
+          to: ADMIN_EMAIL,
+          subject: `New "Ask a Mentor" Question from ${entrepreneurName || entrepreneurEmail}`,
+          html: `
+            <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 24px; border-radius: 10px 10px 0 0; text-align: center;">
+                <h2 style="margin: 0;">New Mentor Question</h2>
+              </div>
+              <div style="background: #f8fafc; padding: 24px; border-radius: 0 0 10px 10px;">
+                <p><strong>From:</strong> ${entrepreneurName || "Unknown"} (${entrepreneurEmail})</p>
+                <div style="background: white; border-left: 4px solid #6366f1; padding: 16px; margin: 16px 0; border-radius: 4px;">
+                  <p style="margin: 0; white-space: pre-wrap;">${question}</p>
+                </div>
+                <a href="${baseUrl}/admin-dashboard" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">View in Admin Dashboard</a>
+              </div>
+            </div>
+          `
+        });
+        console.log("[POST /api/mentor-questions] Admin notification email sent to:", ADMIN_EMAIL);
+      }
+    } catch (emailError) {
+      console.error("[POST /api/mentor-questions] Failed to send admin notification email:", emailError.message);
+    }
+
+    return res.json({ success: true, question: data?.[0] });
+  } catch (error) {
+    console.error("[POST /api/mentor-questions] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/mentor-questions/entrepreneur/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const decodedEmail = decodeURIComponent(email);
+    console.log("[GET /api/mentor-questions/entrepreneur] Fetching for:", decodedEmail);
+
+    const { data, error } = await supabase
+      .from("mentor_questions")
+      .select("*")
+      .eq("entrepreneur_email", decodedEmail)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[GET /api/mentor-questions/entrepreneur] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.json({ success: true, questions: data || [] });
+  } catch (error) {
+    console.error("[GET /api/mentor-questions/entrepreneur] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/mentor-questions", async (req, res) => {
+  try {
+    console.log("[GET /api/mentor-questions] Fetching all questions for admin");
+
+    const { data: questions, error } = await supabase
+      .from("mentor_questions")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[GET /api/mentor-questions] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    const enrichedQuestions = [];
+    for (const q of (questions || [])) {
+      let ideaData = null;
+      if (q.idea_id) {
+        const { data: idea } = await supabase
+          .from("ideas")
+          .select("*")
+          .eq("id", q.idea_id)
+          .single();
+        ideaData = idea;
+      } else if (q.entrepreneur_email) {
+        const { data: idea } = await supabase
+          .from("ideas")
+          .select("*")
+          .eq("entrepreneur_email", q.entrepreneur_email)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+        ideaData = idea;
+      }
+      enrichedQuestions.push({ ...q, ideaData });
+    }
+
+    return res.json({ success: true, questions: enrichedQuestions });
+  } catch (error) {
+    console.error("[GET /api/mentor-questions] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/mentor-questions/:id/reply", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reply } = req.body;
+    console.log("[POST /api/mentor-questions/:id/reply] Replying to question:", id);
+
+    let result = await supabase
+      .from("mentor_questions")
+      .update({
+        admin_reply: reply,
+        replied_at: new Date().toISOString(),
+        status: "answered",
+        is_read_by_entrepreneur: false
+      })
+      .eq("id", id)
+      .select();
+
+    if (result.error) {
+      console.log("[POST /api/mentor-questions/:id/reply] Retrying without is_read_by_entrepreneur column");
+      result = await supabase
+        .from("mentor_questions")
+        .update({
+          admin_reply: reply,
+          replied_at: new Date().toISOString(),
+          status: "answered"
+        })
+        .eq("id", id)
+        .select();
+    }
+
+    if (result.error) {
+      console.error("[POST /api/mentor-questions/:id/reply] Error:", result.error);
+      return res.status(500).json({ error: result.error.message });
+    }
+
+    console.log("[POST /api/mentor-questions/:id/reply] Reply saved successfully");
+
+    const answeredQuestion = result.data?.[0];
+    if (answeredQuestion?.entrepreneur_email) {
+      try {
+        const resendData = await getResendClient();
+        if (resendData) {
+          const { client: resendClient, fromEmail } = resendData;
+          const baseUrl = process.env.FRONTEND_URL || "https://touchconnectpro.com";
+          await resendClient.emails.send({
+            from: fromEmail,
+            to: answeredQuestion.entrepreneur_email,
+            subject: "Your Mentor Question Has Been Answered - TouchConnectPro",
+            html: `
+              <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 24px; border-radius: 10px 10px 0 0; text-align: center;">
+                  <h2 style="margin: 0;">Your Question Has Been Answered!</h2>
+                </div>
+                <div style="background: #f8fafc; padding: 24px; border-radius: 0 0 10px 10px;">
+                  <p>Hi ${answeredQuestion.entrepreneur_name || "there"},</p>
+                  <p>A mentor has responded to your question on TouchConnectPro.</p>
+                  <div style="background: #f1f5f9; border-left: 4px solid #94a3b8; padding: 16px; margin: 16px 0; border-radius: 4px;">
+                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #64748b;">Your Question:</p>
+                    <p style="margin: 0; white-space: pre-wrap;">${answeredQuestion.question}</p>
+                  </div>
+                  <div style="background: #d1fae5; border-left: 4px solid #10b981; padding: 16px; margin: 16px 0; border-radius: 4px;">
+                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #065f46;">Mentor's Answer:</p>
+                    <p style="margin: 0; white-space: pre-wrap;">${reply}</p>
+                  </div>
+                  <a href="${baseUrl}/login" style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">View in Your Dashboard</a>
+                  <p style="margin-top: 20px; color: #64748b; font-size: 14px;">Keep building. We're here to help you succeed.</p>
+                </div>
+              </div>
+            `
+          });
+          console.log("[POST /api/mentor-questions/:id/reply] Entrepreneur notification email sent to:", answeredQuestion.entrepreneur_email);
+        }
+      } catch (emailError) {
+        console.error("[POST /api/mentor-questions/:id/reply] Failed to send entrepreneur notification email:", emailError.message);
+      }
+    }
+
+    return res.json({ success: true, question: answeredQuestion });
+  } catch (error) {
+    console.error("[POST /api/mentor-questions/:id/reply] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/mentor-questions/:id/generate-draft", async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log("[POST /api/mentor-questions/:id/generate-draft] Generating AI draft for question:", id);
+
+    const { data: questionData, error: qError } = await supabase
+      .from("mentor_questions")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (qError || !questionData) {
+      console.error("[POST /api/mentor-questions/:id/generate-draft] Question not found:", qError);
+      return res.status(404).json({ error: "Question not found" });
+    }
+
+    let ideaData = null;
+    if (questionData.idea_id) {
+      const { data: idea } = await supabase
+        .from("ideas")
+        .select("*")
+        .eq("id", questionData.idea_id)
+        .single();
+      ideaData = idea;
+    } else if (questionData.entrepreneur_email) {
+      const { data: idea } = await supabase
+        .from("ideas")
+        .select("*")
+        .eq("entrepreneur_email", questionData.entrepreneur_email)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+      ideaData = idea;
+    }
+
+    let ideaContext = "";
+    if (ideaData) {
+      if (ideaData.idea_name) ideaContext += `Business Idea: ${ideaData.idea_name}\n`;
+      if (ideaData.answers) ideaContext += `Proposal Details: ${JSON.stringify(ideaData.answers)}\n`;
+      if (ideaData.business_plan) ideaContext += `Business Plan: ${JSON.stringify(ideaData.business_plan)}\n`;
+    }
+
+    const openai = getOpenAI();
+    if (!openai) {
+      return res.status(503).json({ error: "AI service not configured. Please add OPENAI_API_KEY." });
+    }
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are an experienced business mentor helping entrepreneurs..." },
+        { role: "user", content: `Based on the following context, draft a helpful response:\n\nEntrepreneur: ${questionData.entrepreneur_name}\n\nQuestion: "${questionData.question}"\n\n${ideaContext}\n\nWrite a helpful, specific, and actionable response. Return ONLY the draft response text.` }
+      ],
+      temperature: 0.7,
+      max_tokens: 800
+    });
+    const draft = response.choices[0]?.message?.content;
+
+    const { error: updateError } = await supabase
+      .from("mentor_questions")
+      .update({ ai_draft: draft })
+      .eq("id", id);
+
+    if (updateError) {
+      console.error("[POST /api/mentor-questions/:id/generate-draft] Update error:", updateError);
+    }
+
+    console.log("[POST /api/mentor-questions/:id/generate-draft] AI draft generated successfully");
+    return res.json({ success: true, draft });
+  } catch (error) {
+    console.error("[POST /api/mentor-questions/:id/generate-draft] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.patch("/api/mentor-questions/:id/read", async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log("[PATCH /api/mentor-questions/:id/read] Marking as read:", id);
+
+    const { data, error } = await supabase
+      .from("mentor_questions")
+      .update({ is_read_by_admin: true })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.error("[PATCH /api/mentor-questions/:id/read] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.json({ success: true, question: data?.[0] });
+  } catch (error) {
+    console.error("[PATCH /api/mentor-questions/:id/read] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.patch("/api/mentor-questions/mark-read-entrepreneur/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const decodedEmail = decodeURIComponent(email);
+    console.log("[PATCH /api/mentor-questions/mark-read-entrepreneur] Marking all answered as read for:", decodedEmail);
+
+    const { data, error } = await supabase
+      .from("mentor_questions")
+      .update({ is_read_by_entrepreneur: true })
+      .eq("entrepreneur_email", decodedEmail)
+      .eq("status", "answered")
+      .eq("is_read_by_entrepreneur", false)
+      .select();
+
+    if (error) {
+      console.error("[PATCH /api/mentor-questions/mark-read-entrepreneur] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.json({ success: true, updated: data?.length || 0 });
+  } catch (error) {
+    console.error("[PATCH /api/mentor-questions/mark-read-entrepreneur] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/admin/create-mentor-questions-table", async (req, res) => {
+  try {
+    const createTableSQL = `
+CREATE TABLE IF NOT EXISTS public.mentor_questions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  entrepreneur_email TEXT NOT NULL,
+  entrepreneur_name TEXT,
+  question TEXT NOT NULL,
+  idea_id TEXT,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  admin_reply TEXT,
+  replied_at TIMESTAMPTZ,
+  ai_draft TEXT,
+  is_read_by_admin BOOLEAN DEFAULT FALSE,
+  is_read_by_entrepreneur BOOLEAN DEFAULT TRUE
+);
+
+CREATE INDEX IF NOT EXISTS idx_mentor_questions_email ON public.mentor_questions(entrepreneur_email);
+CREATE INDEX IF NOT EXISTS idx_mentor_questions_status ON public.mentor_questions(status);
+
+ALTER TABLE public.mentor_questions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow service role full access on mentor_questions" ON public.mentor_questions
+  FOR ALL USING (true) WITH CHECK (true);
+`;
+
+    const { error } = await supabase.rpc("exec_sql", { sql: createTableSQL });
+
+    if (error) {
+      console.log("[CREATE MENTOR_QUESTIONS TABLE] RPC failed, returning SQL for manual creation");
+      return res.json({
+        success: false,
+        message: "Please run this SQL in Supabase SQL Editor to create the mentor_questions table:",
+        sql: createTableSQL
+      });
+    }
+
+    console.log("[CREATE MENTOR_QUESTIONS TABLE] Table created successfully");
+    return res.json({ success: true, message: "mentor_questions table created" });
+  } catch (error) {
+    console.error("[CREATE MENTOR_QUESTIONS TABLE] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// =============================================
 // MESSAGE THREADS (Threaded Conversations)
 // =============================================
 
@@ -6480,7 +6872,7 @@ app.post("/api/stripe/create-checkout-session", async (req, res) => {
               name: "TouchConnectPro Membership",
               description: "Monthly membership with mentor access, AI business planning tools, and investor connections"
             },
-            unit_amount: 4900,
+            unit_amount: 999,
             recurring: { interval: "month" }
           },
           quantity: 1
@@ -7146,7 +7538,7 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
                   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2>Payment Confirmed!</h2>
                     <p>Hi ${entrepreneurName},</p>
-                    <p>Your $49/month membership payment has been received. A mentor will be assigned to you shortly.</p>
+                    <p>Your membership payment has been received. A mentor will be assigned to you shortly.</p>
                     <p>You'll receive a notification once your mentor is ready to connect with you.</p>
                     <p>Best regards,<br>The TouchConnectPro Team</p>
                   </div>
@@ -8915,10 +9307,138 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
 });
 
 // =============================================
-// FOUNDER FOCUS SCORE & TRIAL ROUTES
+// COMMUNITY FREE SIGNUP & TRIAL ROUTES
 // =============================================
 
-// POST /api/trial/create - Create trial account from Founder Focus Score
+// POST /api/community/signup - Create Community-Free account from Founder Focus Score
+app.post("/api/community/signup", async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+
+    const { email, name, password, quizResult } = req.body;
+    if (!email || !name || !password) {
+      return res.status(400).json({ error: "Name, email, and password are required" });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if user already has an entrepreneur application
+    const { data: existingApp } = await supabase
+      .from("ideas")
+      .select("id, status")
+      .eq("entrepreneur_email", normalizedEmail)
+      .limit(1);
+
+    if (existingApp && existingApp.length > 0) {
+      return res.status(409).json({ 
+        error: "An account already exists for this email. Please log in instead."
+      });
+    }
+
+    // Create Supabase auth user with provided password
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: normalizedEmail,
+      password: password,
+      email_confirm: true,
+      user_metadata: {
+        user_type: "entrepreneur",
+        full_name: name
+      }
+    });
+
+    if (authError) {
+      if (authError.message.includes("already been registered")) {
+        return res.status(409).json({ error: "An account already exists for this email. Please log in instead." });
+      }
+      console.error("[COMMUNITY SIGNUP] Auth error:", authError);
+      return res.status(400).json({ error: authError.message });
+    }
+
+    // Insert into ideas table with pre-approved status
+    const { data: ideaData, error: ideaError } = await supabase
+      .from("ideas")
+      .insert({
+        status: "pre-approved",
+        entrepreneur_email: normalizedEmail,
+        entrepreneur_name: name,
+        data: quizResult ? { focusScore: quizResult } : {},
+        business_plan: {},
+        linkedin_profile: "",
+        user_id: authData?.user?.id || null,
+      })
+      .select();
+
+    if (ideaError) {
+      console.error("[COMMUNITY SIGNUP] Ideas insert error:", ideaError);
+      return res.status(400).json({ error: ideaError.message });
+    }
+
+    // Also insert into users table for messaging/profile features
+    try {
+      await supabase
+        .from("users")
+        .upsert({
+          email: normalizedEmail,
+          name: name,
+          user_type: "entrepreneur",
+          status: "pre-approved",
+          created_at: new Date().toISOString()
+        }, { onConflict: "email" });
+    } catch (e) {
+      console.error("[COMMUNITY SIGNUP] Users upsert warning:", e);
+    }
+
+    console.log("[COMMUNITY SIGNUP] Account created for:", normalizedEmail);
+
+    // Send welcome email
+    try {
+      const resendData = await getResendClient();
+      if (resendData) {
+        const { client: resendClient, fromEmail } = resendData;
+        await resendClient.emails.send({
+          from: fromEmail,
+          to: normalizedEmail,
+          subject: "Welcome to TouchConnectPro Community!",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #0ea5e9;">Welcome to TouchConnectPro, ${name}!</h2>
+              <p>Your free Community account is ready. You can now log in to access your entrepreneur dashboard.</p>
+              ${quizResult ? `<p>Your Focus Score results have been saved to your profile.</p>` : ""}
+              <p>As a Community member, you have access to:</p>
+              <ul>
+                <li>AI-powered business planning tools</li>
+                <li>Coach marketplace browsing</li>
+                <li>Focus Score diagnostics</li>
+              </ul>
+              <p>Ready to upgrade? Our Founders Circle ($9.99/month) and Capital Circle ($49/month) tiers unlock mentor access and investor connections.</p>
+              <p><a href="https://touchconnectpro.com/login" style="display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold;">Log In to Your Dashboard</a></p>
+              <p style="color: #94a3b8; font-size: 12px;">Touch Equity Partners LLC</p>
+            </div>
+          `
+        });
+        console.log("[COMMUNITY SIGNUP] Welcome email sent to:", normalizedEmail);
+      }
+    } catch (emailErr) {
+      console.error("[COMMUNITY SIGNUP] Email send error (non-blocking):", emailErr);
+    }
+
+    return res.json({ 
+      success: true, 
+      id: ideaData?.[0]?.id,
+      message: "Community account created successfully"
+    });
+  } catch (error) {
+    console.error("[COMMUNITY SIGNUP] Error:", error);
+    return res.status(500).json({ error: error.message || "Server error" });
+  }
+});
+
+// POST /api/trial/create - Create trial account from Founder Focus Score (legacy)
 app.post("/api/trial/create", async (req, res) => {
   try {
     if (!supabase) {

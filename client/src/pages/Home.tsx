@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, ArrowRight, Sparkles, Users, FileText, TrendingUp, Shield, Target, ChevronDown, Lightbulb, UserCheck, Star, MessageCircle, Heart } from "lucide-react";
+import { Check, ArrowRight, Sparkles, Users, FileText, TrendingUp, Shield, Target, ChevronDown, Lightbulb, UserCheck, Star, MessageCircle, Heart, Gem } from "lucide-react";
 import { Link } from "wouter";
 import heroBg from "@assets/generated_images/hero-bg.webp";
 import mentorFeature from "@assets/remember-why-you-started-poster.webp";
@@ -72,7 +72,7 @@ export default function Home() {
             <br />AI tools help you structure and refine your ideas, but your mentor keeps them creative, personalized, and actionable. You'll never feel lost, every next step is guided, with clarity and purpose.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/become-entrepreneur">
+            <Link href="/founder-focus">
               <Button size="lg" className="h-14 px-8 text-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] transition-shadow hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.6)]">
                 Start Free - No Credit Card <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -123,7 +123,7 @@ export default function Home() {
             {[
               {
                 icon: <Sparkles className="h-6 w-6 text-cyan-500" />,
-                title: "1. Free Entry",
+                title: "1. Community – Free",
                 desc: "Step-by-step idea refinement and draft business plan generation for clear, structured thinking."
               },
               {
@@ -440,43 +440,31 @@ export default function Home() {
       {/* Pricing Teaser */}
       <section id="free-entry" className="py-24 bg-slate-900 text-white scroll-smooth">
         <div className="container px-4 mx-auto text-center">
-           <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">Membership: Your Growth Foundation</h2>
-           <p className="text-slate-400 text-lg max-w-3xl mx-auto mb-12">
-             For $49/month, your personalized mentor gives structured guidance and tailored feedback at every stage, from refining your idea to building a strong business foundation. Ask questions anytime and tap into optional expert coaches when needed, all without blocking your calendar with unnecessary meetings.
+           <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">Choose Your Path</h2>
+           <p className="text-slate-400 text-lg max-w-3xl mx-auto mb-4">
+             Community – Free
+           </p>
+           <p className="text-slate-400 text-base max-w-3xl mx-auto mb-4">
+             Access the founder network, clarity tools, and shared coaching opportunities. Designed for entrepreneurs who want guidance and connection, without personalized mentor follow-up.
+           </p>
+           <p className="text-slate-400 text-base max-w-3xl mx-auto mb-12">
+             For $9.99/month, get personalized guidance and support to move your idea forward. Work closely with a dedicated mentor, receive structured feedback, and get access to expert coaches when you need it. Connect deeper with the community, build momentum, and turn inspiration into action.
            </p>
            
            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-             <Card className="bg-gradient-to-br from-emerald-900/80 to-slate-900 border-emerald-500/40 text-left relative overflow-hidden" data-testid="card-free-diagnostic">
+             <Card className="bg-slate-800 border-slate-700 text-left relative overflow-hidden" data-testid="card-community-free">
                <CardContent className="p-8">
-                 <Badge className="mb-3 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30">No Account Needed</Badge>
-                 <h3 className="text-2xl font-bold mb-2 text-white">Focus Score</h3>
-                 <div className="text-4xl font-display font-bold mb-4 text-white">Free<span className="text-lg text-emerald-300 font-normal"> – Instant Results</span></div>
-                 <p className="text-emerald-200/80 text-sm mb-6">Test the platform before committing. Get your personalized Founder Focus Score in 2 minutes.</p>
+                 <h3 className="text-2xl font-bold mb-2 text-white">Community – Free</h3>
+                 <div className="text-4xl font-display font-bold mb-4 text-white">$0<span className="text-lg text-slate-400 font-normal">/mo</span> <span className="text-base text-slate-400 font-normal">– No credit card</span></div>
                  <ul className="space-y-4 mb-8">
                    <li className="text-slate-300">
-                     <span className="flex items-center gap-2 font-semibold"><Target className="h-4 w-4 text-emerald-400"/> Founder Focus Score</span>
+                     <span className="flex items-center gap-2 font-semibold"><Target className="h-4 w-4 text-cyan-500"/> Founder Focus Score</span>
                      <span className="text-sm text-slate-400 ml-6">Discover your biggest startup blocker with our quick diagnostic.</span>
                    </li>
                    <li className="text-slate-300">
-                     <span className="flex items-center gap-2 font-semibold"><Sparkles className="h-4 w-4 text-emerald-400"/> Personalized Insights</span>
+                     <span className="flex items-center gap-2 font-semibold"><Sparkles className="h-4 w-4 text-cyan-500"/> Personalized Insights</span>
                      <span className="text-sm text-slate-400 ml-6">Get actionable recommendations tailored to your situation.</span>
                    </li>
-                   <li className="text-slate-300">
-                     <span className="flex items-center gap-2 font-semibold"><ArrowRight className="h-4 w-4 text-emerald-400"/> 7-Day Trial Access</span>
-                     <span className="text-sm text-slate-400 ml-6">Unlock a trial dashboard to set priorities and connect with a mentor.</span>
-                   </li>
-                 </ul>
-                 <Link href="/founder-focus">
-                   <Button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white" data-testid="button-free-diagnostic">Take the Free Quiz <ArrowRight className="ml-2 h-4 w-4" /></Button>
-                 </Link>
-               </CardContent>
-             </Card>
-
-             <Card className="bg-slate-800 border-slate-700 text-left relative overflow-hidden" data-testid="card-free-entry">
-               <CardContent className="p-8">
-                 <h3 className="text-2xl font-bold mb-2 text-white">Free Entry</h3>
-                 <div className="text-4xl font-display font-bold mb-4 text-white">$0<span className="text-lg text-slate-400 font-normal">/mo</span> <span className="text-base text-slate-400 font-normal">– No credit card</span></div>
-                 <ul className="space-y-4 mb-8">
                    <li className="text-slate-300">
                      <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Refine Your Idea</span>
                      <span className="text-sm text-slate-400 ml-6">Turn your raw concept into a clear, compelling vision.</span>
@@ -489,17 +477,21 @@ export default function Home() {
                      <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Get Mentor-Ready</span>
                      <span className="text-sm text-slate-400 ml-6">Prepare your materials so your mentor can give targeted, actionable feedback from day one.</span>
                    </li>
+                   <li className="text-slate-300">
+                     <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Optional Specialist Coaches</span>
+                     <span className="text-sm text-slate-400 ml-6">Access to specialist coaches in legal, finance, and growth (paid separately).</span>
+                   </li>
                  </ul>
-                 <Link href="/become-entrepreneur">
-                   <Button className="w-full bg-slate-700 hover:bg-slate-600" data-testid="button-free-entry">Start Free - No Credit Card</Button>
+                 <Link href="/founder-focus">
+                   <Button className="w-full bg-slate-700 hover:bg-slate-600" data-testid="button-community-free">Start Free – No Credit Card</Button>
                  </Link>
                </CardContent>
              </Card>
-             
-             <Card className="bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-500/50 text-left relative overflow-hidden">
+
+             <Card className="bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-500/50 text-left relative overflow-hidden" data-testid="card-founders-circle">
                <CardContent className="p-8">
-                 <h3 className="text-2xl font-bold mb-2 text-white">Member</h3>
-                 <div className="text-4xl font-display font-bold mb-4 text-white">$49<span className="text-lg text-indigo-300 font-normal">/month</span></div>
+                 <h3 className="text-2xl font-bold mb-2 text-white">Founders Circle</h3>
+                 <div className="text-4xl font-display font-bold mb-4 text-white">$9.99<span className="text-lg text-indigo-300 font-normal">/month</span></div>
                  <p className="text-indigo-200 mb-6">Upon Mentor Acceptance</p>
                  <div className="mb-6 p-4 bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 border border-indigo-400/40 rounded-lg backdrop-blur-sm">
                    <div className="flex items-start gap-3">
@@ -510,6 +502,7 @@ export default function Home() {
                      </div>
                    </div>
                  </div>
+                 <p className="text-sm text-indigo-200/70 mb-4 italic">All Community – Free features, plus:</p>
                  <h4 className="text-sm font-semibold text-indigo-200 uppercase tracking-wide mb-4">What's Included</h4>
                  <ul className="space-y-3 mb-6">
                    {[
@@ -517,8 +510,7 @@ export default function Home() {
                      { title: "Ask Questions Anytime", detail: "Ongoing support when you need clarity" },
                      { title: "Strategic Frameworks", detail: "Tools and resources to structure your business" },
                      { title: "Community Access", detail: "Learn from focused other entrepreneurs" },
-                     { title: "All without fixed scheduled meetings", detail: "Guidance happens on your busy calendar." },
-                     { title: "Optional Specialist Coaches", detail: "Access to specialist coaches in legal, finance, and growth (paid separately)" }
+                     { title: "All without fixed scheduled meetings", detail: "Guidance happens on your busy calendar." }
                    ].map((item, i) => (
                      <li 
                        key={i} 
@@ -538,6 +530,34 @@ export default function Home() {
                      </li>
                    ))}
                  </ul>
+               </CardContent>
+             </Card>
+             
+             <Card className="bg-gradient-to-br from-amber-900/80 to-slate-900 border-amber-500/50 text-left relative overflow-hidden" data-testid="card-capital-circle">
+               <CardContent className="p-8">
+                 <div className="flex items-center gap-2 mb-2">
+                   <Gem className="h-6 w-6 text-amber-400" />
+                   <h3 className="text-2xl font-bold text-white">Capital Circle</h3>
+                 </div>
+                 <div className="text-4xl font-display font-bold mb-2 text-white">$49<span className="text-lg text-amber-300 font-normal">/month</span></div>
+                 <p className="text-amber-200/80 text-sm mb-6">Raise capital with structure and support. For committed founders preparing to raise funding. Access is selective.</p>
+                 <h4 className="text-sm font-semibold text-amber-200 uppercase tracking-wide mb-4">Included</h4>
+                 <ul className="space-y-3 mb-6">
+                   {[
+                     "Fundraising readiness review",
+                     "Pitch feedback & positioning support",
+                     "Structured preparation phase",
+                     "Investor visibility after approval",
+                     "Ongoing capital strategy guidance"
+                   ].map((item, i) => (
+                     <li key={i} className="flex items-center gap-2 text-white text-sm">
+                       <Check className="h-4 w-4 text-amber-400 shrink-0"/>
+                       <span>{item}</span>
+                     </li>
+                   ))}
+                 </ul>
+                 <p className="text-xs text-amber-300/60 mb-4 italic">Limited seats to maintain quality.</p>
+                 <p className="text-xs text-amber-200/70 mb-4">Best for: founders ready to actively pursue funding</p>
                </CardContent>
              </Card>
            </div>

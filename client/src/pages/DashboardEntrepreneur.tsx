@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, CheckCircle, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply, ShoppingCart, CreditCard, X } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, CheckCircle, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply, ShoppingCart, CreditCard, X, Rocket, BarChart3, HelpCircle } from "lucide-react";
 import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,8 @@ import { useLocation } from "wouter";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
+import { ENTREPRENEUR_CONTRACT, ENTREPRENEUR_CONTRACT_VERSION } from "@/lib/contracts";
+import { BLOCKER_INFO, type Category } from "@/lib/founderFocusData";
 
 // Helper to format UTC timestamps from database to PST
 const formatToPST = (timestamp: string | Date) => {
@@ -34,13 +36,13 @@ export default function DashboardEntrepreneur() {
   const [showSuccessPage, setShowSuccessPage] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [aiEnhancedData, setAiEnhancedData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile" | "notes" | "messages" | "meetings" | "purchases">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "coaches" | "idea" | "plan" | "profile" | "notes" | "messages" | "meetings" | "purchases" | "ask-mentor">("overview");
   
   // Read tab from URL query params on mount (preserve other params like payment=success)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get("tab");
-    if (tabParam && ["overview", "coaches", "idea", "plan", "profile", "notes", "messages", "meetings", "purchases"].includes(tabParam)) {
+    if (tabParam && ["overview", "coaches", "idea", "plan", "profile", "notes", "messages", "meetings", "purchases", "ask-mentor"].includes(tabParam)) {
       setActiveTab(tabParam as any);
       // Remove only the tab param, preserve others (like payment=success)
       urlParams.delete("tab");
@@ -70,6 +72,12 @@ export default function DashboardEntrepreneur() {
   const [mentorNotes, setMentorNotes] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [mentorQuestions, setMentorQuestions] = useState<any[]>([]);
+  const [newMentorQuestion, setNewMentorQuestion] = useState("");
+  const [sendingMentorQuestion, setSendingMentorQuestion] = useState(false);
+  const [showUpgradeAgreement, setShowUpgradeAgreement] = useState(false);
+  const [agreedToUpgradeContract, setAgreedToUpgradeContract] = useState(false);
+  const [showUpgradeContractText, setShowUpgradeContractText] = useState(false);
   const [adminMessageText, setAdminMessageText] = useState("");
   const [entrepreneurReadMessageIds, setEntrepreneurReadMessageIds] = useState<number[]>([]);
   const [meetings, setMeetings] = useState<any[]>([]);
@@ -299,19 +307,23 @@ export default function DashboardEntrepreneur() {
   });
 
   useEffect(() => {
-    const savedFormData = localStorage.getItem("tcp_formData");
-    const savedBusinessPlan = localStorage.getItem("tcp_businessPlan");
-    const savedProfile = localStorage.getItem("tcp_profileData");
-    const savedSubmitted = localStorage.getItem("tcp_submitted");
+    const savedUserEmail = localStorage.getItem("tcp_userEmail");
     const savedReadMessageIds = localStorage.getItem("tcp_entrepreneurReadMessageIds");
     const savedThreadCounts = localStorage.getItem("tcp_entrepreneurReadThreadEntryCounts");
-    
-    if (savedFormData) setFormData(JSON.parse(savedFormData));
-    if (savedBusinessPlan) setBusinessPlanData(JSON.parse(savedBusinessPlan));
-    if (savedProfile) setProfileData(JSON.parse(savedProfile));
-    if (savedSubmitted) setSubmitted(JSON.parse(savedSubmitted));
+
     if (savedReadMessageIds) setEntrepreneurReadMessageIds(JSON.parse(savedReadMessageIds));
     if (savedThreadCounts) setReadThreadEntryCounts(JSON.parse(savedThreadCounts));
+
+    if (savedUserEmail) {
+      const savedFormData = localStorage.getItem("tcp_formData");
+      const savedBusinessPlan = localStorage.getItem("tcp_businessPlan");
+      const savedProfile = localStorage.getItem("tcp_profileData");
+      const savedSubmitted = localStorage.getItem("tcp_submitted");
+      if (savedFormData) setFormData(JSON.parse(savedFormData));
+      if (savedBusinessPlan) setBusinessPlanData(JSON.parse(savedBusinessPlan));
+      if (savedProfile) setProfileData(JSON.parse(savedProfile));
+      if (savedSubmitted) setSubmitted(JSON.parse(savedSubmitted));
+    }
     
     // Messages will be loaded from database after user email is available
     
@@ -431,15 +443,32 @@ export default function DashboardEntrepreneur() {
             setIsAccountDisabled(data.is_disabled === true);
             setIsPreApproved(data.status === "pre-approved");
             setHasPaid(data.payment_status === "paid");
+
+            // Clear stale localStorage if different user
+            const previousUser = localStorage.getItem("tcp_userEmail");
+            if (previousUser && previousUser !== user.email) {
+              localStorage.removeItem("tcp_formData");
+              localStorage.removeItem("tcp_businessPlan");
+              localStorage.removeItem("tcp_profileData");
+              localStorage.removeItem("tcp_submitted");
+            }
+            localStorage.setItem("tcp_userEmail", user.email);
             
-            // Set form data from application
-            if (data.data) {
-              setFormData(prev => ({ ...prev, ...data.data }));
+            // Set form data from application - fully replace to avoid stale data
+            if (data.data && Object.keys(data.data).length > 0) {
+              setFormData(prev => {
+                const reset = Object.fromEntries(Object.keys(prev).map(k => [k, ""]));
+                return { ...reset, ...data.data };
+              });
+            } else {
+              setFormData(prev => Object.fromEntries(Object.keys(prev).map(k => [k, ""])) as typeof prev);
             }
             
             // Set business plan from application
-            if (data.business_plan) {
+            if (data.business_plan && Object.keys(data.business_plan).length > 0) {
               setBusinessPlanData(data.business_plan);
+            } else {
+              setBusinessPlanData({});
             }
             
             // Set profile data (including bio from application fullBio)
@@ -506,15 +535,32 @@ export default function DashboardEntrepreneur() {
                 setIsAccountDisabled(data.is_disabled === true);
                 setIsPreApproved(data.status === "pre-approved");
                 setHasPaid(data.payment_status === "paid");
+
+                // Clear stale localStorage if different user
+                const prevUser = localStorage.getItem("tcp_userEmail");
+                if (prevUser && prevUser !== profile.email) {
+                  localStorage.removeItem("tcp_formData");
+                  localStorage.removeItem("tcp_businessPlan");
+                  localStorage.removeItem("tcp_profileData");
+                  localStorage.removeItem("tcp_submitted");
+                }
+                localStorage.setItem("tcp_userEmail", profile.email);
                 
-                // Set form data from application
-                if (data.data) {
-                  setFormData(prev => ({ ...prev, ...data.data }));
+                // Set form data from application - fully replace to avoid stale data
+                if (data.data && Object.keys(data.data).length > 0) {
+                  setFormData(prev => {
+                    const reset = Object.fromEntries(Object.keys(prev).map(k => [k, ""]));
+                    return { ...reset, ...data.data };
+                  });
+                } else {
+                  setFormData(prev => Object.fromEntries(Object.keys(prev).map(k => [k, ""])) as typeof prev);
                 }
                 
                 // Set business plan from application
-                if (data.business_plan) {
+                if (data.business_plan && Object.keys(data.business_plan).length > 0) {
                   setBusinessPlanData(data.business_plan);
+                } else {
+                  setBusinessPlanData({});
                 }
                 
                 // Update profile data with fresh API data
@@ -706,7 +752,32 @@ export default function DashboardEntrepreneur() {
       }
     }
     loadMessages();
+
+    async function loadMentorQuestions() {
+      if (!userEmail) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/mentor-questions/entrepreneur/${encodeURIComponent(userEmail)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setMentorQuestions(data.questions || []);
+        }
+      } catch (error) {
+        console.error("Error loading mentor questions:", error);
+      }
+    }
+    loadMentorQuestions();
   }, [userEmail]);
+
+  const unreadMentorAnswers = mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length;
+  useEffect(() => {
+    if (activeTab === "ask-mentor" && userEmail && unreadMentorAnswers > 0) {
+      fetch(`${API_BASE_URL}/api/mentor-questions/mark-read-entrepreneur/${encodeURIComponent(userEmail)}`, { method: "PATCH" })
+        .then(() => {
+          setMentorQuestions(prev => prev.map(q => q.status === "answered" ? { ...q, is_read_by_entrepreneur: true } : q));
+        })
+        .catch(err => console.error("Error marking questions as read:", err));
+    }
+  }, [activeTab, userEmail, unreadMentorAnswers]);
 
   // Load message threads (threaded conversations with mentor)
   useEffect(() => {
@@ -1228,13 +1299,37 @@ export default function DashboardEntrepreneur() {
     localStorage.removeItem("tcp_businessPlan");
     localStorage.removeItem("tcp_profileData");
     localStorage.removeItem("tcp_submitted");
+    localStorage.removeItem("tcp_userEmail");
     window.location.href = "/";
   };
 
+  const handleUpgradeClick = () => {
+    setAgreedToUpgradeContract(false);
+    setShowUpgradeContractText(false);
+    setShowUpgradeAgreement(true);
+  };
+
   const handleSubscribe = async () => {
+    setShowUpgradeAgreement(false);
     setIsSubscribing(true);
     try {
-      // Save email to localStorage before redirecting (session may be lost after Stripe)
+      try {
+        await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: userEmail.toLowerCase().trim(),
+            role: "entrepreneur",
+            contractVersion: ENTREPRENEUR_CONTRACT_VERSION,
+            contractText: ENTREPRENEUR_CONTRACT,
+            userAgent: navigator.userAgent,
+          }),
+        });
+        console.log("[SUBSCRIBE] Contract acceptance saved");
+      } catch (contractErr) {
+        console.error("[SUBSCRIBE] Contract acceptance save error (non-blocking):", contractErr);
+      }
+
       localStorage.setItem("tcp_pendingPaymentEmail", userEmail);
       
       console.log("[SUBSCRIBE] Creating checkout session for:", userEmail);
@@ -1490,20 +1585,22 @@ export default function DashboardEntrepreneur() {
   if (submitted) {
     const hasActiveMentor = mentorData && mentorData.status === "active";
     const entrepreneurStatus = entrepreneurData?.status || "pending";
+    const ideaSubmitted = !!(formData.ideaName || entrepreneurData?.data?.ideaName);
+    const focusScoreData = entrepreneurData?.data?.focusScore;
     const statusDisplay = isAccountDisabled 
       ? "Disabled" 
       : isPreApproved
-        ? "Pre-Approved"
+        ? (ideaSubmitted ? "Community Member" : "Community Free")
         : (entrepreneurStatus === "approved" ? (hasActiveMentor ? "Active Member" : "Approved - Awaiting Mentor") : "On Waiting List");
     const statusColor = isAccountDisabled 
       ? "text-red-600 dark:text-red-400" 
       : isPreApproved
-        ? "text-amber-600 dark:text-amber-400"
+        ? (ideaSubmitted ? "text-cyan-600 dark:text-cyan-400" : "text-cyan-600 dark:text-cyan-400")
         : (entrepreneurStatus === "approved" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400");
     const avatarColor = isAccountDisabled 
       ? "bg-red-500" 
       : isPreApproved
-        ? "bg-amber-500"
+        ? "bg-cyan-500"
         : (entrepreneurStatus === "approved" ? "bg-emerald-500" : "bg-amber-500");
 
     const entrepreneurNavTabs: NavTab[] = [
@@ -1514,6 +1611,7 @@ export default function DashboardEntrepreneur() {
       { id: "purchases", label: "My Purchases", icon: <ShoppingCart className="h-4 w-4" />, badge: coachPurchases.length > 0 ? <span className="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 text-xs px-2 py-0.5 rounded-full">{coachPurchases.length}</span> : undefined },
       { id: "notes", label: "Mentor Notes", icon: <ClipboardList className="h-4 w-4" />, badge: mentorNotes.length > 0 ? <span className="bg-cyan-100 dark:bg-cyan-900 text-cyan-600 dark:text-cyan-400 text-xs px-2 py-0.5 rounded-full">{mentorNotes.length}</span> : undefined },
       { id: "messages", label: "Messages", icon: <MessageSquare className="h-4 w-4" />, badge: unreadMessageCount > 0 ? <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{unreadMessageCount}</span> : undefined },
+      ...(ideaSubmitted ? [{ id: "ask-mentor", label: "Ask a Mentor", icon: <HelpCircle className="h-4 w-4" />, badge: mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length > 0 ? <span className="bg-emerald-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length}</span> : undefined }] : []),
       { id: "profile", label: "Profile", icon: <Settings className="h-4 w-4" /> },
     ];
 
@@ -1606,6 +1704,19 @@ export default function DashboardEntrepreneur() {
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{unreadMessageCount}</span>
                 )}
               </Button>
+              {ideaSubmitted && (
+                <Button 
+                  variant={activeTab === "ask-mentor" ? "secondary" : "ghost"}
+                  className="w-full justify-start font-medium text-slate-600 relative"
+                  onClick={() => setActiveTab("ask-mentor")}
+                  data-testid="button-ask-mentor-tab"
+                >
+                  <HelpCircle className="mr-2 h-4 w-4" /> Ask a Mentor
+                  {mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length > 0 && (
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-emerald-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length}</span>
+                  )}
+                </Button>
+              )}
               {/* Hidden for now - keep for future use
               <Button 
                 variant={activeTab === "meetings" ? "secondary" : "ghost"}
@@ -1673,31 +1784,48 @@ export default function DashboardEntrepreneur() {
                     </CardContent>
                   </Card>
                 )}
-                {isPreApproved && !hasPaid && (
-                  <Card className="mb-6 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+                {isPreApproved && !hasPaid && !ideaSubmitted && (
+                  <Card className="mb-6 border-cyan-300 bg-cyan-50 dark:bg-cyan-950/20 dark:border-cyan-800">
                     <CardContent className="pt-6 pb-6">
                       <div className="flex items-start gap-4">
-                        <ClipboardList className="h-6 w-6 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <Rocket className="h-6 w-6 text-cyan-500 flex-shrink-0 mt-0.5" />
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-300 mb-1">Pre-Approved - Payment Required</h3>
-                          <p className="text-amber-700 dark:text-amber-400 mb-4">Congratulations! Your application has been pre-approved. To activate your full membership and access all features including coaches, mentor assignment, and more, please complete your $49/month membership payment.</p>
-                          <Button 
-                            className="bg-amber-600 hover:bg-amber-700 text-white"
-                            onClick={handleSubscribe}
-                            disabled={isSubscribing}
-                            data-testid="button-subscribe"
+                          <h3 className="text-lg font-semibold text-cyan-800 dark:text-cyan-300 mb-1" data-testid="text-community-welcome">Welcome to the Community!</h3>
+                          <p className="text-cyan-700 dark:text-cyan-400 mb-4">You're part of the TouchConnectPro Community Free plan. To unlock your full dashboard, submit your business idea. Once submitted, you'll be able to explore coaches, build your business plan, and more.</p>
+                          <a 
+                            href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}
+                            data-testid="link-submit-idea"
                           >
-                            {isSubscribing ? (
-                              <>
-                                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                                Redirecting to payment...
-                              </>
-                            ) : (
-                              <>
-                                Subscribe $49/month
-                              </>
-                            )}
-                          </Button>
+                            <Button className="bg-cyan-600 hover:bg-cyan-700 text-white">
+                              <Rocket className="mr-2 h-4 w-4" />
+                              Submit Your Business Idea
+                            </Button>
+                          </a>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                {isPreApproved && !hasPaid && ideaSubmitted && (
+                  <Card className="mb-6 border-cyan-300 bg-cyan-50 dark:bg-cyan-950/20 dark:border-cyan-800">
+                    <CardContent className="pt-6 pb-6">
+                      <div className="flex items-start gap-4">
+                        <CheckCircle className="h-6 w-6 text-cyan-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-cyan-800 dark:text-cyan-300 mb-1">Idea Submitted - Explore Your Dashboard</h3>
+                          <p className="text-cyan-700 dark:text-cyan-400">Your idea has been submitted! You can now explore coaches, refine your business plan, and connect with the community. Upgrade to a paid plan for dedicated mentor access.</p>
+                          <div className="mt-3">
+                            <Button
+                              type="button"
+                              onClick={() => handleUpgradeClick()}
+                              disabled={isSubscribing}
+                              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md"
+                              data-testid="button-upgrade-founders-circle-overview"
+                            >
+                              <Rocket className="mr-2 h-4 w-4" />
+                              {isSubscribing ? "Redirecting to payment..." : "Upgrade to Founders Circle — $9.99/mo"}
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -1743,16 +1871,16 @@ export default function DashboardEntrepreneur() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <Card className={`border-l-4 ${isAccountDisabled ? "border-l-red-500" : isPreApproved ? "border-l-amber-500" : "border-l-cyan-500"} shadow-sm`}>
+                  <Card className={`border-l-4 ${isAccountDisabled ? "border-l-red-500" : isPreApproved ? "border-l-cyan-500" : "border-l-cyan-500"} shadow-sm`}>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Current Stage</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : (isPreApproved && !hasPaid) ? "text-amber-600" : (isPreApproved && hasPaid) ? "text-emerald-600" : ""}`}>
-                        {isAccountDisabled ? "Disabled Member" : (isPreApproved && !hasPaid) ? "Pre-Approved" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
+                      <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : (isPreApproved && !ideaSubmitted) ? "text-cyan-600" : (isPreApproved && ideaSubmitted && !hasPaid) ? "text-cyan-600" : (isPreApproved && hasPaid) ? "text-emerald-600" : ""}`}>
+                        {isAccountDisabled ? "Disabled Member" : (isPreApproved && !ideaSubmitted) ? "Getting Started" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Idea Submitted" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {isAccountDisabled ? "Contact admin to reactivate" : (isPreApproved && !hasPaid) ? "Awaiting membership payment" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
+                        {isAccountDisabled ? "Contact admin to reactivate" : (isPreApproved && !ideaSubmitted) ? "Submit your idea to unlock features" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Community Free - explore coaches & build plans" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
                       </p>
                     </CardContent>
                   </Card>
@@ -1777,6 +1905,120 @@ export default function DashboardEntrepreneur() {
                     </CardContent>
                   </Card>
                 </div>
+
+                {isPreApproved && focusScoreData && (() => {
+                  const score = focusScoreData.totalScore || focusScoreData.overallScore || 0;
+                  const blocker = focusScoreData.primaryBlocker as Category;
+                  const blockerInfo = blocker ? BLOCKER_INFO[blocker] : null;
+                  const scoreLabel = score >= 80 ? "Strong foundation" : score >= 60 ? "Solid but blocked" : "High friction";
+                  const scoreColor = score >= 80 ? "text-emerald-600" : score >= 60 ? "text-amber-600" : "text-red-600";
+                  const scoreBg = score >= 80 ? "bg-emerald-100 dark:bg-emerald-950/30" : score >= 60 ? "bg-amber-100 dark:bg-amber-950/30" : "bg-red-100 dark:bg-red-950/30";
+                  const categoryColors: Record<string, string> = {
+                    Strategy: "from-indigo-500 to-indigo-600",
+                    Sales: "from-emerald-500 to-emerald-600",
+                    Operations: "from-amber-500 to-amber-600",
+                    Execution: "from-cyan-500 to-cyan-600",
+                  };
+                  const categoryTextColors: Record<string, string> = {
+                    Strategy: "text-indigo-600 dark:text-indigo-400",
+                    Sales: "text-emerald-600 dark:text-emerald-400",
+                    Operations: "text-amber-600 dark:text-amber-400",
+                    Execution: "text-cyan-600 dark:text-cyan-400",
+                  };
+
+                  return (
+                  <Card className="mb-6 border-l-4 border-l-purple-500" data-testid="card-focus-score">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5 text-purple-600" />
+                        Your Founder Focus Score
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-4 mb-5">
+                        <div className="relative w-20 h-20 flex-shrink-0">
+                          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="8" className="text-slate-200 dark:text-slate-700" />
+                            <circle
+                              cx="50" cy="50" r="42" fill="none"
+                              stroke="url(#dashScoreGradient)" strokeWidth="8"
+                              strokeLinecap="round"
+                              strokeDasharray={`${(score / 100) * 264} 264`}
+                            />
+                            <defs>
+                              <linearGradient id="dashScoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#06b6d4" />
+                                <stop offset="100%" stopColor="#8b5cf6" />
+                              </linearGradient>
+                            </defs>
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-2xl font-bold text-purple-600" data-testid="text-focus-score-value">{score}</span>
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${scoreBg} ${scoreColor}`}>{scoreLabel}</span>
+                          </div>
+                          <p className="text-sm font-medium text-foreground" data-testid="text-primary-focus">
+                            {blocker ? `Primary Focus: ${blocker}` : "Focus Score Complete"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">Based on your diagnostic quiz responses</p>
+                        </div>
+                      </div>
+
+                      {focusScoreData.categoryResults && focusScoreData.categoryResults.length > 0 && (
+                        <div className="space-y-3 mb-5">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Score Breakdown</p>
+                          {focusScoreData.categoryResults.map((cat: any) => (
+                            <div key={cat.category} data-testid={`score-breakdown-${cat.category}`}>
+                              <div className="flex items-center justify-between mb-1">
+                                <span className={`text-sm font-medium ${categoryTextColors[cat.category] || "text-foreground"}`}>{cat.category}</span>
+                                <span className="text-xs text-muted-foreground">{cat.score} pts ({cat.percentage}%)</span>
+                              </div>
+                              <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                                <div
+                                  className={`h-2 rounded-full bg-gradient-to-r ${categoryColors[cat.category] || "from-purple-500 to-purple-600"}`}
+                                  style={{ width: `${Math.max(cat.percentage, 5)}%` }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {!focusScoreData.categoryResults && focusScoreData.categories && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                          {Object.entries(focusScoreData.categories).map(([category, data]: [string, any]) => (
+                            <div key={category} className="bg-purple-50 dark:bg-purple-950/20 rounded-lg p-3 text-center">
+                              <p className="text-xs text-muted-foreground mb-1">{category}</p>
+                              <p className="text-lg font-bold text-purple-600">{data.score || data}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {blockerInfo && (
+                        <div className="space-y-3">
+                          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">What This Means</p>
+                            <p className="text-sm text-muted-foreground leading-relaxed" data-testid="text-blocker-explanation">{blockerInfo.explanation}</p>
+                          </div>
+                          <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                            <div className="flex items-start gap-2">
+                              <Target className="h-4 w-4 text-purple-600 flex-shrink-0 mt-0.5" />
+                              <div>
+                                <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 mb-1">Your Next Action</p>
+                                <p className="text-sm text-purple-600 dark:text-purple-400" data-testid="text-next-action">{blockerInfo.action}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                  );
+                })()}
 
                 {mentorNotes && mentorNotes.length > 0 && (() => {
                   // Sort notes oldest first
@@ -1893,8 +2135,32 @@ export default function DashboardEntrepreneur() {
                         <div className="h-16 w-16 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center mx-auto mb-4">
                           <Users className="h-8 w-8 text-cyan-600" />
                         </div>
-                        <p className="text-slate-600 dark:text-slate-400 mb-2">Once your project is approved and a mentor accepts you, their profile will appear here.</p>
-                        <p className="text-sm text-muted-foreground">You'll be able to schedule meetings and receive personalized guidance.</p>
+                        <p className="text-slate-600 dark:text-slate-400 mb-2">Once you upgrade to the Founders Circle plan and your project is reviewed, a dedicated mentor will be assigned to you.</p>
+                        <div className="mt-3 mb-4">
+                          <Button
+                            type="button"
+                            onClick={() => handleUpgradeClick()}
+                            disabled={isSubscribing}
+                            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md"
+                            data-testid="button-upgrade-founders-circle-mentor"
+                          >
+                            <Rocket className="mr-2 h-4 w-4" />
+                            {isSubscribing ? "Redirecting to payment..." : "Upgrade to Founders Circle — $9.99/mo"}
+                          </Button>
+                        </div>
+                        {ideaSubmitted && !hasPaid && (
+                          <Button
+                            variant="outline"
+                            className="border-purple-300 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20"
+                            onClick={() => setActiveTab("ask-mentor")}
+                            data-testid="button-ask-mentor-from-overview"
+                          >
+                            <HelpCircle className="mr-2 h-4 w-4" /> Ask a Mentor a Question
+                            {mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length > 0 && (
+                              <Badge className="ml-2 bg-emerald-500 text-white">{mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length} new</Badge>
+                            )}
+                          </Button>
+                        )}
                       </div>
                     )}
                   </CardContent>
@@ -2006,7 +2272,7 @@ export default function DashboardEntrepreneur() {
                 <p className="text-muted-foreground mb-4">Browse our approved coaches who can help accelerate your startup journey with specialized expertise.</p>
 
                 {/* Areas of Expertise Filter */}
-                {shuffledCoaches.length > 0 && !isAccountDisabled && !isPreApproved && (() => {
+                {shuffledCoaches.length > 0 && !isAccountDisabled && !(isPreApproved && !ideaSubmitted) && (() => {
                   const allExpertiseAreas = Array.from(new Set(shuffledCoaches.flatMap(c => {
                     const areas = c.focus_areas || "";
                     return areas.split(",").map((a: string) => a.trim()).filter((a: string) => a);
@@ -2061,12 +2327,18 @@ export default function DashboardEntrepreneur() {
                       <p className="text-red-700 dark:text-red-400">Your account is currently disabled. Please contact the Admin team via the Messages tab to reactivate your membership and access the coaches list.</p>
                     </CardContent>
                   </Card>
-                ) : isPreApproved ? (
-                  <Card className="border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+                ) : (isPreApproved && !ideaSubmitted) ? (
+                  <Card className="border-cyan-300 bg-cyan-50 dark:bg-cyan-950/20 dark:border-cyan-800">
                     <CardContent className="pt-6 pb-6 text-center">
-                      <ClipboardList className="h-12 w-12 text-amber-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-300 mb-2">Payment Required</h3>
-                      <p className="text-amber-700 dark:text-amber-400">You have been pre-approved! To access the coaches list and other premium features, please complete your membership payment. Contact the Admin team via the Messages tab for payment instructions.</p>
+                      <Rocket className="h-12 w-12 text-cyan-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-cyan-800 dark:text-cyan-300 mb-2">Submit Your Idea to Unlock Coaches</h3>
+                      <p className="text-cyan-700 dark:text-cyan-400 mb-4">Complete your business idea submission to browse our coaches, get feedback, and access all community features.</p>
+                      <a href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}>
+                        <Button className="bg-cyan-600 hover:bg-cyan-700 text-white" data-testid="button-submit-idea-coaches">
+                          <Rocket className="mr-2 h-4 w-4" />
+                          Submit Your Business Idea
+                        </Button>
+                      </a>
                     </CardContent>
                   </Card>
                 ) : shuffledCoaches.length > 0 ? (
@@ -2785,7 +3057,21 @@ export default function DashboardEntrepreneur() {
             })()}
 
             {/* My Idea Tab */}
-            {activeTab === "idea" && (
+            {activeTab === "idea" && isPreApproved && !ideaSubmitted && (
+              <div className="text-center py-16">
+                <Lightbulb className="h-16 w-16 text-cyan-400 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Submit Your Idea First</h2>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">Complete your business idea submission to view and manage your idea details here.</p>
+                <a href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}>
+                  <Button className="bg-cyan-600 hover:bg-cyan-700 text-white" data-testid="button-submit-idea-tab">
+                    <Rocket className="mr-2 h-4 w-4" />
+                    Submit Your Business Idea
+                  </Button>
+                </a>
+              </div>
+            )}
+
+            {activeTab === "idea" && !(isPreApproved && !ideaSubmitted) && (
               <div>
                 <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Your Idea Submission</h1>
                 <p className="text-muted-foreground mb-8">Here's a complete summary of your business idea that was submitted to our mentors.</p>
@@ -2814,7 +3100,21 @@ export default function DashboardEntrepreneur() {
             )}
 
             {/* Business Plan Tab */}
-            {activeTab === "plan" && (
+            {activeTab === "plan" && isPreApproved && !ideaSubmitted && (
+              <div className="text-center py-16">
+                <Target className="h-16 w-16 text-cyan-400 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Submit Your Idea First</h2>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">Your business plan will be generated after you submit your idea. Start by telling us about your business.</p>
+                <a href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}>
+                  <Button className="bg-cyan-600 hover:bg-cyan-700 text-white" data-testid="button-submit-idea-plan-tab">
+                    <Rocket className="mr-2 h-4 w-4" />
+                    Submit Your Business Idea
+                  </Button>
+                </a>
+              </div>
+            )}
+
+            {activeTab === "plan" && !(isPreApproved && !ideaSubmitted) && (
               <div>
                 <div className="flex justify-between items-center mb-8">
                   <div>
@@ -3129,8 +3429,148 @@ export default function DashboardEntrepreneur() {
               </div>
             )}
 
+            {/* Ask a Mentor Tab */}
+            {activeTab === "ask-mentor" && (
+              <div>
+                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Ask a Mentor</h1>
+                <p className="text-muted-foreground mb-6">
+                  {hasPaid 
+                    ? "Your previous community questions and answers are shown below. Since you now have a paid membership, you can message your dedicated mentor directly through the Messages tab."
+                    : "Have a question about your business? Ask our mentor community and get expert guidance. While you don't have a dedicated mentor with your current plan, our team will review your question and provide a helpful answer."
+                  }
+                </p>
+                
+                {!hasPaid && (
+                  <Card className="mb-6 border-purple-200 dark:border-purple-900/30">
+                    <CardHeader className="bg-purple-50/50 dark:bg-purple-950/20">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <HelpCircle className="h-5 w-5 text-purple-600" />
+                        Submit a Question
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                      <textarea
+                        value={newMentorQuestion}
+                        onChange={(e) => setNewMentorQuestion(e.target.value)}
+                        placeholder="What would you like to ask a mentor? Be specific about your challenge or question..."
+                        className="w-full min-h-32 p-3 rounded-lg border border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        data-testid="textarea-mentor-question"
+                      />
+                      <div className="flex justify-between items-center">
+                        <p className="text-xs text-muted-foreground">Our team will review your question and provide guidance as soon as possible.</p>
+                        <Button
+                          onClick={async () => {
+                            if (!newMentorQuestion.trim()) return;
+                            setSendingMentorQuestion(true);
+                            try {
+                              const response = await fetch(`${API_BASE_URL}/api/mentor-questions`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  entrepreneurEmail: userEmail,
+                                  entrepreneurName: profileData.fullName || "Entrepreneur",
+                                  question: newMentorQuestion.trim(),
+                                  ideaId: entrepreneurData?.id || null
+                                })
+                              });
+                              if (response.ok) {
+                                toast.success("Your question has been submitted! We'll get back to you soon.");
+                                setNewMentorQuestion("");
+                                const refreshResponse = await fetch(`${API_BASE_URL}/api/mentor-questions/entrepreneur/${encodeURIComponent(userEmail)}`);
+                                if (refreshResponse.ok) {
+                                  const data = await refreshResponse.json();
+                                  setMentorQuestions(data.questions || []);
+                                }
+                              } else {
+                                const error = await response.json();
+                                toast.error(error.error || "Failed to submit question");
+                              }
+                            } catch (error) {
+                              console.error("Error submitting mentor question:", error);
+                              toast.error("Failed to submit question. Please try again.");
+                            } finally {
+                              setSendingMentorQuestion(false);
+                            }
+                          }}
+                          disabled={!newMentorQuestion.trim() || sendingMentorQuestion}
+                          className="bg-purple-600 hover:bg-purple-700"
+                          data-testid="button-submit-mentor-question"
+                        >
+                          {sendingMentorQuestion ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
+                          ) : (
+                            <><Send className="mr-2 h-4 w-4" /> Submit Question</>
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <h2 className="text-xl font-display font-bold text-slate-900 dark:text-white mb-4">{hasPaid ? "Previous Questions" : "Your Questions"}</h2>
+                {mentorQuestions.length === 0 ? (
+                  <Card>
+                    <CardContent className="pt-12 pb-12 text-center">
+                      <HelpCircle className="h-12 w-12 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
+                      <p className="text-muted-foreground">{hasPaid ? "No previous community questions to display." : "You haven't asked any questions yet. Use the form above to get started!"}</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {mentorQuestions.map((q: any, idx: number) => (
+                      <Card key={q.id || idx} className={`border-l-4 ${q.status === "answered" ? "border-l-emerald-500" : "border-l-purple-500"}`}>
+                        <CardContent className="pt-6 space-y-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge className={q.status === "answered" ? "bg-emerald-600" : "bg-purple-600"}>
+                                  {q.status === "answered" ? "Answered" : "Pending"}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  {q.created_at ? new Date(q.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : ""}
+                                </span>
+                              </div>
+                              <div className="bg-purple-50 dark:bg-purple-950/20 p-4 rounded-lg">
+                                <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase mb-1">Your Question</p>
+                                <p className="text-slate-900 dark:text-white whitespace-pre-wrap">{q.question}</p>
+                              </div>
+                            </div>
+                          </div>
+                          {q.admin_reply && (
+                            <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                              <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase mb-1">Mentor Response</p>
+                              <p className="text-slate-900 dark:text-white whitespace-pre-wrap">{q.admin_reply}</p>
+                              {q.replied_at && (
+                                <p className="text-xs text-muted-foreground mt-2">
+                                  Replied {new Date(q.replied_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Profile Tab */}
-            {activeTab === "profile" && (
+            {activeTab === "profile" && isPreApproved && !ideaSubmitted && (
+              <div className="text-center py-16">
+                <User className="h-16 w-16 text-cyan-400 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Submit Your Idea First</h2>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">Your profile will become available after you submit your business idea.</p>
+                <a href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}>
+                  <Button className="bg-cyan-600 hover:bg-cyan-700 text-white" data-testid="button-submit-idea-profile-tab">
+                    <Rocket className="mr-2 h-4 w-4" />
+                    Submit Your Business Idea
+                  </Button>
+                </a>
+              </div>
+            )}
+
+            {activeTab === "profile" && !(isPreApproved && !ideaSubmitted) && (
               <div>
                 <div className="flex justify-between items-center mb-8">
                   <div>
@@ -3989,6 +4429,91 @@ export default function DashboardEntrepreneur() {
           </div>
         </div>,
         document.body
+      )}
+
+      {showUpgradeAgreement && (
+      <Dialog open={showUpgradeAgreement} onOpenChange={setShowUpgradeAgreement}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Rocket className="h-5 w-5 text-indigo-600" />
+              Upgrade to Founders Circle — $9.99/mo
+            </DialogTitle>
+            <DialogDescription>
+              Please review and accept the Entrepreneur Membership Agreement before proceeding to payment.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-2">
+            <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
+              <h4 className="font-semibold text-indigo-900 dark:text-indigo-200 mb-2">Founders Circle includes:</h4>
+              <ul className="space-y-1 text-sm text-indigo-800 dark:text-indigo-300">
+                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Dedicated mentor assigned to your project</li>
+                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Structured feedback and personalized guidance</li>
+                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> AI-powered business planning tools</li>
+                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Access to expert coaches</li>
+                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Cancel anytime from your dashboard</li>
+              </ul>
+            </div>
+
+            <div className="border border-slate-200 dark:border-slate-700 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setShowUpgradeContractText(!showUpgradeContractText)}
+                className="w-full flex items-center justify-between p-3 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                data-testid="button-toggle-agreement-text"
+              >
+                <span className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Entrepreneur Membership Agreement
+                </span>
+                {showUpgradeContractText ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+              {showUpgradeContractText && (
+                <div className="px-4 pb-4 max-h-60 overflow-y-auto">
+                  <pre className="whitespace-pre-wrap text-xs text-slate-600 dark:text-slate-400 font-sans leading-relaxed">{ENTREPRENEUR_CONTRACT}</pre>
+                </div>
+              )}
+            </div>
+
+            <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              <input
+                type="checkbox"
+                checked={agreedToUpgradeContract}
+                onChange={(e) => setAgreedToUpgradeContract(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                data-testid="checkbox-agree-upgrade-contract"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">
+                I have read and agree to the <strong>Entrepreneur Membership Agreement</strong>. I understand this constitutes my legal electronic signature.
+              </span>
+            </label>
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowUpgradeAgreement(false)}
+                className="flex-1"
+                data-testid="button-cancel-upgrade"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubscribe}
+                disabled={!agreedToUpgradeContract || isSubscribing}
+                className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                data-testid="button-proceed-to-payment"
+              >
+                {isSubscribing ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+                ) : (
+                  <><CreditCard className="mr-2 h-4 w-4" /> Proceed to Payment</>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       )}
     </div>
   );
