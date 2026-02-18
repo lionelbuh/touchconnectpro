@@ -4344,6 +4344,7 @@ export default function DashboardEntrepreneur() {
         document.body
       )}
 
+      {showUpgradeAgreement && (
       <Dialog open={showUpgradeAgreement} onOpenChange={setShowUpgradeAgreement}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -4426,6 +4427,7 @@ export default function DashboardEntrepreneur() {
           </div>
         </DialogContent>
       </Dialog>
+      )}
     </div>
   );
 }
