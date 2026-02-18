@@ -5114,6 +5114,37 @@ app.post("/api/mentor-questions", async (req, res) => {
     }
 
     console.log("[POST /api/mentor-questions] Question created successfully");
+
+    try {
+      const resendData = await getResendClient();
+      if (resendData) {
+        const { client: resendClient, fromEmail } = resendData;
+        const baseUrl = process.env.FRONTEND_URL || "https://touchconnectpro.com";
+        await resendClient.emails.send({
+          from: fromEmail,
+          to: ADMIN_EMAIL,
+          subject: `New "Ask a Mentor" Question from ${entrepreneurName || entrepreneurEmail}`,
+          html: `
+            <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 24px; border-radius: 10px 10px 0 0; text-align: center;">
+                <h2 style="margin: 0;">New Mentor Question</h2>
+              </div>
+              <div style="background: #f8fafc; padding: 24px; border-radius: 0 0 10px 10px;">
+                <p><strong>From:</strong> ${entrepreneurName || "Unknown"} (${entrepreneurEmail})</p>
+                <div style="background: white; border-left: 4px solid #6366f1; padding: 16px; margin: 16px 0; border-radius: 4px;">
+                  <p style="margin: 0; white-space: pre-wrap;">${question}</p>
+                </div>
+                <a href="${baseUrl}/admin-dashboard" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">View in Admin Dashboard</a>
+              </div>
+            </div>
+          `
+        });
+        console.log("[POST /api/mentor-questions] Admin notification email sent to:", ADMIN_EMAIL);
+      }
+    } catch (emailError) {
+      console.error("[POST /api/mentor-questions] Failed to send admin notification email:", emailError.message);
+    }
+
     return res.json({ success: true, question: data?.[0] });
   } catch (error) {
     console.error("[POST /api/mentor-questions] Error:", error);
@@ -5225,7 +5256,48 @@ app.post("/api/mentor-questions/:id/reply", async (req, res) => {
     }
 
     console.log("[POST /api/mentor-questions/:id/reply] Reply saved successfully");
-    return res.json({ success: true, question: result.data?.[0] });
+
+    const answeredQuestion = result.data?.[0];
+    if (answeredQuestion?.entrepreneur_email) {
+      try {
+        const resendData = await getResendClient();
+        if (resendData) {
+          const { client: resendClient, fromEmail } = resendData;
+          const baseUrl = process.env.FRONTEND_URL || "https://touchconnectpro.com";
+          await resendClient.emails.send({
+            from: fromEmail,
+            to: answeredQuestion.entrepreneur_email,
+            subject: "Your Mentor Question Has Been Answered - TouchConnectPro",
+            html: `
+              <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 24px; border-radius: 10px 10px 0 0; text-align: center;">
+                  <h2 style="margin: 0;">Your Question Has Been Answered!</h2>
+                </div>
+                <div style="background: #f8fafc; padding: 24px; border-radius: 0 0 10px 10px;">
+                  <p>Hi ${answeredQuestion.entrepreneur_name || "there"},</p>
+                  <p>A mentor has responded to your question on TouchConnectPro.</p>
+                  <div style="background: #f1f5f9; border-left: 4px solid #94a3b8; padding: 16px; margin: 16px 0; border-radius: 4px;">
+                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #64748b;">Your Question:</p>
+                    <p style="margin: 0; white-space: pre-wrap;">${answeredQuestion.question}</p>
+                  </div>
+                  <div style="background: #d1fae5; border-left: 4px solid #10b981; padding: 16px; margin: 16px 0; border-radius: 4px;">
+                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #065f46;">Mentor's Answer:</p>
+                    <p style="margin: 0; white-space: pre-wrap;">${reply}</p>
+                  </div>
+                  <a href="${baseUrl}/login" style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">View in Your Dashboard</a>
+                  <p style="margin-top: 20px; color: #64748b; font-size: 14px;">Keep building. We're here to help you succeed.</p>
+                </div>
+              </div>
+            `
+          });
+          console.log("[POST /api/mentor-questions/:id/reply] Entrepreneur notification email sent to:", answeredQuestion.entrepreneur_email);
+        }
+      } catch (emailError) {
+        console.error("[POST /api/mentor-questions/:id/reply] Failed to send entrepreneur notification email:", emailError.message);
+      }
+    }
+
+    return res.json({ success: true, question: answeredQuestion });
   } catch (error) {
     console.error("[POST /api/mentor-questions/:id/reply] Error:", error);
     return res.status(500).json({ error: error.message });
