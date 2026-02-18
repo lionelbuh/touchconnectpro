@@ -1815,7 +1815,8 @@ export default function DashboardEntrepreneur() {
                           <p className="text-cyan-700 dark:text-cyan-400">Your idea has been submitted! You can now explore coaches, refine your business plan, and connect with the community. Upgrade to a paid plan for dedicated mentor access.</p>
                           <div className="mt-3">
                             <Button
-                              onClick={handleUpgradeClick}
+                              type="button"
+                              onClick={() => handleUpgradeClick()}
                               disabled={isSubscribing}
                               className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md"
                               data-testid="button-upgrade-founders-circle-overview"
@@ -2052,7 +2053,8 @@ export default function DashboardEntrepreneur() {
                         <p className="text-slate-600 dark:text-slate-400 mb-2">Once you upgrade to the Founders Circle plan and your project is reviewed, a dedicated mentor will be assigned to you.</p>
                         <div className="mt-3 mb-4">
                           <Button
-                            onClick={handleUpgradeClick}
+                            type="button"
+                            onClick={() => handleUpgradeClick()}
                             disabled={isSubscribing}
                             className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md"
                             data-testid="button-upgrade-founders-circle-mentor"
