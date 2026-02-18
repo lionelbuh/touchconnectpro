@@ -5195,7 +5195,7 @@ app.post("/api/mentor-questions/:id/reply", async (req, res) => {
     const { reply } = req.body;
     console.log("[POST /api/mentor-questions/:id/reply] Replying to question:", id);
 
-    const { data, error } = await supabase
+    let result = await supabase
       .from("mentor_questions")
       .update({
         admin_reply: reply,
@@ -5206,13 +5206,26 @@ app.post("/api/mentor-questions/:id/reply", async (req, res) => {
       .eq("id", id)
       .select();
 
-    if (error) {
-      console.error("[POST /api/mentor-questions/:id/reply] Error:", error);
-      return res.status(500).json({ error: error.message });
+    if (result.error) {
+      console.log("[POST /api/mentor-questions/:id/reply] Retrying without is_read_by_entrepreneur column");
+      result = await supabase
+        .from("mentor_questions")
+        .update({
+          admin_reply: reply,
+          replied_at: new Date().toISOString(),
+          status: "answered"
+        })
+        .eq("id", id)
+        .select();
+    }
+
+    if (result.error) {
+      console.error("[POST /api/mentor-questions/:id/reply] Error:", result.error);
+      return res.status(500).json({ error: result.error.message });
     }
 
     console.log("[POST /api/mentor-questions/:id/reply] Reply saved successfully");
-    return res.json({ success: true, question: data?.[0] });
+    return res.json({ success: true, question: result.data?.[0] });
   } catch (error) {
     console.error("[POST /api/mentor-questions/:id/reply] Error:", error);
     return res.status(500).json({ error: error.message });
@@ -6787,7 +6800,7 @@ app.post("/api/stripe/create-checkout-session", async (req, res) => {
               name: "TouchConnectPro Membership",
               description: "Monthly membership with mentor access, AI business planning tools, and investor connections"
             },
-            unit_amount: 4900,
+            unit_amount: 999,
             recurring: { interval: "month" }
           },
           quantity: 1

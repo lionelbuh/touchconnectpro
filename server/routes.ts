@@ -2521,7 +2521,7 @@ export async function registerRoutes(
       const { reply } = req.body;
       console.log("[POST /api/mentor-questions/:id/reply] Replying to question:", id);
 
-      const { data, error } = await (client
+      let result = await (client
         .from("mentor_questions")
         .update({
           admin_reply: reply,
@@ -2532,13 +2532,26 @@ export async function registerRoutes(
         .eq("id", id)
         .select() as any);
 
-      if (error) {
-        console.error("[POST /api/mentor-questions/:id/reply] Error:", error);
-        return res.status(500).json({ error: error.message });
+      if (result.error) {
+        console.log("[POST /api/mentor-questions/:id/reply] Retrying without is_read_by_entrepreneur column");
+        result = await (client
+          .from("mentor_questions")
+          .update({
+            admin_reply: reply,
+            replied_at: new Date().toISOString(),
+            status: "answered"
+          })
+          .eq("id", id)
+          .select() as any);
+      }
+
+      if (result.error) {
+        console.error("[POST /api/mentor-questions/:id/reply] Error:", result.error);
+        return res.status(500).json({ error: result.error.message });
       }
 
       console.log("[POST /api/mentor-questions/:id/reply] Reply saved successfully");
-      return res.json({ success: true, question: data?.[0] });
+      return res.json({ success: true, question: result.data?.[0] });
     } catch (error: any) {
       console.error("[POST /api/mentor-questions/:id/reply] Error:", error);
       return res.status(500).json({ error: error.message });
