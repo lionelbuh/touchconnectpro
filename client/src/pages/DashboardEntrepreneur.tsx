@@ -299,19 +299,23 @@ export default function DashboardEntrepreneur() {
   });
 
   useEffect(() => {
-    const savedFormData = localStorage.getItem("tcp_formData");
-    const savedBusinessPlan = localStorage.getItem("tcp_businessPlan");
-    const savedProfile = localStorage.getItem("tcp_profileData");
-    const savedSubmitted = localStorage.getItem("tcp_submitted");
+    const savedUserEmail = localStorage.getItem("tcp_userEmail");
     const savedReadMessageIds = localStorage.getItem("tcp_entrepreneurReadMessageIds");
     const savedThreadCounts = localStorage.getItem("tcp_entrepreneurReadThreadEntryCounts");
-    
-    if (savedFormData) setFormData(JSON.parse(savedFormData));
-    if (savedBusinessPlan) setBusinessPlanData(JSON.parse(savedBusinessPlan));
-    if (savedProfile) setProfileData(JSON.parse(savedProfile));
-    if (savedSubmitted) setSubmitted(JSON.parse(savedSubmitted));
+
     if (savedReadMessageIds) setEntrepreneurReadMessageIds(JSON.parse(savedReadMessageIds));
     if (savedThreadCounts) setReadThreadEntryCounts(JSON.parse(savedThreadCounts));
+
+    if (savedUserEmail) {
+      const savedFormData = localStorage.getItem("tcp_formData");
+      const savedBusinessPlan = localStorage.getItem("tcp_businessPlan");
+      const savedProfile = localStorage.getItem("tcp_profileData");
+      const savedSubmitted = localStorage.getItem("tcp_submitted");
+      if (savedFormData) setFormData(JSON.parse(savedFormData));
+      if (savedBusinessPlan) setBusinessPlanData(JSON.parse(savedBusinessPlan));
+      if (savedProfile) setProfileData(JSON.parse(savedProfile));
+      if (savedSubmitted) setSubmitted(JSON.parse(savedSubmitted));
+    }
     
     // Messages will be loaded from database after user email is available
     
@@ -431,15 +435,32 @@ export default function DashboardEntrepreneur() {
             setIsAccountDisabled(data.is_disabled === true);
             setIsPreApproved(data.status === "pre-approved");
             setHasPaid(data.payment_status === "paid");
+
+            // Clear stale localStorage if different user
+            const previousUser = localStorage.getItem("tcp_userEmail");
+            if (previousUser && previousUser !== user.email) {
+              localStorage.removeItem("tcp_formData");
+              localStorage.removeItem("tcp_businessPlan");
+              localStorage.removeItem("tcp_profileData");
+              localStorage.removeItem("tcp_submitted");
+            }
+            localStorage.setItem("tcp_userEmail", user.email);
             
-            // Set form data from application
-            if (data.data) {
-              setFormData(prev => ({ ...prev, ...data.data }));
+            // Set form data from application - fully replace to avoid stale data
+            if (data.data && Object.keys(data.data).length > 0) {
+              setFormData(prev => {
+                const reset = Object.fromEntries(Object.keys(prev).map(k => [k, ""]));
+                return { ...reset, ...data.data };
+              });
+            } else {
+              setFormData(prev => Object.fromEntries(Object.keys(prev).map(k => [k, ""])) as typeof prev);
             }
             
             // Set business plan from application
-            if (data.business_plan) {
+            if (data.business_plan && Object.keys(data.business_plan).length > 0) {
               setBusinessPlanData(data.business_plan);
+            } else {
+              setBusinessPlanData({});
             }
             
             // Set profile data (including bio from application fullBio)
@@ -506,15 +527,32 @@ export default function DashboardEntrepreneur() {
                 setIsAccountDisabled(data.is_disabled === true);
                 setIsPreApproved(data.status === "pre-approved");
                 setHasPaid(data.payment_status === "paid");
+
+                // Clear stale localStorage if different user
+                const prevUser = localStorage.getItem("tcp_userEmail");
+                if (prevUser && prevUser !== profile.email) {
+                  localStorage.removeItem("tcp_formData");
+                  localStorage.removeItem("tcp_businessPlan");
+                  localStorage.removeItem("tcp_profileData");
+                  localStorage.removeItem("tcp_submitted");
+                }
+                localStorage.setItem("tcp_userEmail", profile.email);
                 
-                // Set form data from application
-                if (data.data) {
-                  setFormData(prev => ({ ...prev, ...data.data }));
+                // Set form data from application - fully replace to avoid stale data
+                if (data.data && Object.keys(data.data).length > 0) {
+                  setFormData(prev => {
+                    const reset = Object.fromEntries(Object.keys(prev).map(k => [k, ""]));
+                    return { ...reset, ...data.data };
+                  });
+                } else {
+                  setFormData(prev => Object.fromEntries(Object.keys(prev).map(k => [k, ""])) as typeof prev);
                 }
                 
                 // Set business plan from application
-                if (data.business_plan) {
+                if (data.business_plan && Object.keys(data.business_plan).length > 0) {
                   setBusinessPlanData(data.business_plan);
+                } else {
+                  setBusinessPlanData({});
                 }
                 
                 // Update profile data with fresh API data
@@ -1228,6 +1266,7 @@ export default function DashboardEntrepreneur() {
     localStorage.removeItem("tcp_businessPlan");
     localStorage.removeItem("tcp_profileData");
     localStorage.removeItem("tcp_submitted");
+    localStorage.removeItem("tcp_userEmail");
     window.location.href = "/";
   };
 
