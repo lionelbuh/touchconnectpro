@@ -13,6 +13,7 @@ import { useLocation } from "wouter";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
+import { ENTREPRENEUR_CONTRACT, ENTREPRENEUR_CONTRACT_VERSION } from "@/lib/contracts";
 
 // Helper to format UTC timestamps from database to PST
 const formatToPST = (timestamp: string | Date) => {
@@ -73,6 +74,9 @@ export default function DashboardEntrepreneur() {
   const [mentorQuestions, setMentorQuestions] = useState<any[]>([]);
   const [newMentorQuestion, setNewMentorQuestion] = useState("");
   const [sendingMentorQuestion, setSendingMentorQuestion] = useState(false);
+  const [showUpgradeAgreement, setShowUpgradeAgreement] = useState(false);
+  const [agreedToUpgradeContract, setAgreedToUpgradeContract] = useState(false);
+  const [showUpgradeContractText, setShowUpgradeContractText] = useState(false);
   const [adminMessageText, setAdminMessageText] = useState("");
   const [entrepreneurReadMessageIds, setEntrepreneurReadMessageIds] = useState<number[]>([]);
   const [meetings, setMeetings] = useState<any[]>([]);
@@ -1298,10 +1302,33 @@ export default function DashboardEntrepreneur() {
     window.location.href = "/";
   };
 
+  const handleUpgradeClick = () => {
+    setAgreedToUpgradeContract(false);
+    setShowUpgradeContractText(false);
+    setShowUpgradeAgreement(true);
+  };
+
   const handleSubscribe = async () => {
+    setShowUpgradeAgreement(false);
     setIsSubscribing(true);
     try {
-      // Save email to localStorage before redirecting (session may be lost after Stripe)
+      try {
+        await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: userEmail.toLowerCase().trim(),
+            role: "entrepreneur",
+            contractVersion: ENTREPRENEUR_CONTRACT_VERSION,
+            contractText: ENTREPRENEUR_CONTRACT,
+            userAgent: navigator.userAgent,
+          }),
+        });
+        console.log("[SUBSCRIBE] Contract acceptance saved");
+      } catch (contractErr) {
+        console.error("[SUBSCRIBE] Contract acceptance save error (non-blocking):", contractErr);
+      }
+
       localStorage.setItem("tcp_pendingPaymentEmail", userEmail);
       
       console.log("[SUBSCRIBE] Creating checkout session for:", userEmail);
@@ -1786,7 +1813,17 @@ export default function DashboardEntrepreneur() {
                         <div className="flex-1">
                           <h3 className="text-lg font-semibold text-cyan-800 dark:text-cyan-300 mb-1">Idea Submitted - Explore Your Dashboard</h3>
                           <p className="text-cyan-700 dark:text-cyan-400">Your idea has been submitted! You can now explore coaches, refine your business plan, and connect with the community. Upgrade to a paid plan for dedicated mentor access.</p>
-                          <button onClick={handleSubscribe} disabled={isSubscribing} className="inline-block mt-2 text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 underline cursor-pointer bg-transparent border-none p-0">{isSubscribing ? "Redirecting..." : "Upgrade to Founders Circle Plan →"}</button>
+                          <div className="mt-3">
+                            <Button
+                              onClick={handleUpgradeClick}
+                              disabled={isSubscribing}
+                              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md"
+                              data-testid="button-upgrade-founders-circle-overview"
+                            >
+                              <Rocket className="mr-2 h-4 w-4" />
+                              {isSubscribing ? "Redirecting to payment..." : "Upgrade to Founders Circle — $9.99/mo"}
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -2013,7 +2050,17 @@ export default function DashboardEntrepreneur() {
                           <Users className="h-8 w-8 text-cyan-600" />
                         </div>
                         <p className="text-slate-600 dark:text-slate-400 mb-2">Once you upgrade to the Founders Circle plan and your project is reviewed, a dedicated mentor will be assigned to you.</p>
-                        <button onClick={handleSubscribe} disabled={isSubscribing} className="inline-block mt-2 mb-4 text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 underline cursor-pointer bg-transparent border-none p-0">{isSubscribing ? "Redirecting..." : "Upgrade to Founders Circle Plan →"}</button>
+                        <div className="mt-3 mb-4">
+                          <Button
+                            onClick={handleUpgradeClick}
+                            disabled={isSubscribing}
+                            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md"
+                            data-testid="button-upgrade-founders-circle-mentor"
+                          >
+                            <Rocket className="mr-2 h-4 w-4" />
+                            {isSubscribing ? "Redirecting to payment..." : "Upgrade to Founders Circle — $9.99/mo"}
+                          </Button>
+                        </div>
                         {ideaSubmitted && !hasPaid && (
                           <Button
                             variant="outline"
@@ -4296,6 +4343,89 @@ export default function DashboardEntrepreneur() {
         </div>,
         document.body
       )}
+
+      <Dialog open={showUpgradeAgreement} onOpenChange={setShowUpgradeAgreement}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Rocket className="h-5 w-5 text-indigo-600" />
+              Upgrade to Founders Circle — $9.99/mo
+            </DialogTitle>
+            <DialogDescription>
+              Please review and accept the Entrepreneur Membership Agreement before proceeding to payment.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-2">
+            <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
+              <h4 className="font-semibold text-indigo-900 dark:text-indigo-200 mb-2">Founders Circle includes:</h4>
+              <ul className="space-y-1 text-sm text-indigo-800 dark:text-indigo-300">
+                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Dedicated mentor assigned to your project</li>
+                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Structured feedback and personalized guidance</li>
+                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> AI-powered business planning tools</li>
+                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Access to expert coaches</li>
+                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500 flex-shrink-0" /> Cancel anytime from your dashboard</li>
+              </ul>
+            </div>
+
+            <div className="border border-slate-200 dark:border-slate-700 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setShowUpgradeContractText(!showUpgradeContractText)}
+                className="w-full flex items-center justify-between p-3 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                data-testid="button-toggle-agreement-text"
+              >
+                <span className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Entrepreneur Membership Agreement
+                </span>
+                {showUpgradeContractText ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+              {showUpgradeContractText && (
+                <div className="px-4 pb-4 max-h-60 overflow-y-auto">
+                  <pre className="whitespace-pre-wrap text-xs text-slate-600 dark:text-slate-400 font-sans leading-relaxed">{ENTREPRENEUR_CONTRACT}</pre>
+                </div>
+              )}
+            </div>
+
+            <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              <input
+                type="checkbox"
+                checked={agreedToUpgradeContract}
+                onChange={(e) => setAgreedToUpgradeContract(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                data-testid="checkbox-agree-upgrade-contract"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">
+                I have read and agree to the <strong>Entrepreneur Membership Agreement</strong>. I understand this constitutes my legal electronic signature.
+              </span>
+            </label>
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowUpgradeAgreement(false)}
+                className="flex-1"
+                data-testid="button-cancel-upgrade"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubscribe}
+                disabled={!agreedToUpgradeContract || isSubscribing}
+                className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                data-testid="button-proceed-to-payment"
+              >
+                {isSubscribing ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+                ) : (
+                  <><CreditCard className="mr-2 h-4 w-4" /> Proceed to Payment</>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

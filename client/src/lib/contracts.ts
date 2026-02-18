@@ -463,10 +463,12 @@ By selecting the checkbox labeled "I agree to the Investor Agreement" and submit
 
 • You consent to electronic contracting and acknowledge that this constitutes your legal electronic signature`;
 
+export const ENTREPRENEUR_CONTRACT_VERSION = "2026-02-17 v1";
+
 export const ENTREPRENEUR_CONTRACT = `TouchConnectPro
 Entrepreneur / User Membership Agreement
 
-Last Updated: February 1, 2026
+Last Updated: February 17, 2026
 
 This Membership Agreement ("Agreement") is entered into between Touch Equity Partners LLC, a limited liability company ("Company", "we", "us", or "our"), which operates the TouchConnectPro platform ("TouchConnectPro" or the "Platform"), and the individual or entity registering as a member ("Member", "you", or "your").
 
