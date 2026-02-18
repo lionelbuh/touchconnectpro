@@ -1304,9 +1304,11 @@ export default function DashboardEntrepreneur() {
   };
 
   const handleUpgradeClick = () => {
+    console.log("[UPGRADE] Button clicked! Setting showUpgradeAgreement to true");
     setAgreedToUpgradeContract(false);
     setShowUpgradeContractText(false);
     setShowUpgradeAgreement(true);
+    console.log("[UPGRADE] State setters called");
   };
 
   const handleSubscribe = async () => {
