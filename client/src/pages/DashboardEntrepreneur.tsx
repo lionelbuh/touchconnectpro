@@ -1304,11 +1304,78 @@ export default function DashboardEntrepreneur() {
   };
 
   const handleUpgradeClick = () => {
-    console.log("[UPGRADE] Button clicked! Setting showUpgradeAgreement to true");
+    console.log("[UPGRADE] Button clicked!");
     setAgreedToUpgradeContract(false);
     setShowUpgradeContractText(false);
     setShowUpgradeAgreement(true);
-    console.log("[UPGRADE] State setters called");
+    
+    setTimeout(() => {
+      const modal = document.getElementById('upgrade-modal-root');
+      console.log("[UPGRADE] After setState, modal in DOM:", !!modal);
+      if (!modal) {
+        console.log("[UPGRADE] Modal NOT found - forcing DOM creation");
+        const overlay = document.createElement('div');
+        overlay.id = 'upgrade-modal-fallback';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;';
+        overlay.innerHTML = `
+          <div style="background:white;border-radius:12px;padding:24px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;position:relative;z-index:100000;" onclick="event.stopPropagation()">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <h2 style="font-size:20px;font-weight:bold;color:#1e293b;">Upgrade to Founders Circle — $9.99/mo</h2>
+              <button id="upgrade-modal-close" style="background:none;border:none;font-size:24px;cursor:pointer;color:#94a3b8;">✕</button>
+            </div>
+            <p style="color:#64748b;font-size:14px;margin-bottom:16px;">Please review and accept the agreement before proceeding to payment.</p>
+            <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:16px;margin-bottom:16px;">
+              <h4 style="font-weight:600;color:#312e81;margin-bottom:8px;">Founders Circle includes:</h4>
+              <ul style="list-style:none;padding:0;margin:0;font-size:14px;color:#3730a3;">
+                <li style="margin-bottom:4px;">✓ Dedicated mentor assigned to your project</li>
+                <li style="margin-bottom:4px;">✓ Structured feedback and personalized guidance</li>
+                <li style="margin-bottom:4px;">✓ AI-powered business planning tools</li>
+                <li style="margin-bottom:4px;">✓ Access to expert coaches</li>
+                <li>✓ Cancel anytime from your dashboard</li>
+              </ul>
+            </div>
+            <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px;">
+              <input type="checkbox" id="upgrade-agree-checkbox" style="margin-top:2px;" />
+              <span style="font-size:14px;color:#475569;">I have read and agree to the <strong>Entrepreneur Membership Agreement</strong>. I understand this constitutes my legal electronic signature.</span>
+            </label>
+            <div style="display:flex;gap:12px;">
+              <button id="upgrade-cancel-btn" style="flex:1;padding:10px;border:1px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;font-size:14px;">Cancel</button>
+              <button id="upgrade-proceed-btn" style="flex:1;padding:10px;border:none;border-radius:8px;background:linear-gradient(to right,#4f46e5,#9333ea);color:white;cursor:pointer;font-size:14px;opacity:0.5;" disabled>Proceed to Payment</button>
+            </div>
+          </div>
+        `;
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) {
+            overlay.remove();
+            setShowUpgradeAgreement(false);
+          }
+        });
+        document.body.appendChild(overlay);
+        
+        const closeBtn = document.getElementById('upgrade-modal-close');
+        const cancelBtn = document.getElementById('upgrade-cancel-btn');
+        const proceedBtn = document.getElementById('upgrade-proceed-btn');
+        const agreeCheckbox = document.getElementById('upgrade-agree-checkbox') as HTMLInputElement;
+        
+        if (closeBtn) closeBtn.addEventListener('click', () => { overlay.remove(); setShowUpgradeAgreement(false); });
+        if (cancelBtn) cancelBtn.addEventListener('click', () => { overlay.remove(); setShowUpgradeAgreement(false); });
+        if (agreeCheckbox && proceedBtn) {
+          agreeCheckbox.addEventListener('change', () => {
+            (proceedBtn as HTMLButtonElement).disabled = !agreeCheckbox.checked;
+            proceedBtn.style.opacity = agreeCheckbox.checked ? '1' : '0.5';
+          });
+        }
+        if (proceedBtn) {
+          proceedBtn.addEventListener('click', () => {
+            if (agreeCheckbox?.checked) {
+              overlay.remove();
+              setShowUpgradeAgreement(false);
+              handleSubscribe();
+            }
+          });
+        }
+      }
+    }, 100);
   };
 
   const handleSubscribe = async () => {
@@ -4435,6 +4502,7 @@ export default function DashboardEntrepreneur() {
 
       {showUpgradeAgreement && createPortal(
         <div
+          id="upgrade-modal-root"
           className="fixed inset-0 flex items-center justify-center"
           style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999, backgroundColor: 'rgba(0,0,0,0.5)' }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowUpgradeAgreement(false); }}
