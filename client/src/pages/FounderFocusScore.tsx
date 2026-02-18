@@ -383,34 +383,43 @@ export default function FounderFocusScore() {
                 ))}
               </div>
               {!accountCreated ? (
-                <div className="max-w-md mx-auto space-y-3">
+                <form className="max-w-md mx-auto space-y-3" onSubmit={(e) => { e.preventDefault(); handleCommunitySignup(); }} autoComplete="off">
                   <Input
+                    name="signup-name"
+                    id="signup-name"
                     placeholder="Your full name"
                     value={signupName}
                     onChange={(e) => setSignupName(e.target.value)}
+                    autoComplete="name"
                     className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 h-12"
                     data-testid="input-signup-name"
                   />
                   <Input
+                    name="signup-email"
+                    id="signup-email"
                     type="email"
                     placeholder="Your email address"
                     value={signupEmail}
                     onChange={(e) => setSignupEmail(e.target.value)}
+                    autoComplete="email"
                     className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 h-12"
                     data-testid="input-signup-email"
                   />
                   <Input
+                    name="signup-password"
+                    id="signup-password"
                     type="password"
                     placeholder="Choose a password (min 6 characters)"
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
+                    autoComplete="new-password"
                     className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 h-12"
                     data-testid="input-signup-password"
                   />
                   <Button
+                    type="submit"
                     size="lg"
                     className="w-full h-12 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full"
-                    onClick={handleCommunitySignup}
                     disabled={isCreatingAccount}
                     data-testid="button-join-community"
                   >
@@ -421,7 +430,7 @@ export default function FounderFocusScore() {
                     )}
                   </Button>
                   <p className="text-xs text-slate-400 text-center">No credit card required. No commitment.</p>
-                </div>
+                </form>
               ) : (
                 <div className="max-w-md mx-auto bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6" data-testid="text-signup-success">
                   <CheckCircle className="h-10 w-10 text-emerald-400 mx-auto mb-3" />
