@@ -145,7 +145,7 @@ export default function InsightArticle() {
                 <h2 className="text-lg font-display font-bold text-white">How TouchConnectPro Helps</h2>
               </div>
               <p className="text-slate-300 leading-relaxed mb-4">{article.howWeHelp}</p>
-              <Link href="/become-entrepreneur" data-testid="link-article-cta">
+              <Link href="/founder-focus" data-testid="link-article-cta">
                 <Button size="sm" className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full" data-testid="button-article-cta">
                   Get Started <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
