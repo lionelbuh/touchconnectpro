@@ -1310,16 +1310,17 @@ app.post("/api/ideas", async (req, res) => {
       .single();
 
     if (existingApp) {
-      // If rejected, allow resubmission by updating existing record
-      if (existingApp.status === "rejected") {
-        console.log("[RESUBMIT] Updating rejected application for:", email);
-        const updatedFormData = { ...(formData || {}), isResubmission: true };
+      // If rejected or pre-approved (Community Free), allow update
+      if (existingApp.status === "rejected" || existingApp.status === "pre-approved") {
+        console.log("[UPDATE] Updating", existingApp.status, "application for:", email);
+        const mergedData = { ...(existingApp.data || {}), ...(formData || {}) };
+        const newStatus = existingApp.status === "pre-approved" ? "pre-approved" : "submitted";
         const { data: updatedData, error: updateError } = await supabase
           .from("ideas")
           .update({
-            status: "submitted",
+            status: newStatus,
             entrepreneur_name: fullName,
-            data: updatedFormData,
+            data: mergedData,
             business_plan: businessPlan || {},
             linkedin_profile: linkedinWebsite || ""
           })
@@ -1331,7 +1332,7 @@ app.post("/api/ideas", async (req, res) => {
           return res.status(400).json({ error: updateError.message });
         }
 
-        console.log("[RESUBMIT SUCCESS] Application updated with id:", updatedData?.[0]?.id);
+        console.log("[UPDATE SUCCESS] Application updated with id:", updatedData?.[0]?.id);
         return res.json({ success: true, id: updatedData?.[0]?.id, resubmitted: true });
       } else {
         // If already submitted/pending/approved, don't allow duplicate

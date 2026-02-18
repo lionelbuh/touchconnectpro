@@ -841,17 +841,19 @@ export async function registerRoutes(
           return res.status(400).json({ error: "You already have a pending application. Please wait for admin review." });
         }
         
-        // If rejected, update the existing record to allow resubmission
-        if (existing.status === "rejected") {
-          console.log("[UPDATE] Resubmitting rejected entrepreneur application for:", email);
+        // If rejected or pre-approved (Community Free), update the existing record
+        if (existing.status === "rejected" || existing.status === "pre-approved") {
+          console.log("[UPDATE] Updating", existing.status, "entrepreneur application for:", email);
+          const existingData = existing.status === "pre-approved" ? (await (client.from("ideas").select("data").eq("id", existing.id).single() as any))?.data?.data : {};
+          const mergedData = { ...(existingData || {}), ...(formData || {}) };
           const { data, error } = await (client
             .from("ideas")
             .update({
               entrepreneur_name: fullName,
-              data: formData || {},
+              data: mergedData,
               business_plan: businessPlan || {},
               linkedin_profile: linkedinWebsite || "",
-              status: "submitted",
+              status: "pre-approved",
               resubmitted_at: new Date().toISOString()
             } as any)
             .eq("id", existing.id)
@@ -862,7 +864,7 @@ export async function registerRoutes(
             return res.status(400).json({ error: error.message });
           }
 
-          console.log("[SUCCESS] Entrepreneur application resubmitted");
+          console.log("[SUCCESS] Entrepreneur application updated");
           return res.json({ success: true, id: data?.[0]?.id, resubmission: true });
         }
       }
