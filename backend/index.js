@@ -42,7 +42,7 @@ app.get("/api/config", (req, res) => {
 app.post("/api/founder-focus-completed", async (req, res) => {
   console.log("[FOUNDER FOCUS] Quiz completed notification received");
   try {
-    const { scores, overallScore, topBlocker } = req.body;
+    const { scores, overallScore, topBlocker, track, trackLabel } = req.body;
 
     const resendData = await getResendClient();
     if (resendData) {
@@ -54,11 +54,12 @@ app.post("/api/founder-focus-completed", async (req, res) => {
       await client.emails.send({
         from: fromEmail,
         to: ADMIN_EMAIL,
-        subject: "Founder Focus Score Completed (Unregistered Visitor)",
+        subject: `Founder Focus Score Completed — ${trackLabel || "Unknown Track"} (Unregistered)`,
         html: `
           <h2>New Founder Focus Score Completion</h2>
           <p>A visitor has completed all 8 questions on the Founder Focus Score page <strong>without registering</strong>.</p>
           <hr />
+          <p><strong>Profile Track:</strong> ${trackLabel || "N/A"} (${track || "N/A"})</p>
           <p><strong>Overall Score:</strong> ${overallScore || "N/A"}/10</p>
           <p><strong>Category Scores:</strong> ${categoryBreakdown}</p>
           <p><strong>Top Blocker:</strong> ${topBlocker || "N/A"}</p>
