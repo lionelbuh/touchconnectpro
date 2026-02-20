@@ -42,7 +42,7 @@ app.get("/api/config", (req, res) => {
 app.post("/api/founder-focus-completed", async (req, res) => {
   console.log("[FOUNDER FOCUS] Quiz completed notification received");
   try {
-    const { scores, overallScore, topBlocker, track, trackLabel } = req.body;
+    const { scores, overallScore, totalScore, topBlocker, track, trackLabel } = req.body;
 
     const resendData = await getResendClient();
     if (resendData) {
@@ -60,7 +60,7 @@ app.post("/api/founder-focus-completed", async (req, res) => {
           <p>A visitor has completed all 8 questions on the Founder Focus Score page <strong>without registering</strong>.</p>
           <hr />
           <p><strong>Profile Track:</strong> ${trackLabel || "N/A"} (${track || "N/A"})</p>
-          <p><strong>Overall Score:</strong> ${overallScore || "N/A"}/10</p>
+          <p><strong>Overall Score:</strong> ${overallScore !== undefined && overallScore !== null ? overallScore : "N/A"}/10 (${totalScore !== undefined && totalScore !== null ? totalScore : "N/A"}/100)</p>
           <p><strong>Category Scores:</strong> ${categoryBreakdown}</p>
           <p><strong>Top Blocker:</strong> ${topBlocker || "N/A"}</p>
           <hr />

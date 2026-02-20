@@ -111,6 +111,7 @@ export default function FounderFocusScore() {
           body: JSON.stringify({
             scores: quizResult.scores,
             overallScore: quizResult.overallScore,
+            totalScore: quizResult.totalScore,
             topBlocker: quizResult.topBlocker,
             track: selectedTrack,
             trackLabel: TRACK_LABELS[selectedTrack!],
