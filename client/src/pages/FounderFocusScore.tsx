@@ -4,9 +4,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, ArrowLeft, Target, Compass, DollarSign, Settings, Rocket, CheckCircle, Loader2, Zap, Clock, BarChart3, Users } from "lucide-react";
+import { ArrowRight, ArrowLeft, Target, Compass, DollarSign, Settings, Rocket, CheckCircle, Loader2, Zap, Clock, BarChart3, Users, Briefcase, Lightbulb, Building2 } from "lucide-react";
 import { Link } from "wouter";
-import { QUIZ_QUESTIONS, calculateResults, BLOCKER_INFO, type QuizResult, type Category } from "@/lib/founderFocusData";
+import {
+  SEGMENTATION_QUESTION,
+  TRACK_QUESTIONS,
+  TRACK_LABELS,
+  TRACK_BLOCKER_INFO,
+  calculateResults,
+  BLOCKER_INFO,
+  type QuizResult,
+  type Category,
+  type TrackType,
+} from "@/lib/founderFocusData";
 import { COMMUNITY_FREE_CONTRACT, COMMUNITY_FREE_CONTRACT_VERSION } from "@/lib/contracts";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
@@ -39,10 +49,18 @@ const categoryBgColors: Record<Category, string> = {
   Execution: "bg-cyan-500/10 border-cyan-500/30",
 };
 
-type Phase = "landing" | "quiz" | "results" | "community-signup";
+const segmentIcons = [
+  <Rocket className="h-6 w-6" />,
+  <Briefcase className="h-6 w-6" />,
+  <Lightbulb className="h-6 w-6" />,
+  <Compass className="h-6 w-6" />,
+];
+
+type Phase = "landing" | "segmentation" | "quiz" | "results" | "community-signup";
 
 export default function FounderFocusScore() {
   const [phase, setPhase] = useState<Phase>("landing");
+  const [selectedTrack, setSelectedTrack] = useState<TrackType | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<number[]>(new Array(8).fill(-1));
   const [result, setResult] = useState<QuizResult | null>(null);
@@ -64,15 +82,25 @@ export default function FounderFocusScore() {
     }
   }, [phase, currentQuestion]);
 
+  const questions = selectedTrack ? TRACK_QUESTIONS[selectedTrack] : [];
+
+  const handleSegmentSelect = (index: number) => {
+    const option = SEGMENTATION_QUESTION.options[index];
+    setSelectedTrack(option.track);
+    setAnswers(new Array(8).fill(-1));
+    setCurrentQuestion(0);
+    setTimeout(() => setPhase("quiz"), 300);
+  };
+
   const handleAnswer = (answerIndex: number) => {
     const newAnswers = [...answers];
     newAnswers[currentQuestion] = answerIndex;
     setAnswers(newAnswers);
 
-    if (currentQuestion < QUIZ_QUESTIONS.length - 1) {
+    if (currentQuestion < questions.length - 1) {
       setTimeout(() => setCurrentQuestion(currentQuestion + 1), 300);
     } else {
-      const quizResult = calculateResults(newAnswers);
+      const quizResult = calculateResults(newAnswers, selectedTrack!);
       setResult(quizResult);
       setTimeout(() => setPhase("results"), 400);
 
@@ -83,7 +111,10 @@ export default function FounderFocusScore() {
           body: JSON.stringify({
             scores: quizResult.scores,
             overallScore: quizResult.overallScore,
+            totalScore: quizResult.totalScore,
             topBlocker: quizResult.topBlocker,
+            track: selectedTrack,
+            trackLabel: TRACK_LABELS[selectedTrack!],
           }),
         });
       } catch (e) {
@@ -127,7 +158,6 @@ export default function FounderFocusScore() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create account");
 
-      // Save contract acceptance
       try {
         await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
           method: "POST",
@@ -170,7 +200,7 @@ export default function FounderFocusScore() {
                 Discover your single biggest growth blocker in under 5 minutes.
               </p>
               <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto">
-                Answer 8 quick questions and get a personalized diagnosis of what's holding your business back, plus one concrete action to fix it.
+                Answer 8 personalized questions based on your profile and get a tailored diagnosis of what's holding you back, plus one concrete action to fix it.
               </p>
 
               <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto mb-12">
@@ -189,7 +219,7 @@ export default function FounderFocusScore() {
               <Button
                 size="lg"
                 className="h-14 px-10 text-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.6)] hover:scale-105 transition-all"
-                onClick={() => { setPhase("quiz"); setCurrentQuestion(0); }}
+                onClick={() => { setPhase("segmentation"); }}
                 data-testid="button-start-quiz"
               >
                 Start the Diagnostic <ArrowRight className="ml-2 h-5 w-5" />
@@ -203,9 +233,9 @@ export default function FounderFocusScore() {
             <h2 className="text-2xl font-display font-bold text-center mb-10 text-white">How It Works</h2>
             <div className="grid md:grid-cols-4 gap-6">
               {[
-                { num: "1", title: "Answer", desc: "8 quick questions about your business challenges" },
-                { num: "2", title: "Discover", desc: "Your primary blocker across 4 key areas" },
-                { num: "3", title: "Learn", desc: "What it means and why it matters" },
+                { num: "1", title: "Tell Us", desc: "Select the profile that best describes you" },
+                { num: "2", title: "Answer", desc: "8 personalized questions about your challenges" },
+                { num: "3", title: "Discover", desc: "Your primary blocker across 4 key areas" },
                 { num: "4", title: "Act", desc: "One concrete step to take this week" },
               ].map((step) => (
                 <div key={step.num} className="text-center">
@@ -223,9 +253,60 @@ export default function FounderFocusScore() {
     );
   }
 
-  if (phase === "quiz") {
-    const question = QUIZ_QUESTIONS[currentQuestion];
-    const progress = ((currentQuestion + 1) / QUIZ_QUESTIONS.length) * 100;
+  if (phase === "segmentation") {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+        <div className="container mx-auto px-4 py-8 flex-1 flex flex-col max-w-3xl">
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-slate-400">Getting started</span>
+              <span className="text-sm text-cyan-400 font-medium">Step 1 of 2</span>
+            </div>
+            <Progress value={5} className="h-2 bg-slate-800" />
+          </div>
+
+          <div className="flex-1 flex flex-col justify-center">
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-10 text-white leading-tight text-center" data-testid="text-segmentation-question">
+              {SEGMENTATION_QUESTION.question}
+            </h2>
+
+            <div className="space-y-4 mb-10">
+              {SEGMENTATION_QUESTION.options.map((option, i) => (
+                <button
+                  key={i}
+                  className="w-full text-left p-5 rounded-xl border transition-all duration-200 bg-slate-900/50 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-cyan-500/50 hover:text-white"
+                  onClick={() => handleSegmentSelect(i)}
+                  data-testid={`button-segment-${i}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0 text-cyan-400">
+                      {segmentIcons[i]}
+                    </div>
+                    <span className="text-lg">{option.text}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-start">
+              <Button
+                variant="ghost"
+                onClick={() => setPhase("landing")}
+                className="text-slate-400 hover:text-white"
+                data-testid="button-back-landing"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "quiz" && selectedTrack) {
+    const question = questions[currentQuestion];
+    const progress = ((currentQuestion + 1) / questions.length) * 100;
     const selectedAnswer = answers[currentQuestion];
 
     return (
@@ -233,7 +314,12 @@ export default function FounderFocusScore() {
         <div className="container mx-auto px-4 py-8 flex-1 flex flex-col max-w-3xl">
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-slate-400">Question {currentQuestion + 1} of {QUIZ_QUESTIONS.length}</span>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="bg-cyan-500/10 text-cyan-300 border-cyan-500/30 text-xs">
+                  {TRACK_LABELS[selectedTrack]}
+                </Badge>
+                <span className="text-sm text-slate-400">Question {currentQuestion + 1} of {questions.length}</span>
+              </div>
               <span className="text-sm text-cyan-400 font-medium">{Math.round(progress)}% complete</span>
             </div>
             <Progress value={progress} className="h-2 bg-slate-800" />
@@ -273,15 +359,20 @@ export default function FounderFocusScore() {
             <div className="flex items-center justify-between">
               <Button
                 variant="ghost"
-                onClick={handlePrevious}
-                disabled={currentQuestion === 0}
+                onClick={() => {
+                  if (currentQuestion === 0) {
+                    setPhase("segmentation");
+                  } else {
+                    handlePrevious();
+                  }
+                }}
                 className="text-slate-400 hover:text-white"
                 data-testid="button-previous"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+                <ArrowLeft className="mr-2 h-4 w-4" /> {currentQuestion === 0 ? "Change Profile" : "Previous"}
               </Button>
               <div className="flex gap-1.5">
-                {QUIZ_QUESTIONS.map((_, i) => (
+                {questions.map((_, i) => (
                   <div
                     key={i}
                     className={`w-2.5 h-2.5 rounded-full transition-colors ${
@@ -302,8 +393,9 @@ export default function FounderFocusScore() {
     );
   }
 
-  if (phase === "results" && result) {
-    const blocker = BLOCKER_INFO[result.primaryBlocker];
+  if (phase === "results" && result && selectedTrack) {
+    const trackBlocker = TRACK_BLOCKER_INFO[selectedTrack][result.primaryBlocker];
+    const blocker = trackBlocker || BLOCKER_INFO[result.primaryBlocker];
 
     return (
       <div className="min-h-screen bg-slate-950 text-white">
@@ -315,6 +407,9 @@ export default function FounderFocusScore() {
             <h1 className="text-3xl md:text-4xl font-display font-bold mb-4" data-testid="text-results-title">
               Your Founder Focus Score
             </h1>
+            <p className="text-slate-400 text-sm">
+              Track: <span className="text-cyan-300 font-medium">{TRACK_LABELS[selectedTrack]}</span>
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 mb-12">
@@ -503,25 +598,14 @@ export default function FounderFocusScore() {
                     Your account is ready. Log in to access your entrepreneur dashboard.
                   </p>
                   <Link href="/login">
-                    <Button className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-full" data-testid="button-login-community">
-                      Log In to Your Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                    <Button className="bg-emerald-500 hover:bg-emerald-400 text-white rounded-full" data-testid="button-go-to-login">
+                      Go to Login <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
                 </div>
               )}
             </CardContent>
           </Card>
-
-          <div className="text-center mt-8">
-            <Button
-              variant="ghost"
-              className="text-slate-400 hover:text-white"
-              onClick={() => { setPhase("landing"); setAnswers(new Array(8).fill(-1)); setCurrentQuestion(0); setResult(null); }}
-              data-testid="button-retake"
-            >
-              Retake the diagnostic
-            </Button>
-          </div>
         </div>
       </div>
     );

@@ -1,0 +1,98 @@
+We want to upgrade the Founder Focus experience on TouchConnectPro to make it segmented and personalized instead of using the same 8 questions for everyone.
+
+Objective
+Create 3 different question tracks based on user profile, and dynamically show the correct set of 8 questions.
+
+Step 1: Add Segmentation Question (Before Quiz Starts)
+
+Add a required first question:
+
+Which best describes you right now?
+
+Options:
+
+I am building my own business
+
+I run a service business (consultant, agency, freelancer, coach)
+
+I am employed but want to start something
+
+I am exploring ideas
+
+Based on the answer, route the user to a specific 8 question track.
+
+Track 1: Founder / Builder (existing)
+
+Keep current 8 questions:
+
+What feels like the biggest obstacle to growing your business right now?
+
+When you think about the next 90 days, what concerns you most?
+
+How would you describe your current product or service offering?
+
+What best describes how you spend most of your time?
+
+If a mentor could help you with one thing, what would it be?
+
+What happens when you try to explain your business to someone new?
+
+How do you feel about your team or resources right now?
+
+What would make you feel like you're finally making real progress?
+
+Track 2: Service Consultants / Agencies
+
+Show these 8 questions if user selects service business:
+
+What feels like the biggest bottleneck in scaling your services right now?
+
+In the next 90 days, what would make the biggest difference to your revenue?
+
+How clear and differentiated is your positioning in the market?
+
+Where does most of your time go today?
+
+How predictable is your lead flow?
+
+What happens when a potential client asks “Why should we choose you?”
+
+How confident do you feel about your pricing?
+
+If you had the right support, what would you want to optimize first? (leads, offer, systems, team, mindset)
+
+Track 3: Employee / Future Founder
+
+Show these 8 questions if user selects employed but want to start:
+
+What is the main reason you want to start something of your own?
+
+What is stopping you from taking the first real step?
+
+Do you already have a clear business idea?
+
+How confident do you feel about turning an idea into income?
+
+How much time per week could you realistically invest?
+
+What scares you most about starting?
+
+Do you feel you have people around you who understand your ambition?
+
+What would need to happen for you to finally say “I am doing this”?
+
+Logic Requirements
+
+The segmentation answer must be stored in the database.
+
+The selected track must also be stored.
+
+We need the ability to:
+
+Show different result pages depending on track
+
+Tag users internally (Founder, Consultant, Future Founder)
+
+Route them later to different mentor types or offers
+
+Keep the UI identical across tracks so the experience feels consistent.
