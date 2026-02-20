@@ -75,6 +75,19 @@ export default function FounderFocusScore() {
       const quizResult = calculateResults(newAnswers);
       setResult(quizResult);
       setTimeout(() => setPhase("results"), 400);
+
+      try {
+        fetch(`${API_BASE_URL}/api/founder-focus-completed`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            scores: quizResult.scores,
+            overallScore: quizResult.overallScore,
+            topBlocker: quizResult.topBlocker,
+          }),
+        });
+      } catch (e) {
+      }
     }
   };
 

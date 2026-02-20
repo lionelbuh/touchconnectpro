@@ -24,6 +24,8 @@ app.use((req, res, next) => {
   }
 });
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
+
 // Config endpoint for frontend to get Supabase credentials
 app.get("/api/config", (req, res) => {
   console.log("[GET /api/config] Serving Supabase config");
@@ -31,6 +33,47 @@ app.get("/api/config", (req, res) => {
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY
   });
+});
+
+// ============================================
+// FOUNDER FOCUS QUIZ COMPLETION NOTIFICATION
+// ============================================
+
+app.post("/api/founder-focus-completed", async (req, res) => {
+  console.log("[FOUNDER FOCUS] Quiz completed notification received");
+  try {
+    const { scores, overallScore, topBlocker } = req.body;
+
+    const resendData = await getResendClient();
+    if (resendData) {
+      const { client, fromEmail } = resendData;
+      const categoryBreakdown = scores
+        ? Object.entries(scores).map(([cat, score]) => `${cat}: ${score}/10`).join(", ")
+        : "N/A";
+
+      await client.emails.send({
+        from: fromEmail,
+        to: ADMIN_EMAIL,
+        subject: "Founder Focus Score Completed (Unregistered Visitor)",
+        html: `
+          <h2>New Founder Focus Score Completion</h2>
+          <p>A visitor has completed all 8 questions on the Founder Focus Score page <strong>without registering</strong>.</p>
+          <hr />
+          <p><strong>Overall Score:</strong> ${overallScore || "N/A"}/10</p>
+          <p><strong>Category Scores:</strong> ${categoryBreakdown}</p>
+          <p><strong>Top Blocker:</strong> ${topBlocker || "N/A"}</p>
+          <hr />
+          <p style="color: #666; font-size: 12px;">This visitor may be interested in joining. Consider follow-up if they register later.</p>
+        `,
+      });
+      console.log("[FOUNDER FOCUS] Admin notification email sent");
+    }
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("[FOUNDER FOCUS] Error sending notification:", error);
+    return res.json({ success: true });
+  }
 });
 
 // ============================================
@@ -754,9 +797,6 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId,
     return { success: false, error: error.message };
   }
 }
-
-// Admin email for notifications
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
 
 // Send email when application is submitted (confirmation to applicant)
 async function sendApplicationSubmittedEmail(email, fullName, userType, ideaName = null) {
