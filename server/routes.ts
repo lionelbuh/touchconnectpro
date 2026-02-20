@@ -496,6 +496,44 @@ export async function registerRoutes(
     });
   });
 
+  // Notify admin when someone completes Founder Focus quiz without registering
+  app.post("/api/founder-focus-completed", async (req, res) => {
+    console.log("[FOUNDER FOCUS] Quiz completed notification received");
+    try {
+      const { scores, overallScore, topBlocker } = req.body;
+
+      const resendData = await getResendClient();
+      if (resendData) {
+        const { client, fromEmail } = resendData;
+        const categoryBreakdown = scores
+          ? Object.entries(scores).map(([cat, score]) => `${cat}: ${score}/10`).join(", ")
+          : "N/A";
+
+        await client.emails.send({
+          from: fromEmail,
+          to: ADMIN_EMAIL,
+          subject: "Founder Focus Score Completed (Unregistered Visitor)",
+          html: `
+            <h2>New Founder Focus Score Completion</h2>
+            <p>A visitor has completed all 8 questions on the Founder Focus Score page <strong>without registering</strong>.</p>
+            <hr />
+            <p><strong>Overall Score:</strong> ${overallScore || "N/A"}/10</p>
+            <p><strong>Category Scores:</strong> ${categoryBreakdown}</p>
+            <p><strong>Top Blocker:</strong> ${topBlocker || "N/A"}</p>
+            <hr />
+            <p style="color: #666; font-size: 12px;">This visitor may be interested in joining. Consider follow-up if they register later.</p>
+          `,
+        });
+        console.log("[FOUNDER FOCUS] Admin notification email sent");
+      }
+
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("[FOUNDER FOCUS] Error sending notification:", error);
+      return res.json({ success: true });
+    }
+  });
+
   // BYPASS TEST - minimal test endpoint
   app.get("/api/bypass-test", (_req, res) => {
     console.log("[BYPASS TEST] Endpoint hit, sending response...");
