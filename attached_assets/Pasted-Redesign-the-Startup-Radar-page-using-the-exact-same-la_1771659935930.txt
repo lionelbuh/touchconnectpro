@@ -1,0 +1,139 @@
+Redesign the “Startup Radar” page using the exact same layout system, color palette, typography, spacing, and human-centered feel as the homepage, pricing page, and FAQ page.
+
+Important:
+Do NOT change any of the existing text. Preserve all headings, structure, and wording exactly as written for SEO and AIO performance. Only improve layout and visual presentation.
+
+Goal:
+Maintain strong SEO structure while making the page feel premium, warm, and consistent with the rest of the platform. Avoid blog-template or content-farm styling.
+
+Use the same design system:
+
+Background base: Soft cream (#FAF9F7)
+
+Alternating sections: Light gray (#F3F3F3)
+
+Primary headings: Deep teal (#0D566C)
+
+Body text: Dark gray (#4A4A4A)
+
+Accent buttons and links: Coral (#FF6B5C)
+
+Subtle highlights or dividers: Warm yellow (#F5C542)
+
+Soft card shadows (#E0E0E0)
+
+Same typography scale as homepage
+
+Layout instructions:
+
+Hero Section
+
+Keep:
+
+Startup Radar
+Operational Guidance for First-Time Founders and Early-Stage Startups
+
+Short intro paragraph below.
+
+Design:
+
+Centered hero layout
+
+Generous spacing
+
+Soft cream background
+
+Clear CTA button “Explore Startup Radar” in Coral
+
+Optional subtle background pattern or soft gradient, not generic
+
+Who This Is For Section
+
+Design as three clean horizontal cards (not rigid 3-column icon blocks).
+
+Use soft shadow cards
+
+Rounded corners
+
+Light gray section background
+
+Clear spacing between cards
+
+Keep text exactly as written
+
+Cards should feel supportive and thoughtful, not sales-driven.
+
+Founder Operations Frameworks Section
+
+Keep the numbered structure (1, 2, 3) but redesign visually.
+
+Large subtle numbers in background (low opacity Deep teal)
+
+Heading in Deep teal
+
+Short description underneath
+
+Add breathing space between each pillar
+
+Avoid tight stacking
+
+This section should feel structured and confident.
+
+Articles Section
+
+Design article previews as premium content cards.
+
+Each article card:
+
+Title in Deep teal
+
+Short description below
+
+Small category tag (Idea stage, First-time founder, Early-stage startup) in Coral badge
+
+Subtle hover effect
+
+Soft shadow
+
+Generous padding
+
+Avoid default blog grid templates.
+
+On desktop:
+
+2-column grid layout
+On mobile:
+
+Clean stacked layout
+
+Visual Consistency Requirements
+
+Same button style as homepage
+
+Same hover effects
+
+Same rounded corners
+
+Same spacing rhythm
+
+No generic blog sidebar
+
+No cluttered layout
+
+No overly small text
+
+The page should feel like a structured knowledge hub inside a premium mentorship platform, not a typical blog.
+
+Optional Enhancement:
+
+Add a subtle final section at the bottom:
+
+Headline:
+Ready to move from reading to building?
+
+Button:
+Start refining your idea
+
+Keep background Deep teal with white text to match other CTA sections.
+
+The final result should feel cohesive with the rest of TouchConnectPro, human-centered, structured, and authoritative without looking corporate or templated.

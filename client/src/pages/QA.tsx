@@ -1,5 +1,5 @@
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { ChevronDown } from "lucide-react";
 
 const faqSections = [
   {
@@ -151,6 +151,41 @@ function generateFAQSchema() {
   };
 }
 
+function FAQItem({ question, answer, testId }: { question: string; answer: string; testId: string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div
+      className="bg-white rounded-xl overflow-hidden transition-all duration-200"
+      style={{ boxShadow: "0 2px 10px rgba(224,224,224,0.4)" }}
+    >
+      <button
+        className="w-full text-left p-5 md:p-6 flex items-center justify-between gap-4 group"
+        onClick={() => setOpen(!open)}
+        data-testid={`button-faq-${testId}`}
+      >
+        <span className="text-base font-semibold leading-snug" style={{ color: "#0D566C" }}>{question}</span>
+        <ChevronDown
+          className="h-5 w-5 shrink-0 transition-transform duration-300"
+          style={{ color: "#FF6B5C", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+        />
+      </button>
+      <div
+        className="overflow-hidden transition-all duration-300"
+        style={{ maxHeight: open ? "600px" : "0px", opacity: open ? 1 : 0 }}
+      >
+        <div className="px-5 md:px-6 pb-5 md:pb-6">
+          <div className="pt-0 border-t" style={{ borderColor: "#F3F3F3" }}>
+            <p className="pt-4 leading-relaxed text-[15px] whitespace-pre-line" style={{ color: "#4A4A4A" }} data-testid={`text-faq-answer-${testId}`}>
+              {answer}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function QA() {
   useEffect(() => {
     const script = document.createElement("script");
@@ -167,37 +202,59 @@ export default function QA() {
   let itemCounter = 0;
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen py-24">
-      <div className="container mx-auto px-4">
-        <header className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-6 text-slate-900 dark:text-white" data-testid="text-faq-title">Frequently Asked Questions</h1>
-          <p className="text-xl text-muted-foreground" data-testid="text-faq-subtitle">Everything you need to know about TouchConnectPro</p>
-        </header>
+    <div className="flex flex-col">
+      {/* Hero */}
+      <section className="pt-28 pb-16 md:pt-36 md:pb-20" style={{ backgroundColor: "#FAF9F7" }}>
+        <div className="container px-4 mx-auto max-w-3xl text-center">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-snug tracking-tight mb-5" style={{ color: "#0D566C" }} data-testid="text-faq-title">
+            Frequently Asked Questions
+          </h1>
+          <p className="text-lg md:text-xl max-w-2xl mx-auto leading-relaxed" style={{ color: "#4A4A4A" }} data-testid="text-faq-subtitle">
+            Everything you need to know about TouchConnectPro.
+          </p>
+        </div>
+      </section>
 
-        <main className="max-w-3xl mx-auto space-y-10">
-          {faqSections.map((section, sectionIndex) => (
-            <section key={sectionIndex} aria-labelledby={`faq-section-${sectionIndex}`}>
-              <h2 id={`faq-section-${sectionIndex}`} className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-6" data-testid={`text-faq-section-${sectionIndex}`}>{section.title}</h2>
-              <Accordion type="single" collapsible className="w-full">
+      {/* FAQ Sections */}
+      {faqSections.map((section, sectionIndex) => {
+        const bg = sectionIndex % 2 === 0 ? "#F3F3F3" : "#FAF9F7";
+        return (
+          <section
+            key={sectionIndex}
+            className="py-14 md:py-20"
+            style={{ backgroundColor: bg }}
+            aria-labelledby={`faq-section-${sectionIndex}`}
+          >
+            <div className="container px-4 mx-auto max-w-3xl">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-1 h-8 rounded-full" style={{ backgroundColor: "#F5C542" }} />
+                <h2
+                  id={`faq-section-${sectionIndex}`}
+                  className="text-xl md:text-2xl font-display font-bold"
+                  style={{ color: "#0D566C" }}
+                  data-testid={`text-faq-section-${sectionIndex}`}
+                >
+                  {section.title}
+                </h2>
+              </div>
+              <div className="space-y-4">
                 {section.items.map((item, itemIndex) => {
                   itemCounter++;
-                  const valueId = `item-${itemCounter}`;
+                  const testId = `item-${itemCounter}`;
                   return (
-                    <AccordionItem key={itemIndex} value={valueId}>
-                      <AccordionTrigger data-testid={`button-faq-${valueId}`}>
-                        <span>{item.question}</span>
-                      </AccordionTrigger>
-                      <AccordionContent data-testid={`text-faq-answer-${valueId}`}>
-                        {item.answer}
-                      </AccordionContent>
-                    </AccordionItem>
+                    <FAQItem
+                      key={itemIndex}
+                      question={item.question}
+                      answer={item.answer}
+                      testId={testId}
+                    />
                   );
                 })}
-              </Accordion>
-            </section>
-          ))}
-        </main>
-      </div>
+              </div>
+            </div>
+          </section>
+        );
+      })}
     </div>
   );
 }

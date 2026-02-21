@@ -1,0 +1,88 @@
+Instruction for AI Tool
+
+Redesign the “How It Works” page using the same color palette, typography, spacing, and human-centered tone as the homepage. Keep the experience warm, clear, and approachable. Avoid corporate or accelerator-style language. Make it feel supportive and personal.
+
+Use the same colors:
+
+Backgrounds: Soft cream (#FAF9F7) and light gray (#F3F3F3)
+
+Primary headings: Deep teal (#0D566C)
+
+Accent elements and buttons: Coral (#FF6B5C)
+
+Highlights: Warm yellow (#F5C542)
+
+Text: Dark gray (#4A4A4A)
+
+Keep layout slightly dynamic, not rigid or template-like. Add generous spacing between phases.
+
+Now here is a rewritten version of your content with the same human touch:
+
+How It Works
+
+A simple path from idea to real progress.
+
+We help you move forward step by step, with clarity and real support.
+
+Phase 1
+Start for Free
+
+Begin shaping your idea today. No credit card required.
+
+Use our tools to clarify your value, structure your thinking, and build a strong first draft of your business plan.
+
+Turn your concept into a clear vision
+
+Organize your priorities
+
+Check that your idea has real potential
+
+Button: Start refining your idea
+
+Phase 2
+Get Matched With a Mentor
+
+When your idea is ready, submit it for review. A dedicated mentor evaluates it and, if aligned, welcomes you into their portfolio.
+
+This is where focused guidance begins.
+
+Receive clear, actionable feedback
+
+Align on meaningful goals
+
+Start building with direction
+
+Phase 3
+Build With Ongoing Support
+
+Membership: $9.99 per month
+
+You now unlock full support: monthly guidance, community learning, and optional access to experts in finance, legal, and marketing.
+
+Step-by-step resources to move faster
+
+Direct access to your mentor throughout the month
+
+Marketplace access to specialized experts
+
+Phase 4
+Become Investor Ready
+
+Membership: $49 per month
+
+When you are ready to raise, we help you prepare properly.
+
+We support your pitch deck, refine your fundraising strategy, and connect you with angel investors who review final projects.
+
+Investor-ready pitch deck
+
+Clear fundraising roadmap
+
+Access to our angel network
+
+Final Call to Action
+Ready to take the first step?
+
+Start refining your idea today and build with clarity and confidence.
+
+Button: Get started

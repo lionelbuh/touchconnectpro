@@ -1,0 +1,109 @@
+Redesign the “Founder Focus Score” page and the Diagnostic Questions flow using the exact same layout style, color palette, typography, spacing, and human-centered tone as the homepage and pricing page.
+
+Goal:
+Create full visual consistency across the platform. The Focus Score page and question flow should feel like a natural extension of the brand. Warm, clean, modern, and human. Avoid generic SaaS or survey-template styling.
+
+Use the same design system:
+
+Backgrounds: Soft cream (#FAF9F7) and light gray (#F3F3F3)
+
+Headings: Deep teal (#0D566C)
+
+Body text: Dark gray (#4A4A4A)
+
+Primary buttons: Coral (#FF6B5C) with white text
+
+Accent highlights: Warm yellow (#F5C542)
+
+Premium sections if needed: Deep teal background with white text
+
+Layout requirements:
+
+Keep generous spacing and soft shadows
+
+Slight asymmetry where appropriate
+
+Subtle hover effects on buttons
+
+Clean, readable typography
+
+Avoid rigid multi-step form templates
+
+Make the diagnostic feel guided, not clinical
+
+Tone:
+
+Supportive
+
+Clear
+
+Encouraging
+
+Short sentences
+
+No corporate or technical language
+
+Use the following refined copy:
+
+Hero Section
+
+Founder Focus Score
+
+Discover your biggest growth blocker in under five minutes.
+
+Answer 8 personalized questions based on your profile and get a clear diagnosis of what is holding you back, plus one concrete step to move forward this week.
+
+Highlights:
+5 minutes
+Personalized
+No signup required
+
+Button: Start the diagnostic
+
+How It Works Section
+
+Headline: How it works
+
+Tell us
+Select the profile that best describes you.
+
+Answer
+Respond to 8 short, personalized questions about your current challenges.
+
+Discover
+See your primary blocker across four key areas of growth.
+
+Act
+Receive one clear action step to take this week.
+
+Diagnostic Flow Design Instructions
+
+When the user clicks “Start the diagnostic”:
+
+Use a clean step-by-step interface consistent with the homepage style
+
+Display one question per screen for focus
+
+Include a simple progress indicator at the top
+
+Use soft transitions between questions
+
+Keep buttons large and clear
+
+Avoid survey-style radio buttons that look generic
+
+Make the experience feel guided and intentional
+
+At the end:
+
+Results page should:
+
+Highlight the primary blocker clearly
+
+Provide a short explanation in human language
+
+Display one concrete action step prominently
+
+Include a CTA such as “Refine your idea” or “Join the Community”
+
+The full experience should feel like a guided clarity session, not a typical online quiz.

@@ -1,0 +1,104 @@
+Redesign the FAQ page to use the exact same layout system, color palette, spacing, typography, and human-centered feel as the homepage and pricing page.
+
+Important:
+Do NOT change any of the questions or answers. Keep all text exactly as it is. Only update the layout and visual presentation.
+
+Goal:
+Make the FAQ page feel warm, premium, and intentional. Avoid generic accordion templates or rigid support-center styling.
+
+Use the same design system:
+
+Background base: Soft cream (#FAF9F7)
+
+Alternating sections: Light gray (#F3F3F3)
+
+Headings: Deep teal (#0D566C)
+
+Body text: Dark gray (#4A4A4A)
+
+Accent highlights: Coral (#FF6B5C)
+
+Subtle highlight elements: Warm yellow (#F5C542)
+
+Soft shadows for cards
+
+Layout instructions:
+
+Page Hero Section
+Create a clean hero section consistent with other pages.
+
+Headline:
+Frequently Asked Questions
+
+Subtext:
+Everything you need to know about TouchConnectPro.
+
+Keep spacing generous. Centered layout. Soft cream background.
+
+Section Structure
+
+Instead of one long flat FAQ list, group questions visually by category:
+
+About TouchConnectPro
+
+Getting Started
+
+Mentors & Approval
+
+Mentor Response Guidelines
+
+Trust & Privacy
+
+Pricing & Billing
+
+Funding & Growth
+
+Each category should:
+
+Have a clear section header in Deep teal
+
+Be separated with comfortable spacing
+
+Alternate soft cream and light gray backgrounds between major sections
+
+FAQ Interaction Style
+
+Use a refined accordion style but avoid generic UI.
+
+Each question inside a soft card with subtle shadow
+
+Rounded corners
+
+Clean expand/collapse animation
+
+Smooth transition when opening
+
+Plus icon or subtle arrow icon in Coral
+
+When expanded, keep text easy to read with comfortable line spacing
+
+Human Feel Improvements
+
+Avoid tight spacing
+
+Avoid small dense text blocks
+
+Keep margins generous
+
+Make the page feel breathable and calm
+
+Slight asymmetry or subtle dividers to avoid a rigid template feel
+
+Visual Consistency
+
+Ensure:
+
+Same button style as homepage
+
+Same typography scale
+
+Same hover effects
+
+Same section rhythm
+
+The FAQ page should feel like part of the same product ecosystem, not a separate help center template.

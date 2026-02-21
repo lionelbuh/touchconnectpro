@@ -1,7 +1,6 @@
 import { useParams, Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, CheckCircle2, BookOpen } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, BookOpen } from "lucide-react";
 import { insightArticles } from "@/lib/insightsData";
 import { useEffect } from "react";
 import NotFound from "@/pages/not-found";
@@ -17,10 +16,10 @@ function setMetaTag(name: string, content: string) {
   (el as HTMLMetaElement).setAttribute("content", content);
 }
 
-const tagColors: Record<string, string> = {
-  "Idea stage": "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",
-  "First-time founder": "bg-indigo-500/10 text-indigo-400 border-indigo-500/30",
-  "Early-stage startup": "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+const tagColors: Record<string, { bg: string; color: string }> = {
+  "Idea stage": { bg: "rgba(255,107,92,0.1)", color: "#FF6B5C" },
+  "First-time founder": { bg: "rgba(75,63,114,0.1)", color: "#4B3F72" },
+  "Early-stage startup": { bg: "rgba(13,86,108,0.1)", color: "#0D566C" },
 };
 
 export default function InsightArticle() {
@@ -43,6 +42,7 @@ export default function InsightArticle() {
 
   const prevArticle = articleIndex > 0 ? insightArticles[articleIndex - 1] : null;
   const nextArticle = articleIndex < insightArticles.length - 1 ? insightArticles[articleIndex + 1] : null;
+  const tag = tagColors[article.audienceTag] || { bg: "rgba(255,107,92,0.1)", color: "#FF6B5C" };
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -72,22 +72,24 @@ export default function InsightArticle() {
       />
 
       {/* Hero */}
-      <section className="relative py-16 md:py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-background">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent" />
-        <div className="container px-4 mx-auto max-w-3xl relative z-10">
+      <section className="pt-28 pb-12 md:pt-36 md:pb-16" style={{ backgroundColor: "#FAF9F7" }}>
+        <div className="container px-4 mx-auto max-w-3xl">
           <Link href="/insights" data-testid="link-back-insights">
-            <span className="inline-flex items-center gap-1 text-sm text-cyan-400 hover:text-cyan-300 transition-colors mb-6 cursor-pointer">
-              <ArrowLeft className="h-4 w-4" /> Back to Insights
+            <span className="inline-flex items-center gap-1.5 text-sm font-medium mb-6 cursor-pointer transition-colors duration-200" style={{ color: "#FF6B5C" }}>
+              <ArrowLeft className="h-4 w-4" /> Back to Startup Radar
             </span>
           </Link>
-          <Badge variant="outline" className={`mb-4 text-xs ${tagColors[article.audienceTag] || ""}`}>
+          <span
+            className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-4"
+            style={{ backgroundColor: tag.bg, color: tag.color }}
+          >
             {article.audienceTag}
-          </Badge>
-          <h1 className="text-2xl md:text-4xl font-display font-bold text-white leading-tight mb-6" data-testid="text-article-title">
+          </span>
+          <h1 className="text-2xl md:text-4xl font-display font-bold leading-tight mb-6" style={{ color: "#0D566C" }} data-testid="text-article-title">
             {article.title}
           </h1>
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5">
-            <p className="text-slate-200 leading-relaxed text-lg italic">
+          <div className="bg-white rounded-xl p-5 md:p-6" style={{ boxShadow: "0 2px 12px rgba(224,224,224,0.5)", borderLeft: "4px solid #F5C542" }}>
+            <p className="leading-relaxed text-lg italic" style={{ color: "#4A4A4A" }}>
               {article.shortAnswer}
             </p>
           </div>
@@ -95,25 +97,32 @@ export default function InsightArticle() {
       </section>
 
       {/* Article Body */}
-      <section className="py-16 bg-background">
+      <section className="py-12 md:py-16" style={{ backgroundColor: "#F3F3F3" }}>
         <div className="container px-4 mx-auto max-w-3xl">
-          <article className="space-y-12">
+          <article className="space-y-10">
             {article.sections.map((section, i) => (
-              <div key={i} data-testid={`section-article-${i}`}>
-                <h2 className="text-xl md:text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">
+              <div
+                key={i}
+                className="bg-white rounded-2xl p-6 md:p-8"
+                style={{ boxShadow: "0 2px 12px rgba(224,224,224,0.4)" }}
+                data-testid={`section-article-${i}`}
+              >
+                <h2 className="text-xl md:text-2xl font-display font-bold mb-4" style={{ color: "#0D566C" }}>
                   {section.heading}
                 </h2>
                 {section.content.map((p, j) => (
-                  <p key={j} className="text-slate-700 dark:text-slate-300 leading-relaxed mb-3">
+                  <p key={j} className="leading-relaxed mb-3" style={{ color: "#4A4A4A" }}>
                     {p}
                   </p>
                 ))}
                 {section.list && (
-                  <ul className="space-y-2 mt-3">
+                  <ul className="space-y-2.5 mt-4">
                     {section.list.map((item, k) => (
                       <li key={k} className="flex items-start gap-3">
-                        <CheckCircle2 className="h-5 w-5 text-cyan-500 shrink-0 mt-0.5" />
-                        <span className="text-slate-700 dark:text-slate-300">{item}</span>
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: "rgba(245,197,66,0.2)" }}>
+                          <Check className="h-3 w-3" style={{ color: "#0D566C" }} />
+                        </div>
+                        <span style={{ color: "#4A4A4A" }}>{item}</span>
                       </li>
                     ))}
                   </ul>
@@ -122,69 +131,99 @@ export default function InsightArticle() {
             ))}
 
             {/* Practical Next Steps */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700" data-testid="section-practical-steps">
-              <h2 className="text-xl font-display font-bold mb-4 text-slate-900 dark:text-white">
-                Practical Next Steps
-              </h2>
-              <ol className="space-y-3">
+            <div
+              className="bg-white rounded-2xl p-6 md:p-8"
+              style={{ boxShadow: "0 2px 12px rgba(224,224,224,0.4)" }}
+              data-testid="section-practical-steps"
+            >
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-1 h-7 rounded-full" style={{ backgroundColor: "#F5C542" }} />
+                <h2 className="text-xl font-display font-bold" style={{ color: "#0D566C" }}>
+                  Practical Next Steps
+                </h2>
+              </div>
+              <ol className="space-y-4">
                 {article.practicalSteps.map((step, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <span className="w-7 h-7 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0 text-sm font-bold text-cyan-500">
+                    <span
+                      className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-sm font-bold"
+                      style={{ backgroundColor: "rgba(245,197,66,0.2)", color: "#0D566C" }}
+                    >
                       {i + 1}
                     </span>
-                    <span className="text-slate-700 dark:text-slate-300 pt-0.5">{step}</span>
+                    <span className="pt-0.5" style={{ color: "#4A4A4A" }}>{step}</span>
                   </li>
                 ))}
               </ol>
             </div>
 
             {/* How TouchConnectPro Helps */}
-            <div className="bg-gradient-to-r from-cyan-950/50 to-indigo-950/50 rounded-xl p-6 border border-cyan-800/30" data-testid="section-how-we-help">
-              <div className="flex items-center gap-2 mb-3">
-                <BookOpen className="h-5 w-5 text-cyan-400" />
+            <div
+              className="rounded-2xl p-6 md:p-8"
+              style={{ backgroundColor: "#0D566C" }}
+              data-testid="section-how-we-help"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <BookOpen className="h-5 w-5" style={{ color: "#F5C542" }} />
                 <h2 className="text-lg font-display font-bold text-white">How TouchConnectPro Helps</h2>
               </div>
-              <p className="text-slate-300 leading-relaxed mb-4">{article.howWeHelp}</p>
+              <p className="leading-relaxed mb-6" style={{ color: "rgba(255,255,255,0.85)" }}>{article.howWeHelp}</p>
               <Link href="/founder-focus" data-testid="link-article-cta">
-                <Button size="sm" className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full" data-testid="button-article-cta">
+                <Button
+                  className="font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                  style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                  data-testid="button-article-cta"
+                >
                   Get Started <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
             </div>
           </article>
+        </div>
+      </section>
 
-          {/* Article Navigation */}
-          <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-700">
-            <div className="flex flex-col md:flex-row gap-4 justify-between">
-              {prevArticle ? (
-                <Link href={`/insights/${prevArticle.slug}`} data-testid="link-prev-article">
-                  <div className="group flex items-center gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-cyan-500/40 transition-colors cursor-pointer flex-1">
-                    <ArrowLeft className="h-5 w-5 text-slate-400 group-hover:text-cyan-500 transition-colors shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Previous</p>
-                      <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{prevArticle.title}</p>
-                    </div>
+      {/* Article Navigation */}
+      <section className="py-12" style={{ backgroundColor: "#FAF9F7" }}>
+        <div className="container px-4 mx-auto max-w-3xl">
+          <div className="flex flex-col md:flex-row gap-4 justify-between mb-8">
+            {prevArticle ? (
+              <Link href={`/insights/${prevArticle.slug}`} data-testid="link-prev-article">
+                <div
+                  className="group flex items-center gap-3 p-5 rounded-xl bg-white cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md flex-1"
+                  style={{ boxShadow: "0 2px 10px rgba(224,224,224,0.4)" }}
+                >
+                  <ArrowLeft className="h-5 w-5 shrink-0 transition-colors" style={{ color: "#FF6B5C" }} />
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium mb-0.5" style={{ color: "#8A8A8A" }}>Previous</p>
+                    <p className="text-sm font-semibold truncate" style={{ color: "#0D566C" }}>{prevArticle.title}</p>
                   </div>
-                </Link>
-              ) : <div />}
-              {nextArticle ? (
-                <Link href={`/insights/${nextArticle.slug}`} data-testid="link-next-article">
-                  <div className="group flex items-center gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-cyan-500/40 transition-colors cursor-pointer flex-1 text-right">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Next</p>
-                      <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{nextArticle.title}</p>
-                    </div>
-                    <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-cyan-500 transition-colors shrink-0" />
+                </div>
+              </Link>
+            ) : <div />}
+            {nextArticle ? (
+              <Link href={`/insights/${nextArticle.slug}`} data-testid="link-next-article">
+                <div
+                  className="group flex items-center gap-3 p-5 rounded-xl bg-white cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md flex-1 text-right"
+                  style={{ boxShadow: "0 2px 10px rgba(224,224,224,0.4)" }}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium mb-0.5" style={{ color: "#8A8A8A" }}>Next</p>
+                    <p className="text-sm font-semibold truncate" style={{ color: "#0D566C" }}>{nextArticle.title}</p>
                   </div>
-                </Link>
-              ) : <div />}
-            </div>
+                  <ArrowRight className="h-5 w-5 shrink-0 transition-colors" style={{ color: "#FF6B5C" }} />
+                </div>
+              </Link>
+            ) : <div />}
           </div>
 
-          {/* Back to Hub */}
-          <div className="mt-8 text-center">
+          <div className="text-center">
             <Link href="/insights" data-testid="link-back-to-insights">
-              <Button variant="outline" className="rounded-full" data-testid="button-back-to-insights">
+              <Button
+                variant="outline"
+                className="rounded-full font-semibold transition-all duration-200 hover:scale-[1.02]"
+                style={{ borderColor: "#0D566C", color: "#0D566C" }}
+                data-testid="button-back-to-insights"
+              >
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to All Insights
               </Button>
             </Link>

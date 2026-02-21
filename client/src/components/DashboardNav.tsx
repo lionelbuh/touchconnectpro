@@ -45,30 +45,34 @@ export function DashboardMobileNav({
   const activeTabInfo = tabs.find(t => t.id === activeTab);
 
   return (
-    <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-40">
+    <div className="md:hidden flex items-center justify-between p-4 border-b sticky top-0 z-40" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8" }}>
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0" data-testid="button-mobile-menu">
+          <Button variant="outline" size="icon" className="shrink-0 rounded-xl" style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }} data-testid="button-mobile-menu">
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[280px] sm:w-[320px] flex flex-col">
+        <SheetContent side="left" className="w-[280px] sm:w-[320px] flex flex-col" style={{ backgroundColor: "#FFFFFF" }}>
           <SheetHeader className="text-left">
-            <SheetTitle>{title}</SheetTitle>
+            <SheetTitle style={{ color: "#0D566C" }}>{title}</SheetTitle>
             {userName && (
-              <p className="text-sm text-muted-foreground">{userName} • {userRole}</p>
+              <p className="text-sm" style={{ color: "#8A8A8A" }}>{userName} • {userRole}</p>
             )}
           </SheetHeader>
           <nav className="flex flex-col gap-1 mt-6 flex-1">
             {tabs.map((tab) => (
               <Button
                 key={tab.id}
-                variant={activeTab === tab.id ? "default" : "ghost"}
-                className={`justify-start gap-3 h-12 ${
+                variant="ghost"
+                className={`justify-start gap-3 h-12 rounded-xl ${
                   activeTab === tab.id 
-                    ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
-                    : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                    ? "font-semibold" 
+                    : ""
                 }`}
+                style={activeTab === tab.id 
+                  ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" }
+                  : { color: "#4A4A4A" }
+                }
                 onClick={() => handleTabClick(tab.id)}
                 data-testid={`nav-mobile-${tab.id}`}
               >
@@ -79,10 +83,11 @@ export function DashboardMobileNav({
             ))}
           </nav>
           {onLogout && (
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
+            <div className="pt-4" style={{ borderTop: "1px solid #E8E8E8" }}>
               <Button 
                 variant="ghost"
-                className="w-full justify-start gap-3 h-12 text-slate-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                className="w-full justify-start gap-3 h-12 rounded-xl"
+                style={{ color: "#FF6B5C" }}
                 onClick={() => {
                   setIsOpen(false);
                   onLogout();
@@ -98,7 +103,7 @@ export function DashboardMobileNav({
       </Sheet>
       <div className="flex items-center gap-2">
         {activeTabInfo?.icon}
-        <span className="font-medium text-slate-900 dark:text-white">{activeTabInfo?.label || title}</span>
+        <span className="font-medium" style={{ color: "#0D566C" }}>{activeTabInfo?.label || title}</span>
         {activeTabInfo?.badge}
       </div>
       <div className="w-10" />

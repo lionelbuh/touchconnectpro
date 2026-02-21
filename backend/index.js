@@ -55,17 +55,16 @@ app.post("/api/founder-focus-completed", async (req, res) => {
         from: fromEmail,
         to: ADMIN_EMAIL,
         subject: `Founder Focus Score Completed — ${trackLabel || "Unknown Track"} (Unregistered)`,
-        html: `
-          <h2>New Founder Focus Score Completion</h2>
+        html: `<!DOCTYPE html><html><head><style>body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; } .container { max-width: 600px; margin: 0 auto; padding: 20px; } .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; } .header h1 { margin: 0; font-size: 24px; } .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; } .highlight-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 20px 0; border-radius: 8px; } .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; } a { color: #FF6B5C; }</style></head><body style="background-color: #FAF9F7;"><div class="container"><div class="header"><h1>Founder Focus Score Completed</h1></div><div class="content">
           <p>A visitor has completed all 8 questions on the Founder Focus Score page <strong>without registering</strong>.</p>
-          <hr />
+          <div class="highlight-box">
           <p><strong>Profile Track:</strong> ${trackLabel || "N/A"} (${track || "N/A"})</p>
           <p><strong>Overall Score:</strong> ${overallScore !== undefined && overallScore !== null ? overallScore : "N/A"}/10 (${totalScore !== undefined && totalScore !== null ? totalScore : "N/A"}/100)</p>
           <p><strong>Category Scores:</strong> ${categoryBreakdown}</p>
           <p><strong>Top Blocker:</strong> ${topBlocker || "N/A"}</p>
-          <hr />
-          <p style="color: #666; font-size: 12px;">This visitor may be interested in joining. Consider follow-up if they register later.</p>
-        `,
+          </div>
+          <p style="color: #8A8A8A; font-size: 12px;">This visitor may be interested in joining. Consider follow-up if they register later.</p>
+        </div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`,
       });
       console.log("[FOUNDER FOCUS] Admin notification email sent");
     }
@@ -576,22 +575,22 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId,
         <html>
         <head>
           <style>
-            body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+            body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-            .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-            .button { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-            .highlight-box { background: #d1fae5; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 4px; }
-            .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+            .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+            .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+            .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; }
+            .highlight-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 20px 0; border-radius: 8px; }
+            .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
           </style>
         </head>
-        <body>
+        <body style="background-color: #FAF9F7;">
           <div class="container">
             <div class="header">
               <h1>Congratulations, ${fullName}!</h1>
             </div>
             <div class="content">
-              <p>Great news! Your membership to TouchConnectPro has been <strong style="color: #10b981;">fully activated</strong>!</p>
+              <p>Great news! Your membership to TouchConnectPro has been <strong style="color: #0D566C;">fully activated</strong>!</p>
               
               <p>You're now an official member of our exclusive community connecting entrepreneurs with mentors, coaches, and investors.</p>
               
@@ -638,21 +637,21 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId,
         <html>
         <head>
           <style>
-            body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+            body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-            .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-            .button { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-            .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+            .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+            .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+            .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
           </style>
         </head>
-        <body>
+        <body style="background-color: #FAF9F7;">
           <div class="container">
             <div class="header">
               <h1>Congratulations, ${fullName}!</h1>
             </div>
             <div class="content">
-              <p>Great news! Your application to join TouchConnectPro as a <strong>${userType}</strong> has been <strong style="color: #10b981;">approved</strong>!</p>
+              <p>Great news! Your application to join TouchConnectPro as a <strong>${userType}</strong> has been <strong style="color: #0D566C;">approved</strong>!</p>
               
               <p>You're now part of our exclusive community connecting entrepreneurs with mentors, coaches, and investors.</p>
               
@@ -662,7 +661,7 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId,
                 <a href="${setPasswordUrl}" class="button">Set Up Your Password</a>
               </p>
               
-              <p style="font-size: 14px; color: #64748b;">This link will expire in 7 days. If you didn't apply to TouchConnectPro, please ignore this email.</p>
+              <p style="font-size: 14px; color: #8A8A8A;">This link will expire in 7 days. If you didn't apply to TouchConnectPro, please ignore this email.</p>
               
               <p>We're excited to have you on board!</p>
               
@@ -692,22 +691,22 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId,
       <html>
       <head>
         <style>
-          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-          .button { display: inline-block; background: #f59e0b; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-          .highlight-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px; }
-          .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+          .header { background: linear-gradient(135deg, #F5C542, #d4a832); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+          .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+          .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; }
+          .highlight-box { background: rgba(245,197,66,0.1); border-left: 4px solid #F5C542; padding: 15px; margin: 20px 0; border-radius: 8px; }
+          .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
         </style>
       </head>
-      <body>
+      <body style="background-color: #FAF9F7;">
         <div class="container">
           <div class="header">
             <h1>Great News, ${fullName}!</h1>
           </div>
           <div class="content">
-            <p>Your application to join TouchConnectPro as an <strong>entrepreneur</strong> has been <strong style="color: #f59e0b;">pre-approved</strong>!</p>
+            <p>Your application to join TouchConnectPro as an <strong>entrepreneur</strong> has been <strong style="color: #F5C542;">pre-approved</strong>!</p>
             
             <div class="highlight-box">
               <p style="margin: 0;"><strong>Next Step:</strong> Complete your membership payment to unlock full access to your dashboard and connect with mentors.</p>
@@ -721,7 +720,7 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId,
               <a href="${setPasswordUrl}" class="button">Set Up Your Password</a>
             </p>
             
-            <p style="font-size: 14px; color: #64748b;">This link will expire in 7 days. If you didn't apply to TouchConnectPro, please ignore this email.</p>
+            <p style="font-size: 14px; color: #8A8A8A;">This link will expire in 7 days. If you didn't apply to TouchConnectPro, please ignore this email.</p>
             
             <p>Once you complete your membership payment, your account will be fully activated and you'll have access to all platform features.</p>
             
@@ -741,14 +740,14 @@ async function sendStatusEmail(email, fullName, userType, status, applicationId,
       <html>
       <head>
         <style>
-          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: #64748b; color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-          .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+          .header { background: #8A8A8A; color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+          .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+          .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
         </style>
       </head>
-      <body>
+      <body style="background-color: #FAF9F7;">
         <div class="container">
           <div class="header">
             <h1>Application Update</h1>
@@ -820,15 +819,15 @@ async function sendApplicationSubmittedEmail(email, fullName, userType, ideaName
     <html>
     <head>
       <style>
-        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-        .highlight-box { background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0; border-radius: 4px; }
-        .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+        .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+        .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+        .highlight-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 20px 0; border-radius: 8px; }
+        .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
       </style>
     </head>
-    <body>
+    <body style="background-color: #FAF9F7;">
       <div class="container">
         <div class="header">
           <h1>Application Received!</h1>
@@ -889,16 +888,16 @@ async function sendAdminNewApplicationEmail(applicantEmail, applicantName, userT
     <html>
     <head>
       <style>
-        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-        .info-box { background: #fef3c7; border: 1px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 8px; }
-        .button { display: inline-block; background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 10px 0; }
-        .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+        .header { background: linear-gradient(135deg, #F5C542, #d4a832); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+        .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+        .info-box { background: rgba(245,197,66,0.1); border-left: 4px solid #F5C542; padding: 15px; margin: 20px 0; border-radius: 8px; }
+        .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 10px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
       </style>
     </head>
-    <body>
+    <body style="background-color: #FAF9F7;">
       <div class="container">
         <div class="header">
           <h1>New ${userTypeCapitalized} Application</h1>
@@ -964,16 +963,16 @@ async function sendMessageNotificationEmail(recipientEmail, recipientName, sende
     <html>
     <head>
       <style>
-        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-        .message-box { background: white; border: 1px solid #e2e8f0; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #10b981; }
-        .button { display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 10px 0; }
-        .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+        .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+        .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+        .message-box { background: white; border: 1px solid #E8E8E8; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #0D566C; }
+        .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 10px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
       </style>
     </head>
-    <body>
+    <body style="background-color: #FAF9F7;">
       <div class="container">
         <div class="header">
           <h1>New Message</h1>
@@ -984,7 +983,7 @@ async function sendMessageNotificationEmail(recipientEmail, recipientName, sende
           <p>You have received a new message from <strong>${senderName}</strong> on TouchConnectPro.</p>
           
           <div class="message-box">
-            <p style="margin: 0; color: #64748b; font-size: 14px;"><strong>From:</strong> ${senderName}</p>
+            <p style="margin: 0; color: #8A8A8A; font-size: 14px;"><strong>From:</strong> ${senderName}</p>
             <p style="margin: 15px 0 0 0;">${formattedMessage}</p>
           </div>
           
@@ -992,7 +991,7 @@ async function sendMessageNotificationEmail(recipientEmail, recipientName, sende
             <a href="${FRONTEND_URL}/login" class="button">View in Dashboard</a>
           </p>
           
-          <p style="font-size: 14px; color: #64748b;">Log in to your dashboard to reply.</p>
+          <p style="font-size: 14px; color: #8A8A8A;">Log in to your dashboard to reply.</p>
         </div>
         <div class="footer">
           <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
@@ -1038,16 +1037,16 @@ async function sendAdminMessageNotificationEmail(senderName, senderEmail, recipi
     <html>
     <head>
       <style>
-        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f8fafc; padding: 20px; border-radius: 0 0 10px 10px; }
+        .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 20px; text-align: center; border-radius: 16px 16px 0 0; }
+        .content { background: #FFFFFF; padding: 20px; border-radius: 0 0 16px 16px; }
         .info-row { display: flex; margin: 10px 0; }
-        .message-box { background: #e0e7ff; padding: 15px; border-radius: 8px; margin: 15px 0; }
-        .footer { text-align: center; margin-top: 15px; color: #64748b; font-size: 12px; }
+        .message-box { background: rgba(13,86,108,0.08); padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .footer { text-align: center; margin-top: 15px; color: #8A8A8A; font-size: 12px; }
       </style>
     </head>
-    <body>
+    <body style="background-color: #FAF9F7;">
       <div class="container">
         <div class="header">
           <h2 style="margin: 0;">New Internal Message</h2>
@@ -1060,7 +1059,7 @@ async function sendAdminMessageNotificationEmail(senderName, senderEmail, recipi
             ${formattedMessage}
           </div>
           
-          <p style="font-size: 14px; color: #64748b;">This is an automated notification. View full details in the admin dashboard.</p>
+          <p style="font-size: 14px; color: #8A8A8A;">This is an automated notification. View full details in the admin dashboard.</p>
         </div>
         <div class="footer">
           <p>TouchConnectPro Admin Notification</p>
@@ -1106,17 +1105,17 @@ async function sendCoachReviewNotificationEmail(coachEmail, coachName, rating, r
     <html>
     <head>
       <style>
-        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-        .stars { font-size: 28px; color: #f59e0b; text-align: center; margin: 15px 0; }
-        .review-box { background: white; border: 1px solid #e2e8f0; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #06b6d4; font-style: italic; }
-        .button { display: inline-block; background: #06b6d4; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-        .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+        .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+        .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+        .stars { font-size: 28px; color: #F5C542; text-align: center; margin: 15px 0; }
+        .review-box { background: white; border: 1px solid #E8E8E8; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #0D566C; font-style: italic; }
+        .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
       </style>
     </head>
-    <body>
+    <body style="background-color: #FAF9F7;">
       <div class="container">
         <div class="header">
           <h1>You Received a New Review!</h1>
@@ -1133,7 +1132,7 @@ async function sendCoachReviewNotificationEmail(coachEmail, coachName, rating, r
           <div class="review-box">
             <p style="margin: 0;">"${reviewPreview}"</p>
           </div>
-          ` : '<p style="text-align: center; color: #64748b;">No written review was provided.</p>'}
+          ` : '<p style="text-align: center; color: #8A8A8A;">No written review was provided.</p>'}
           
           <p>This review is now visible on your public profile page. Keep up the great work!</p>
           
@@ -1187,16 +1186,16 @@ async function sendMentorAssignmentEmail(recipientEmail, recipientName, recipien
       <html>
       <head>
         <style>
-          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-          .highlight-box { background: #d1fae5; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 4px; }
-          .button { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-          .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+          .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+          .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+          .highlight-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 20px 0; border-radius: 8px; }
+          .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
         </style>
       </head>
-      <body>
+      <body style="background-color: #FAF9F7;">
         <div class="container">
           <div class="header">
             <h1>Great News, ${recipientName}!</h1>
@@ -1232,16 +1231,16 @@ async function sendMentorAssignmentEmail(recipientEmail, recipientName, recipien
       <html>
       <head>
         <style>
-          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-          .highlight-box { background: #e0e7ff; border-left: 4px solid #6366f1; padding: 15px; margin: 20px 0; border-radius: 4px; }
-          .button { display: inline-block; background: #6366f1; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-          .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+          .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+          .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+          .highlight-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 20px 0; border-radius: 8px; }
+          .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
         </style>
       </head>
-      <body>
+      <body style="background-color: #FAF9F7;">
         <div class="container">
           <div class="header">
             <h1>New Entrepreneur Assigned</h1>
@@ -1385,16 +1384,12 @@ app.post("/api/ideas", async (req, res) => {
               from: fromEmail,
               to: email,
               subject: "Idea Submission Received - TouchConnectPro",
-              html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                  <h2 style="color: #0ea5e9;">Your Idea Has Been Submitted!</h2>
+              html: `<!DOCTYPE html><html><head><style>body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; } .container { max-width: 600px; margin: 0 auto; padding: 20px; } .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; } .header h1 { margin: 0; font-size: 24px; } .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; } .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; } .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; } a { color: #FF6B5C; }</style></head><body style="background-color: #FAF9F7;"><div class="container"><div class="header"><h1>Idea Submitted!</h1></div><div class="content">
                   <p>Hi ${fullName},</p>
                   <p>Thank you for submitting your business idea${emailIdeaNameUpdate !== "their business idea" ? ` "<strong>${emailIdeaNameUpdate}</strong>"` : ""} to TouchConnectPro.</p>
                   <p>Our team will review your submission and get back to you shortly. You'll receive an email once your application has been reviewed.</p>
-                  <p><a href="https://touchconnectpro.com/login" style="display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold;">Log In to Your Dashboard</a></p>
-                  <p style="color: #94a3b8; font-size: 12px;">Touch Equity Partners LLC</p>
-                </div>
-              `
+                  <p><a href="https://touchconnectpro.com/login" class="button">Log In to Your Dashboard</a></p>
+                </div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
             });
             console.log("[POST /api/ideas] Confirmation email sent to:", email);
 
@@ -1402,20 +1397,16 @@ app.post("/api/ideas", async (req, res) => {
               from: fromEmail,
               to: ADMIN_EMAIL,
               subject: `Idea Submission: ${fullName} - ${emailIdeaNameUpdate}`,
-              html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                  <h2 style="color: #0ea5e9;">New Idea Submission</h2>
+              html: `<!DOCTYPE html><html><head><style>body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; } .container { max-width: 600px; margin: 0 auto; padding: 20px; } .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; } .header h1 { margin: 0; font-size: 24px; } .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; } .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; } .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; } a { color: #FF6B5C; }</style></head><body style="background-color: #FAF9F7;"><div class="container"><div class="header"><h1>New Idea Submission</h1></div><div class="content">
                   <p>An entrepreneur has submitted their business idea for review.</p>
                   <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-                    <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">Name</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${fullName}</td></tr>
-                    <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">Email</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${email}</td></tr>
-                    <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">Idea</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${emailIdeaNameUpdate}</td></tr>
+                    <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #E8E8E8;">Name</td><td style="padding: 8px; border-bottom: 1px solid #E8E8E8;">${fullName}</td></tr>
+                    <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #E8E8E8;">Email</td><td style="padding: 8px; border-bottom: 1px solid #E8E8E8;">${email}</td></tr>
+                    <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #E8E8E8;">Idea</td><td style="padding: 8px; border-bottom: 1px solid #E8E8E8;">${emailIdeaNameUpdate}</td></tr>
                     <tr><td style="padding: 8px; font-weight: bold;">Previous Status</td><td style="padding: 8px;">${existingApp.status}</td></tr>
                   </table>
-                  <p><a href="https://touchconnectpro.com/admin-dashboard" style="display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold;">Review in Admin Dashboard</a></p>
-                  <p style="color: #94a3b8; font-size: 12px;">Touch Equity Partners LLC</p>
-                </div>
-              `
+                  <p><a href="https://touchconnectpro.com/admin-dashboard" class="button">Review in Admin Dashboard</a></p>
+                </div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
             });
             console.log("[POST /api/ideas] Admin notification sent for idea submission from:", email);
           }
@@ -2187,7 +2178,7 @@ app.post("/api/send-rating-link", async (req, res) => {
         from: fromEmail,
         to: entrepreneurEmail,
         subject: `Rate ${coachName} on TouchConnectPro`,
-        html: `<p>You're invited to rate your coach <strong>${coachName}</strong>.</p><p><a href="${ratingLink}" style="background-color: #06b6d4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Click here to rate</a></p><p>This link will help us improve our coaching services.</p>`
+        html: `<!DOCTYPE html><html><head><style>body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; } .container { max-width: 600px; margin: 0 auto; padding: 20px; } .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; } .header h1 { margin: 0; font-size: 24px; } .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; } .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; } a { color: #FF6B5C; }</style></head><body style="background-color: #FAF9F7;"><div class="container"><div class="header"><h1>Rate Your Coach</h1></div><div class="content"><p>You're invited to rate your coach <strong>${coachName}</strong>.</p><p><a href="${ratingLink}" style="display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600;">Click here to rate</a></p><p>This link will help us improve our coaching services.</p></div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
       });
     }
     
@@ -2691,14 +2682,15 @@ app.post("/api/coach-contact-requests", async (req, res) => {
           from: resendConfig.fromEmail,
           to: coachEmail,
           subject: `New Contact Request from ${entrepreneurName || 'An Entrepreneur'}`,
-          html: `<h2>New Contact Request</h2>
+          html: `<!DOCTYPE html><html><head><style>body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; } .container { max-width: 600px; margin: 0 auto; padding: 20px; } .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; } .header h1 { margin: 0; font-size: 24px; } .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; } .highlight-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 20px 0; border-radius: 8px; } .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; } a { color: #FF6B5C; }</style></head><body style="background-color: #FAF9F7;"><div class="container"><div class="header"><h1>New Contact Request</h1></div><div class="content">
           <p><strong>${entrepreneurName || 'An entrepreneur'}</strong> would like to connect with you on TouchConnectPro.</p>
-          <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <div class="highlight-box">
             <p><strong>Message:</strong></p>
             <p style="white-space: pre-wrap;">${message}</p>
           </div>
           <p><em>This is a one-time contact request. You may send one reply to continue the conversation.</em></p>
-          <p>Log in to your dashboard to respond.</p>`
+          <p>Log in to your dashboard to respond.</p>
+          </div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
         });
         console.log("[POST /api/coach-contact-requests] Email sent to coach");
       } else {
@@ -2717,13 +2709,14 @@ app.post("/api/coach-contact-requests", async (req, res) => {
           from: resendConfig.fromEmail,
           to: adminEmail,
           subject: `[Admin] New Coach Contact Request: ${entrepreneurName} → ${coachName}`,
-          html: `<h2>New Coach Contact Request</h2>
+          html: `<!DOCTYPE html><html><head><style>body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; } .container { max-width: 600px; margin: 0 auto; padding: 20px; } .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; } .header h1 { margin: 0; font-size: 24px; } .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; } .highlight-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 20px 0; border-radius: 8px; } .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; } a { color: #FF6B5C; }</style></head><body style="background-color: #FAF9F7;"><div class="container"><div class="header"><h1>New Coach Contact Request</h1></div><div class="content">
           <p><strong>From:</strong> ${entrepreneurName}</p>
           <p><strong>To Coach:</strong> ${coachName}</p>
-          <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <div class="highlight-box">
             <p><strong>Message:</strong></p>
             <p style="white-space: pre-wrap;">${message}</p>
-          </div>`
+          </div>
+          </div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
         });
         console.log("[POST /api/coach-contact-requests] Email sent to admin");
       }
@@ -2805,17 +2798,18 @@ app.post("/api/coach-contact-requests/:id/reply", async (req, res) => {
           from: resendConfig.fromEmail,
           to: request.entrepreneur_email,
           subject: `Reply from ${request.coach_name || 'Coach'}`,
-          html: `<h2>Reply from ${request.coach_name || 'Your Coach'}</h2>
+          html: `<!DOCTYPE html><html><head><style>body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; } .container { max-width: 600px; margin: 0 auto; padding: 20px; } .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; } .header h1 { margin: 0; font-size: 24px; } .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; } .highlight-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 20px 0; border-radius: 8px; } .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; } a { color: #FF6B5C; }</style></head><body style="background-color: #FAF9F7;"><div class="container"><div class="header"><h1>Coach Reply</h1></div><div class="content">
           <p><strong>${request.coach_name}</strong> has replied to your contact request.</p>
-          <div style="background: #e8f4e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <div class="highlight-box">
             <p><strong>Your original message:</strong></p>
             <p style="white-space: pre-wrap;">${request.message}</p>
           </div>
-          <div style="background: #e8f0f8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <div class="highlight-box">
             <p><strong>Coach's reply:</strong></p>
             <p style="white-space: pre-wrap;">${reply}</p>
           </div>
-          <p><em>This was a one-time contact. To continue working with this coach, consider booking their services through the platform.</em></p>`
+          <p><em>This was a one-time contact. To continue working with this coach, consider booking their services through the platform.</em></p>
+          </div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
         });
         console.log("[POST /api/coach-contact-requests/:id/reply] Email sent to entrepreneur");
       } else {
@@ -2834,18 +2828,19 @@ app.post("/api/coach-contact-requests/:id/reply", async (req, res) => {
           from: resendConfig.fromEmail,
           to: adminEmail,
           subject: `[Admin] Coach Reply: ${request.coach_name} → ${request.entrepreneur_name}`,
-          html: `<h2>Coach Replied to Contact Request</h2>
+          html: `<!DOCTYPE html><html><head><style>body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; } .container { max-width: 600px; margin: 0 auto; padding: 20px; } .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; } .header h1 { margin: 0; font-size: 24px; } .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; } .highlight-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 20px 0; border-radius: 8px; } .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; } a { color: #FF6B5C; }</style></head><body style="background-color: #FAF9F7;"><div class="container"><div class="header"><h1>Coach Reply</h1></div><div class="content">
           <p><strong>Coach:</strong> ${request.coach_name}</p>
           <p><strong>To Entrepreneur:</strong> ${request.entrepreneur_name}</p>
-          <div style="background: #e8f4e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <div class="highlight-box">
             <p><strong>Original message:</strong></p>
             <p style="white-space: pre-wrap;">${request.message}</p>
           </div>
-          <div style="background: #e8f0f8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <div class="highlight-box">
             <p><strong>Coach's reply:</strong></p>
             <p style="white-space: pre-wrap;">${reply}</p>
           </div>
-          <p><em>Conversation is now closed.</em></p>`
+          <p><em>Conversation is now closed.</em></p>
+          </div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
         });
         console.log("[POST /api/coach-contact-requests/:id/reply] Email sent to admin");
       }
@@ -3327,14 +3322,14 @@ app.post("/api/investor-notes/:investorId/respond", async (req, res) => {
               <html>
               <head>
                 <style>
-                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                   .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                  .header { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                  .note-box { background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0; }
+                  .header { background: linear-gradient(135deg, #F5C542, #d4a832); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                  .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                  .note-box { background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #F5C542; margin: 20px 0; }
                 </style>
               </head>
-              <body>
+              <body style="background-color: #FAF9F7;">
                 <div class="container">
                   <div class="header">
                     <h1>Admin Response</h1>
@@ -3366,14 +3361,14 @@ app.post("/api/investor-notes/:investorId/respond", async (req, res) => {
               <html>
               <head>
                 <style>
-                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                   .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                  .header { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                  .note-box { background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0; }
+                  .header { background: linear-gradient(135deg, #F5C542, #d4a832); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                  .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                  .note-box { background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #F5C542; margin: 20px 0; }
                 </style>
               </head>
-              <body>
+              <body style="background-color: #FAF9F7;">
                 <div class="container">
                   <div class="header">
                     <h1>New Investor Response</h1>
@@ -3473,14 +3468,14 @@ app.post("/api/investor-notes/:investorId", async (req, res) => {
             <html>
             <head>
               <style>
-                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                .note-box { background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0; }
+                .header { background: linear-gradient(135deg, #F5C542, #d4a832); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                .note-box { background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #F5C542; margin: 20px 0; }
               </style>
             </head>
-            <body>
+            <body style="background-color: #FAF9F7;">
               <div class="container">
                 <div class="header">
                   <h1>New Note from Admin</h1>
@@ -4566,16 +4561,16 @@ app.patch("/api/mentor-assignments/:id/toggle-note/:noteIndex", async (req, res)
               <html>
               <head>
                 <style>
-                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                   .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                  .header { background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                  .completed-box { background: #d1fae5; border-left: 4px solid #10b981; padding: 15px; margin: 15px 0; border-radius: 4px; }
-                  .button { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-                  .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                  .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                  .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                  .completed-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 15px 0; border-radius: 8px; }
+                  .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; }
+                  .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
                 </style>
               </head>
-              <body>
+              <body style="background-color: #FAF9F7;">
                 <div class="container">
                   <div class="header">
                     <h1>Task Completed!</h1>
@@ -4585,7 +4580,7 @@ app.patch("/api/mentor-assignments/:id/toggle-note/:noteIndex", async (req, res)
                     <p>Great news! Your mentor <strong>${mentor.full_name}</strong> has marked the following task as complete:</p>
                     
                     <div class="completed-box">
-                      <p style="margin: 0;"><strong style="color: #10b981;">✓</strong> ${noteText}</p>
+                      <p style="margin: 0;"><strong style="color: #0D566C;">✓</strong> ${noteText}</p>
                     </div>
                     
                     <p>Keep up the great work on your entrepreneurial journey!</p>
@@ -4830,17 +4825,17 @@ app.post("/api/mentor-assignments/:assignmentId/notes/:noteId/respond", async (r
               <html>
               <head>
                 <style>
-                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                   .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                  .header { background: linear-gradient(135deg, #0891b2, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                  .note-box { background: #e0f2fe; border-left: 4px solid #0891b2; padding: 15px; margin: 15px 0; border-radius: 4px; }
-                  .response-box { background: #d1fae5; border-left: 4px solid #10b981; padding: 15px; margin: 15px 0; border-radius: 4px; }
-                  .button { display: inline-block; background: #0891b2; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-                  .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                  .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                  .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                  .note-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 15px 0; border-radius: 8px; }
+                  .response-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 15px 0; border-radius: 8px; }
+                  .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; }
+                  .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
                 </style>
               </head>
-              <body>
+              <body style="background-color: #FAF9F7;">
                 <div class="container">
                   <div class="header">
                     <h1>New Response to Your Note</h1>
@@ -5216,15 +5211,15 @@ app.post("/api/mentor-questions", async (req, res) => {
           subject: `New "Ask a Mentor" Question from ${entrepreneurName || entrepreneurEmail}`,
           html: `
             <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 24px; border-radius: 10px 10px 0 0; text-align: center;">
+              <div style="background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
                 <h2 style="margin: 0;">New Mentor Question</h2>
               </div>
-              <div style="background: #f8fafc; padding: 24px; border-radius: 0 0 10px 10px;">
+              <div style="background: #FFFFFF; padding: 24px; border-radius: 0 0 16px 16px;">
                 <p><strong>From:</strong> ${entrepreneurName || "Unknown"} (${entrepreneurEmail})</p>
-                <div style="background: white; border-left: 4px solid #6366f1; padding: 16px; margin: 16px 0; border-radius: 4px;">
+                <div style="background: white; border-left: 4px solid #0D566C; padding: 16px; margin: 16px 0; border-radius: 8px;">
                   <p style="margin: 0; white-space: pre-wrap;">${question}</p>
                 </div>
-                <a href="${baseUrl}/admin-dashboard" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">View in Admin Dashboard</a>
+                <a href="${baseUrl}/admin-dashboard" style="display: inline-block; background-color: #FF6B5C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: 600;">View in Admin Dashboard</a>
               </div>
             </div>
           `
@@ -5360,22 +5355,22 @@ app.post("/api/mentor-questions/:id/reply", async (req, res) => {
             subject: "Your Mentor Question Has Been Answered - TouchConnectPro",
             html: `
               <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <div style="background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 24px; border-radius: 10px 10px 0 0; text-align: center;">
+                <div style="background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
                   <h2 style="margin: 0;">Your Question Has Been Answered!</h2>
                 </div>
-                <div style="background: #f8fafc; padding: 24px; border-radius: 0 0 10px 10px;">
+                <div style="background: #FFFFFF; padding: 24px; border-radius: 0 0 16px 16px;">
                   <p>Hi ${answeredQuestion.entrepreneur_name || "there"},</p>
                   <p>A mentor has responded to your question on TouchConnectPro.</p>
-                  <div style="background: #f1f5f9; border-left: 4px solid #94a3b8; padding: 16px; margin: 16px 0; border-radius: 4px;">
-                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #64748b;">Your Question:</p>
+                  <div style="background: rgba(13,86,108,0.08); border-left: 4px solid #8A8A8A; padding: 16px; margin: 16px 0; border-radius: 8px;">
+                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #8A8A8A;">Your Question:</p>
                     <p style="margin: 0; white-space: pre-wrap;">${answeredQuestion.question}</p>
                   </div>
-                  <div style="background: #d1fae5; border-left: 4px solid #10b981; padding: 16px; margin: 16px 0; border-radius: 4px;">
+                  <div style="background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 16px; margin: 16px 0; border-radius: 8px;">
                     <p style="margin: 0 0 4px 0; font-weight: 600; color: #065f46;">Mentor's Answer:</p>
                     <p style="margin: 0; white-space: pre-wrap;">${reply}</p>
                   </div>
-                  <a href="${baseUrl}/login" style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">View in Your Dashboard</a>
-                  <p style="margin-top: 20px; color: #64748b; font-size: 14px;">Keep building. We're here to help you succeed.</p>
+                  <a href="${baseUrl}/login" style="display: inline-block; background-color: #FF6B5C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: 600;">View in Your Dashboard</a>
+                  <p style="margin-top: 20px; color: #8A8A8A; font-size: 14px;">Keep building. We're here to help you succeed.</p>
                 </div>
               </div>
             `
@@ -6031,15 +6026,15 @@ app.post("/api/early-access", async (req, res) => {
             <html>
             <head>
               <style>
-                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                .highlight-box { background: linear-gradient(135deg, #06b6d4/10, #3b82f6/10); padding: 20px; border-radius: 8px; border-left: 4px solid #06b6d4; margin: 20px 0; }
-                .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                .highlight-box { background: rgba(13,86,108,0.08); padding: 20px; border-radius: 8px; border-left: 4px solid #0D566C; margin: 20px 0; }
+                .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
               </style>
             </head>
-            <body>
+            <body style="background-color: #FAF9F7;">
               <div class="container">
                 <div class="header">
                   <h1>You're In!</h1>
@@ -6084,15 +6079,15 @@ app.post("/api/early-access", async (req, res) => {
             <html>
             <head>
               <style>
-                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                .email-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #06b6d4; margin: 20px 0; text-align: center; }
-                .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                .email-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #0D566C; margin: 20px 0; text-align: center; }
+                .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
               </style>
             </head>
-            <body>
+            <body style="background-color: #FAF9F7;">
               <div class="container">
                 <div class="header">
                   <h1>New Early Access Request!</h1>
@@ -6102,12 +6097,12 @@ app.post("/api/early-access", async (req, res) => {
                   
                   <div class="email-box">
                     <strong>Email Address:</strong><br>
-                    <span style="font-size: 18px; color: #06b6d4;">${email}</span>
+                    <span style="font-size: 18px; color: #0D566C;">${email}</span>
                   </div>
                   
                   <p>They're interested in being notified when the AI tools are ready.</p>
                   
-                  <p style="color: #64748b; font-size: 14px;">
+                  <p style="color: #8A8A8A; font-size: 14px;">
                     Received: ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST
                   </p>
                 </div>
@@ -6172,15 +6167,15 @@ app.post("/api/mentor-waitlist", async (req, res) => {
             <html>
             <head>
               <style>
-                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                .highlight-box { background: linear-gradient(135deg, #6366f1/10, #8b5cf6/10); padding: 20px; border-radius: 8px; border-left: 4px solid #6366f1; margin: 20px 0; }
-                .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                .highlight-box { background: rgba(13,86,108,0.08); padding: 20px; border-radius: 8px; border-left: 4px solid #0D566C; margin: 20px 0; }
+                .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
               </style>
             </head>
-            <body>
+            <body style="background-color: #FAF9F7;">
               <div class="container">
                 <div class="header">
                   <h1>Thank You, ${fullName}!</h1>
@@ -6195,7 +6190,7 @@ app.post("/api/mentor-waitlist", async (req, res) => {
                   
                   <p>In the meantime, thank you for wanting to make a difference in the lives of aspiring entrepreneurs.</p>
                   
-                  <p style="color: #64748b; font-size: 14px;">
+                  <p style="color: #8A8A8A; font-size: 14px;">
                     Best regards,<br>
                     The TouchConnectPro Team
                   </p>
@@ -6220,15 +6215,15 @@ app.post("/api/mentor-waitlist", async (req, res) => {
             <html>
             <head>
               <style>
-                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
-                .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                .info-box { background: white; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 15px 0; }
-                .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 20px; text-align: center; border-radius: 16px 16px 0 0; }
+                .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                .info-box { background: white; padding: 15px; border-radius: 8px; border: 1px solid #E8E8E8; margin: 15px 0; }
+                .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
               </style>
             </head>
-            <body>
+            <body style="background-color: #FAF9F7;">
               <div class="container">
                 <div class="header">
                   <h2>New Mentor Waitlist Signup</h2>
@@ -6431,15 +6426,15 @@ app.post("/api/zoom/send-invitations", async (req, res) => {
               <html>
               <head>
                 <style>
-                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                   .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                  .header { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                  .meeting-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #06b6d4; margin: 20px 0; }
-                  .join-button { display: inline-block; background: #06b6d4; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 10px 0; }
+                  .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                  .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                  .meeting-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #0D566C; margin: 20px 0; }
+                  .join-button { display: inline-block; background-color: #FF6B5C; color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; margin: 10px 0; }
                 </style>
               </head>
-              <body>
+              <body style="background-color: #FAF9F7;">
                 <div class="container">
                   <div class="header">
                     <h1>You're Invited to a Meeting!</h1>
@@ -6662,15 +6657,15 @@ app.post("/api/admin/send-meeting-invite", async (req, res) => {
             <html>
             <head>
               <style>
-                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                .meeting-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #06b6d4; margin: 20px 0; }
-                .join-button { display: inline-block; background: #06b6d4; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 10px 0; }
+                .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                .meeting-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #0D566C; margin: 20px 0; }
+                .join-button { display: inline-block; background-color: #FF6B5C; color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; margin: 10px 0; }
               </style>
             </head>
-            <body>
+            <body style="background-color: #FAF9F7;">
               <div class="container">
                 <div class="header">
                   <h1>You're Invited to a Meeting!</h1>
@@ -6825,15 +6820,15 @@ app.post("/api/admin/create-meeting-with-invites", async (req, res) => {
               <html>
               <head>
                 <style>
-                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                   .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                  .header { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                  .meeting-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #06b6d4; margin: 20px 0; }
-                  .join-button { display: inline-block; background: #06b6d4; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 10px 0; }
+                  .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                  .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                  .meeting-box { background: white; padding: 20px; border-radius: 8px; border: 2px solid #0D566C; margin: 20px 0; }
+                  .join-button { display: inline-block; background-color: #FF6B5C; color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; margin: 10px 0; }
                 </style>
               </head>
-              <body>
+              <body style="background-color: #FAF9F7;">
                 <div class="container">
                   <div class="header">
                     <h1>You're Invited to a Meeting!</h1>
@@ -7131,14 +7126,14 @@ app.post("/api/stripe/confirm-payment", async (req, res) => {
                 <html>
                 <head>
                   <style>
-                    body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                    body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                    .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                    .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                    .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                    .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                    .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
                   </style>
                 </head>
-                <body>
+                <body style="background-color: #FAF9F7;">
                   <div class="container">
                     <div class="header">
                       <h1>Welcome, ${entrepreneur.entrepreneur_name}!</h1>
@@ -7318,17 +7313,17 @@ app.post("/api/cancellation-request", async (req, res) => {
       <html>
       <head>
         <style>
-          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: #ef4444; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
-          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-          .info-box { background: #fff; border: 1px solid #e2e8f0; padding: 15px; margin: 15px 0; border-radius: 8px; }
-          .label { font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; }
+          .header { background: #ef4444; color: white; padding: 20px; text-align: center; border-radius: 16px 16px 0 0; }
+          .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+          .info-box { background: #fff; border: 1px solid #E8E8E8; padding: 15px; margin: 15px 0; border-radius: 8px; }
+          .label { font-weight: 600; color: #8A8A8A; font-size: 12px; text-transform: uppercase; }
           .value { color: #1e293b; font-size: 16px; margin-top: 4px; }
           .reason-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0; }
         </style>
       </head>
-      <body>
+      <body style="background-color: #FAF9F7;">
         <div class="container">
           <div class="header">
             <h1>${userType.charAt(0).toUpperCase() + userType.slice(1)} Cancellation Request</h1>
@@ -7361,7 +7356,7 @@ app.post("/api/cancellation-request", async (req, res) => {
               <p style="margin: 10px 0 0 0; white-space: pre-wrap;">${reason}</p>
             </div>
             
-            <p style="color: #64748b; font-size: 14px; margin-top: 20px;">
+            <p style="color: #8A8A8A; font-size: 14px; margin-top: 20px;">
               Please review this request and take appropriate action.
             </p>
           </div>
@@ -7392,15 +7387,15 @@ app.post("/api/cancellation-request", async (req, res) => {
       <html>
       <head>
         <style>
-          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+          body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-          .info-box { background: #fff; border: 1px solid #e2e8f0; padding: 15px; margin: 15px 0; border-radius: 8px; }
-          .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 12px; }
+          .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+          .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+          .info-box { background: #fff; border: 1px solid #E8E8E8; padding: 15px; margin: 15px 0; border-radius: 8px; }
+          .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 12px; }
         </style>
       </head>
-      <body>
+      <body style="background-color: #FAF9F7;">
         <div class="container">
           <div class="header">
             <h1>Cancellation Request Received</h1>
@@ -7625,7 +7620,7 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
                 to: entrepreneurEmail,
                 subject: "Payment Received - TouchConnectPro Membership",
                 html: `
-                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2>Payment Confirmed!</h2>
                     <p>Hi ${entrepreneurName},</p>
                     <p>Your membership payment has been received. A mentor will be assigned to you shortly.</p>
@@ -7646,7 +7641,7 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
                 to: ADMIN_EMAIL,
                 subject: `New Paid Member: ${entrepreneurName}`,
                 html: `
-                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2>New Membership Payment</h2>
                     <p><strong>Entrepreneur:</strong> ${entrepreneurName}</p>
                     <p><strong>Email:</strong> ${entrepreneurEmail}</p>
@@ -7744,11 +7739,11 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
                   to: entrepreneurEmail,
                   subject: `Your ${serviceName} with ${coachName} is Confirmed!`,
                   html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                       <h2>🎉 Your Coaching Purchase is Confirmed!</h2>
                       <p>Hi ${entrepreneurName},</p>
                       <p>Thank you for purchasing <strong>${serviceName}</strong> with <strong>${coachName}</strong>.</p>
-                      <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                      <div style="background: rgba(13,86,108,0.08); padding: 15px; border-radius: 8px; margin: 20px 0;">
                         <p><strong>Service:</strong> ${serviceName}</p>
                         <p><strong>Coach:</strong> ${coachName}</p>
                         <p><strong>Amount Paid:</strong> $${(amountTotal / 100).toFixed(2)}</p>
@@ -7772,11 +7767,11 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
                   to: coachEmail,
                   subject: `New Client! ${entrepreneurName} purchased ${serviceName}`,
                   html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                       <h2>🎉 You Have a New Client!</h2>
                       <p>Hi ${coachName},</p>
                       <p>Great news! <strong>${entrepreneurName}</strong> has just purchased your <strong>${serviceName}</strong>.</p>
-                      <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                      <div style="background: rgba(13,86,108,0.08); padding: 15px; border-radius: 8px; margin: 20px 0;">
                         <p><strong>Client Name:</strong> ${entrepreneurName}</p>
                         <p><strong>Client Email:</strong> ${entrepreneurEmail}</p>
                         <p><strong>Service:</strong> ${serviceName}</p>
@@ -7804,9 +7799,9 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
                 to: ADMIN_EMAIL,
                 subject: `New Coach Purchase: ${entrepreneurName} → ${coachName}`,
                 html: `
-                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2>💰 New Coach Marketplace Sale</h2>
-                    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <div style="background: rgba(13,86,108,0.08); padding: 15px; border-radius: 8px; margin: 20px 0;">
                       <p><strong>Coach:</strong> ${coachName}</p>
                       <p><strong>Client:</strong> ${entrepreneurName} (${entrepreneurEmail})</p>
                       <p><strong>Service:</strong> ${serviceName}</p>
@@ -9257,15 +9252,15 @@ app.post("/api/admin/resend-invite", async (req, res) => {
               <html>
               <head>
                 <style>
-                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
                   .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                  .header { background: linear-gradient(135deg, #10b981, #0d9488); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                  .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                  .button { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-                  .footer { text-align: center; margin-top: 20px; color: #64748b; font-size: 14px; }
+                  .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                  .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                  .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; }
+                  .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
                 </style>
               </head>
-              <body>
+              <body style="background-color: #FAF9F7;">
                 <div class="container">
                   <div class="header">
                     <h1>Hello, ${fullName}!</h1>
@@ -9279,7 +9274,7 @@ app.post("/api/admin/resend-invite", async (req, res) => {
                       <a href="${FRONTEND_URL}/login" class="button">Go to Login</a>
                     </p>
                     
-                    <p style="font-size: 14px; color: #64748b;">If you forgot your password, you can reset it from the login page.</p>
+                    <p style="font-size: 14px; color: #8A8A8A;">If you forgot your password, you can reset it from the login page.</p>
                     
                     <p>Best regards,<br>The TouchConnectPro Team</p>
                   </div>
@@ -9494,9 +9489,8 @@ app.post("/api/community/signup", async (req, res) => {
           from: fromEmail,
           to: normalizedEmail,
           subject: "Welcome to TouchConnectPro Community!",
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h2 style="color: #0ea5e9;">Welcome to TouchConnectPro, ${name}!</h2>
+          html: `<!DOCTYPE html><html><head><style>body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; } .container { max-width: 600px; margin: 0 auto; padding: 20px; } .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; } .header h1 { margin: 0; font-size: 24px; } .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; } .highlight-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 20px 0; border-radius: 8px; } .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; } .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; } a { color: #FF6B5C; }</style></head><body style="background-color: #FAF9F7;"><div class="container"><div class="header"><h1>Welcome to TouchConnectPro!</h1></div><div class="content">
+              <p>Hi ${name},</p>
               <p>Your free Community account is ready. You can now log in to access your entrepreneur dashboard.</p>
               ${quizResult ? `<p>Your Focus Score results have been saved to your profile.</p>` : ""}
               <p>As a Community member, you have access to:</p>
@@ -9506,10 +9500,8 @@ app.post("/api/community/signup", async (req, res) => {
                 <li>Focus Score diagnostics</li>
               </ul>
               <p>Ready to upgrade? Our Founders Circle ($9.99/month) and Capital Circle ($49/month) tiers unlock mentor access and investor connections.</p>
-              <p><a href="https://touchconnectpro.com/login" style="display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold;">Log In to Your Dashboard</a></p>
-              <p style="color: #94a3b8; font-size: 12px;">Touch Equity Partners LLC</p>
-            </div>
-          `
+              <p><a href="https://touchconnectpro.com/login" class="button">Log In to Your Dashboard</a></p>
+            </div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
         });
         console.log("[COMMUNITY SIGNUP] Welcome email sent to:", normalizedEmail);
 
@@ -9519,20 +9511,16 @@ app.post("/api/community/signup", async (req, res) => {
             from: fromEmail,
             to: ADMIN_EMAIL,
             subject: `New Community-Free Signup: ${name}`,
-            html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #0ea5e9;">New Community-Free Registration</h2>
+            html: `<!DOCTYPE html><html><head><style>body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; } .container { max-width: 600px; margin: 0 auto; padding: 20px; } .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; } .header h1 { margin: 0; font-size: 24px; } .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; } .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; } .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; } a { color: #FF6B5C; }</style></head><body style="background-color: #FAF9F7;"><div class="container"><div class="header"><h1>New Community Registration</h1></div><div class="content">
                 <p>A new entrepreneur has registered for a free Community account.</p>
                 <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-                  <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">Name</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${name}</td></tr>
-                  <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">Email</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${normalizedEmail}</td></tr>
-                  <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">Focus Score</td><td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${quizResult ? (quizResult.totalScore || 'Completed') : 'Not taken'}</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #E8E8E8;">Name</td><td style="padding: 8px; border-bottom: 1px solid #E8E8E8;">${name}</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #E8E8E8;">Email</td><td style="padding: 8px; border-bottom: 1px solid #E8E8E8;">${normalizedEmail}</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #E8E8E8;">Focus Score</td><td style="padding: 8px; border-bottom: 1px solid #E8E8E8;">${quizResult ? (quizResult.totalScore || 'Completed') : 'Not taken'}</td></tr>
                   <tr><td style="padding: 8px; font-weight: bold;">Membership</td><td style="padding: 8px;">Community-Free</td></tr>
                 </table>
-                <p><a href="https://touchconnectpro.com/admin-dashboard" style="display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold;">View in Admin Dashboard</a></p>
-                <p style="color: #94a3b8; font-size: 12px;">Touch Equity Partners LLC</p>
-              </div>
-            `
+                <p><a href="https://touchconnectpro.com/admin-dashboard" class="button">View in Admin Dashboard</a></p>
+              </div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
           });
           console.log("[COMMUNITY SIGNUP] Admin notification sent to:", ADMIN_EMAIL);
         } catch (adminEmailErr) {
@@ -9660,23 +9648,20 @@ app.post("/api/trial/create", async (req, res) => {
         from: fromEmail,
         to: normalizedEmail,
         subject: "Welcome to TouchConnectPro - Your 7-Day Trial",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #0891b2;">Welcome to TouchConnectPro!</h1>
+        html: `<!DOCTYPE html><html><head><style>body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; } .container { max-width: 600px; margin: 0 auto; padding: 20px; } .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; } .header h1 { margin: 0; font-size: 24px; } .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; } .highlight-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 20px 0; border-radius: 8px; } .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; } .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; } a { color: #FF6B5C; }</style></head><body style="background-color: #FAF9F7;"><div class="container"><div class="header"><h1>Welcome to TouchConnectPro!</h1></div><div class="content">
             <p>Hi ${name},</p>
             <p>Your 7-day trial has been activated!</p>
-            <p><strong>Your trial ends on ${trialEnd.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.</strong></p>
+            <div class="highlight-box"><p style="margin: 0;"><strong>Your trial ends on ${trialEnd.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.</strong></p></div>
             <p>Set up your password to log in:</p>
-            <a href="${setupUrl}" style="display: inline-block; background-color: #0891b2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Set Up Your Password</a>
-          </div>
-        `
+            <p><a href="${setupUrl}" class="button">Set Up Your Password</a></p>
+          </div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
       });
 
       await resendClient.emails.send({
         from: fromEmail,
         to: ADMIN_EMAIL,
         subject: `New Trial User: ${name}`,
-        html: `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${normalizedEmail}</p><p><strong>Primary Blocker:</strong> ${quizResult?.primaryBlocker || "N/A"}</p><p><strong>Trial Ends:</strong> ${trialEnd.toLocaleDateString()}</p>`
+        html: `<!DOCTYPE html><html><head><style>body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; } .container { max-width: 600px; margin: 0 auto; padding: 20px; } .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; } .header h1 { margin: 0; font-size: 24px; } .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; } .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; } a { color: #FF6B5C; }</style></head><body style="background-color: #FAF9F7;"><div class="container"><div class="header"><h1>New Trial User</h1></div><div class="content"><p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${normalizedEmail}</p><p><strong>Primary Blocker:</strong> ${quizResult?.primaryBlocker || "N/A"}</p><p><strong>Trial Ends:</strong> ${trialEnd.toLocaleDateString()}</p></div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
       });
     }
 
@@ -9744,17 +9729,14 @@ app.post("/api/trial/regenerate-token", async (req, res) => {
         from: fromEmail,
         to: normalizedEmail,
         subject: "TouchConnectPro - Set Up Your Password (New Link)",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #0891b2;">Set Up Your Password</h1>
+        html: `<!DOCTYPE html><html><head><style>body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; } .container { max-width: 600px; margin: 0 auto; padding: 20px; } .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; } .header h1 { margin: 0; font-size: 24px; } .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; } .highlight-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 20px 0; border-radius: 8px; } .button { display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; } .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; } a { color: #FF6B5C; }</style></head><body style="background-color: #FAF9F7;"><div class="container"><div class="header"><h1>Set Up Your Password</h1></div><div class="content">
             <p>Hi ${name},</p>
             <p>Here is your new password setup link:</p>
-            <a href="${setupUrl}" style="display: inline-block; background-color: #0891b2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Set Up Your Password</a>
-            <p><strong>Your trial ends on ${trialEnd.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.</strong></p>
+            <p><a href="${setupUrl}" class="button">Set Up Your Password</a></p>
+            <div class="highlight-box"><p style="margin: 0;"><strong>Your trial ends on ${trialEnd.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.</strong></p></div>
             <p>If the button doesn't work, copy and paste this link into your browser:</p>
-            <p style="word-break: break-all; color: #666;">${setupUrl}</p>
-          </div>
-        `
+            <p style="word-break: break-all; color: #8A8A8A;">${setupUrl}</p>
+          </div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
       });
     }
 

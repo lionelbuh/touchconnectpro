@@ -1,124 +1,203 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Check, ArrowRight, Sparkles, Shield, Users, TrendingUp } from "lucide-react";
+import { ArrowRight, Lightbulb, UserCheck, Rocket, TrendingUp, Check } from "lucide-react";
 import { Link } from "wouter";
 
 export default function HowItWorks() {
-  const steps = [
-    {
-      id: "01",
-      title: "Free Community & Idea Refinement",
-      subtitle: "Zero-Barrier Entry Point",
-      desc: "Start shaping your idea immediately: [BOLD]no credit card required.[/BOLD] Our tools help you clarify your value proposition and create a structured draft business plan.",
-      icon: <Sparkles className="h-8 w-8 text-cyan-500" />,
-      features: ["Refine Your Idea: Turn your concept into a clear, compelling vision.", "Build a Draft Plan: Organize your strategy and priorities quickly.", "Check Viability: Make sure your idea has a strong foundation."],
-      color: "cyan"
-    },
-    {
-      id: "02",
-      title: "Mentor Match",
-      subtitle: "Evaluation & Acceptance",
-      desc: "Submit your refined plan for review. A dedicated mentor approves your idea into their portfolio, starting a focused and meaningful mentorship.",
-      icon: <Shield className="h-8 w-8 text-cyan-500" />,
-      features: ["Personalized Evaluation: Get targeted, actionable feedback.", "Portfolio Approval: Secure a spot in a mentor's portfolio.", "Goal Alignment: Set clear objectives to guide your next steps."],
-      color: "cyan"
-    },
-    {
-      id: "03",
-      title: "Active Development",
-      subtitle: "Membership - $9.99/month",
-      desc: "Unlock the full support system: monthly coaching, community learning, and optional access to experts in Finance, Legal, and Marketing. [BOLD]Only for founders ready to turn momentum into action.[/BOLD]",
-      icon: <Users className="h-8 w-8 text-emerald-500" />,
-      features: ["Quick Start Guide: Step-by-step resources to hit the ground running.", "Ongoing Mentor Access: Ask questions, receive feedback, and get guidance throughout the month.", "Specialized Marketplace Access: Connect with expert services to accelerate your business."],
-      color: "cyan"
-    },
-    {
-      id: "04",
-      title: "Investor Ready",
-      subtitle: "Membership - $49/month \u2013 Angel-Stage Support",
-      desc: "When you're ready to raise, we intensify support. We help with pitch decks and fundraising strategy. We have established relationships with Angel Investors who will review all final projects to determine if they want to invest.",
-      icon: <TrendingUp className="h-8 w-8 text-cyan-500" />,
-      features: ["Investor-Grade Pitch Deck", "Fundraising Strategy", "Angel Network Access"],
-      color: "cyan"
-    }
-  ];
-
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
-      <div className="py-24 container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-20">
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-6 text-slate-900 dark:text-white">How It Works</h1>
-          <p className="text-xl text-muted-foreground">
-            A friction-free journey from raw idea to funded venture. We validate quickly and build deeply.
+    <div className="flex flex-col">
+      {/* Hero */}
+      <section className="pt-28 pb-20 md:pt-36 md:pb-28" style={{ backgroundColor: "#FAF9F7" }}>
+        <div className="container px-4 mx-auto max-w-3xl text-center">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-snug tracking-tight mb-5" style={{ color: "#0D566C" }} data-testid="text-hiw-headline">
+            How It Works
+          </h1>
+          <p className="text-xl md:text-2xl font-display font-medium mb-4" style={{ color: "#4B3F72" }}>
+            A simple path from idea to real progress.
+          </p>
+          <p className="text-lg max-w-2xl mx-auto leading-relaxed" style={{ color: "#4A4A4A" }}>
+            We help you move forward step by step, with clarity and real support.
           </p>
         </div>
+      </section>
 
-        <div className="relative max-w-5xl mx-auto">
-          {/* Vertical Line (Desktop) */}
-          <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-800 hidden md:block -translate-x-1/2"></div>
-
-          <div className="space-y-12 md:space-y-24">
-            {steps.map((step, index) => (
-              <div key={index} className={`flex flex-col md:flex-row items-center gap-8 ${index % 2 === 0 ? '' : 'md:flex-row-reverse'}`}>
-                
-                {/* Text Content */}
-                <div className="md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left relative z-20">
-                  <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl bg-${step.color}-500/10 mb-6 md:hidden`}>
-                    {step.icon}
-                  </div>
-                  <div className={`${index === 2 ? 'text-emerald-600' : `text-${step.color}-600`} font-bold tracking-wider text-sm uppercase mb-2`}>{step.subtitle}</div>
-                  <h2 className="text-3xl font-bold mb-4 text-slate-900 dark:text-white relative z-20">
-                    <span className="text-slate-300 mr-3 text-2xl font-normal">.{step.id}</span>
-                    {step.title}
-                  </h2>
-                  <p className="text-slate-600 dark:text-slate-400 mb-6 text-lg leading-relaxed">
-                    {step.desc.includes('[BOLD]') ? (
-                      <>
-                        {step.desc.split('[BOLD]').map((part, i) => 
-                          i % 2 === 0 ? part : <strong key={i}>{part.replace('[/BOLD]', '')}</strong>
-                        )}
-                      </>
-                    ) : step.desc}
-                  </p>
-                  <ul className="space-y-2">
-                    {step.features.map((feat, i) => (
-                      <li key={i} className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                         <div className={`h-2 w-2 rounded-full bg-${step.color}-500`}></div>
-                         {feat}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Center Marker (Desktop) */}
-                <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center justify-center h-16 w-16 rounded-full bg-white dark:bg-slate-900 border-4 border-slate-100 dark:border-slate-800 shadow-sm z-10">
-                  {step.icon}
-                </div>
-
-                {/* Visual Card */}
-                <div className="md:w-1/2 w-full">
-                  <Card className="overflow-hidden border-none shadow-lg bg-white dark:bg-slate-900">
-                     <div className={`h-2 w-full bg-${step.color}-500`}></div>
-                     <CardContent className="p-8 h-80 flex items-center justify-center bg-slate-50/50 dark:bg-slate-800/20">
-                       <div className="text-center">
-                         <div className="text-9xl font-bold text-slate-300 dark:text-slate-600 mb-2 leading-none">{step.id}</div>
-                         <div className="text-sm uppercase tracking-widest text-slate-400 dark:text-slate-500">Phase</div>
-                       </div>
-                     </CardContent>
-                  </Card>
-                </div>
+      {/* Phase 1 */}
+      <section className="py-20 md:py-24" style={{ backgroundColor: "#F3F3F3" }} data-testid="section-phase-1">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="flex flex-col md:flex-row items-start gap-10">
+            <div className="shrink-0">
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "rgba(245,197,66,0.15)" }}>
+                <Lightbulb className="h-8 w-8" style={{ color: "#F5C542" }} />
               </div>
-            ))}
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: "#FF6B5C" }}>Phase 1</p>
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-4" style={{ color: "#0D566C" }}>Start for Free</h2>
+              <p className="text-lg leading-relaxed mb-6" style={{ color: "#4A4A4A" }}>
+                Begin shaping your idea today. No credit card required. Use our tools to clarify your value, structure your thinking, and build a strong first draft of your business plan.
+              </p>
+              <ul className="space-y-3 mb-8">
+                {[
+                  "Turn your concept into a clear vision",
+                  "Organize your priorities",
+                  "Check that your idea has real potential",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(245,197,66,0.2)" }}>
+                      <Check className="h-3.5 w-3.5" style={{ color: "#0D566C" }} />
+                    </div>
+                    <span className="font-medium" style={{ color: "#4A4A4A" }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/founder-focus">
+                <Button
+                  className="h-12 px-8 text-base font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.03] active:scale-[0.98]"
+                  style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                  data-testid="button-phase1-cta"
+                >
+                  Start refining your idea <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div className="mt-32 text-center">
-          <h2 className="text-3xl font-bold mb-6">Ready to start your journey?</h2>
+      {/* Phase 2 */}
+      <section className="py-20 md:py-24" style={{ backgroundColor: "#FAF9F7" }} data-testid="section-phase-2">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="flex flex-col md:flex-row items-start gap-10">
+            <div className="shrink-0">
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "rgba(75,63,114,0.1)" }}>
+                <UserCheck className="h-8 w-8" style={{ color: "#4B3F72" }} />
+              </div>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: "#FF6B5C" }}>Phase 2</p>
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Get Matched With a Mentor</h2>
+              <p className="text-sm font-semibold mb-4 inline-block px-4 py-1.5 rounded-full" style={{ backgroundColor: "rgba(13,86,108,0.08)", color: "#0D566C" }}>
+                Membership: Community - FREE
+              </p>
+              <p className="text-lg leading-relaxed mb-3" style={{ color: "#4A4A4A" }}>
+                When your idea is ready, submit it for review. A dedicated mentor evaluates it and, if aligned, welcomes you into their portfolio.
+              </p>
+              <p className="text-lg leading-relaxed mb-6 font-medium" style={{ color: "#4B3F72" }}>
+                This is where focused guidance begins.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "Receive clear, actionable feedback",
+                  "Align on meaningful goals",
+                  "Start building with direction",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(245,197,66,0.2)" }}>
+                      <Check className="h-3.5 w-3.5" style={{ color: "#0D566C" }} />
+                    </div>
+                    <span className="font-medium" style={{ color: "#4A4A4A" }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Phase 3 */}
+      <section className="py-20 md:py-24" style={{ backgroundColor: "#F3F3F3" }} data-testid="section-phase-3">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="flex flex-col md:flex-row items-start gap-10">
+            <div className="shrink-0">
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "rgba(245,197,66,0.15)" }}>
+                <Rocket className="h-8 w-8" style={{ color: "#F5C542" }} />
+              </div>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: "#FF6B5C" }}>Phase 3</p>
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Build With Ongoing Support</h2>
+              <p className="text-sm font-semibold mb-4 inline-block px-4 py-1.5 rounded-full" style={{ backgroundColor: "rgba(13,86,108,0.08)", color: "#0D566C" }}>
+                Membership: $9.99 per month
+              </p>
+              <p className="text-lg leading-relaxed mb-6" style={{ color: "#4A4A4A" }}>
+                You now unlock full support: monthly guidance, community learning, and optional access to experts in finance, legal, and marketing.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "Step-by-step resources to move faster",
+                  "Direct access to your mentor throughout the month",
+                  "Marketplace access to specialized experts",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(245,197,66,0.2)" }}>
+                      <Check className="h-3.5 w-3.5" style={{ color: "#0D566C" }} />
+                    </div>
+                    <span className="font-medium" style={{ color: "#4A4A4A" }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Phase 4 */}
+      <section className="py-20 md:py-24" style={{ backgroundColor: "#FAF9F7" }} data-testid="section-phase-4">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="flex flex-col md:flex-row items-start gap-10">
+            <div className="shrink-0">
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "rgba(75,63,114,0.1)" }}>
+                <TrendingUp className="h-8 w-8" style={{ color: "#4B3F72" }} />
+              </div>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: "#FF6B5C" }}>Phase 4</p>
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Become Investor Ready</h2>
+              <p className="text-sm font-semibold mb-4 inline-block px-4 py-1.5 rounded-full" style={{ backgroundColor: "rgba(13,86,108,0.08)", color: "#0D566C" }}>
+                Membership: $49 per month
+              </p>
+              <p className="text-lg leading-relaxed mb-6" style={{ color: "#4A4A4A" }}>
+                When you are ready to raise, we help you prepare properly. We support your pitch deck, refine your fundraising strategy, and connect you with angel investors who review final projects.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "Investor-ready pitch deck",
+                  "Clear fundraising roadmap",
+                  "Access to our angel network",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(245,197,66,0.2)" }}>
+                      <Check className="h-3.5 w-3.5" style={{ color: "#0D566C" }} />
+                    </div>
+                    <span className="font-medium" style={{ color: "#4A4A4A" }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-20 md:py-28" style={{ backgroundColor: "#0D566C" }} data-testid="section-hiw-cta">
+        <div className="container px-4 mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl md:text-4xl font-display font-bold mb-5 text-white">
+            Ready to take the first step?
+          </h2>
+          <p className="text-lg md:text-xl mb-10 leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>
+            Start refining your idea today and build with clarity and confidence.
+          </p>
           <Link href="/founder-focus">
-            <Button size="lg" className="h-14 px-10 text-lg rounded-full">Start Refining Idea</Button>
+            <Button
+              size="lg"
+              className="h-14 px-10 text-lg font-semibold rounded-full shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-[1.03] active:scale-[0.98]"
+              style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+              data-testid="button-hiw-cta"
+            >
+              Get started <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
           </Link>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
