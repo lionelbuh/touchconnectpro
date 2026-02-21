@@ -1,0 +1,107 @@
+Redesign the Login page using the exact same layout system, color palette, typography, spacing, and human-centered style as the homepage, pricing page, FAQ page, and Startup Radar page.
+
+Important:
+Do NOT change the text content. Keep all wording exactly as written. Only improve the layout and visual presentation.
+
+Goal:
+Make the login page feel warm, premium, and consistent with the platform. Avoid default authentication template styling.
+
+Use the same design system:
+
+Background base: Soft cream (#FAF9F7)
+
+Section contrast if needed: Light gray (#F3F3F3)
+
+Headings: Deep teal (#0D566C)
+
+Body text: Dark gray (#4A4A4A)
+
+Primary button: Coral (#FF6B5C) with white text
+
+Accent highlights: Warm yellow (#F5C542)
+
+Soft shadows for form card (#E0E0E0)
+
+Same typography scale as homepage
+
+Layout instructions:
+
+Page Structure
+
+Center the login form vertically and horizontally on the page.
+
+Use a clean, minimal layout with generous spacing. The page should feel calm and focused.
+
+Optional:
+Use a split layout on desktop:
+
+Left side: Soft brand statement or subtle background block in Deep teal
+
+Right side: Login form card
+
+On mobile:
+
+Single centered card layout.
+
+Login Form Card
+
+Design the form inside a soft card:
+
+Rounded corners
+
+Subtle shadow
+
+Clean padding
+
+Not full-width
+
+Keep the following text exactly:
+
+Welcome Back
+Sign in to your TouchConnectPro account
+
+Email Address
+Password
+Forgot password?
+
+Add:
+
+Clean input fields with soft borders
+
+Subtle focus state in Coral
+
+Smooth hover on buttons
+
+Button Styling
+
+Primary login button:
+
+Coral background (#FF6B5C)
+
+White text
+
+Slight hover darkening
+
+Full-width button inside form
+
+Human Feel Improvements
+
+Avoid tight spacing
+
+Avoid thin, default system form styling
+
+Use comfortable line height
+
+Keep it visually consistent with homepage CTA sections
+
+Make the experience feel intentional, not like a generic auth page
+
+Optional Subtle Enhancement
+
+Below the form, you may add a soft line such as:
+
+New here? Join the Community for free.
+
+Styled subtly, not overpowering the main login action.
+
+The login page should feel like a natural part of the TouchConnectPro ecosystem, not a separate system screen. Clean, confident, human, and premium.

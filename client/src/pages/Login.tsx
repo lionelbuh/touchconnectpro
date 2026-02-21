@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Globe, Lightbulb, Star, Briefcase, TrendingUp, Loader2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Lightbulb, Star, Briefcase, TrendingUp, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { getSupabase, clearSupabaseSession } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -41,6 +40,18 @@ const validatePassword = (password: string): { valid: boolean; errors: string[] 
   return { valid: errors.length === 0, errors };
 };
 
+const cardStyle: React.CSSProperties = {
+  boxShadow: "0 4px 24px rgba(224,224,224,0.5)",
+};
+
+const inputStyle: React.CSSProperties = {
+  backgroundColor: "#FFFFFF",
+  borderColor: "#E0E0E0",
+  color: "#4A4A4A",
+};
+
+const inputFocusClass = "focus:border-[#FF6B5C] focus:ring-[#FF6B5C]/20";
+
 export default function Login() {
   const [, navigate] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
@@ -55,7 +66,6 @@ export default function Login() {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   
-  // Form state
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [signupFullName, setSignupFullName] = useState("");
@@ -63,7 +73,6 @@ export default function Login() {
   const [signupPassword, setSignupPassword] = useState("");
   const [recoveryEmail, setRecoveryEmail] = useState("");
 
-  // Check if user is already logged in
   useEffect(() => {
     const checkUser = async () => {
       try {
@@ -73,11 +82,9 @@ export default function Login() {
           return;
         }
         
-        // First try to get session from localStorage (faster, more reliable)
         const { data: { session } } = await supabase.auth.getSession();
         let user = session?.user;
         
-        // If no session, try getUser() as fallback
         if (!user) {
           const { data: userData } = await supabase.auth.getUser();
           user = userData.user;
@@ -87,10 +94,8 @@ export default function Login() {
           const email = user.email.toLowerCase();
           setUserEmail(email);
           
-          // Check application tables to find user role
           let role: string | null = null;
           
-          // Check ideas table (entrepreneurs) - include both approved and pre-approved
           const { data: entrepreneurApp } = await supabase
             .from("ideas")
             .select("status")
@@ -102,7 +107,6 @@ export default function Login() {
             role = "entrepreneur";
           }
           
-          // Check mentor_applications
           if (!role) {
             const { data: mentorApp } = await supabase
               .from("mentor_applications")
@@ -116,7 +120,6 @@ export default function Login() {
             }
           }
           
-          // Check coach_applications
           if (!role) {
             const { data: coachApp } = await supabase
               .from("coach_applications")
@@ -130,7 +133,6 @@ export default function Login() {
             }
           }
           
-          // Check investor_applications
           if (!role) {
             const { data: investorApp } = await supabase
               .from("investor_applications")
@@ -144,7 +146,6 @@ export default function Login() {
             }
           }
 
-          // Check trial_users
           if (!role) {
             const { data: trialUser } = await supabase
               .from("trial_users")
@@ -199,8 +200,6 @@ export default function Login() {
       
       if (error) throw error;
       
-      // Explicitly persist the session to localStorage before navigating
-      // This ensures new users' sessions are saved before page change
       if (data.session) {
         console.log("[LOGIN] Session received, access_token length:", data.session.access_token?.length);
         console.log("[LOGIN] Session received, refresh_token length:", data.session.refresh_token?.length);
@@ -210,7 +209,6 @@ export default function Login() {
           refresh_token: data.session.refresh_token,
         });
         
-        // Verify session was stored
         const authKeys = Object.keys(localStorage).filter(k => k.includes('sb-') || k.includes('supabase') || k.includes('tcp-'));
         console.log("[LOGIN] Auth keys in localStorage after setSession:", authKeys);
         authKeys.forEach(key => {
@@ -227,13 +225,11 @@ export default function Login() {
         const userEmail = data.user.email?.toLowerCase();
         console.log("[LOGIN] User email:", userEmail);
         
-        // Determine role from application tables (source of truth)
         let applicationRole: string | null = null;
         
         if (userEmail) {
           console.log("[LOGIN] Checking application tables for email:", userEmail);
           
-          // Check ideas table (entrepreneurs) - include both approved and pre-approved
           const { data: entrepreneurApp } = await supabase
             .from("ideas")
             .select("status, entrepreneur_email")
@@ -246,7 +242,6 @@ export default function Login() {
             console.log("[LOGIN] Found approved/pre-approved entrepreneur application, status:", entrepreneurApp[0].status);
           }
           
-          // Check mentor_applications
           if (!applicationRole) {
             const { data: mentorApp } = await supabase
               .from("mentor_applications")
@@ -261,7 +256,6 @@ export default function Login() {
             }
           }
           
-          // Check coach_applications
           if (!applicationRole) {
             const { data: coachApp } = await supabase
               .from("coach_applications")
@@ -276,7 +270,6 @@ export default function Login() {
             }
           }
           
-          // Check investor_applications
           if (!applicationRole) {
             const { data: investorApp } = await supabase
               .from("investor_applications")
@@ -291,7 +284,6 @@ export default function Login() {
             }
           }
 
-          // Check trial_users
           if (!applicationRole) {
             const { data: trialUser } = await supabase
               .from("trial_users")
@@ -307,11 +299,9 @@ export default function Login() {
           }
         }
         
-        // Use application role as source of truth, fallback to users table, then metadata
         let userRole = applicationRole;
         
         if (!userRole) {
-          // Fallback to users table
           const { data: profile } = await supabase
             .from("users")
             .select("role")
@@ -321,7 +311,6 @@ export default function Login() {
           console.log("[LOGIN] Role from users table:", userRole);
         }
         
-        // Final fallback to user_metadata
         if (!userRole) {
           userRole = data.user.user_metadata?.user_type || "entrepreneur";
           console.log("[LOGIN] Using fallback role from metadata:", userRole);
@@ -394,7 +383,6 @@ export default function Login() {
       });
       if (error) throw error;
       
-      // Create user profile
       if (data.user) {
         const { error: profileError } = await supabase
           .from("users")
@@ -429,39 +417,39 @@ export default function Login() {
     else if (role === "investor") navigate("/investors");
   };
 
-  // Show loading while checking auth
   if (checkingAuth) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-background flex items-center justify-center py-12 px-4">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#FAF9F7" }}>
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-cyan-500 mx-auto" />
-          <p className="text-slate-400 mt-4">Loading...</p>
+          <Loader2 className="h-8 w-8 animate-spin mx-auto" style={{ color: "#FF6B5C" }} />
+          <p className="mt-4" style={{ color: "#8A8A8A" }}>Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Show dashboard button if user is logged in
   if (userRole) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-background flex items-center justify-center py-12 px-4">
-        <div className="w-full max-w-md">
-          <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl shadow-2xl">
-            <CardHeader className="space-y-2 pb-6">
-              <CardTitle className="text-3xl font-display font-bold text-white">Welcome Back!</CardTitle>
-              <CardDescription className="text-slate-400">
-                You're already signed in as {userEmail}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+      <div className="min-h-screen flex" style={{ backgroundColor: "#FAF9F7" }}>
+        <div className="hidden md:flex md:w-1/2 items-center justify-center p-12" style={{ backgroundColor: "#0D566C" }}>
+          <div className="max-w-sm text-center">
+            <h2 className="text-3xl font-display font-bold text-white mb-4">Welcome back to TouchConnectPro</h2>
+            <p style={{ color: "rgba(255,255,255,0.75)" }}>Your dashboard is ready. Pick up where you left off.</p>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-md bg-white rounded-2xl p-8 md:p-10" style={cardStyle}>
+            <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Welcome Back!</h2>
+            <p className="mb-8 text-sm" style={{ color: "#8A8A8A" }}>You're already signed in as {userEmail}</p>
+            <div className="space-y-3">
               <Button
                 onClick={handleGoToDashboard}
-                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50"
+                className="w-full h-12 font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                 data-testid="button-go-to-dashboard"
               >
                 Go to My Dashboard
               </Button>
-              
               <Button
                 onClick={async () => {
                   const supabase = await getSupabase();
@@ -473,202 +461,202 @@ export default function Login() {
                   toast.success("Logged out successfully");
                 }}
                 variant="outline"
-                className="w-full border-slate-600 text-slate-300 hover:bg-slate-800/50"
+                className="w-full h-12 rounded-full font-semibold"
+                style={{ borderColor: "#E0E0E0", color: "#4A4A4A" }}
                 data-testid="button-logout-login"
               >
                 Sign Out
               </Button>
-
               <Link href="/" className="block">
-                <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800/50">
+                <Button variant="ghost" className="w-full font-medium" style={{ color: "#8A8A8A" }}>
                   Back to Home
                 </Button>
               </Link>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-background flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-md">
-        {/* Login Card */}
-        {!isRecovery && isLogin && (
-          <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl shadow-2xl">
-            <CardHeader className="space-y-2 pb-6">
-              <CardTitle className="text-3xl font-display font-bold text-white">Welcome Back</CardTitle>
-              <CardDescription className="text-slate-400">
-                Sign in to your TouchConnectPro account
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Email Input */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-200">Email Address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
-                    data-testid="input-email"
-                  />
-                </div>
-              </div>
+    <div className="min-h-screen flex" style={{ backgroundColor: "#FAF9F7" }}>
+      {/* Left Brand Panel - Desktop only */}
+      <div className="hidden md:flex md:w-1/2 items-center justify-center p-12" style={{ backgroundColor: "#0D566C" }}>
+        <div className="max-w-sm text-center">
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: "rgba(245,197,66,0.2)" }}>
+            <Lightbulb className="h-7 w-7" style={{ color: "#F5C542" }} />
+          </div>
+          <h2 className="text-3xl font-display font-bold text-white mb-4">
+            Where ideas become real businesses
+          </h2>
+          <p className="leading-relaxed" style={{ color: "rgba(255,255,255,0.75)" }}>
+            AI helps organize your thoughts. Mentors help you make them real. Sign in to continue your journey.
+          </p>
+        </div>
+      </div>
 
-              {/* Password Input */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-200">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    className="pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
-                    data-testid="input-password"
-                  />
+      {/* Right Form Panel */}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+
+          {/* Login Card */}
+          {!isRecovery && isLogin && (
+            <div className="bg-white rounded-2xl p-8 md:p-10" style={cardStyle}>
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Welcome Back</h2>
+              <p className="mb-8" style={{ color: "#8A8A8A" }}>Sign in to your TouchConnectPro account</p>
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="font-medium" style={{ color: "#0D566C" }}>Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-5 w-5" style={{ color: "#8A8A8A" }} />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      className={`pl-10 h-12 rounded-xl placeholder:text-[#C0C0C0] ${inputFocusClass}`}
+                      style={inputStyle}
+                      data-testid="input-email"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="font-medium" style={{ color: "#0D566C" }}>Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-5 w-5" style={{ color: "#8A8A8A" }} />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      className={`pl-10 pr-10 h-12 rounded-xl placeholder:text-[#C0C0C0] ${inputFocusClass}`}
+                      style={inputStyle}
+                      data-testid="input-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3 transition-colors"
+                      style={{ color: "#8A8A8A" }}
+                      data-testid="button-toggle-password"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-300 transition-colors"
-                    data-testid="button-toggle-password"
+                    onClick={() => setIsRecovery(true)}
+                    className="text-sm font-medium transition-colors"
+                    style={{ color: "#FF6B5C" }}
+                    data-testid="button-forgot-password"
                   >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    Forgot password?
                   </button>
                 </div>
-              </div>
 
-              {/* Forgot Password Link */}
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setIsRecovery(true)}
-                  className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors font-medium"
-                  data-testid="button-forgot-password"
+                <Button
+                  type="button"
+                  onClick={handleLogin}
+                  disabled={loading}
+                  className="w-full h-12 font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 cursor-pointer relative z-10"
+                  style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                  data-testid="button-login"
                 >
-                  Forgot password?
-                </button>
-              </div>
+                  {loading ? "Signing in..." : <>Sign In <ArrowRight className="ml-2 h-4 w-4" /></>}
+                </Button>
 
-              {/* Login Button */}
-              <Button
-                type="button"
-                onClick={handleLogin}
-                disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50 cursor-pointer relative z-10"
-                data-testid="button-login"
-              >
-                {loading ? "Signing in..." : <>Sign In <ArrowRight className="ml-2 h-4 w-4" /></>}
-              </Button>
+                <div className="text-center pt-2">
+                  <p style={{ color: "#8A8A8A" }}>
+                    Don't have an account?{" "}
+                    <button
+                      onClick={() => {
+                        setIsLogin(false);
+                        setShowRoles(true);
+                        window.scrollTo(0, 0);
+                      }}
+                      className="font-semibold transition-colors"
+                      style={{ color: "#FF6B5C" }}
+                      data-testid="button-signup-link"
+                    >
+                      Create one now
+                    </button>
+                  </p>
+                </div>
 
-              {/* Sign Up Link */}
-              <div className="text-center">
-                <p className="text-slate-400">
-                  Don't have an account?{" "}
+                <div className="text-center">
                   <button
                     onClick={() => {
-                      setIsLogin(false);
-                      setShowRoles(true);
-                      window.scrollTo(0, 0);
+                      clearSupabaseSession();
+                      toast.success("Session cleared. Please log in again.");
+                      window.location.reload();
                     }}
-                    className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors"
-                    data-testid="button-signup-link"
+                    className="text-xs underline transition-colors"
+                    style={{ color: "#C0C0C0" }}
+                    data-testid="button-clear-session"
                   >
-                    Create one now
+                    Having trouble logging in? Clear session
                   </button>
+                </div>
+
+                <Link href="/" className="block">
+                  <Button variant="ghost" className="w-full font-medium" style={{ color: "#8A8A8A" }}>
+                    Back to Home
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="mt-6 pt-6" style={{ borderTop: "1px solid #F3F3F3" }}>
+                <p className="text-center text-sm" style={{ color: "#8A8A8A" }}>
+                  New here?{" "}
+                  <Link href="/founder-focus">
+                    <span className="font-semibold cursor-pointer transition-colors" style={{ color: "#0D566C" }}>
+                      Join the Community for free.
+                    </span>
+                  </Link>
                 </p>
               </div>
+            </div>
+          )}
 
-              {/* Having Trouble Link */}
-              <div className="text-center">
-                <button
-                  onClick={() => {
-                    clearSupabaseSession();
-                    toast.success("Session cleared. Please log in again.");
-                    window.location.reload();
-                  }}
-                  className="text-sm text-slate-500 hover:text-slate-400 transition-colors underline"
-                  data-testid="button-clear-session"
-                >
-                  Having trouble logging in? Clear session
-                </button>
-              </div>
-
-              {/* Back to Home */}
-              <Link href="/" className="block">
-                <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800/50">
-                  Back to Home
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Role Selection Card */}
-        {!isRecovery && !isLogin && showRoles && (
-          <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl shadow-2xl">
-            <CardHeader className="space-y-2 pb-6">
-              <CardTitle className="text-3xl font-display font-bold text-white">Join TouchConnectPro</CardTitle>
-              <CardDescription className="text-slate-400">
-                Select your role to get started
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-3">
-                <button
-                  onClick={() => handleRoleSelection("entrepreneur")}
-                  className="flex items-center gap-4 p-4 rounded-lg border border-slate-600 hover:border-cyan-500 hover:bg-slate-800/50 transition-all text-left"
-                  data-testid="button-role-entrepreneur"
-                >
-                  <Lightbulb className="h-6 w-6 text-emerald-500 shrink-0" />
-                  <div>
-                    <p className="font-semibold text-white">I'm an Entrepreneur</p>
-                    <p className="text-sm text-slate-400">Submit your idea and get guidance</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => handleRoleSelection("mentor")}
-                  className="flex items-center gap-4 p-4 rounded-lg border border-slate-600 hover:border-cyan-500 hover:bg-slate-800/50 transition-all text-left"
-                  data-testid="button-role-mentor"
-                >
-                  <Star className="h-6 w-6 text-indigo-500 shrink-0" />
-                  <div>
-                    <p className="font-semibold text-white">I'm a Mentor</p>
-                    <p className="text-sm text-slate-400">Guide and support entrepreneurs</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => handleRoleSelection("coach")}
-                  className="flex items-center gap-4 p-4 rounded-lg border border-slate-600 hover:border-cyan-500 hover:bg-slate-800/50 transition-all text-left"
-                  data-testid="button-role-coach"
-                >
-                  <Briefcase className="h-6 w-6 text-cyan-500 shrink-0" />
-                  <div>
-                    <p className="font-semibold text-white">I'm a Coach</p>
-                    <p className="text-sm text-slate-400">Offer coaching services hourly</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => handleRoleSelection("investor")}
-                  className="flex items-center gap-4 p-4 rounded-lg border border-slate-600 hover:border-cyan-500 hover:bg-slate-800/50 transition-all text-left"
-                  data-testid="button-role-investor"
-                >
-                  <TrendingUp className="h-6 w-6 text-amber-500 shrink-0" />
-                  <div>
-                    <p className="font-semibold text-white">I'm an Investor</p>
-                    <p className="text-sm text-slate-400">Invest in startups and founders</p>
-                  </div>
-                </button>
+          {/* Role Selection Card */}
+          {!isRecovery && !isLogin && showRoles && (
+            <div className="bg-white rounded-2xl p-8 md:p-10" style={cardStyle}>
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Join TouchConnectPro</h2>
+              <p className="mb-8" style={{ color: "#8A8A8A" }}>Select your role to get started</p>
+              <div className="space-y-3 mb-6">
+                {[
+                  { role: "entrepreneur", icon: Lightbulb, color: "#F5C542", label: "I'm an Entrepreneur", desc: "Submit your idea and get guidance", testId: "button-role-entrepreneur" },
+                  { role: "mentor", icon: Star, color: "#4B3F72", label: "I'm a Mentor", desc: "Guide and support entrepreneurs", testId: "button-role-mentor" },
+                  { role: "coach", icon: Briefcase, color: "#0D566C", label: "I'm a Coach", desc: "Offer coaching services hourly", testId: "button-role-coach" },
+                  { role: "investor", icon: TrendingUp, color: "#FF6B5C", label: "I'm an Investor", desc: "Invest in startups and founders", testId: "button-role-investor" },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.role}
+                      onClick={() => handleRoleSelection(item.role)}
+                      className="w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                      style={{ borderColor: "#E8E8E8", backgroundColor: "#FFFFFF" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#FF6B5C"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E8E8E8"; }}
+                      data-testid={item.testId}
+                    >
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${item.color}15` }}>
+                        <Icon className="h-5 w-5" style={{ color: item.color }} />
+                      </div>
+                      <div>
+                        <p className="font-semibold" style={{ color: "#0D566C" }}>{item.label}</p>
+                        <p className="text-sm" style={{ color: "#8A8A8A" }}>{item.desc}</p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
               <button
@@ -676,278 +664,267 @@ export default function Login() {
                   setShowRoles(false);
                   setIsLogin(true);
                 }}
-                className="w-full text-center py-3 text-slate-400 hover:text-slate-300 transition-colors font-medium"
+                className="w-full text-center py-3 font-medium transition-colors"
+                style={{ color: "#8A8A8A" }}
                 data-testid="button-back-to-login-roles"
               >
                 Back to Sign In
               </button>
 
-              <Link href="/" className="block">
-                <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800/50">
+              <Link href="/" className="block mt-2">
+                <Button variant="ghost" className="w-full font-medium" style={{ color: "#8A8A8A" }}>
                   Back to Home
                 </Button>
               </Link>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          )}
 
-        {/* Signup Card */}
-        {!isRecovery && !isLogin && !showRoles && (
-          <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl shadow-2xl">
-            <CardHeader className="space-y-2 pb-6">
-              <CardTitle className="text-3xl font-display font-bold text-white">Get Started</CardTitle>
-              <CardDescription className="text-slate-400">
-                Create your TouchConnectPro account
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              {/* Account Type Label */}
-              <div className="space-y-2">
-                <p className="text-slate-300 font-medium">You are an Entrepreneur with an idea</p>
-              </div>
-
-              {/* Full Name Input */}
-              <div className="space-y-2">
-                <Label htmlFor="fullname" className="text-slate-200">Full Name</Label>
-                <Input
-                  id="fullname"
-                  type="text"
-                  placeholder="John Doe"
-                  value={signupFullName}
-                  onChange={(e) => setSignupFullName(e.target.value)}
-                  className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
-                  data-testid="input-fullname"
-                />
-              </div>
-
-              {/* Email Input */}
-              <div className="space-y-2">
-                <Label htmlFor="signup-email" className="text-slate-200">Email Address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
-                    data-testid="input-signup-email"
-                  />
+          {/* Signup Card */}
+          {!isRecovery && !isLogin && !showRoles && (
+            <div className="bg-white rounded-2xl p-8 md:p-10" style={cardStyle}>
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Get Started</h2>
+              <p className="mb-8" style={{ color: "#8A8A8A" }}>Create your TouchConnectPro account</p>
+              <div className="space-y-5">
+                <div className="space-y-1">
+                  <p className="font-medium" style={{ color: "#4B3F72" }}>You are an Entrepreneur with an idea</p>
                 </div>
-              </div>
 
-              {/* Password Input */}
-              <div className="space-y-2">
-                <Label htmlFor="signup-password" className="text-slate-200">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                  <Input
-                    id="signup-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    className="pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
-                    data-testid="input-signup-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-300 transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-                <div className="mt-2 space-y-1">
-                  <p className={`text-xs flex items-center gap-1 ${signupPassword.length >= 10 ? 'text-green-400' : 'text-slate-500'}`}>
-                    {signupPassword.length >= 10 ? '✓' : '○'} At least 10 characters
-                  </p>
-                  <p className={`text-xs flex items-center gap-1 ${/[A-Z]/.test(signupPassword) ? 'text-green-400' : 'text-slate-500'}`}>
-                    {/[A-Z]/.test(signupPassword) ? '✓' : '○'} At least one capital letter
-                  </p>
-                  <p className={`text-xs flex items-center gap-1 ${/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(signupPassword) ? 'text-green-400' : 'text-slate-500'}`}>
-                    {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(signupPassword) ? '✓' : '○'} At least one special character
-                  </p>
-                </div>
-              </div>
-
-              {/* Country Select */}
-              <div className="space-y-2">
-                <Label htmlFor="country" className="text-slate-200">Country</Label>
-                <select
-                  id="country"
-                  value={country}
-                  onChange={(e) => {
-                    setCountry(e.target.value);
-                    setState("");
-                  }}
-                  className="w-full bg-slate-800/50 border border-slate-600 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-cyan-500 focus:ring-cyan-500/20"
-                  data-testid="select-country"
-                >
-                  {COUNTRIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* State Select - Show if USA */}
-              {country === "United States" && (
                 <div className="space-y-2">
-                  <Label htmlFor="state" className="text-slate-200">State *</Label>
+                  <Label htmlFor="fullname" className="font-medium" style={{ color: "#0D566C" }}>Full Name</Label>
+                  <Input
+                    id="fullname"
+                    type="text"
+                    placeholder="John Doe"
+                    value={signupFullName}
+                    onChange={(e) => setSignupFullName(e.target.value)}
+                    className={`h-12 rounded-xl placeholder:text-[#C0C0C0] ${inputFocusClass}`}
+                    style={inputStyle}
+                    data-testid="input-fullname"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email" className="font-medium" style={{ color: "#0D566C" }}>Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-5 w-5" style={{ color: "#8A8A8A" }} />
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={signupEmail}
+                      onChange={(e) => setSignupEmail(e.target.value)}
+                      className={`pl-10 h-12 rounded-xl placeholder:text-[#C0C0C0] ${inputFocusClass}`}
+                      style={inputStyle}
+                      data-testid="input-signup-email"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password" className="font-medium" style={{ color: "#0D566C" }}>Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-5 w-5" style={{ color: "#8A8A8A" }} />
+                    <Input
+                      id="signup-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={signupPassword}
+                      onChange={(e) => setSignupPassword(e.target.value)}
+                      className={`pl-10 pr-10 h-12 rounded-xl placeholder:text-[#C0C0C0] ${inputFocusClass}`}
+                      style={inputStyle}
+                      data-testid="input-signup-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3 transition-colors"
+                      style={{ color: "#8A8A8A" }}
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    <p className={`text-xs flex items-center gap-1 ${signupPassword.length >= 10 ? 'text-green-500' : ''}`} style={signupPassword.length >= 10 ? {} : { color: "#C0C0C0" }}>
+                      {signupPassword.length >= 10 ? '✓' : '○'} At least 10 characters
+                    </p>
+                    <p className={`text-xs flex items-center gap-1 ${/[A-Z]/.test(signupPassword) ? 'text-green-500' : ''}`} style={/[A-Z]/.test(signupPassword) ? {} : { color: "#C0C0C0" }}>
+                      {/[A-Z]/.test(signupPassword) ? '✓' : '○'} At least one capital letter
+                    </p>
+                    <p className={`text-xs flex items-center gap-1 ${/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(signupPassword) ? 'text-green-500' : ''}`} style={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(signupPassword) ? {} : { color: "#C0C0C0" }}>
+                      {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(signupPassword) ? '✓' : '○'} At least one special character
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="country" className="font-medium" style={{ color: "#0D566C" }}>Country</Label>
                   <select
-                    id="state"
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                    className="w-full bg-slate-800/50 border border-slate-600 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-cyan-500 focus:ring-cyan-500/20"
-                    data-testid="select-state"
+                    id="country"
+                    value={country}
+                    onChange={(e) => {
+                      setCountry(e.target.value);
+                      setState("");
+                    }}
+                    className={`w-full h-12 px-3 rounded-xl border ${inputFocusClass}`}
+                    style={{ ...inputStyle, appearance: "auto" as any }}
+                    data-testid="select-country"
                   >
-                    <option value="">Select your state</option>
-                    {US_STATES.map((s) => (
-                      <option key={s} value={s}>{s}</option>
+                    {COUNTRIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
                 </div>
-              )}
 
-              {/* Terms Agreement */}
-              <p className="text-xs text-slate-400">
-                By signing up, you agree to our{" "}
-                <Link href="/terms-of-service" className="text-cyan-400 hover:text-cyan-300">
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link href="/privacy-policy" className="text-cyan-400 hover:text-cyan-300">
-                  Privacy Policy
-                </Link>
-              </p>
+                {country === "United States" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="state" className="font-medium" style={{ color: "#0D566C" }}>State *</Label>
+                    <select
+                      id="state"
+                      value={state}
+                      onChange={(e) => setState(e.target.value)}
+                      className={`w-full h-12 px-3 rounded-xl border ${inputFocusClass}`}
+                      style={{ ...inputStyle, appearance: "auto" as any }}
+                      data-testid="select-state"
+                    >
+                      <option value="">Select your state</option>
+                      {US_STATES.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
-              {/* Sign Up Button */}
-              <Button
-                onClick={handleSignup}
-                disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50"
-                data-testid="button-signup"
-              >
-                {loading ? "Creating account..." : <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>}
-              </Button>
-
-              {/* Divider */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-700"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-slate-900/50 text-slate-400">or</span>
-                </div>
-              </div>
-
-              {/* Sign In Link */}
-              <div className="text-center">
-                <p className="text-slate-400">
-                  Already have an account?{" "}
-                  <button
-                    onClick={() => {
-                      setIsLogin(true);
-                      window.scrollTo(0, 0);
-                    }}
-                    className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors"
-                    data-testid="button-login-link"
-                  >
-                    Sign in
-                  </button>
+                <p className="text-xs" style={{ color: "#8A8A8A" }}>
+                  By signing up, you agree to our{" "}
+                  <Link href="/terms-of-service" className="underline" style={{ color: "#FF6B5C" }}>
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy-policy" className="underline" style={{ color: "#FF6B5C" }}>
+                    Privacy Policy
+                  </Link>
                 </p>
-              </div>
 
-              {/* Back to Home */}
-              <Link href="/" className="block">
-                <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800/50">
-                  Back to Home
+                <Button
+                  onClick={handleSignup}
+                  disabled={loading}
+                  className="w-full h-12 font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                  style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                  data-testid="button-signup"
+                >
+                  {loading ? "Creating account..." : <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>}
                 </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
 
-        {/* Password Recovery Card */}
-        {isRecovery && (
-          <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl shadow-2xl">
-            <CardHeader className="space-y-2 pb-6">
-              <CardTitle className="text-3xl font-display font-bold text-white">Recover Password</CardTitle>
-              <CardDescription className="text-slate-400">
-                Enter your email to reset your password
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Email Input */}
-              <div className="space-y-2">
-                <Label htmlFor="recovery-email" className="text-slate-200">Email Address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                  <Input
-                    id="recovery-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={recoveryEmail}
-                    onChange={(e) => setRecoveryEmail(e.target.value)}
-                    className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
-                    data-testid="input-recovery-email"
-                  />
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full" style={{ borderTop: "1px solid #F3F3F3" }}></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-3" style={{ backgroundColor: "#FFFFFF", color: "#C0C0C0" }}>or</span>
+                  </div>
                 </div>
+
+                <div className="text-center">
+                  <p style={{ color: "#8A8A8A" }}>
+                    Already have an account?{" "}
+                    <button
+                      onClick={() => {
+                        setIsLogin(true);
+                        window.scrollTo(0, 0);
+                      }}
+                      className="font-semibold transition-colors"
+                      style={{ color: "#FF6B5C" }}
+                      data-testid="button-login-link"
+                    >
+                      Sign in
+                    </button>
+                  </p>
+                </div>
+
+                <Link href="/" className="block">
+                  <Button variant="ghost" className="w-full font-medium" style={{ color: "#8A8A8A" }}>
+                    Back to Home
+                  </Button>
+                </Link>
               </div>
+            </div>
+          )}
 
-              {/* Recovery Message */}
-              <p className="text-sm text-slate-400 bg-slate-800/30 border border-slate-700 rounded-lg p-4">
-                We'll send you a link to reset your password. Check your email for instructions.
-              </p>
+          {/* Password Recovery Card */}
+          {isRecovery && (
+            <div className="bg-white rounded-2xl p-8 md:p-10" style={cardStyle}>
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Recover Password</h2>
+              <p className="mb-8" style={{ color: "#8A8A8A" }}>Enter your email to reset your password</p>
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="recovery-email" className="font-medium" style={{ color: "#0D566C" }}>Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-5 w-5" style={{ color: "#8A8A8A" }} />
+                    <Input
+                      id="recovery-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={recoveryEmail}
+                      onChange={(e) => setRecoveryEmail(e.target.value)}
+                      className={`pl-10 h-12 rounded-xl placeholder:text-[#C0C0C0] ${inputFocusClass}`}
+                      style={inputStyle}
+                      data-testid="input-recovery-email"
+                    />
+                  </div>
+                </div>
 
-              {/* Send Link Button */}
-              <Button
-                onClick={async () => {
-                  if (!recoveryEmail) {
-                    toast.error("Please enter your email");
-                    return;
-                  }
-                  setLoading(true);
-                  try {
-                    const supabase = await getSupabase();
-                    if (!supabase) throw new Error("Unable to connect");
-                    await supabase.auth.resetPasswordForEmail(recoveryEmail, {
-                      redirectTo: `${window.location.origin}/reset-password`
-                    });
-                    toast.success("Recovery email sent! Check your inbox.");
-                    setRecoveryEmail("");
-                  } catch (error: any) {
-                    toast.error(error.message);
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-                disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50"
-                data-testid="button-send-recovery"
-              >
-                {loading ? "Sending..." : <>Send Recovery Link <ArrowRight className="ml-2 h-4 w-4" /></>}
-              </Button>
+                <p className="text-sm p-4 rounded-xl" style={{ backgroundColor: "rgba(245,197,66,0.1)", color: "#4A4A4A", border: "1px solid rgba(245,197,66,0.3)" }}>
+                  We'll send you a link to reset your password. Check your email for instructions.
+                </p>
 
-              {/* Back to Login */}
-              <button
-                onClick={() => setIsRecovery(false)}
-                className="w-full text-center py-3 text-slate-400 hover:text-slate-300 transition-colors font-medium"
-                data-testid="button-back-to-login"
-              >
-                Back to Sign In
-              </button>
-
-              {/* Back to Home */}
-              <Link href="/" className="block">
-                <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800/50">
-                  Back to Home
+                <Button
+                  onClick={async () => {
+                    if (!recoveryEmail) {
+                      toast.error("Please enter your email");
+                      return;
+                    }
+                    setLoading(true);
+                    try {
+                      const supabase = await getSupabase();
+                      if (!supabase) throw new Error("Unable to connect");
+                      await supabase.auth.resetPasswordForEmail(recoveryEmail, {
+                        redirectTo: `${window.location.origin}/reset-password`
+                      });
+                      toast.success("Recovery email sent! Check your inbox.");
+                      setRecoveryEmail("");
+                    } catch (error: any) {
+                      toast.error(error.message);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  disabled={loading}
+                  className="w-full h-12 font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                  style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                  data-testid="button-send-recovery"
+                >
+                  {loading ? "Sending..." : <>Send Recovery Link <ArrowRight className="ml-2 h-4 w-4" /></>}
                 </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
+
+                <button
+                  onClick={() => setIsRecovery(false)}
+                  className="w-full text-center py-3 font-medium transition-colors"
+                  style={{ color: "#8A8A8A" }}
+                  data-testid="button-back-to-login"
+                >
+                  Back to Sign In
+                </button>
+
+                <Link href="/" className="block">
+                  <Button variant="ghost" className="w-full font-medium" style={{ color: "#8A8A8A" }}>
+                    Back to Home
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
+
+        </div>
       </div>
     </div>
   );
