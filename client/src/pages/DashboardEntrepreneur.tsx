@@ -2178,7 +2178,7 @@ export default function DashboardEntrepreneur() {
             {isAccountDisabled ? "Disabled Member" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Getting Started" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Snapshot Done" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Idea Submitted" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
            </div>
            <p className="text-xs text-[#8A8A8A] mt-1">
-            {isAccountDisabled ? "Contact admin to reactivate" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Complete snapshot to unlock features" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Exploring community features" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Community Free - explore coaches & build plans" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
+            {isAccountDisabled ? "Contact Guidance Team to reactivate" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Complete snapshot to unlock features" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Exploring community features" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Community Free - explore coaches & build plans" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
            </p>
           </CardContent>
          </Card>
@@ -2908,7 +2908,7 @@ export default function DashboardEntrepreneur() {
           <CardContent className="pt-6 pb-6 text-center">
            <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
            <h3 className="text-lg font-semibold text-red-800 mb-2">Access Restricted</h3>
-           <p className="text-red-700">Your account is currently disabled. Please contact the Admin team via the Messages tab to reactivate your membership and access the coaches list.</p>
+           <p className="text-red-700">Your account is currently disabled. Please contact the Founder Guidance Team via the Messages tab to reactivate your membership and access the coaches list.</p>
           </CardContent>
          </Card>
         ) : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? (
@@ -3229,7 +3229,7 @@ export default function DashboardEntrepreneur() {
        return (
        <div>
         <h1 className="text-3xl font-display font-bold text-[#0D566C] mb-2">Messages</h1>
-        <p className="text-[#8A8A8A] mb-4">Communicate with your mentor and the TouchConnectPro admin team.</p>
+        <p className="text-[#8A8A8A] mb-4">Communicate with your mentor and the TouchConnectPro Founder Guidance Team.</p>
 
         {/* Account Disabled Warning */}
         {isAccountDisabled && (
@@ -3239,7 +3239,7 @@ export default function DashboardEntrepreneur() {
             <AlertCircle className="h-6 w-6 text-red-600" />
             <div>
              <p className="font-semibold text-red-800">Account Inactive</p>
-             <p className="text-sm text-red-700">Your account is currently inactive. You can only contact the Admin team. To reactivate your membership, please reach out to Admin.</p>
+             <p className="text-sm text-red-700">Your account is currently inactive. You can only contact the Founder Guidance Team. To reactivate your membership, please reach out to them.</p>
             </div>
            </div>
           </CardContent>
@@ -3512,7 +3512,7 @@ export default function DashboardEntrepreneur() {
          </Card>
         )}
 
-        {/* Admin Section - SECOND */}
+        {/* Founder Guidance Team Section - SECOND */}
         <Card className="mb-6 border-[#E8E8E8]">
          <CardHeader className="bg-[#F3F3F3] cursor-pointer" onClick={async () => {
           const el = document.getElementById('admin-messages-section');
@@ -3535,7 +3535,7 @@ export default function DashboardEntrepreneur() {
           <CardTitle className="text-lg flex items-center justify-between">
            <div className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-[#FF6B5C]" />
-            Admin
+            Founder Guidance Team
             {adminUnread > 0 && (
              <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" data-testid="badge-admin-unread">
               {adminUnread} new
@@ -3549,7 +3549,7 @@ export default function DashboardEntrepreneur() {
           <textarea
            value={adminMessageText}
            onChange={(e) => setAdminMessageText(e.target.value)}
-           placeholder="Type your message to the admin team..."
+           placeholder="Type your message to the Founder Guidance Team..."
            className="w-full min-h-20 p-3 rounded-lg border border-[#E8E8E8] bg-white text-[#4A4A4A] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]"
            data-testid="textarea-admin-message"
           />

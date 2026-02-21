@@ -1387,6 +1387,66 @@ export async function registerRoutes(
         return res.status(400).json({ error: error.message });
       }
 
+      // Send email notifications
+      const entrepreneurName = currentData?.data?.fullName || data?.[0]?.entrepreneur_name || decodedEmail.split("@")[0];
+      const resendData = await getResendClient();
+      if (resendData) {
+        const { client: emailClient, fromEmail } = resendData;
+        const FRONTEND_URL = process.env.FRONTEND_URL || (process.env.NODE_ENV === "development" ? "http://localhost:5000" : "https://touchconnectpro.com");
+
+        if (needsIntake) {
+          const needsList = (needsIntake.needs || []).map((n: string) => `<li style="margin-bottom:6px;">${n}</li>`).join("");
+          try {
+            await emailClient.emails.send({
+              from: fromEmail,
+              to: decodedEmail,
+              subject: "We Received Your Needs - TouchConnectPro",
+              html: `<!DOCTYPE html><html><head><style>body{font-family:'Inter',Arial,sans-serif;line-height:1.6;color:#4A4A4A;margin:0;padding:0;background-color:#FAF9F7}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#0D566C,#0a4557);color:white;padding:30px;text-align:center;border-radius:16px 16px 0 0}.content{background:#FFFFFF;padding:30px;border-radius:0 0 16px 16px}.highlight-box{background:rgba(245,197,66,0.12);border-left:4px solid #F5C542;padding:15px;margin:20px 0;border-radius:8px}.button{display:inline-block;background-color:#FF6B5C;color:white;padding:14px 28px;text-decoration:none;border-radius:25px;font-weight:600;margin:20px 0}.footer{text-align:center;margin-top:20px;color:#8A8A8A;font-size:14px}</style></head><body style="background-color:#FAF9F7"><div class="container"><div class="header"><h1 style="margin:0;font-size:24px">Thanks for Sharing, ${entrepreneurName}!</h1></div><div class="content"><p>We've received your responses to <strong>"Tell Us What You Need"</strong> and our Founder Guidance Team will use this to tailor your experience.</p><div class="highlight-box"><p style="margin:0 0 8px 0;font-weight:600;">What you told us:</p><ul style="margin:0;padding-left:20px;">${needsList}</ul>${needsIntake.message ? `<p style="margin:10px 0 0 0;font-style:italic;">"${needsIntake.message}"</p>` : ""}</div><p>Next, complete your <strong>Founder Snapshot</strong> to unlock coaches and personalized guidance.</p><p style="text-align:center;"><a href="${FRONTEND_URL}/login" class="button">Go to Your Dashboard</a></p><p>Best regards,<br>The TouchConnectPro Founder Guidance Team</p></div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size:12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
+            });
+            console.log("[INTAKE EMAIL] Entrepreneur notification sent to:", decodedEmail);
+          } catch (emailErr: any) {
+            console.error("[INTAKE EMAIL] Failed to send entrepreneur email:", emailErr.message);
+          }
+          try {
+            await emailClient.emails.send({
+              from: fromEmail,
+              to: ADMIN_EMAIL,
+              subject: `[Needs Intake] ${entrepreneurName} submitted their needs`,
+              html: `<!DOCTYPE html><html><head><style>body{font-family:'Inter',Arial,sans-serif;line-height:1.6;color:#4A4A4A;margin:0;padding:0;background-color:#FAF9F7}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#F5C542,#e5b432);color:#0D566C;padding:30px;text-align:center;border-radius:16px 16px 0 0}.content{background:#FFFFFF;padding:30px;border-radius:0 0 16px 16px}.info-box{background:#F5F9FA;border-left:4px solid #0D566C;padding:15px;margin:15px 0;border-radius:8px}.footer{text-align:center;margin-top:20px;color:#8A8A8A;font-size:14px}</style></head><body style="background-color:#FAF9F7"><div class="container"><div class="header"><h1 style="margin:0;font-size:22px">New Needs Intake Submission</h1></div><div class="content"><div class="info-box"><p style="margin:0;"><strong>Entrepreneur:</strong> ${entrepreneurName}</p><p style="margin:5px 0 0 0;"><strong>Email:</strong> ${decodedEmail}</p></div><p><strong>Selected needs:</strong></p><ul>${needsList}</ul>${needsIntake.message ? `<p><strong>Additional message:</strong> "${needsIntake.message}"</p>` : ""}<p style="font-size:13px;color:#8A8A8A;">Submitted at: ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p></div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC</p></div></div></body></html>`
+            });
+            console.log("[INTAKE EMAIL] Admin notification sent to:", ADMIN_EMAIL);
+          } catch (emailErr: any) {
+            console.error("[INTAKE EMAIL] Failed to send admin email:", emailErr.message);
+          }
+        }
+
+        if (founderSnapshot && snapshotSummary) {
+          const focusStepsList = (snapshotSummary.focusSteps || []).map((s: string, i: number) => `<li style="margin-bottom:6px;"><strong>Step ${i + 1}:</strong> ${s}</li>`).join("");
+          try {
+            await emailClient.emails.send({
+              from: fromEmail,
+              to: decodedEmail,
+              subject: "Your Founder Snapshot Summary - TouchConnectPro",
+              html: `<!DOCTYPE html><html><head><style>body{font-family:'Inter',Arial,sans-serif;line-height:1.6;color:#4A4A4A;margin:0;padding:0;background-color:#FAF9F7}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#4B3F72,#3d3360);color:white;padding:30px;text-align:center;border-radius:16px 16px 0 0}.content{background:#FFFFFF;padding:30px;border-radius:0 0 16px 16px}.stat-row{display:flex;gap:12px;margin:15px 0}.stat-box{flex:1;background:#F3F0FA;border-radius:12px;padding:12px;text-align:center}.stat-label{font-size:11px;color:#8A8A8A;text-transform:uppercase;margin-bottom:4px}.stat-value{font-size:14px;font-weight:600;color:#0D566C}.highlight-box{background:rgba(75,63,114,0.08);border-left:4px solid #4B3F72;padding:15px;margin:20px 0;border-radius:8px}.button{display:inline-block;background-color:#FF6B5C;color:white;padding:14px 28px;text-decoration:none;border-radius:25px;font-weight:600;margin:20px 0}.footer{text-align:center;margin-top:20px;color:#8A8A8A;font-size:14px}</style></head><body style="background-color:#FAF9F7"><div class="container"><div class="header"><h1 style="margin:0;font-size:24px">Your Founder Snapshot, ${entrepreneurName}</h1></div><div class="content"><p>Great work completing your Founder Snapshot! Here's a summary of where you are and what to focus on next.</p><table width="100%" cellpadding="0" cellspacing="8" style="margin:15px 0;"><tr><td style="background:#F3F0FA;border-radius:12px;padding:12px;text-align:center;width:33%;"><div style="font-size:11px;color:#8A8A8A;text-transform:uppercase;">Stage</div><div style="font-size:14px;font-weight:600;color:#0D566C;">${snapshotSummary.stage}</div></td><td style="background:#FFF5F4;border-radius:12px;padding:12px;text-align:center;width:33%;"><div style="font-size:11px;color:#8A8A8A;text-transform:uppercase;">Challenge</div><div style="font-size:14px;font-weight:600;color:#0D566C;">${snapshotSummary.mainChallenge}</div></td><td style="background:#FFF8E5;border-radius:12px;padding:12px;text-align:center;width:33%;"><div style="font-size:11px;color:#8A8A8A;text-transform:uppercase;">Traction</div><div style="font-size:14px;font-weight:600;color:#0D566C;">${snapshotSummary.traction}</div></td></tr></table>${snapshotSummary.ninetyDayGoal ? `<div class="highlight-box"><p style="margin:0;"><strong>90-Day Goal:</strong> ${snapshotSummary.ninetyDayGoal}</p></div>` : ""}<p><strong>Recommended Next Steps:</strong></p><ol style="padding-left:20px;">${focusStepsList}</ol><p>You've now unlocked access to coaches! Browse their profiles and find one who aligns with your biggest challenge.</p><p style="text-align:center;"><a href="${FRONTEND_URL}/login" class="button">Explore Coaches</a></p><p>Best regards,<br>The TouchConnectPro Founder Guidance Team</p></div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size:12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
+            });
+            console.log("[SNAPSHOT EMAIL] Entrepreneur notification sent to:", decodedEmail);
+          } catch (emailErr: any) {
+            console.error("[SNAPSHOT EMAIL] Failed to send entrepreneur email:", emailErr.message);
+          }
+          try {
+            await emailClient.emails.send({
+              from: fromEmail,
+              to: ADMIN_EMAIL,
+              subject: `[Founder Snapshot] ${entrepreneurName} completed their snapshot`,
+              html: `<!DOCTYPE html><html><head><style>body{font-family:'Inter',Arial,sans-serif;line-height:1.6;color:#4A4A4A;margin:0;padding:0;background-color:#FAF9F7}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#4B3F72,#3d3360);color:white;padding:30px;text-align:center;border-radius:16px 16px 0 0}.content{background:#FFFFFF;padding:30px;border-radius:0 0 16px 16px}.info-box{background:#F5F9FA;border-left:4px solid #0D566C;padding:15px;margin:15px 0;border-radius:8px}.footer{text-align:center;margin-top:20px;color:#8A8A8A;font-size:14px}</style></head><body style="background-color:#FAF9F7"><div class="container"><div class="header"><h1 style="margin:0;font-size:22px">Founder Snapshot Completed</h1></div><div class="content"><div class="info-box"><p style="margin:0;"><strong>Entrepreneur:</strong> ${entrepreneurName}</p><p style="margin:5px 0 0 0;"><strong>Email:</strong> ${decodedEmail}</p></div><table width="100%" cellpadding="0" cellspacing="8" style="margin:15px 0;"><tr><td style="background:#F3F0FA;border-radius:12px;padding:12px;text-align:center;"><div style="font-size:11px;color:#8A8A8A;">STAGE</div><div style="font-weight:600;color:#0D566C;">${snapshotSummary.stage}</div></td><td style="background:#FFF5F4;border-radius:12px;padding:12px;text-align:center;"><div style="font-size:11px;color:#8A8A8A;">CHALLENGE</div><div style="font-weight:600;color:#0D566C;">${snapshotSummary.mainChallenge}</div></td><td style="background:#FFF8E5;border-radius:12px;padding:12px;text-align:center;"><div style="font-size:11px;color:#8A8A8A;">TRACTION</div><div style="font-weight:600;color:#0D566C;">${snapshotSummary.traction}</div></td></tr></table><p><strong>Building:</strong> ${founderSnapshot.building}</p><p><strong>Target Customer:</strong> ${founderSnapshot.targetCustomer}</p><p><strong>90-Day Goal:</strong> ${snapshotSummary.ninetyDayGoal || "Not specified"}</p><p style="font-size:13px;color:#8A8A8A;">Submitted at: ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p></div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC</p></div></div></body></html>`
+            });
+            console.log("[SNAPSHOT EMAIL] Admin notification sent to:", ADMIN_EMAIL);
+          } catch (emailErr: any) {
+            console.error("[SNAPSHOT EMAIL] Failed to send admin email:", emailErr.message);
+          }
+        }
+      }
+
       return res.json({ success: true, entrepreneur: data?.[0] });
     } catch (error: any) {
       console.error("[PUT /api/entrepreneurs/intake/:email] Exception:", error);
