@@ -2533,7 +2533,7 @@ export default function DashboardEntrepreneur() {
              {coach.bio && (
               <div>
                <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">About</p>
-               <p className="text-sm text-[#4A4A4A] line-clamp-3">{coach.bio}</p>
+               <p className="text-sm text-[#4A4A4A]">{coach.bio}</p>
               </div>
              )}
              
