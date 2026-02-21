@@ -159,11 +159,11 @@ export default function SetPassword() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-background flex items-center justify-center py-12 px-4">
-        <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl shadow-2xl w-full max-w-md">
+      <div className="min-h-screen flex items-center justify-center py-12 px-4" style={{ backgroundColor: "#FAF9F7" }}>
+        <Card className="border-0 shadow-xl w-full max-w-md rounded-2xl" style={{ backgroundColor: "#FFFFFF", boxShadow: "0 4px 24px rgba(224,224,224,0.5)" }}>
           <CardContent className="pt-12 pb-12 text-center">
-            <Loader2 className="h-12 w-12 animate-spin mx-auto text-cyan-500 mb-4" />
-            <p className="text-slate-400">Validating your link...</p>
+            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4" style={{ color: "#0D566C" }} />
+            <p style={{ color: "#8A8A8A" }}>Validating your link...</p>
           </CardContent>
         </Card>
       </div>
@@ -172,18 +172,19 @@ export default function SetPassword() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-background flex items-center justify-center py-12 px-4">
-        <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl shadow-2xl w-full max-w-md">
+      <div className="min-h-screen flex items-center justify-center py-12 px-4" style={{ backgroundColor: "#FAF9F7" }}>
+        <Card className="border-0 shadow-xl w-full max-w-md rounded-2xl" style={{ backgroundColor: "#FFFFFF", boxShadow: "0 4px 24px rgba(224,224,224,0.5)" }}>
           <CardContent className="pt-12 pb-12 text-center">
-            <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="h-10 w-10 text-emerald-500" />
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: "rgba(13,86,108,0.1)" }}>
+              <CheckCircle className="h-10 w-10" style={{ color: "#0D566C" }} />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Password Set Successfully!</h2>
-            <p className="text-slate-400 mb-6">
+            <h2 className="text-2xl font-bold mb-2" style={{ color: "#1A1A1A" }}>Password Set Successfully!</h2>
+            <p className="mb-6" style={{ color: "#8A8A8A" }}>
               Your account is now ready. You can log in with your email and new password.
             </p>
             <Button 
-              className="w-full bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold"
+              className="w-full rounded-full font-semibold"
+              style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
               onClick={() => navigate("/login")}
               data-testid="button-go-to-login"
             >
@@ -197,19 +198,20 @@ export default function SetPassword() {
 
   if (tokenValid === false) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-background flex items-center justify-center py-12 px-4">
-        <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl shadow-2xl w-full max-w-md">
+      <div className="min-h-screen flex items-center justify-center py-12 px-4" style={{ backgroundColor: "#FAF9F7" }}>
+        <Card className="border-0 shadow-xl w-full max-w-md rounded-2xl" style={{ backgroundColor: "#FFFFFF", boxShadow: "0 4px 24px rgba(224,224,224,0.5)" }}>
           <CardContent className="pt-12 pb-12 text-center">
-            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertCircle className="h-10 w-10 text-red-500" />
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: "rgba(255,107,92,0.1)" }}>
+              <AlertCircle className="h-10 w-10" style={{ color: "#FF6B5C" }} />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Invalid Link</h2>
-            <p className="text-slate-400 mb-6">
+            <h2 className="text-2xl font-bold mb-2" style={{ color: "#1A1A1A" }}>Invalid Link</h2>
+            <p className="mb-6" style={{ color: "#8A8A8A" }}>
               {error || "This password setup link is invalid or has expired."}
             </p>
             <Button 
               variant="outline"
-              className="border-slate-600 text-slate-300 hover:bg-slate-800/50"
+              className="rounded-full"
+              style={{ borderColor: "#0D566C", color: "#0D566C" }}
               onClick={() => navigate("/")}
               data-testid="button-go-home"
             >
@@ -222,65 +224,69 @@ export default function SetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-background flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4" style={{ backgroundColor: "#FAF9F7" }}>
       <div className="w-full max-w-md">
-        <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl shadow-2xl">
+        <Card className="border-0 shadow-xl rounded-2xl" style={{ backgroundColor: "#FFFFFF", boxShadow: "0 4px 24px rgba(224,224,224,0.5)" }}>
           <CardHeader className="space-y-2 pb-6">
-            <CardTitle className="text-3xl font-display font-bold text-white">Set Your Password</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardTitle className="text-3xl font-display font-bold" style={{ color: "#1A1A1A" }}>Set Your Password</CardTitle>
+            <CardDescription style={{ color: "#8A8A8A" }}>
               {userType ? `Welcome! Create a password for your ${userType} account.` : "Welcome! Create a password for your account."}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label className="text-slate-200">Email</Label>
-              <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-600 text-slate-300">
+              <Label style={{ color: "#4A4A4A" }}>Email</Label>
+              <div className="p-3 rounded-xl" style={{ backgroundColor: "#FAF9F7", border: "1px solid #E8E8E8", color: "#4A4A4A" }}>
                 {email}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-200">Password</Label>
+              <Label htmlFor="password" style={{ color: "#4A4A4A" }}>Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+                <Lock className="absolute left-3 top-3 h-5 w-5" style={{ color: "#8A8A8A" }} />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
+                  className="pl-10 pr-10 rounded-xl"
+                  style={{ backgroundColor: "#FFFFFF", border: "1px solid #E8E8E8", color: "#1A1A1A" }}
                   data-testid="input-set-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-3 transition-colors"
+                  style={{ color: "#8A8A8A" }}
                   data-testid="button-toggle-set-password"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
-              <p className="text-xs text-slate-400">At least 8 characters</p>
+              <p className="text-xs" style={{ color: "#8A8A8A" }}>At least 8 characters</p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-slate-200">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" style={{ color: "#4A4A4A" }}>Confirm Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+                <Lock className="absolute left-3 top-3 h-5 w-5" style={{ color: "#8A8A8A" }} />
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20"
+                  className="pl-10 pr-10 rounded-xl"
+                  style={{ backgroundColor: "#FFFFFF", border: "1px solid #E8E8E8", color: "#1A1A1A" }}
                   data-testid="input-confirm-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-3 transition-colors"
+                  style={{ color: "#8A8A8A" }}
                   data-testid="button-toggle-confirm-password"
                 >
                   {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -289,16 +295,17 @@ export default function SetPassword() {
             </div>
 
             {error && (
-              <Alert variant="destructive" className="bg-red-500/10 border-red-500/30">
+              <Alert variant="destructive" className="rounded-xl" style={{ backgroundColor: "rgba(255,107,92,0.08)", border: "1px solid rgba(255,107,92,0.2)" }}>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription style={{ color: "#FF6B5C" }}>{error}</AlertDescription>
               </Alert>
             )}
 
             <Button
               onClick={handleSetPassword}
               disabled={isSubmitting}
-              className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/50"
+              className="w-full h-12 rounded-full font-semibold transition-all"
+              style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
               data-testid="button-set-password"
             >
               {isSubmitting ? (
@@ -314,7 +321,7 @@ export default function SetPassword() {
             </Button>
 
             <Link href="/login" className="block">
-              <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800/50">
+              <Button variant="outline" className="w-full rounded-full" style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}>
                 Back to Login
               </Button>
             </Link>
