@@ -493,7 +493,7 @@ export default function CoachProfile() {
         <div className="mt-8 text-center space-y-6">
           <div>
             <p className="mb-4" style={{ color: "#8A8A8A" }}>Want to grow your startup with a personal mentor and expert coaches?</p>
-            <Link href="/become-entrepreneur">
+            <Link href="/founder-focus">
               <Button className="rounded-full" style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }} data-testid="button-become-entrepreneur">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Join as an Entrepreneur
