@@ -1,137 +1,212 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Check, ShieldCheck, ChevronDown, Target, Sparkles, ArrowRight, Gem } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Check, ArrowRight, Star } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Pricing() {
-  const [expandedPricingItem, setExpandedPricingItem] = useState<number | null>(null);
-  
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen py-24">
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-6 text-slate-900 dark:text-white">Choose Your Path</h1>
-          <p className="text-xl text-muted-foreground">
-            From exploring your idea to raising capital, pick the tier that matches where you are in your journey.
+    <div className="flex flex-col">
+      {/* Hero */}
+      <section className="pt-28 pb-16 md:pt-36 md:pb-20" style={{ backgroundColor: "#FAF9F7" }}>
+        <div className="container px-4 mx-auto max-w-3xl text-center">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-snug tracking-tight mb-5" style={{ color: "#0D566C" }} data-testid="text-pricing-headline">
+            Choose your path
+          </h1>
+          <p className="text-lg md:text-xl max-w-2xl mx-auto leading-relaxed" style={{ color: "#4A4A4A" }}>
+            Whether you are shaping your first idea or preparing to raise capital, start where you are and grow from there.
           </p>
         </div>
+      </section>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16">
-          {/* Community – Free */}
-          <Card className="bg-slate-800 border-slate-700 text-left relative overflow-hidden" data-testid="card-community-free-pricing">
-            <CardContent className="p-8">
-              <h3 className="text-2xl font-bold mb-2 text-white">Community – Free</h3>
-              <div className="text-4xl font-display font-bold mb-4 text-white">$0<span className="text-lg text-slate-400 font-normal">/mo</span> <span className="text-base text-slate-400 font-normal">– No credit card</span></div>
-              <ul className="space-y-4 mb-8">
-                <li className="text-slate-300">
-                  <span className="flex items-center gap-2 font-semibold"><Target className="h-4 w-4 text-cyan-500"/> Founder Focus Score</span>
-                  <span className="text-sm text-slate-400 ml-6">Discover your biggest startup blocker with our quick diagnostic.</span>
-                </li>
-                <li className="text-slate-300">
-                  <span className="flex items-center gap-2 font-semibold"><Sparkles className="h-4 w-4 text-cyan-500"/> Personalized Insights</span>
-                  <span className="text-sm text-slate-400 ml-6">Get actionable recommendations tailored to your situation.</span>
-                </li>
-                <li className="text-slate-300">
-                  <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Refine Your Idea</span>
-                  <span className="text-sm text-slate-400 ml-6">Turn your raw concept into a clear, compelling vision.</span>
-                </li>
-                <li className="text-slate-300">
-                  <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Build a Draft Plan</span>
-                  <span className="text-sm text-slate-400 ml-6">Quickly create a structured business plan to guide your next steps.</span>
-                </li>
-                <li className="text-slate-300">
-                  <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Get Mentor-Ready</span>
-                  <span className="text-sm text-slate-400 ml-6">Prepare your materials so your mentor can give targeted, actionable feedback from day one.</span>
-                </li>
-                <li className="text-slate-300">
-                  <span className="flex items-center gap-2 font-semibold"><Check className="h-4 w-4 text-cyan-500"/> Optional Specialist Coaches</span>
-                  <span className="text-sm text-slate-400 ml-6">Access to specialist coaches in legal, finance, and growth (paid separately).</span>
-                </li>
+      {/* Pricing Cards */}
+      <section className="py-16 md:py-24" style={{ backgroundColor: "#F3F3F3" }}>
+        <div className="container px-4 mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-3 gap-8 items-start">
+
+            {/* Community - Free */}
+            <div
+              className="bg-white rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col"
+              style={{ boxShadow: "0 2px 16px rgba(224,224,224,0.5)" }}
+              data-testid="card-community-free-pricing"
+            >
+              <div className="mb-6">
+                <h3 className="text-xl font-display font-bold mb-1" style={{ color: "#0D566C" }}>Community</h3>
+                <p className="text-sm font-medium mb-4" style={{ color: "#FF6B5C" }}>Free</p>
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span className="text-4xl font-display font-bold" style={{ color: "#0D566C" }}>$0</span>
+                  <span className="text-base" style={{ color: "#4A4A4A" }}>per month</span>
+                </div>
+                <p className="text-sm" style={{ color: "#8A8A8A" }}>No credit card required.</p>
+              </div>
+
+              <p className="text-base leading-relaxed mb-6" style={{ color: "#4A4A4A" }}>
+                Perfect for exploring and refining your idea.
+              </p>
+
+              <ul className="space-y-3 mb-8 flex-1">
+                {[
+                  "Founder Focus Score to uncover your biggest blocker",
+                  "Personalized insights to guide your next steps",
+                  "Tools to refine your idea and structure your plan",
+                  "Mentor-ready preparation so feedback is targeted and useful",
+                  "Optional access to specialist coaches in legal, finance, and growth",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: "rgba(245,197,66,0.2)" }}>
+                      <Check className="h-3 w-3" style={{ color: "#0D566C" }} />
+                    </div>
+                    <span className="text-sm" style={{ color: "#4A4A4A" }}>{item}</span>
+                  </li>
+                ))}
               </ul>
-              <Link href="/founder-focus">
-                <Button className="w-full bg-slate-700 hover:bg-slate-600 text-white" data-testid="button-community-free-pricing">Start Free – No Credit Card</Button>
-              </Link>
-            </CardContent>
-          </Card>
 
-          {/* Founders Circle */}
-          <Card className="bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-500/50 text-left relative overflow-hidden" data-testid="card-founders-circle-pricing">
-            <CardContent className="p-8">
-              <h3 className="text-2xl font-bold mb-2 text-white">Founders Circle</h3>
-              <div className="text-4xl font-display font-bold mb-4 text-white">$9.99<span className="text-lg text-indigo-300 font-normal">/month</span></div>
-              <p className="text-indigo-200 mb-6">Upon Mentor Acceptance</p>
-              <div className="mb-6 p-4 bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 border border-indigo-400/40 rounded-lg backdrop-blur-sm">
-                <div className="flex items-start gap-3">
-                  <div className="font-bold text-indigo-300 pt-1">📋</div>
-                  <div>
-                    <p className="font-bold text-indigo-200 mb-1">Waiting List</p>
-                    <p className="text-xs text-indigo-300">Only after your idea is approved and added to a mentor's portfolio</p>
-                  </div>
+              <Link href="/founder-focus">
+                <Button
+                  className="w-full h-12 text-base font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                  style={{ backgroundColor: "#0D566C", color: "#FFFFFF", border: "none" }}
+                  data-testid="button-community-free-pricing"
+                >
+                  Start free <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+
+            {/* Founders Circle - Most Popular */}
+            <div
+              className="bg-white rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col relative border-2"
+              style={{ boxShadow: "0 4px 24px rgba(13,86,108,0.15)", borderColor: "#FF6B5C" }}
+              data-testid="card-founders-circle-pricing"
+            >
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold text-white" style={{ backgroundColor: "#FF6B5C" }}>
+                  <Star className="h-3.5 w-3.5 fill-current" /> Most Popular
+                </span>
+              </div>
+
+              <div className="mb-6 mt-2">
+                <h3 className="text-xl font-display font-bold mb-1" style={{ color: "#0D566C" }}>Founders Circle</h3>
+                <p className="text-sm font-medium mb-4" style={{ color: "#FF6B5C" }}>Available upon mentor acceptance</p>
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span className="text-4xl font-display font-bold" style={{ color: "#0D566C" }}>$9.99</span>
+                  <span className="text-base" style={{ color: "#4A4A4A" }}>per month</span>
                 </div>
               </div>
-              <p className="text-sm text-indigo-200/70 mb-4 italic">All Community – Free features, plus:</p>
-              <h4 className="text-sm font-semibold text-indigo-200 uppercase tracking-wide mb-4">What's Included</h4>
-              <ul className="space-y-3 mb-6">
+
+              <p className="text-base leading-relaxed mb-6" style={{ color: "#4A4A4A" }}>
+                For founders ready to build with direct support.
+              </p>
+
+              <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "#8A8A8A" }}>
+                Includes everything in Community, plus:
+              </p>
+
+              <ul className="space-y-3 mb-8 flex-1">
                 {[
-                  { title: "Dedicated Mentor", detail: "Personally matched, providing structured guidance and actionable feedback" },
-                  { title: "Ask Questions Anytime", detail: "Ongoing support when you need clarity" },
-                  { title: "Strategic Frameworks", detail: "Tools and resources to structure your business" },
-                  { title: "Community Access", detail: "Learn from focused other entrepreneurs" },
-                  { title: "All without fixed scheduled meetings", detail: "Guidance happens on your busy calendar." }
+                  "A dedicated mentor",
+                  "Ongoing access for questions and feedback",
+                  "Proven strategic frameworks",
+                  "Deeper community access",
+                  "Flexible guidance without mandatory weekly calls",
                 ].map((item, i) => (
-                  <li 
-                    key={i} 
-                    className="cursor-pointer"
-                    onClick={() => setExpandedPricingItem(expandedPricingItem === i ? null : i)}
-                  >
-                    <div className="flex items-center gap-2 text-white">
-                      <Check className="h-4 w-4 text-indigo-400 shrink-0"/>
-                      <span className="flex-1">{item.title}</span>
-                      <ChevronDown className={`h-4 w-4 text-indigo-300 transition-transform duration-200 ${expandedPricingItem === i ? 'rotate-180' : ''}`} />
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: "rgba(245,197,66,0.2)" }}>
+                      <Check className="h-3 w-3" style={{ color: "#0D566C" }} />
                     </div>
-                    {expandedPricingItem === i && (
-                      <p className="mt-2 ml-6 text-sm text-indigo-200/80 animate-in fade-in slide-in-from-top-1 duration-200">
-                        {item.detail}
-                      </p>
-                    )}
+                    <span className="text-sm" style={{ color: "#4A4A4A" }}>{item}</span>
                   </li>
                 ))}
               </ul>
-            </CardContent>
-          </Card>
 
-          {/* Capital Circle */}
-          <Card className="bg-gradient-to-br from-amber-900/80 to-slate-900 border-amber-500/50 text-left relative overflow-hidden" data-testid="card-capital-circle-pricing">
-            <CardContent className="p-8">
-              <div className="flex items-center gap-2 mb-2">
-                <Gem className="h-6 w-6 text-amber-400" />
-                <h3 className="text-2xl font-bold text-white">Capital Circle</h3>
+              <Link href="/become-entrepreneur">
+                <Button
+                  className="w-full h-12 text-base font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                  style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                  data-testid="button-founders-circle-pricing"
+                >
+                  Join Founders Circle <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+
+            {/* Capital Circle */}
+            <div
+              className="rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col"
+              style={{ backgroundColor: "#0D566C", boxShadow: "0 4px 24px rgba(13,86,108,0.25)" }}
+              data-testid="card-capital-circle-pricing"
+            >
+              <div className="mb-6">
+                <h3 className="text-xl font-display font-bold mb-1 text-white">Capital Circle</h3>
+                <p className="text-sm font-medium mb-4" style={{ color: "rgba(255,255,255,0.7)" }}>Selective access</p>
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span className="text-4xl font-display font-bold text-white">$49</span>
+                  <span className="text-base" style={{ color: "rgba(255,255,255,0.7)" }}>per month</span>
+                </div>
               </div>
-              <div className="text-4xl font-display font-bold mb-2 text-white">$49<span className="text-lg text-amber-300 font-normal">/month</span></div>
-              <p className="text-amber-200/80 text-sm mb-6">Raise capital with structure and support. For committed founders preparing to raise funding. Access is selective.</p>
-              <h4 className="text-sm font-semibold text-amber-200 uppercase tracking-wide mb-4">Included</h4>
-              <ul className="space-y-3 mb-6">
+
+              <p className="text-base leading-relaxed mb-6" style={{ color: "rgba(255,255,255,0.85)" }}>
+                For committed founders preparing to raise funding with structure and support.
+              </p>
+
+              <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
+                Includes:
+              </p>
+
+              <ul className="space-y-3 mb-6 flex-1">
                 {[
                   "Fundraising readiness review",
-                  "Pitch feedback & positioning support",
+                  "Pitch deck feedback and positioning guidance",
                   "Structured preparation phase",
                   "Investor visibility after approval",
-                  "Ongoing capital strategy guidance"
+                  "Ongoing capital strategy support",
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-white text-sm">
-                    <Check className="h-4 w-4 text-amber-400 shrink-0"/>
-                    <span>{item}</span>
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: "rgba(245,197,66,0.2)" }}>
+                      <Check className="h-3 w-3" style={{ color: "#F5C542" }} />
+                    </div>
+                    <span className="text-sm text-white">{item}</span>
                   </li>
                 ))}
               </ul>
-              <p className="text-xs text-amber-300/60 mb-4 italic">Limited seats to maintain quality.</p>
-              <p className="text-xs text-amber-200/70">Best for: founders ready to actively pursue funding</p>
-            </CardContent>
-          </Card>
+
+              <p className="text-xs mb-6 italic" style={{ color: "rgba(255,255,255,0.5)" }}>
+                Limited seats to ensure focused, high-quality support.
+              </p>
+
+              <Link href="/become-entrepreneur">
+                <Button
+                  className="w-full h-12 text-base font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                  style={{ backgroundColor: "#F5C542", color: "#0D566C", border: "none" }}
+                  data-testid="button-capital-circle-pricing"
+                >
+                  Apply for Capital Circle <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 md:py-28" style={{ backgroundColor: "#FAF9F7" }}>
+        <div className="container px-4 mx-auto max-w-3xl text-center">
+          <h2 className="text-2xl md:text-3xl font-display font-bold mb-5" style={{ color: "#0D566C" }}>
+            Not sure which plan is right for you?
+          </h2>
+          <p className="text-lg mb-8 leading-relaxed" style={{ color: "#4A4A4A" }}>
+            Start with the free Community plan. You can always grow into the next step when you are ready.
+          </p>
+          <Link href="/founder-focus">
+            <Button
+              size="lg"
+              className="h-14 px-10 text-lg font-semibold rounded-full shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-[1.03] active:scale-[0.98]"
+              style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+              data-testid="button-pricing-cta"
+            >
+              Get started for free <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

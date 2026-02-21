@@ -1,0 +1,123 @@
+Redesign the Pricing page of TouchConnectPro to match the same human-centered tone, colors, and visual style as the homepage.
+
+Goal:
+Make the page feel supportive, premium, and clear. Avoid corporate or mechanical language. Keep the structure simple, warm, and easy to scan. The progression between plans should feel natural and aspirational.
+
+Use the same color system as the homepage:
+
+Backgrounds: Soft cream (#FAF9F7) and light gray (#F3F3F3)
+
+Primary headings: Deep teal (#0D566C)
+
+Accent buttons and highlights: Coral (#FF6B5C)
+
+Highlight elements: Warm yellow (#F5C542)
+
+Body text: Dark gray (#4A4A4A)
+
+Premium section option: Deep teal background with white text
+
+Layout guidance:
+
+Three clear pricing cards displayed side by side on desktop
+
+Slightly highlight the middle plan as “Most Popular”
+
+Add generous spacing and soft shadows
+
+Use subtle hover effects on buttons
+
+Keep typography consistent with homepage
+
+Avoid rigid or generic SaaS template styling
+
+Tone guidance:
+
+Warm, clear, and supportive
+
+Short sentences
+
+No overly corporate phrases
+
+Emphasize progression, not transactions
+
+Use the following refined copy:
+
+Headline:
+Choose your path
+
+Subtext:
+Whether you are shaping your first idea or preparing to raise capital, start where you are and grow from there.
+
+Community
+Free
+$0 per month. No credit card required.
+
+Perfect for exploring and refining your idea.
+
+Included:
+
+Founder Focus Score to uncover your biggest blocker
+
+Personalized insights to guide your next steps
+
+Tools to refine your idea and structure your plan
+
+Mentor-ready preparation so feedback is targeted and useful
+
+Optional access to specialist coaches in legal, finance, and growth
+
+Button: Start free
+
+Founders Circle
+$9.99 per month
+Available upon mentor acceptance
+Label this plan as: Most Popular
+
+For founders ready to build with direct support.
+
+Includes everything in Community, plus:
+
+A dedicated mentor
+
+Ongoing access for questions and feedback
+
+Proven strategic frameworks
+
+Deeper community access
+
+Flexible guidance without mandatory weekly calls
+
+Button: Join Founders Circle
+
+Capital Circle
+$49 per month
+Selective access
+
+For committed founders preparing to raise funding with structure and support.
+
+Includes:
+
+Fundraising readiness review
+
+Pitch deck feedback and positioning guidance
+
+Structured preparation phase
+
+Investor visibility after approval
+
+Ongoing capital strategy support
+
+Limited seats to ensure focused, high-quality support.
+
+Button: Apply for Capital Circle
+
+Design emphasis:
+
+The Free plan should feel welcoming and accessible
+
+The Founders Circle plan should feel like the natural next step
+
+The Capital Circle plan should feel premium and selective
+
+The overall page should feel intentional, trustworthy, and human, not template-based or overly sales-driven.
