@@ -1,0 +1,209 @@
+1. Add a New Central Dashboard Box
+“Tell Us What You Need”
+
+This must appear prominently in the center of the Overview page (above or between Founder Focus Score and Current Stage).
+
+The goal is to make the dashboard feel interactive and human, not static.
+
+Title:
+
+Tell Us What You Need
+
+Subtitle:
+
+What would help you most right now?
+
+Options (multi-select allowed):
+
+Clarifying my idea
+
+Finding my first customers
+
+Structuring my business model
+
+Staying focused and accountable
+
+Getting feedback from a mentor
+
+I feel stuck and need direction
+
+Other (with text field)
+
+Optional Message Field:
+
+“Tell us in a few sentences what you're building or what feels unclear.”
+
+Button:
+
+Send to TouchConnectPro Team
+
+After Submission:
+
+Show confirmation message:
+“Thanks. Our team will review this and guide you with next steps.”
+
+Send structured data to Admin (not just a plain chat message).
+
+Tag the user profile internally based on selected options.
+
+Store message history in the user record.
+
+Important:
+This should look warm and supportive, not like a support ticket system.
+Keep layout and design consistent with the current dashboard style.
+
+2. Replace “Submit Your Business Idea” With a Smart Founder Snapshot (Step 1)
+
+Instead of sending users directly to the 42-question form, create a lightweight intake form with 6 structured questions.
+
+This reduces friction and creates micro-commitment.
+
+Smart Founder Snapshot – Questions
+
+What are you building?
+Short paragraph (3–5 sentences).
+Ask them to describe the problem they are solving and for whom.
+
+What stage are you at?
+Single choice:
+
+Just an idea
+
+MVP or prototype
+
+Website live
+
+Paying clients
+
+Generating recurring revenue
+
+Who is your target customer?
+Open text field. Encourage specificity.
+
+What is your current biggest blocker?
+Single choice:
+
+Need clarity on positioning
+
+Don’t know how to get customers
+
+Need help structuring my offer
+
+Struggle with focus and execution
+
+Need funding or financial structure
+
+Feel overwhelmed
+
+Other (with text field)
+
+What traction do you currently have?
+Single choice:
+
+No validation yet
+
+Early feedback from potential users
+
+Beta users
+
+First paying clients
+
+Growing revenue
+
+What is your main goal for the next 90 days?
+Open text field. Encourage concrete goals.
+
+3. After Submission – Auto-Generate a Founder Snapshot Summary
+
+Once Step 1 is submitted:
+
+Unlock dashboard features.
+
+Display a section called “Your Initial Founder Snapshot”.
+
+Automatically summarize:
+
+Stage
+
+Main blocker
+
+Traction level
+
+90-day goal
+
+Generate 2–3 suggested next focus steps based on their answers (rule-based logic is fine for now).
+
+Example format:
+
+Your Initial Founder Snapshot
+Stage: Early Validation
+Main Challenge: Customer Acquisition
+Traction: No validation yet
+90-Day Goal: Launch MVP
+
+Suggested Next Focus:
+
+Validate your problem with real conversations.
+
+Narrow down your target niche.
+
+Define a simple offer before building more.
+
+Add a button:
+Complete Your Full Founder Blueprint
+
+4. Full 42-Question Blueprint Logic
+
+The 42-question Founder Blueprint must NOT be visible before Smart Founder Snapshot is completed.
+
+After Step 1:
+
+Replace dashboard links (Business Plan, etc.) so they now point to the full 42-question Blueprint.
+
+Make it feel like a natural next step, not an entry requirement.
+
+5. Internal Tagging System
+
+For both:
+
+Tell Us What You Need box
+
+Smart Founder Snapshot
+
+Store structured data and tag users internally based on:
+
+Stage
+
+Biggest blocker
+
+Traction level
+
+Selected needs
+
+90-day goal theme
+
+This will be used for:
+
+Personalized follow-up emails
+
+Mentor matching
+
+Upgrade targeting
+
+Community insights
+
+6. Objective
+
+This redesign must:
+
+Reduce friction for new free members.
+
+Increase early engagement.
+
+Make the platform feel guided and intelligent.
+
+Create contextual upgrade triggers for Founders Circle.
+
+Keep layout, menus, and visual consistency unchanged.
+
+The experience should feel supportive, structured, and human from the first login.
