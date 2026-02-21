@@ -23,18 +23,11 @@ const categoryIcons: Record<Category, React.ReactNode> = {
   Execution: <Rocket className="h-5 w-5" />,
 };
 
-const categoryTextColors: Record<Category, string> = {
-  Strategy: "text-indigo-500",
-  Sales: "text-emerald-500",
-  Operations: "text-amber-500",
-  Execution: "text-cyan-500",
-};
-
-const categoryBgColors: Record<Category, string> = {
-  Strategy: "bg-indigo-500/10 border-indigo-500/30",
-  Sales: "bg-emerald-500/10 border-emerald-500/30",
-  Operations: "bg-amber-500/10 border-amber-500/30",
-  Execution: "bg-cyan-500/10 border-cyan-500/30",
+const categoryColors: Record<Category, { text: string; bg: string; border: string }> = {
+  Strategy: { text: "#4B3F72", bg: "rgba(75,63,114,0.1)", border: "rgba(75,63,114,0.3)" },
+  Sales: { text: "#16a34a", bg: "rgba(34,197,94,0.1)", border: "rgba(34,197,94,0.3)" },
+  Operations: { text: "#F5C542", bg: "rgba(245,197,66,0.1)", border: "rgba(245,197,66,0.3)" },
+  Execution: { text: "#0D566C", bg: "rgba(13,86,108,0.1)", border: "rgba(13,86,108,0.3)" },
 };
 
 type Tab = "focus" | "plan" | "coaches" | "messages" | "profile";
@@ -187,8 +180,8 @@ export default function TrialDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#FAF9F7" }}>
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#FF6B5C" }} />
       </div>
     );
   }
@@ -207,33 +200,33 @@ export default function TrialDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen" style={{ backgroundColor: "#FAF9F7" }}>
       {/* Trial Banner */}
       {!isExpired ? (
-        <div className="bg-gradient-to-r from-cyan-600 to-indigo-600 py-3 px-4" data-testid="banner-trial-active">
+        <div className="py-3 px-4" style={{ backgroundColor: "#0D566C" }} data-testid="banner-trial-active">
           <div className="container mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-white">
               <Clock className="h-4 w-4" />
               <span className="text-sm font-medium">
                 Trial ends in {trialStatus.daysRemaining} day{trialStatus.daysRemaining !== 1 ? "s" : ""}
               </span>
             </div>
             <Link href="/become-entrepreneur">
-              <Button size="sm" variant="secondary" className="h-7 text-xs" data-testid="button-upgrade-banner">
+              <Button size="sm" className="h-7 text-xs rounded-full font-semibold" style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }} data-testid="button-upgrade-banner">
                 Apply for Full Access
               </Button>
             </Link>
           </div>
         </div>
       ) : (
-        <div className="bg-gradient-to-r from-amber-600 to-orange-600 py-3 px-4" data-testid="banner-trial-expired">
+        <div className="py-3 px-4" style={{ backgroundColor: "#FF6B5C" }} data-testid="banner-trial-expired">
           <div className="container mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-white">
               <AlertTriangle className="h-4 w-4" />
               <span className="text-sm font-medium">Your trial has ended. Apply to continue your journey.</span>
             </div>
             <Link href="/become-entrepreneur">
-              <Button size="sm" variant="secondary" className="h-7 text-xs" data-testid="button-apply-expired">
+              <Button size="sm" className="h-7 text-xs rounded-full font-semibold" style={{ backgroundColor: "#FFFFFF", color: "#FF6B5C", border: "none" }} data-testid="button-apply-expired">
                 Apply Now
               </Button>
             </Link>
@@ -245,14 +238,14 @@ export default function TrialDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-display font-bold" data-testid="text-dashboard-title">Entrepreneur Dashboard</h1>
-            <p className="text-slate-400 text-sm">{userEmail}</p>
+            <h1 className="text-2xl font-display font-bold" style={{ color: "#0D566C" }} data-testid="text-dashboard-title">Entrepreneur Dashboard</h1>
+            <p className="text-sm" style={{ color: "#8A8A8A" }}>{userEmail}</p>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="bg-cyan-500/10 text-cyan-300 border-cyan-500/30" data-testid="badge-trial-status">
+            <Badge className="border" style={isExpired ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C", borderColor: "rgba(255,107,92,0.3)" } : { backgroundColor: "rgba(13,86,108,0.1)", color: "#0D566C", borderColor: "rgba(13,86,108,0.3)" }} data-testid="badge-trial-status">
               {isExpired ? "Trial Expired" : "Trial Active"}
             </Badge>
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-slate-400 hover:text-white" data-testid="button-logout">
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="rounded-xl" style={{ color: "#8A8A8A" }} data-testid="button-logout">
               <LogOut className="h-4 w-4" />
             </Button>
           </div>
@@ -264,19 +257,26 @@ export default function TrialDashboard() {
             <button
               key={tab.id}
               onClick={() => !tab.locked && setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.id
-                  ? "bg-cyan-500/10 text-cyan-300 border border-cyan-500/30"
+                  ? "border font-semibold"
                   : tab.locked
-                  ? "text-slate-600 cursor-not-allowed"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
+                  ? "cursor-not-allowed"
+                  : ""
               }`}
+              style={
+                activeTab === tab.id
+                  ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C", borderColor: "rgba(255,107,92,0.3)" }
+                  : tab.locked
+                  ? { color: "#C0C0C0" }
+                  : { color: "#8A8A8A" }
+              }
               disabled={tab.locked}
               data-testid={`button-tab-${tab.id}`}
             >
               {tab.icon}
               {tab.label}
-              {tab.locked && <Lock className="h-3 w-3 text-slate-600" />}
+              {tab.locked && <Lock className="h-3 w-3" style={{ color: "#C0C0C0" }} />}
             </button>
           ))}
         </div>
@@ -286,44 +286,43 @@ export default function TrialDashboard() {
           <div className="space-y-8">
             {/* Quiz Result Recap */}
             {blocker && trialStatus.quizResult && (
-              <Card className="bg-slate-900 border-slate-700">
+              <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <BarChart3 className="h-5 w-5 text-cyan-500" />
+                  <CardTitle className="flex items-center gap-2" style={{ color: "#0D566C" }}>
+                    <BarChart3 className="h-5 w-5" style={{ color: "#FF6B5C" }} />
                     Your Founder Focus Score
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${categoryBgColors[trialStatus.primaryBlocker!]} mb-4`}>
-                        <span className={categoryTextColors[trialStatus.primaryBlocker!]}>{categoryIcons[trialStatus.primaryBlocker!]}</span>
-                        <span className="font-bold text-white">Primary Blocker: {blocker.title}</span>
+                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl mb-4" style={{ backgroundColor: categoryColors[trialStatus.primaryBlocker!].bg, border: `1px solid ${categoryColors[trialStatus.primaryBlocker!].border}` }}>
+                        <span style={{ color: categoryColors[trialStatus.primaryBlocker!].text }}>{categoryIcons[trialStatus.primaryBlocker!]}</span>
+                        <span className="font-bold" style={{ color: "#0D566C" }}>Primary Blocker: {blocker.title}</span>
                       </div>
-                      <p className="text-slate-300 text-sm leading-relaxed mb-4" data-testid="text-blocker-recap">
+                      <p className="text-sm leading-relaxed mb-4" style={{ color: "#4A4A4A" }} data-testid="text-blocker-recap">
                         {blocker.explanation}
                       </p>
                     </div>
-                    <div className={`p-5 rounded-xl border ${categoryBgColors[trialStatus.primaryBlocker!]}`}>
+                    <div className="p-5 rounded-xl" style={{ backgroundColor: categoryColors[trialStatus.primaryBlocker!].bg, border: `1px solid ${categoryColors[trialStatus.primaryBlocker!].border}` }}>
                       <div className="flex items-start gap-3">
-                        <Target className={`h-5 w-5 ${categoryTextColors[trialStatus.primaryBlocker!]} shrink-0 mt-0.5`} />
+                        <Target className="h-5 w-5 shrink-0 mt-0.5" style={{ color: categoryColors[trialStatus.primaryBlocker!].text }} />
                         <div>
-                          <p className="font-bold text-white mb-1">Your Next Action</p>
-                          <p className="text-slate-300 text-sm">{blocker.action}</p>
+                          <p className="font-bold mb-1" style={{ color: "#0D566C" }}>Your Next Action</p>
+                          <p className="text-sm" style={{ color: "#4A4A4A" }}>{blocker.action}</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Score Breakdown */}
                   {trialStatus.quizResult?.categoryResults && (
-                    <div className="mt-6 pt-6 border-t border-slate-700">
-                      <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-4">Score Breakdown</h4>
+                    <div className="mt-6 pt-6" style={{ borderTop: "1px solid #E8E8E8" }}>
+                      <h4 className="text-sm font-semibold uppercase tracking-wide mb-4" style={{ color: "#8A8A8A" }}>Score Breakdown</h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {trialStatus.quizResult.categoryResults.map((cat: any) => (
                           <div key={cat.category} className="text-center">
-                            <div className={`text-2xl font-bold ${categoryTextColors[cat.category as Category]}`}>{cat.score}</div>
-                            <div className="text-xs text-slate-400">{cat.category}</div>
+                            <div className="text-2xl font-bold" style={{ color: categoryColors[cat.category as Category]?.text || "#0D566C" }}>{cat.score}</div>
+                            <div className="text-xs" style={{ color: "#8A8A8A" }}>{cat.category}</div>
                           </div>
                         ))}
                       </div>
@@ -334,21 +333,21 @@ export default function TrialDashboard() {
             )}
 
             {/* Weekly Priority Definition */}
-            <Card className={`bg-slate-900 border-slate-700 ${isExpired ? "opacity-60 pointer-events-none" : ""}`}>
+            <Card className={`rounded-2xl ${isExpired ? "opacity-60 pointer-events-none" : ""}`} style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <Lightbulb className="h-5 w-5 text-amber-500" />
+                <CardTitle className="flex items-center gap-2" style={{ color: "#0D566C" }}>
+                  <Lightbulb className="h-5 w-5" style={{ color: "#F5C542" }} />
                   Weekly Priority Definition
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-400 text-sm mb-6">
+                <p className="text-sm mb-6" style={{ color: "#8A8A8A" }}>
                   Define your top 3 priorities for this week. Focus on actions that address your primary blocker.
                 </p>
                 <div className="space-y-3 mb-6">
                   {priorities.map((p, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <span className="w-6 h-6 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xs font-bold shrink-0">
+                      <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: "rgba(255,107,92,0.1)", border: "1px solid rgba(255,107,92,0.3)", color: "#FF6B5C" }}>
                         {i + 1}
                       </span>
                       <Input
@@ -359,7 +358,8 @@ export default function TrialDashboard() {
                           setPriorities(newP);
                         }}
                         placeholder={`Priority ${i + 1}...`}
-                        className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                        className="h-11 rounded-xl"
+                        style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A" }}
                         data-testid={`input-priority-${i}`}
                       />
                     </div>
@@ -368,7 +368,8 @@ export default function TrialDashboard() {
                 <Button
                   onClick={handleSavePriorities}
                   disabled={savingPriorities}
-                  className="bg-cyan-500 hover:bg-cyan-400 text-slate-950"
+                  className="rounded-full font-semibold"
+                  style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                   data-testid="button-save-priorities"
                 >
                   {savingPriorities ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
@@ -378,15 +379,15 @@ export default function TrialDashboard() {
             </Card>
 
             {/* Focus Exercise */}
-            <Card className={`bg-slate-900 border-slate-700 ${isExpired ? "opacity-60 pointer-events-none" : ""}`}>
+            <Card className={`rounded-2xl ${isExpired ? "opacity-60 pointer-events-none" : ""}`} style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <Target className="h-5 w-5 text-indigo-500" />
+                <CardTitle className="flex items-center gap-2" style={{ color: "#0D566C" }}>
+                  <Target className="h-5 w-5" style={{ color: "#4B3F72" }} />
                   Decision Focus Exercise
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-400 text-sm mb-4">
+                <p className="text-sm mb-4" style={{ color: "#8A8A8A" }}>
                   Use this exercise to make better decisions aligned with your goals.
                 </p>
                 <div className="space-y-4">
@@ -395,9 +396,9 @@ export default function TrialDashboard() {
                     { q: "What would happen if I didn't make this decision?", hint: "Consider the cost of inaction." },
                     { q: "What information do I need to decide?", hint: "List specific facts or data points." },
                   ].map((item, i) => (
-                    <div key={i} className="p-4 rounded-lg bg-slate-800/50 border border-slate-700">
-                      <p className="text-white font-medium text-sm mb-1">{item.q}</p>
-                      <p className="text-slate-500 text-xs">{item.hint}</p>
+                    <div key={i} className="p-4 rounded-xl" style={{ backgroundColor: "#F3F3F3", border: "1px solid #E8E8E8" }}>
+                      <p className="font-medium text-sm mb-1" style={{ color: "#0D566C" }}>{item.q}</p>
+                      <p className="text-xs" style={{ color: "#8A8A8A" }}>{item.hint}</p>
                     </div>
                   ))}
                 </div>
@@ -407,13 +408,13 @@ export default function TrialDashboard() {
         )}
 
         {activeTab === "messages" && trialStatus.mentorId && (
-          <Card className={`bg-slate-900 border-slate-700 ${isExpired ? "opacity-60 pointer-events-none" : ""}`}>
+          <Card className={`rounded-2xl ${isExpired ? "opacity-60 pointer-events-none" : ""}`} style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <MessageSquare className="h-5 w-5 text-cyan-500" />
+              <CardTitle className="flex items-center gap-2" style={{ color: "#0D566C" }}>
+                <MessageSquare className="h-5 w-5" style={{ color: "#FF6B5C" }} />
                 Mentor Messaging
                 {mentorInfo && (
-                  <span className="text-sm font-normal text-slate-400 ml-2">with {mentorInfo.mentorName}</span>
+                  <span className="text-sm font-normal ml-2" style={{ color: "#8A8A8A" }}>with {mentorInfo.mentorName}</span>
                 )}
               </CardTitle>
             </CardHeader>
@@ -421,26 +422,28 @@ export default function TrialDashboard() {
               <div className="min-h-[300px] flex flex-col">
                 <div className="flex-1 space-y-3 mb-4 max-h-[400px] overflow-y-auto">
                   {loadingMessages ? (
-                    <div className="text-center py-12 text-slate-500">
+                    <div className="text-center py-12" style={{ color: "#8A8A8A" }}>
                       <Loader2 className="h-8 w-8 mx-auto mb-3 animate-spin" />
                       <p>Loading messages...</p>
                     </div>
                   ) : messages.length === 0 ? (
-                    <div className="text-center py-12 text-slate-500">
+                    <div className="text-center py-12" style={{ color: "#8A8A8A" }}>
                       <MessageSquare className="h-10 w-10 mx-auto mb-3 opacity-50" />
                       <p>No messages yet. Start a conversation with your mentor.</p>
                       <p className="text-xs mt-1">Text only. One-to-one messaging.</p>
                     </div>
                   ) : (
                     messages.map((msg, i) => (
-                      <div key={i} className={`p-3 rounded-lg max-w-[80%] ${
+                      <div key={i} className={`p-3 rounded-xl max-w-[80%] ${
+                        msg.from_email === userEmail ? "ml-auto" : ""
+                      }`} style={
                         msg.from_email === userEmail 
-                          ? "bg-cyan-500/10 border border-cyan-500/20 ml-auto" 
-                          : "bg-slate-800 border border-slate-700"
-                      }`}>
-                        <p className="text-xs text-slate-500 mb-1 font-medium">{msg.from_name}</p>
-                        <p className="text-sm text-white">{msg.message}</p>
-                        <p className="text-xs text-slate-500 mt-1">{new Date(msg.created_at).toLocaleString()}</p>
+                          ? { backgroundColor: "rgba(255,107,92,0.08)", border: "1px solid rgba(255,107,92,0.2)" } 
+                          : { backgroundColor: "#F3F3F3", border: "1px solid #E8E8E8" }
+                      }>
+                        <p className="text-xs mb-1 font-medium" style={{ color: "#8A8A8A" }}>{msg.from_name}</p>
+                        <p className="text-sm" style={{ color: "#4A4A4A" }}>{msg.message}</p>
+                        <p className="text-xs mt-1" style={{ color: "#C0C0C0" }}>{new Date(msg.created_at).toLocaleString()}</p>
                       </div>
                     ))
                   )}
@@ -452,13 +455,15 @@ export default function TrialDashboard() {
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && !sendingMessage && newMessage.trim() && handleSendMessage()}
                       placeholder="Type a message..."
-                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                      className="h-11 rounded-xl"
+                      style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A" }}
                       data-testid="input-trial-message"
                     />
                     <Button
                       onClick={handleSendMessage}
                       disabled={sendingMessage || !newMessage.trim()}
-                      className="bg-cyan-500 hover:bg-cyan-400 text-slate-950"
+                      className="rounded-xl"
+                      style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                       data-testid="button-send-trial-message"
                     >
                       {sendingMessage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -472,13 +477,13 @@ export default function TrialDashboard() {
 
         {/* Locked Section Display */}
         {(activeTab === "plan" || activeTab === "coaches" || activeTab === "profile" || (activeTab === "messages" && !trialStatus.mentorId)) && (
-          <Card className="bg-slate-900 border-slate-700">
+          <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
             <CardContent className="py-16 text-center">
-              <Lock className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2" data-testid="text-locked-section">
+              <Lock className="h-12 w-12 mx-auto mb-4" style={{ color: "#C0C0C0" }} />
+              <h3 className="text-xl font-bold mb-2" style={{ color: "#0D566C" }} data-testid="text-locked-section">
                 {activeTab === "messages" ? "Mentor Not Yet Assigned" : "Available After Membership"}
               </h3>
-              <p className="text-slate-400 max-w-md mx-auto mb-6">
+              <p className="max-w-md mx-auto mb-6" style={{ color: "#8A8A8A" }}>
                 {activeTab === "messages" 
                   ? "An admin will assign a mentor to your trial account. You'll be able to message them directly once assigned."
                   : "This section becomes available when you become a full member. Apply to unlock your complete entrepreneur dashboard."
@@ -486,7 +491,7 @@ export default function TrialDashboard() {
               </p>
               {activeTab !== "messages" && (
                 <Link href="/become-entrepreneur">
-                  <Button className="bg-cyan-500 hover:bg-cyan-400 text-slate-950" data-testid="button-apply-locked">
+                  <Button className="rounded-full font-semibold" style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }} data-testid="button-apply-locked">
                     Apply for Membership <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
@@ -497,14 +502,14 @@ export default function TrialDashboard() {
 
         {/* Post-Trial CTA */}
         {isExpired && (
-          <Card className="bg-gradient-to-br from-indigo-900/50 to-cyan-900/50 border-indigo-500/30 mt-8">
+          <Card className="rounded-2xl mt-8" style={{ backgroundColor: "#0D566C", borderColor: "rgba(13,86,108,0.3)" }}>
             <CardContent className="p-8 text-center">
               <h3 className="text-xl font-bold text-white mb-3" data-testid="text-expired-cta">Ready to Continue Your Journey?</h3>
-              <p className="text-slate-300 mb-6 max-w-lg mx-auto">
+              <p className="mb-6 max-w-lg mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
                 Your trial has ended but your progress is saved. Apply to become a full member and unlock dedicated mentorship, business planning tools, and the complete entrepreneur dashboard.
               </p>
               <Link href="/become-entrepreneur">
-                <Button size="lg" className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full" data-testid="button-apply-full">
+                <Button size="lg" className="rounded-full font-semibold" style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }} data-testid="button-apply-full">
                   Apply for Full Membership <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>

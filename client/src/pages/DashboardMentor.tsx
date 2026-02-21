@@ -774,17 +774,17 @@ export default function DashboardMentor() {
 
   if (mentorStatus === "notApplied") {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950 p-4">
-        <Card className="max-w-md border-slate-300 dark:border-slate-700">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-[#FAF9F7] p-4">
+        <Card className="max-w-md border-[#E8E8E8]">
           <CardContent className="pt-8 pb-8">
             <div className="flex justify-center mb-4">
-              <AlertCircle className="h-12 w-12 text-slate-400" />
+              <AlertCircle className="h-12 w-12 text-[#8A8A8A]" />
             </div>
-            <h2 className="text-2xl font-display font-bold text-center mb-2 text-slate-900 dark:text-white">Not Yet Applied</h2>
-            <p className="text-center text-slate-600 dark:text-slate-400 mb-6">
+            <h2 className="text-2xl font-display font-bold text-center mb-2 text-[#4A4A4A]">Not Yet Applied</h2>
+            <p className="text-center text-[#8A8A8A] mb-6">
               To access the mentor dashboard, you need to apply first. Click the button below to get started.
             </p>
-            <Button className="w-full bg-cyan-600 hover:bg-cyan-700" onClick={() => window.location.href = "/become-mentor"}>
+            <Button className="w-full bg-[#FF6B5C] hover:bg-[#e55a4d]" onClick={() => window.location.href = "/become-mentor"}>
               Go to Application
             </Button>
           </CardContent>
@@ -795,17 +795,17 @@ export default function DashboardMentor() {
 
   if (mentorStatus === "pending") {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950 p-4">
-        <Card className="max-w-md border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-[#FAF9F7] p-4">
+        <Card className="max-w-md border-[rgba(245,197,66,0.3)] bg-[rgba(245,197,66,0.08)]">
           <CardContent className="pt-8 pb-8">
             <div className="flex justify-center mb-4">
-              <AlertCircle className="h-12 w-12 text-amber-600 dark:text-amber-400" />
+              <AlertCircle className="h-12 w-12 text-[#B45309]" />
             </div>
-            <h2 className="text-2xl font-display font-bold text-center mb-2 text-slate-900 dark:text-white">Approval Pending</h2>
-            <p className="text-center text-slate-600 dark:text-slate-400 mb-6">
+            <h2 className="text-2xl font-display font-bold text-center mb-2 text-[#4A4A4A]">Approval Pending</h2>
+            <p className="text-center text-[#8A8A8A] mb-6">
               Your mentor application is being reviewed by our admin team. You'll be able to access your dashboard once approved.
             </p>
-            <p className="text-center text-sm text-amber-700 dark:text-amber-300">
+            <p className="text-center text-sm text-[#B45309]">
               This typically takes 24-48 hours. Check your email for updates.
             </p>
           </CardContent>
@@ -824,7 +824,7 @@ export default function DashboardMentor() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex flex-col min-h-screen" style={{ backgroundColor: "#FAF9F7" }}>
       <DashboardMobileNav
         tabs={mentorNavTabs}
         activeTab={activeTab}
@@ -836,10 +836,10 @@ export default function DashboardMentor() {
       />
       <div className="flex flex-1">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
+      <aside className="w-64 border-r border-[#E8E8E8] bg-white hidden md:flex flex-col">
         <div className="p-6 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-6">
-            <Avatar className={`h-10 w-10 border border-slate-200 ${isAccountDisabled ? "bg-red-500" : "bg-cyan-500"}`}>
+            <Avatar className={`h-10 w-10 border border-[#E8E8E8] ${isAccountDisabled ? "bg-red-500" : "bg-[#FF6B5C]"}`}>
               <AvatarFallback className="text-white">SC</AvatarFallback>
             </Avatar>
             <div>
@@ -860,7 +860,7 @@ export default function DashboardMentor() {
             </Button>
             <Button 
               variant={activeTab === "portfolio" ? "secondary" : "ghost"}
-              className="w-full justify-start font-medium text-slate-600"
+              className="w-full justify-start font-medium text-[#8A8A8A]"
               onClick={() => setActiveTab("portfolio")}
               data-testid="button-portfolio-tab"
             >
@@ -868,7 +868,7 @@ export default function DashboardMentor() {
             </Button>
             <Button 
               variant={activeTab === "coaches" ? "secondary" : "ghost"}
-              className="w-full justify-start font-medium text-slate-600"
+              className="w-full justify-start font-medium text-[#8A8A8A]"
               onClick={() => setActiveTab("coaches")}
               data-testid="button-coaches-tab"
             >
@@ -876,7 +876,7 @@ export default function DashboardMentor() {
             </Button>
             <Button 
               variant={activeTab === "messages" ? "secondary" : "ghost"}
-              className="w-full justify-start font-medium text-slate-600 relative"
+              className="w-full justify-start font-medium text-[#8A8A8A] relative"
               onClick={() => setActiveTab("messages")}
               data-testid="button-messages-tab"
             >
@@ -890,7 +890,7 @@ export default function DashboardMentor() {
             {/* Hidden for now - keep for future use
             <Button 
               variant={activeTab === "meetings" ? "secondary" : "ghost"}
-              className="w-full justify-start font-medium text-slate-600"
+              className="w-full justify-start font-medium text-[#8A8A8A]"
               onClick={() => setActiveTab("meetings")}
               data-testid="button-meetings-tab"
             >
@@ -899,7 +899,7 @@ export default function DashboardMentor() {
             */}
             <Button 
               variant={activeTab === "profile" ? "secondary" : "ghost"}
-              className="w-full justify-start font-medium text-slate-600"
+              className="w-full justify-start font-medium text-[#8A8A8A]"
               onClick={() => setActiveTab("profile")}
               data-testid="button-profile-tab"
             >
@@ -907,17 +907,17 @@ export default function DashboardMentor() {
             </Button>
             <Button 
               variant={activeTab === "agreements" ? "secondary" : "ghost"}
-              className="w-full justify-start font-medium text-slate-600"
+              className="w-full justify-start font-medium text-[#8A8A8A]"
               onClick={() => setActiveTab("agreements")}
               data-testid="button-agreements-tab"
             >
               <ClipboardCheck className="mr-2 h-4 w-4" /> My Agreements
             </Button>
           </nav>
-          <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
+          <div className="pt-6 border-t border-[#E8E8E8]">
             <Button 
               variant="ghost"
-              className="w-full justify-start font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+              className="w-full justify-start font-medium text-[#8A8A8A] hover:text-red-600 hover:bg-[rgba(255,107,92,0.08)]"
               onClick={handleLogout}
               data-testid="button-logout"
             >
@@ -934,26 +934,26 @@ export default function DashboardMentor() {
           {activeTab === "overview" && (
             <div>
               {isAccountDisabled && (
-                <Card className="mb-6 border-red-300 bg-red-50 dark:bg-red-950/20 dark:border-red-800">
+                <Card className="mb-6 border-[rgba(255,107,92,0.3)] bg-[rgba(255,107,92,0.08)]">
                   <CardContent className="pt-6 pb-6">
                     <div className="flex items-start gap-4">
-                      <AlertCircle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
+                      <AlertCircle className="h-6 w-6 text-[#DC2626] flex-shrink-0 mt-0.5" />
                       <div>
-                        <h3 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-1">Account Disabled</h3>
-                        <p className="text-red-700 dark:text-red-400">Your mentor account has been disabled. Your dashboard is currently in view-only mode. Please use the Messages tab to contact the Admin team if you would like to reactivate your account.</p>
+                        <h3 className="text-lg font-semibold text-[#DC2626] mb-1">Account Disabled</h3>
+                        <p className="text-[#DC2626]">Your mentor account has been disabled. Your dashboard is currently in view-only mode. Please use the Messages tab to contact the Admin team if you would like to reactivate your account.</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               )}
               {hasPendingCancellation && (
-                <Card className="mb-6 border-orange-300 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800">
+                <Card className="mb-6 border-[#FDBA74] bg-[#FFF7ED]">
                   <CardContent className="pt-6 pb-6">
                     <div className="flex items-start gap-4">
-                      <AlertCircle className="h-6 w-6 text-orange-500 flex-shrink-0 mt-0.5" />
+                      <AlertCircle className="h-6 w-6 text-[#F97316] flex-shrink-0 mt-0.5" />
                       <div>
-                        <h3 className="text-lg font-semibold text-orange-800 dark:text-orange-300 mb-1">Cancellation Request Pending</h3>
-                        <p className="text-orange-700 dark:text-orange-400">Your cancellation request has been received and is being processed. You can still change your mind – just email us at <a href="mailto:hello@touchconnectpro.com" className="underline hover:text-orange-600">hello@touchconnectpro.com</a>.</p>
+                        <h3 className="text-lg font-semibold text-[#F97316] mb-1">Cancellation Request Pending</h3>
+                        <p className="text-[#F97316]">Your cancellation request has been received and is being processed. You can still change your mind – just email us at <a href="mailto:hello@touchconnectpro.com" className="underline hover:text-[#EA580C]">hello@touchconnectpro.com</a>.</p>
                       </div>
                     </div>
                   </CardContent>
@@ -961,20 +961,20 @@ export default function DashboardMentor() {
               )}
 
               {hasProcessedCancellation && (
-                <Card className="mb-6 border-green-300 bg-green-50 dark:bg-green-950/20 dark:border-green-800">
+                <Card className="mb-6 border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.08)]">
                   <CardContent className="pt-6 pb-6">
                     <div className="flex items-start gap-4">
-                      <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="h-6 w-6 text-[#16A34A] flex-shrink-0 mt-0.5" />
                       <div>
-                        <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 mb-1">Cancellation Approved</h3>
-                        <p className="text-green-700 dark:text-green-400">Your cancellation request has been received and approved. Thank you for being part of TouchConnectPro. If you ever wish to return, you're always welcome back!</p>
+                        <h3 className="text-lg font-semibold text-[#16A34A] mb-1">Cancellation Approved</h3>
+                        <p className="text-[#16A34A]">Your cancellation request has been received and approved. Thank you for being part of TouchConnectPro. If you ever wish to return, you're always welcome back!</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               )}
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-xl font-bold overflow-hidden flex-shrink-0 shadow-lg">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FF6B5C] to-[#e55a4d] flex items-center justify-center text-white text-xl font-bold overflow-hidden flex-shrink-0 shadow-lg">
                   {mentorProfile.profileImage ? (
                     <img src={mentorProfile.profileImage} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
@@ -982,7 +982,7 @@ export default function DashboardMentor() {
                   )}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Dashboard</h1>
+                  <h1 className="text-3xl font-display font-bold text-[#4A4A4A] mb-2">Mentor Dashboard</h1>
                   <p className="text-muted-foreground">
                     {isAccountDisabled 
                       ? "Your dashboard is currently in view-only mode."
@@ -992,7 +992,7 @@ export default function DashboardMentor() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <Card className="border-l-4 border-l-cyan-500 shadow-sm">
+                <Card className="border-l-4 border-l-[#FF6B5C] shadow-sm">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Active Portfolios</CardTitle>
                   </CardHeader>
@@ -1002,7 +1002,7 @@ export default function DashboardMentor() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-emerald-500 shadow-sm">
+                <Card className="border-l-4 border-l-[#0D566C] shadow-sm">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Total Mentees</CardTitle>
                   </CardHeader>
@@ -1013,7 +1013,7 @@ export default function DashboardMentor() {
                 </Card>
 
                 <Card 
-                  className="border-l-4 border-l-amber-500 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                  className="border-l-4 border-l-[#F5C542] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => setActiveTab("messages")}
                   data-testid="card-unread-messages"
                 >
@@ -1026,7 +1026,7 @@ export default function DashboardMentor() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-purple-500 shadow-sm">
+                <Card className="border-l-4 border-l-[#4B3F72] shadow-sm">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Upcoming Meetings</CardTitle>
                   </CardHeader>
@@ -1042,7 +1042,7 @@ export default function DashboardMentor() {
                   <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button className="w-full bg-cyan-600 hover:bg-cyan-700" onClick={() => setActiveTab("portfolio")}>
+                  <Button className="w-full bg-[#FF6B5C] hover:bg-[#e55a4d]" onClick={() => setActiveTab("portfolio")}>
                     <Plus className="mr-2 h-4 w-4" /> View Portfolios
                   </Button>
                   <Button variant="outline" className="w-full" onClick={() => setActiveTab("messages")}>
@@ -1063,11 +1063,11 @@ export default function DashboardMentor() {
             <div>
               <div className="flex justify-between items-center mb-8">
                 <div>
-                  <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Portfolios</h1>
+                  <h1 className="text-3xl font-display font-bold text-[#4A4A4A] mb-2">Portfolios</h1>
                   <p className="text-muted-foreground">Manage your mentee portfolios ({portfolios.length}/20)</p>
                 </div>
                 {portfolios.length < 20 && !isAccountDisabled && (
-                  <Button className="bg-cyan-600 hover:bg-cyan-700" onClick={handleAddPortfolio} data-testid="button-add-portfolio">
+                  <Button className="bg-[#FF6B5C] hover:bg-[#e55a4d]" onClick={handleAddPortfolio} data-testid="button-add-portfolio">
                     <Plus className="mr-2 h-4 w-4" /> Add Portfolio
                   </Button>
                 )}
@@ -1075,8 +1075,8 @@ export default function DashboardMentor() {
 
               <div className="space-y-8">
                 {portfolios.map((portfolio, idx) => (
-                  <Card key={portfolio.id} className="hover:shadow-lg transition-shadow border-cyan-200 dark:border-cyan-900/30">
-                    <CardHeader className="bg-cyan-50/50 dark:bg-cyan-950/20">
+                  <Card key={portfolio.id} className="hover:shadow-lg transition-shadow border-[#E8E8E8]">
+                    <CardHeader className="bg-[#F3F3F3]">
                       <CardTitle className="text-xl">{portfolio.name}</CardTitle>
                       <p className="text-sm text-muted-foreground">Members: {portfolio.memberCount}/10</p>
                     </CardHeader>
@@ -1087,21 +1087,21 @@ export default function DashboardMentor() {
                               const isProposalExpanded = expandedProposal[`member-${member.id}`];
                               const isBusinessPlanExpanded = expandedBusinessPlan[`member-${member.id}`];
                               return (
-                              <Card key={member.id} className="border-l-4 border-l-emerald-500 shadow-md">
+                              <Card key={member.id} className="border-l-4 border-l-[#0D566C] shadow-md">
                                 <CardContent className="pt-6 space-y-5">
                                   <div className="flex items-start gap-4">
-                                    <Avatar className="h-16 w-16 border-2 border-cyan-200">
+                                    <Avatar className="h-16 w-16 border-2 border-[#E8E8E8]">
                                       {member.photoUrl ? (
                                         <AvatarImage src={member.photoUrl} alt={member.name} />
                                       ) : null}
-                                      <AvatarFallback className="bg-cyan-500 text-white text-lg">
+                                      <AvatarFallback className="bg-[#FF6B5C] text-white text-lg">
                                         {member.name.substring(0, 2).toUpperCase()}
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
-                                      <h4 className="text-lg font-semibold text-slate-900 dark:text-white">{member.name}</h4>
+                                      <h4 className="text-lg font-semibold text-[#4A4A4A]">{member.name}</h4>
                                       <p className="text-sm text-muted-foreground">{member.email}</p>
-                                      <p className="text-sm font-medium text-cyan-600 mt-1">{member.ideaName || member.businessIdea || "No idea name"}</p>
+                                      <p className="text-sm font-medium text-[#0D566C] mt-1">{member.ideaName || member.businessIdea || "No idea name"}</p>
                                     </div>
                                     {!isAccountDisabled && (
                                       <Button 
@@ -1121,110 +1121,110 @@ export default function DashboardMentor() {
                                   
                                   {/* About the Entrepreneur */}
                                   {(member.fullBio || member.bio) && (
-                                    <div className="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-lg">
-                                      <p className="text-xs font-semibold text-slate-500 uppercase mb-2">About the Entrepreneur</p>
-                                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{member.fullBio || member.bio}</p>
+                                    <div className="bg-[#FAF9F7] p-4 rounded-lg">
+                                      <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-2">About the Entrepreneur</p>
+                                      <p className="text-sm text-[#4A4A4A] leading-relaxed">{member.fullBio || member.bio}</p>
                                     </div>
                                   )}
 
-                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-slate-50 dark:bg-slate-800/30 p-4 rounded-lg">
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-[#FAF9F7] p-4 rounded-lg">
                                     <div>
-                                      <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Idea/Company</p>
-                                      <p className="text-slate-900 dark:text-white">{member.ideaName || member.businessIdea || "—"}</p>
+                                      <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">Idea/Company</p>
+                                      <p className="text-[#4A4A4A]">{member.ideaName || member.businessIdea || "—"}</p>
                                     </div>
                                     <div>
-                                      <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                                      <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">LinkedIn</p>
                                       {member.linkedin ? (
-                                        <a href={member.linkedin.startsWith("http") ? member.linkedin : `https://${member.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 flex items-center gap-1">
+                                        <a href={member.linkedin.startsWith("http") ? member.linkedin : `https://${member.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-[#0D566C] hover:text-[#0D566C] flex items-center gap-1">
                                           <ExternalLink className="h-3 w-3" /> View Profile
                                         </a>
-                                      ) : <p className="text-slate-500">—</p>}
+                                      ) : <p className="text-[#8A8A8A]">—</p>}
                                     </div>
                                     <div>
-                                      <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Country</p>
-                                      <p className="text-slate-900 dark:text-white">{member.country || "—"}</p>
+                                      <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">Country</p>
+                                      <p className="text-[#4A4A4A]">{member.country || "—"}</p>
                                     </div>
                                     <div>
-                                      <p className="text-xs font-semibold text-slate-500 uppercase mb-1">State</p>
-                                      <p className="text-slate-900 dark:text-white">{member.state || "—"}</p>
+                                      <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">State</p>
+                                      <p className="text-[#4A4A4A]">{member.state || "—"}</p>
                                     </div>
                                   </div>
 
-                                  <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+                                  <div className="border-t border-[#E8E8E8] pt-3">
                                     <Button 
                                       variant="ghost" 
-                                      className="w-full justify-start text-cyan-600 hover:text-cyan-700 font-semibold text-sm"
+                                      className="w-full justify-start text-[#0D566C] hover:text-[#0D566C] font-semibold text-sm"
                                       onClick={() => setExpandedProposal({...expandedProposal, [`member-${member.id}`]: !isProposalExpanded})}
                                       data-testid={`button-expand-proposal-${member.id}`}
                                     >
                                       {isProposalExpanded ? "▼" : "▶"} Idea Proposal (42 Questions)
                                     </Button>
                                     {isProposalExpanded && member.ideaReview && (
-                                      <div className="mt-3 space-y-2 max-h-64 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-3 rounded text-xs">
+                                      <div className="mt-3 space-y-2 max-h-64 overflow-y-auto bg-[#F3F3F3] p-3 rounded text-xs">
                                         {IDEA_PROPOSAL_QUESTIONS.map((q) => (
                                           <div key={q.key}>
-                                            <p className="font-semibold text-slate-700 dark:text-slate-300">{q.label}</p>
-                                            <p className="text-slate-600 dark:text-slate-400 mt-0.5">{String(member.ideaReview[q.key] || 'N/A')}</p>
+                                            <p className="font-semibold text-[#4A4A4A]">{q.label}</p>
+                                            <p className="text-[#8A8A8A] mt-0.5">{String(member.ideaReview[q.key] || 'N/A')}</p>
                                           </div>
                                         ))}
                                       </div>
                                     )}
                                   </div>
 
-                                  <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+                                  <div className="border-t border-[#E8E8E8] pt-3">
                                     <Button 
                                       variant="ghost" 
-                                      className="w-full justify-start text-cyan-600 hover:text-cyan-700 font-semibold text-sm"
+                                      className="w-full justify-start text-[#0D566C] hover:text-[#0D566C] font-semibold text-sm"
                                       onClick={() => setExpandedBusinessPlan({...expandedBusinessPlan, [`member-${member.id}`]: !isBusinessPlanExpanded})}
                                       data-testid={`button-expand-businessplan-${member.id}`}
                                     >
                                       {isBusinessPlanExpanded ? "▼" : "▶"} Business Plan AI Draft (11 Sections)
                                     </Button>
                                     {isBusinessPlanExpanded && member.businessPlan && (
-                                      <div className="mt-3 space-y-3 max-h-64 overflow-y-auto bg-slate-50 dark:bg-slate-800/30 p-3 rounded text-xs">
-                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
-                                          <p className="font-semibold text-slate-700 dark:text-slate-300">1. Executive Summary</p>
-                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.executiveSummary || 'N/A'}</p>
+                                      <div className="mt-3 space-y-3 max-h-64 overflow-y-auto bg-[#F3F3F3] p-3 rounded text-xs">
+                                        <div className="border-b border-[#E8E8E8] pb-2">
+                                          <p className="font-semibold text-[#4A4A4A]">1. Executive Summary</p>
+                                          <p className="text-[#8A8A8A] mt-1 leading-relaxed">{member.businessPlan.executiveSummary || 'N/A'}</p>
                                         </div>
-                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
-                                          <p className="font-semibold text-slate-700 dark:text-slate-300">2. Problem Statement</p>
-                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.problemStatement || 'N/A'}</p>
+                                        <div className="border-b border-[#E8E8E8] pb-2">
+                                          <p className="font-semibold text-[#4A4A4A]">2. Problem Statement</p>
+                                          <p className="text-[#8A8A8A] mt-1 leading-relaxed">{member.businessPlan.problemStatement || 'N/A'}</p>
                                         </div>
-                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
-                                          <p className="font-semibold text-slate-700 dark:text-slate-300">3. Solution</p>
-                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.solution || 'N/A'}</p>
+                                        <div className="border-b border-[#E8E8E8] pb-2">
+                                          <p className="font-semibold text-[#4A4A4A]">3. Solution</p>
+                                          <p className="text-[#8A8A8A] mt-1 leading-relaxed">{member.businessPlan.solution || 'N/A'}</p>
                                         </div>
-                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
-                                          <p className="font-semibold text-slate-700 dark:text-slate-300">4. Target Market</p>
-                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.targetMarket || 'N/A'}</p>
+                                        <div className="border-b border-[#E8E8E8] pb-2">
+                                          <p className="font-semibold text-[#4A4A4A]">4. Target Market</p>
+                                          <p className="text-[#8A8A8A] mt-1 leading-relaxed">{member.businessPlan.targetMarket || 'N/A'}</p>
                                         </div>
-                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
-                                          <p className="font-semibold text-slate-700 dark:text-slate-300">5. Market Size</p>
-                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.marketSize || 'N/A'}</p>
+                                        <div className="border-b border-[#E8E8E8] pb-2">
+                                          <p className="font-semibold text-[#4A4A4A]">5. Market Size</p>
+                                          <p className="text-[#8A8A8A] mt-1 leading-relaxed">{member.businessPlan.marketSize || 'N/A'}</p>
                                         </div>
-                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
-                                          <p className="font-semibold text-slate-700 dark:text-slate-300">6. Revenue Model</p>
-                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.revenueModel || 'N/A'}</p>
+                                        <div className="border-b border-[#E8E8E8] pb-2">
+                                          <p className="font-semibold text-[#4A4A4A]">6. Revenue Model</p>
+                                          <p className="text-[#8A8A8A] mt-1 leading-relaxed">{member.businessPlan.revenueModel || 'N/A'}</p>
                                         </div>
-                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
-                                          <p className="font-semibold text-slate-700 dark:text-slate-300">7. Competitive Advantage</p>
-                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.competitiveAdvantage || 'N/A'}</p>
+                                        <div className="border-b border-[#E8E8E8] pb-2">
+                                          <p className="font-semibold text-[#4A4A4A]">7. Competitive Advantage</p>
+                                          <p className="text-[#8A8A8A] mt-1 leading-relaxed">{member.businessPlan.competitiveAdvantage || 'N/A'}</p>
                                         </div>
-                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
-                                          <p className="font-semibold text-slate-700 dark:text-slate-300">8. Month Roadmap</p>
-                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.roadmap12Month || 'N/A'}</p>
+                                        <div className="border-b border-[#E8E8E8] pb-2">
+                                          <p className="font-semibold text-[#4A4A4A]">8. Month Roadmap</p>
+                                          <p className="text-[#8A8A8A] mt-1 leading-relaxed">{member.businessPlan.roadmap12Month || 'N/A'}</p>
                                         </div>
-                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
-                                          <p className="font-semibold text-slate-700 dark:text-slate-300">9. Funding Requirements</p>
-                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.fundingRequirements || 'N/A'}</p>
+                                        <div className="border-b border-[#E8E8E8] pb-2">
+                                          <p className="font-semibold text-[#4A4A4A]">9. Funding Requirements</p>
+                                          <p className="text-[#8A8A8A] mt-1 leading-relaxed">{member.businessPlan.fundingRequirements || 'N/A'}</p>
                                         </div>
-                                        <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
-                                          <p className="font-semibold text-slate-700 dark:text-slate-300">10. Risks & Mitigation</p>
-                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.risksAndMitigation || 'N/A'}</p>
+                                        <div className="border-b border-[#E8E8E8] pb-2">
+                                          <p className="font-semibold text-[#4A4A4A]">10. Risks & Mitigation</p>
+                                          <p className="text-[#8A8A8A] mt-1 leading-relaxed">{member.businessPlan.risksAndMitigation || 'N/A'}</p>
                                         </div>
                                         <div>
-                                          <p className="font-semibold text-slate-700 dark:text-slate-300">11. Success Metrics</p>
-                                          <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{member.businessPlan.successMetrics || 'N/A'}</p>
+                                          <p className="font-semibold text-[#4A4A4A]">11. Success Metrics</p>
+                                          <p className="text-[#8A8A8A] mt-1 leading-relaxed">{member.businessPlan.successMetrics || 'N/A'}</p>
                                         </div>
                                       </div>
                                     )}
@@ -1232,19 +1232,19 @@ export default function DashboardMentor() {
 
                                   {/* AI Meeting Questions Section - View Only for Mentors */}
                                   {member.meetingQuestions && (
-                                    <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+                                    <div className="border-t border-[#E8E8E8] pt-3">
                                       <Button 
                                         variant="ghost" 
-                                        className="w-full justify-start text-purple-600 hover:text-purple-700 font-semibold text-sm"
+                                        className="w-full justify-start text-[#4B3F72] hover:text-[#4B3F72] font-semibold text-sm"
                                         onClick={() => setExpandedQuestions({...expandedQuestions, [`member-${member.id}`]: !expandedQuestions[`member-${member.id}`]})}
                                         data-testid={`button-expand-questions-${member.id}`}
                                       >
                                         {expandedQuestions[`member-${member.id}`] ? "▼" : "▶"} AI Meeting Questions (Prepared by Admin)
                                       </Button>
                                       {expandedQuestions[`member-${member.id}`] && (
-                                        <div className="mt-4 space-y-4 max-h-96 overflow-y-auto bg-purple-50 dark:bg-purple-900/20 p-4 rounded">
+                                        <div className="mt-4 space-y-4 max-h-96 overflow-y-auto bg-[rgba(75,63,114,0.08)] p-4 rounded">
                                           {member.meetingQuestionsGeneratedAt && (
-                                            <p className="text-xs text-purple-600 dark:text-purple-400 mb-2">
+                                            <p className="text-xs text-[#4B3F72] mb-2">
                                               Generated: {new Date(member.meetingQuestionsGeneratedAt).toLocaleDateString()}
                                             </p>
                                           )}
@@ -1261,11 +1261,11 @@ export default function DashboardMentor() {
                                             { key: 'risksAndMitigation', label: '10. Risks & Mitigation' },
                                             { key: 'successMetrics', label: '11. Success Metrics' },
                                           ].map((section) => (
-                                            <div key={section.key} className="text-sm border-b border-purple-200 dark:border-purple-800 pb-3">
-                                              <p className="font-semibold text-purple-700 dark:text-purple-300">{section.label}</p>
+                                            <div key={section.key} className="text-sm border-b border-[rgba(75,63,114,0.2)] pb-3">
+                                              <p className="font-semibold text-[#4B3F72]">{section.label}</p>
                                               <ul className="mt-2 space-y-1">
                                                 {(member.meetingQuestions[section.key] || []).map((q: string, qIdx: number) => (
-                                                  <li key={qIdx} className="text-purple-600 dark:text-purple-400 text-xs pl-4 before:content-['•'] before:mr-2">
+                                                  <li key={qIdx} className="text-[#4B3F72] text-xs pl-4 before:content-['•'] before:mr-2">
                                                     {q}
                                                   </li>
                                                 ))}
@@ -1277,8 +1277,8 @@ export default function DashboardMentor() {
                                     </div>
                                   )}
 
-                                  <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
-                                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-2 block">Next Steps & Notes</label>
+                                  <div className="border-t border-[#E8E8E8] pt-3">
+                                    <label className="text-xs font-semibold text-[#8A8A8A] uppercase mb-2 block">Next Steps & Notes</label>
                                     
                                     {/* Notes History */}
                                     {member.mentorNotes && member.mentorNotes.length > 0 && (
@@ -1291,19 +1291,19 @@ export default function DashboardMentor() {
                                           const noteResponses = note.responses || [];
                                           
                                           return (
-                                            <div key={noteId} className={`rounded-lg border ${isCompleted ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800' : 'bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700'}`} data-testid={`mentor-note-${noteId}`}>
+                                            <div key={noteId} className={`rounded-lg border ${isCompleted ? 'bg-[rgba(34,197,94,0.08)] border-[rgba(34,197,94,0.2)]' : 'bg-[rgba(245,197,66,0.08)] border-[rgba(245,197,66,0.3)]'}`} data-testid={`mentor-note-${noteId}`}>
                                               <div className="p-3">
                                                 <div className="flex items-start justify-between gap-3">
                                                   <div className="flex-1">
-                                                    <p className={`text-sm ${isCompleted ? 'text-green-900 dark:text-green-100 line-through' : 'text-slate-900 dark:text-slate-100'}`}>{noteText}</p>
-                                                    {noteTime && <p className={`text-xs mt-1 ${isCompleted ? 'text-green-600 dark:text-green-400' : 'text-slate-500 dark:text-slate-400'}`}>{new Date(noteTime).toLocaleDateString()}</p>}
+                                                    <p className={`text-sm ${isCompleted ? 'text-[#16A34A] line-through' : 'text-[#4A4A4A]'}`}>{noteText}</p>
+                                                    {noteTime && <p className={`text-xs mt-1 ${isCompleted ? 'text-[#16A34A]' : 'text-[#8A8A8A]'}`}>{new Date(noteTime).toLocaleDateString()}</p>}
                                                   </div>
                                                   <Button
                                                     size="sm"
                                                     variant={isCompleted ? "outline" : "default"}
                                                     className={isCompleted 
-                                                      ? 'bg-green-100 hover:bg-green-200 text-green-700 border-green-300 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-300 dark:border-green-700' 
-                                                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                                                      ? 'bg-[rgba(34,197,94,0.12)] hover:bg-[rgba(34,197,94,0.15)] text-[#16A34A] border-[rgba(34,197,94,0.3)]' 
+                                                      : 'bg-[#FF6B5C] hover:bg-[#e55a4d] text-white'
                                                     }
                                                     onClick={async () => {
                                                       const assignmentId = member.assignment_id;
@@ -1333,19 +1333,19 @@ export default function DashboardMentor() {
                                               
                                               {/* Entrepreneur Responses */}
                                               {noteResponses.length > 0 && (
-                                                <div className="border-t border-slate-200 dark:border-slate-700 p-2 space-y-2">
-                                                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                                                <div className="border-t border-[#E8E8E8] p-2 space-y-2">
+                                                  <p className="text-xs font-medium text-[#8A8A8A] flex items-center gap-1">
                                                     <Reply className="h-3 w-3" /> Entrepreneur Responses ({noteResponses.length})
                                                   </p>
                                                   {noteResponses.map((resp: any, respIdx: number) => (
-                                                    <div key={resp.id || respIdx} className="bg-cyan-50 dark:bg-cyan-950/30 rounded p-2 text-xs border border-cyan-200 dark:border-cyan-800" data-testid={`mentor-response-view-${resp.id || respIdx}`}>
-                                                      {resp.text && <p className="text-slate-800 dark:text-slate-200">{resp.text}</p>}
+                                                    <div key={resp.id || respIdx} className="bg-[#F3F3F3] rounded p-2 text-xs border border-[#E8E8E8]" data-testid={`mentor-response-view-${resp.id || respIdx}`}>
+                                                      {resp.text && <p className="text-[#4A4A4A]">{resp.text}</p>}
                                                       {resp.attachmentUrl && (
                                                         <a 
                                                           href={resp.attachmentUrl} 
                                                           target="_blank" 
                                                           rel="noopener noreferrer"
-                                                          className="inline-flex items-center gap-1 mt-1 text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 font-medium"
+                                                          className="inline-flex items-center gap-1 mt-1 text-[#0D566C] hover:text-[#0D566C] font-medium"
                                                           data-testid={`button-download-note-response-${resp.id || respIdx}`}
                                                         >
                                                           <Download className="h-3 w-3" />
@@ -1353,7 +1353,7 @@ export default function DashboardMentor() {
                                                           {resp.attachmentName || "Download File"}
                                                         </a>
                                                       )}
-                                                      <p className="text-xs text-slate-500 mt-1">{formatToPST(resp.timestamp)}</p>
+                                                      <p className="text-xs text-[#8A8A8A] mt-1">{formatToPST(resp.timestamp)}</p>
                                                     </div>
                                                   ))}
                                                 </div>
@@ -1367,14 +1367,14 @@ export default function DashboardMentor() {
                                     <textarea
                                       id={`new-notes-${member.id}`}
                                       placeholder="E.g., Next step suggested would be to choose a coach about Marketing..."
-                                      className="w-full min-h-20 p-3 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
+                                      className="w-full min-h-20 p-3 rounded-lg border border-[#E8E8E8] bg-white text-[#4A4A4A] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C] text-sm"
                                       data-testid={`textarea-mentor-notes-${member.id}`}
                                     />
                                     <div className="flex items-center justify-between mt-2">
-                                      <p className="text-xs text-slate-500">Add a new note - previous notes are stored above</p>
+                                      <p className="text-xs text-[#8A8A8A]">Add a new note - previous notes are stored above</p>
                                       <Button
                                         size="sm"
-                                        className="bg-emerald-600 hover:bg-emerald-700"
+                                        className="bg-[#FF6B5C] hover:bg-[#e55a4d]"
                                         data-testid={`button-save-note-${member.id}`}
                                         onClick={async () => {
                                           const textarea = document.getElementById(`new-notes-${member.id}`) as HTMLTextAreaElement;
@@ -1421,7 +1421,7 @@ export default function DashboardMentor() {
                         ) : (
                           <p className="text-xs text-muted-foreground">No members added yet</p>
                         )}
-                      <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                      <div className="pt-4 border-t border-[#E8E8E8]">
                         <p className="text-xs text-muted-foreground mb-3">Last meeting: {portfolio.lastMeeting || "No meetings yet"}</p>
                         <div className="space-y-2">
                           <Button 
@@ -1462,7 +1462,7 @@ export default function DashboardMentor() {
             <div>
               <div className="flex justify-between items-center mb-8">
                 <div>
-                  <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Available Coaches</h1>
+                  <h1 className="text-3xl font-display font-bold text-[#4A4A4A] mb-2">Available Coaches</h1>
                   <p className="text-muted-foreground">Browse our network of expert coaches to recommend to your portfolio members.</p>
                 </div>
               </div>
@@ -1470,7 +1470,7 @@ export default function DashboardMentor() {
               {approvedCoaches.length === 0 ? (
                 <Card>
                   <CardContent className="pt-12 pb-12 text-center">
-                    <GraduationCap className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                    <GraduationCap className="h-12 w-12 text-[#C0C0C0] mx-auto mb-4" />
                     <p className="text-muted-foreground">No coaches available at this time.</p>
                   </CardContent>
                 </Card>
@@ -1479,14 +1479,14 @@ export default function DashboardMentor() {
                   {approvedCoaches.map((coach) => {
                     const rating = coachRatings[coach.id];
                     return (
-                      <Card key={coach.id} className={`border-l-4 ${!coach.stripe_account_id ? 'border-l-gray-400 opacity-80' : 'border-l-purple-500'}`} data-testid={`card-coach-${coach.id}`}>
+                      <Card key={coach.id} className={`border-l-4 ${!coach.stripe_account_id ? 'border-l-[#C0C0C0] opacity-80' : 'border-l-[#4B3F72]'}`} data-testid={`card-coach-${coach.id}`}>
                         <CardHeader>
                           <div className="flex items-start gap-4">
-                            <Avatar className="h-12 w-12 border-2 border-purple-200">
+                            <Avatar className="h-12 w-12 border-2 border-[rgba(75,63,114,0.2)]">
                               {coach.profile_image && (
                                 <AvatarImage src={coach.profile_image} alt={coach.full_name} />
                               )}
-                              <AvatarFallback className="bg-purple-500 text-white">
+                              <AvatarFallback className="bg-[#4B3F72] text-white">
                                 {coach.full_name?.substring(0, 2).toUpperCase() || "CO"}
                               </AvatarFallback>
                             </Avatar>
@@ -1495,7 +1495,7 @@ export default function DashboardMentor() {
                                 <div className="flex items-center gap-2">
                                   <CardTitle className="text-lg">{coach.full_name}</CardTitle>
                                   {!coach.stripe_account_id && (
-                                    <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 text-xs px-2 py-0.5">
+                                    <Badge variant="secondary" className="bg-[rgba(245,197,66,0.15)] text-[#B45309] text-xs px-2 py-0.5">
                                       Coming Soon
                                     </Badge>
                                   )}
@@ -1519,22 +1519,22 @@ export default function DashboardMentor() {
                         <CardContent className="space-y-3">
                           {coach.bio && (
                             <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">About</p>
-                              <p className="text-sm text-slate-700 dark:text-slate-300 line-clamp-3">{coach.bio}</p>
+                              <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">About</p>
+                              <p className="text-sm text-[#4A4A4A] line-clamp-3">{coach.bio}</p>
                             </div>
                           )}
                           <div>
-                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Areas of Expertise</p>
-                            <p className="text-sm text-slate-700 dark:text-slate-300">{coach.focus_areas}</p>
+                            <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">Areas of Expertise</p>
+                            <p className="text-sm text-[#4A4A4A]">{coach.focus_areas}</p>
                           </div>
                           {coach.linkedin && (
                             <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-1">LinkedIn</p>
+                              <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">LinkedIn</p>
                               <a 
                                 href={coach.linkedin.startsWith('http') ? coach.linkedin : `https://${coach.linkedin}`} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="text-sm text-cyan-600 hover:underline flex items-center gap-1"
+                                className="text-sm text-[#0D566C] hover:underline flex items-center gap-1"
                                 data-testid={`link-coach-linkedin-${coach.id}`}
                               >
                                 {coach.linkedin} <ExternalLink className="h-3 w-3" />
@@ -1548,14 +1548,14 @@ export default function DashboardMentor() {
                                 if (rates.introCallRate && rates.sessionRate && rates.monthlyRate) {
                                   return (
                                     <div className="space-y-1">
-                                      <div className="text-sm text-purple-600"><span className="font-medium">Intro Call:</span> ${rates.introCallRate}</div>
-                                      <div className="text-sm text-purple-600"><span className="font-medium">Per Session:</span> ${rates.sessionRate}</div>
-                                      <div className="text-sm text-purple-600"><span className="font-medium">Monthly:</span> ${rates.monthlyRate}</div>
+                                      <div className="text-sm text-[#4B3F72]"><span className="font-medium">Intro Call:</span> ${rates.introCallRate}</div>
+                                      <div className="text-sm text-[#4B3F72]"><span className="font-medium">Per Session:</span> ${rates.sessionRate}</div>
+                                      <div className="text-sm text-[#4B3F72]"><span className="font-medium">Monthly:</span> ${rates.monthlyRate}</div>
                                     </div>
                                   );
                                 }
                               } catch {}
-                              return <span className="text-lg font-bold text-purple-600">${coach.hourly_rate}/hr</span>;
+                              return <span className="text-lg font-bold text-[#4B3F72]">${coach.hourly_rate}/hr</span>;
                             })()}
                           </div>
                         </CardContent>
@@ -1595,22 +1595,22 @@ export default function DashboardMentor() {
             
             return (
             <div>
-              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Messages</h1>
+              <h1 className="text-3xl font-display font-bold text-[#4A4A4A] mb-2">Messages</h1>
               <p className="text-muted-foreground mb-8">Communicate with your entrepreneurs and the TouchConnectPro admin team.</p>
 
               {/* Entrepreneur Conversations (Threaded) */}
-              <Card className="mb-6 border-emerald-200 dark:border-emerald-900/30">
-                <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/20">
+              <Card className="mb-6 border-[#E8E8E8]">
+                <CardHeader className="bg-[#F3F3F3]">
                   <CardTitle className="text-lg flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <GraduationCap className="h-5 w-5 text-emerald-600" />
+                      <GraduationCap className="h-5 w-5 text-[#0D566C]" />
                       Entrepreneur Conversations
                     </div>
                     <Button 
                       onClick={refreshThreads}
                       variant="outline"
                       size="sm"
-                      className="border-emerald-300 text-emerald-600 hover:bg-emerald-50"
+                      className="border-[#E8E8E8] text-[#0D566C] hover:bg-[#F3F3F3]"
                       data-testid="button-refresh-threads"
                     >
                       <RefreshCw className="h-4 w-4" />
@@ -1626,7 +1626,7 @@ export default function DashboardMentor() {
                       placeholder="Search by name, email, or subject..."
                       value={messageSearchQuery}
                       onChange={(e) => setMessageSearchQuery(e.target.value)}
-                      className="pl-9 bg-white dark:bg-slate-900"
+                      className="pl-9 bg-white"
                       data-testid="input-message-search"
                     />
                   </div>
@@ -1654,7 +1654,7 @@ export default function DashboardMentor() {
                         return (
                           <div 
                             key={thread.id} 
-                            className={`rounded-lg border ${isClosed ? 'bg-slate-50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700' : 'bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-800'}`}
+                            className={`rounded-lg border ${isClosed ? 'bg-[#F3F3F3] border-[#E8E8E8]' : 'bg-white border-[#E8E8E8]'}`}
                             data-testid={`thread-${thread.id}`}
                           >
                             <div 
@@ -1663,11 +1663,11 @@ export default function DashboardMentor() {
                             >
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <p className={`font-semibold text-sm ${isClosed ? 'text-slate-500' : 'text-emerald-700 dark:text-emerald-400'}`}>
+                                  <p className={`font-semibold text-sm ${isClosed ? 'text-[#8A8A8A]' : 'text-[#0D566C]'}`}>
                                     {thread.subject || "Conversation"} - {entrepreneurName}
                                   </p>
                                   {isClosed && (
-                                    <Badge variant="secondary" className="text-xs bg-slate-200 dark:bg-slate-700">Closed</Badge>
+                                    <Badge variant="secondary" className="text-xs bg-[#F3F3F3]">Closed</Badge>
                                   )}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
@@ -1678,7 +1678,7 @@ export default function DashboardMentor() {
                             </div>
                             
                             {isExpanded && (
-                              <div className="border-t border-slate-200 dark:border-slate-700 p-3 space-y-3">
+                              <div className="border-t border-[#E8E8E8] p-3 space-y-3">
                                 {/* Thread Entries */}
                                 <div className="space-y-2 max-h-64 overflow-y-auto">
                                   {entries.map((entry: any) => {
@@ -1686,15 +1686,15 @@ export default function DashboardMentor() {
                                     return (
                                       <div 
                                         key={entry.id} 
-                                        className={`p-2 rounded-lg text-sm ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-emerald-50 dark:bg-emerald-950/30'}`}
+                                        className={`p-2 rounded-lg text-sm ${isFromMe ? 'bg-[#F3F3F3]' : 'bg-[#F3F3F3]'}`}
                                       >
                                         <div className="flex justify-between items-start mb-1">
-                                          <span className={`text-xs font-semibold ${isFromMe ? 'text-slate-600 dark:text-slate-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                          <span className={`text-xs font-semibold ${isFromMe ? 'text-[#8A8A8A]' : 'text-[#0D566C]'}`}>
                                             {isFromMe ? 'You' : (entry.senderName || entrepreneurName)}
                                           </span>
                                           <span className="text-xs text-muted-foreground">{new Date(entry.createdAt).toLocaleString()}</span>
                                         </div>
-                                        <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{entry.message}</p>
+                                        <p className="text-[#4A4A4A] whitespace-pre-wrap">{entry.message}</p>
                                         {entry.attachments && entry.attachments.length > 0 && (
                                           <div className="mt-2 flex flex-wrap gap-2">
                                             {entry.attachments.map((att: any, idx: number) => (
@@ -1703,7 +1703,7 @@ export default function DashboardMentor() {
                                                 href={att.url} 
                                                 target="_blank" 
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
+                                                className="inline-flex items-center gap-1 text-xs text-[#0D566C] hover:text-[#0D566C]"
                                               >
                                                 <Paperclip className="h-3 w-3" />
                                                 {att.name || 'Attachment'}
@@ -1718,14 +1718,14 @@ export default function DashboardMentor() {
                                 
                                 {/* Reply Form and Actions */}
                                 {!isAccountDisabled && (
-                                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                                  <div className="pt-2 border-t border-[#E8E8E8] space-y-2">
                                     {!isClosed && (
                                       <div className="space-y-2">
                                         {/* Reply attachments display */}
                                         {(threadReplyAttachments[thread.id]?.length || 0) > 0 && (
                                           <div className="flex flex-wrap gap-2">
                                             {threadReplyAttachments[thread.id].map((att, idx) => (
-                                              <div key={idx} className="flex items-center gap-1 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 rounded text-xs">
+                                              <div key={idx} className="flex items-center gap-1 px-2 py-1 bg-[rgba(13,86,108,0.08)] rounded text-xs">
                                                 <Paperclip className="h-3 w-3" />
                                                 <span className="max-w-[100px] truncate">{att.name}</span>
                                                 <button 
@@ -1733,7 +1733,7 @@ export default function DashboardMentor() {
                                                     ...prev,
                                                     [thread.id]: prev[thread.id]?.filter((_, i) => i !== idx) || []
                                                   }))}
-                                                  className="text-red-500 hover:text-red-700"
+                                                  className="text-[#DC2626] hover:text-[#DC2626]"
                                                 >
                                                   <X className="h-3 w-3" />
                                                 </button>
@@ -1746,7 +1746,7 @@ export default function DashboardMentor() {
                                             value={threadReplyText[thread.id] || ""}
                                             onChange={(e) => setThreadReplyText(prev => ({ ...prev, [thread.id]: e.target.value }))}
                                             placeholder="Type your reply..."
-                                            className="w-full min-h-[60px] p-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                            className="w-full min-h-[60px] p-2 rounded-md border border-[#E8E8E8] bg-white text-sm resize-y focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]"
                                             data-testid={`input-reply-${thread.id}`}
                                           />
                                           <div className="flex gap-2 items-center justify-between">
@@ -1755,7 +1755,7 @@ export default function DashboardMentor() {
                                               disabled={generatingAiDraft[thread.id] || uploadingFile}
                                               size="sm"
                                               variant="outline"
-                                              className="text-purple-600 border-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/20"
+                                              className="text-[#4B3F72] border-purple-300 hover:bg-[rgba(75,63,114,0.08)]"
                                               data-testid={`button-ai-draft-${thread.id}`}
                                             >
                                               {generatingAiDraft[thread.id] ? (
@@ -1775,7 +1775,7 @@ export default function DashboardMentor() {
                                                   className="hidden"
                                                   data-testid={`input-reply-attachment-${thread.id}`}
                                                 />
-                                                <div className={`flex items-center justify-center w-8 h-8 rounded-md border border-emerald-300 text-emerald-600 hover:bg-emerald-50 ${uploadingFile ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                <div className={`flex items-center justify-center w-8 h-8 rounded-md border border-[#E8E8E8] text-[#0D566C] hover:bg-[#F3F3F3] ${uploadingFile ? 'opacity-50 pointer-events-none' : ''}`}>
                                                   <Paperclip className="h-4 w-4" />
                                                 </div>
                                               </label>
@@ -1783,7 +1783,7 @@ export default function DashboardMentor() {
                                                 onClick={() => addThreadReply(thread.id)}
                                                 disabled={!threadReplyText[thread.id]?.trim() || uploadingFile}
                                                 size="sm"
-                                                className="bg-emerald-600 hover:bg-emerald-700"
+                                                className="bg-[#FF6B5C] hover:bg-[#e55a4d]"
                                                 data-testid={`button-reply-${thread.id}`}
                                               >
                                                 <Reply className="h-4 w-4 mr-1" /> Send
@@ -1800,7 +1800,7 @@ export default function DashboardMentor() {
                                           onClick={() => reopenThread(thread.id)}
                                           size="sm"
                                           variant="outline"
-                                          className="text-emerald-600 border-emerald-300 hover:bg-emerald-50"
+                                          className="text-[#0D566C] border-[#E8E8E8] hover:bg-[#F3F3F3]"
                                           data-testid={`button-reopen-${thread.id}`}
                                         >
                                           Reopen Conversation
@@ -1810,7 +1810,7 @@ export default function DashboardMentor() {
                                           onClick={() => closeThread(thread.id)}
                                           size="sm"
                                           variant="outline"
-                                          className="text-slate-600 border-slate-300 hover:bg-slate-50"
+                                          className="text-[#8A8A8A] border-[#E8E8E8] hover:bg-[#F3F3F3]"
                                           data-testid={`button-close-${thread.id}`}
                                         >
                                           <X className="h-3 w-3 mr-1" /> Close Conversation
@@ -1872,10 +1872,10 @@ export default function DashboardMentor() {
                 if (trialConversations.size === 0) return null;
                 
                 return (
-                  <Card className="mb-6 border-amber-200 dark:border-amber-900/30">
-                    <CardHeader className="bg-amber-50/50 dark:bg-amber-950/20">
+                  <Card className="mb-6 border-[rgba(245,197,66,0.3)]">
+                    <CardHeader className="bg-[rgba(245,197,66,0.08)]/50">
                       <CardTitle className="text-lg flex items-center gap-2">
-                        <Clock className="h-5 w-5 text-amber-600" />
+                        <Clock className="h-5 w-5 text-[#B45309]" />
                         Trial Entrepreneurs
                         {trialUnread > 0 && (
                           <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" data-testid="badge-trial-unread">
@@ -1891,8 +1891,8 @@ export default function DashboardMentor() {
                           <div key={conv.email} className="border rounded-lg p-3 space-y-3">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <span className="font-semibold text-sm text-amber-700 dark:text-amber-400">{conv.name || conv.email}</span>
-                                <Badge variant="outline" className="text-xs border-amber-300 text-amber-600">Trial</Badge>
+                                <span className="font-semibold text-sm text-[#B45309]">{conv.name || conv.email}</span>
+                                <Badge variant="outline" className="text-xs border-[rgba(245,197,66,0.3)] text-[#B45309]">Trial</Badge>
                                 {convUnread > 0 && (
                                   <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{convUnread}</span>
                                 )}
@@ -1914,14 +1914,14 @@ export default function DashboardMentor() {
                                         }
                                       } catch (e) { console.error("Error marking as read:", e); }
                                     }
-                                  }} className={`p-2 rounded-lg text-sm ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-amber-50 dark:bg-amber-950/30'} ${!isFromMe && !msg.is_read ? 'cursor-pointer ring-1 ring-amber-300' : ''}`}>
+                                  }} className={`p-2 rounded-lg text-sm ${isFromMe ? 'bg-[#F3F3F3]' : 'bg-[rgba(245,197,66,0.08)]'} ${!isFromMe && !msg.is_read ? 'cursor-pointer ring-1 ring-amber-300' : ''}`}>
                                     <div className="flex justify-between items-start mb-1">
-                                      <span className={`text-xs font-semibold ${isFromMe ? 'text-slate-600' : 'text-amber-700 dark:text-amber-400'}`}>
+                                      <span className={`text-xs font-semibold ${isFromMe ? 'text-[#8A8A8A]' : 'text-[#B45309]'}`}>
                                         {isFromMe ? 'You' : conv.name}
                                       </span>
                                       <span className="text-xs text-muted-foreground">{formatToPST(msg.created_at)}</span>
                                     </div>
-                                    <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
+                                    <p className="text-sm text-[#4A4A4A] whitespace-pre-wrap">{msg.message}</p>
                                   </div>
                                 );
                               })}
@@ -1929,7 +1929,7 @@ export default function DashboardMentor() {
                             <div className="flex gap-2 pt-2 border-t">
                               <Input
                                 placeholder={`Reply to ${conv.name}...`}
-                                className="flex-1 bg-white dark:bg-slate-900"
+                                className="flex-1 bg-white"
                                 data-testid={`input-trial-reply-${conv.email}`}
                                 onKeyDown={async (e) => {
                                   if (e.key === 'Enter') {
@@ -2013,8 +2013,8 @@ export default function DashboardMentor() {
               })()}
 
               {/* Admin Section */}
-              <Card className="mb-6 border-cyan-200 dark:border-cyan-900/30">
-                <CardHeader className="bg-cyan-50/50 dark:bg-cyan-950/20 cursor-pointer" onClick={async () => {
+              <Card className="mb-6 border-[#E8E8E8]">
+                <CardHeader className="bg-[#F3F3F3] cursor-pointer" onClick={async () => {
                   const el = document.getElementById('admin-messages-section');
                   if (el) el.classList.toggle('hidden');
                   const unreadAdminMsgs = adminMsgs.filter((m: any) => m.to_email === mentorProfile.email && !m.is_read);
@@ -2033,7 +2033,7 @@ export default function DashboardMentor() {
                 }}>
                   <CardTitle className="text-lg flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <MessageSquare className="h-5 w-5 text-cyan-600" />
+                      <MessageSquare className="h-5 w-5 text-[#0D566C]" />
                       Admin
                       {adminUnread > 0 && (
                         <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" data-testid="badge-admin-unread">
@@ -2049,7 +2049,7 @@ export default function DashboardMentor() {
                     value={adminMessage}
                     onChange={(e) => setAdminMessage(e.target.value)}
                     placeholder="Type your message to the admin team..."
-                    className="w-full min-h-20 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    className="w-full min-h-20 p-3 rounded-lg border border-[#E8E8E8] bg-white text-[#4A4A4A] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]"
                     data-testid="textarea-admin-message"
                   />
                   <Button 
@@ -2085,7 +2085,7 @@ export default function DashboardMentor() {
                     }}
                     disabled={!adminMessage.trim()}
                     size="sm"
-                    className="bg-cyan-600 hover:bg-cyan-700"
+                    className="bg-[#FF6B5C] hover:bg-[#e55a4d]"
                     data-testid="button-send-admin-message"
                   >
                     <Send className="mr-2 h-4 w-4" /> Send
@@ -2093,7 +2093,7 @@ export default function DashboardMentor() {
                   
                   {adminMsgs.length > 0 && (
                     <div className="border-t pt-4 mt-4">
-                      <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Conversation History</p>
+                      <p className="text-sm font-semibold text-[#8A8A8A] mb-3">Conversation History</p>
                       <div className="space-y-3 max-h-64 overflow-y-auto">
                         {[...adminMsgs].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => {
                           const isFromMe = msg.from_email === mentorProfile.email;
@@ -2111,14 +2111,14 @@ export default function DashboardMentor() {
                                   console.error("Error marking as read:", e);
                                 }
                               }
-                            }} className={`p-3 rounded-lg ${isFromMe ? 'bg-slate-100 dark:bg-slate-800/50' : 'bg-cyan-50 dark:bg-cyan-950/30'} ${!isFromMe && !msg.is_read ? 'cursor-pointer opacity-70 hover:opacity-100' : ''}`}>
+                            }} className={`p-3 rounded-lg ${isFromMe ? 'bg-[#F3F3F3]' : 'bg-[#F3F3F3]'} ${!isFromMe && !msg.is_read ? 'cursor-pointer opacity-70 hover:opacity-100' : ''}`}>
                               <div className="flex justify-between items-start mb-1">
-                                <span className={`text-sm font-semibold ${isFromMe ? 'text-slate-700 dark:text-slate-300' : 'text-cyan-700 dark:text-cyan-400'}`}>
+                                <span className={`text-sm font-semibold ${isFromMe ? 'text-[#4A4A4A]' : 'text-[#0D566C]'}`}>
                                   {isFromMe ? 'You' : 'Admin'}
                                 </span>
                                 <span className="text-xs text-muted-foreground">{formatToPST(msg.created_at)}</span>
                               </div>
-                              <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
+                              <p className="text-sm text-[#4A4A4A] whitespace-pre-wrap">{msg.message}</p>
                             </div>
                           );
                         })}
@@ -2131,7 +2131,7 @@ export default function DashboardMentor() {
               {allEntrepreneurs.length === 0 && (
                 <Card>
                   <CardContent className="text-center py-8">
-                    <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                    <Users className="h-12 w-12 text-[#C0C0C0] mx-auto mb-4" />
                     <p className="text-muted-foreground">No entrepreneurs assigned yet. Check your Portfolios tab.</p>
                   </CardContent>
                 </Card>
@@ -2144,8 +2144,8 @@ export default function DashboardMentor() {
           {activeTab === "meetings" && (
             <div>
               <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">Meetings</h1>
-                <Button className="bg-cyan-600 hover:bg-cyan-700" onClick={() => setShowMeetingModal(true)} data-testid="button-schedule-meeting">
+                <h1 className="text-3xl font-display font-bold text-[#4A4A4A]">Meetings</h1>
+                <Button className="bg-[#FF6B5C] hover:bg-[#e55a4d]" onClick={() => setShowMeetingModal(true)} data-testid="button-schedule-meeting">
                   <Plus className="mr-2 h-4 w-4" /> Schedule Meeting
                 </Button>
               </div>
@@ -2158,23 +2158,23 @@ export default function DashboardMentor() {
                     .filter(Boolean);
                   
                   return (
-                  <Card key={meeting.id} className="border-l-4 border-l-blue-500">
+                  <Card key={meeting.id} className="border-l-4 border-l-[#0D566C]">
                     <CardContent className="pt-6">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <p className="font-semibold text-slate-900 dark:text-white mb-2">{meeting.topic}</p>
+                          <p className="font-semibold text-[#4A4A4A] mb-2">{meeting.topic}</p>
                           <p className="text-sm text-muted-foreground mb-1">Status: {meeting.status}</p>
                           {meeting.start_time && <p className="text-sm text-muted-foreground">{formatToPST(meeting.start_time)}</p>}
                           <p className="text-sm text-muted-foreground">Duration: {meeting.duration} minutes</p>
                           {participantNames.length > 0 && (
-                            <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-                              <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                            <div className="mt-2 p-2 bg-[rgba(13,86,108,0.06)] rounded-lg">
+                              <p className="text-sm font-medium text-[#0D566C]">
                                 <Users className="inline h-4 w-4 mr-1" />
                                 Invited: {participantNames.join(", ")}
                               </p>
                             </div>
                           )}
-                          <a href={meeting.join_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-blue-600 hover:underline flex items-center gap-1">
+                          <a href={meeting.join_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-[#0D566C] hover:underline flex items-center gap-1">
                             Join Meeting <ExternalLink className="h-3 w-3" />
                           </a>
                         </div>
@@ -2186,7 +2186,7 @@ export default function DashboardMentor() {
                 }) : (
                   <Card>
                     <CardContent className="text-center py-8">
-                      <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                      <Calendar className="h-12 w-12 text-[#C0C0C0] mx-auto mb-4" />
                       <p className="text-muted-foreground">No meetings scheduled yet. Create one to get started!</p>
                     </CardContent>
                   </Card>
@@ -2200,7 +2200,7 @@ export default function DashboardMentor() {
             <div>
               <div className="flex justify-between items-center mb-8">
                 <div>
-                  <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Mentor Profile</h1>
+                  <h1 className="text-3xl font-display font-bold text-[#4A4A4A] mb-2">Mentor Profile</h1>
                   <p className="text-muted-foreground">
                     {isAccountDisabled 
                       ? "Your profile is currently in view-only mode."
@@ -2211,7 +2211,7 @@ export default function DashboardMentor() {
                   <Button 
                     onClick={() => setIsEditingProfile(!isEditingProfile)}
                     variant={isEditingProfile ? "destructive" : "default"}
-                    className={isEditingProfile ? "bg-red-600 hover:bg-red-700" : "bg-cyan-600 hover:bg-cyan-700"}
+                    className={isEditingProfile ? "bg-red-600 hover:bg-red-700" : "bg-[#FF6B5C] hover:bg-[#e55a4d]"}
                     data-testid="button-edit-profile"
                   >
                     {isEditingProfile ? "Cancel" : "Edit Profile"}
@@ -2220,19 +2220,19 @@ export default function DashboardMentor() {
               </div>
 
               {isEditingProfile ? (
-                <Card className="border-cyan-200 dark:border-cyan-900/30 max-w-2xl">
-                  <CardHeader className="bg-cyan-50/50 dark:bg-cyan-950/20">
+                <Card className="border-[#E8E8E8] max-w-2xl">
+                  <CardHeader className="bg-[#F3F3F3]">
                     <CardTitle>Edit Your Profile</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-6 space-y-6">
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Profile Picture</label>
+                      <label className="text-sm font-semibold text-[#4A4A4A] mb-2 block">Profile Picture</label>
                       <div className="flex items-center gap-4">
-                        <div className="w-20 h-20 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-2xl overflow-hidden">
+                        <div className="w-20 h-20 rounded-full bg-[#F3F3F3] flex items-center justify-center text-2xl overflow-hidden">
                           {mentorProfile.profileImage ? (
                             <img src={mentorProfile.profileImage} alt="Profile" className="w-full h-full object-cover" />
                           ) : (
-                            <User className="h-10 w-10 text-cyan-600" />
+                            <User className="h-10 w-10 text-[#0D566C]" />
                           )}
                         </div>
                         <div className="flex flex-col gap-2">
@@ -2274,7 +2274,7 @@ export default function DashboardMentor() {
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              className="text-red-600 hover:text-red-700"
+                              className="text-red-600 hover:text-[#DC2626]"
                               onClick={() => setMentorProfile({ ...mentorProfile, profileImage: null })}
                               data-testid="button-remove-mentor-photo"
                             >
@@ -2286,73 +2286,73 @@ export default function DashboardMentor() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Full Name *</label>
+                      <label className="text-sm font-semibold text-[#4A4A4A] mb-2 block">Full Name *</label>
                       <Input
                         value={mentorProfile.fullName}
                         onChange={(e) => setMentorProfile({ ...mentorProfile, fullName: e.target.value })}
-                        className="bg-slate-50 dark:bg-slate-800/50"
+                        className="bg-[#F3F3F3]"
                         data-testid="input-mentor-name"
                       />
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Email Address</label>
+                      <label className="text-sm font-semibold text-[#4A4A4A] mb-2 block">Email Address</label>
                       <Input
                         type="email"
                         value={mentorProfile.email}
                         disabled
-                        className="bg-slate-100 dark:bg-slate-800/50 text-slate-500 cursor-not-allowed"
+                        className="bg-[#F3F3F3] text-[#8A8A8A] cursor-not-allowed"
                         data-testid="input-mentor-email"
                       />
-                      <p className="text-xs text-slate-500 mt-1">To change your email, please contact admin</p>
+                      <p className="text-xs text-[#8A8A8A] mt-1">To change your email, please contact admin</p>
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">LinkedIn Profile *</label>
+                      <label className="text-sm font-semibold text-[#4A4A4A] mb-2 block">LinkedIn Profile *</label>
                       <Input
                         placeholder="https://linkedin.com/in/yourprofile"
                         value={mentorProfile.linkedin}
                         onChange={(e) => setMentorProfile({ ...mentorProfile, linkedin: e.target.value })}
-                        className="bg-slate-50 dark:bg-slate-800/50"
+                        className="bg-[#F3F3F3]"
                         data-testid="input-mentor-linkedin"
                       />
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Professional Bio *</label>
+                      <label className="text-sm font-semibold text-[#4A4A4A] mb-2 block">Professional Bio *</label>
                       <textarea
                         value={mentorProfile.bio}
                         onChange={(e) => setMentorProfile({ ...mentorProfile, bio: e.target.value })}
-                        className="w-full min-h-24 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        className="w-full min-h-24 p-3 rounded-lg border border-[#E8E8E8] bg-[#F3F3F3] text-[#4A4A4A] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]"
                         placeholder="Tell mentees about your experience, expertise, and what you bring to mentorship..."
                         data-testid="textarea-mentor-bio"
                       />
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Areas of Expertise *</label>
+                      <label className="text-sm font-semibold text-[#4A4A4A] mb-2 block">Areas of Expertise *</label>
                       <Input
                         value={mentorProfile.expertise}
                         onChange={(e) => setMentorProfile({ ...mentorProfile, expertise: e.target.value })}
                         placeholder="e.g., SaaS, Product Strategy, Go-to-Market"
-                        className="bg-slate-50 dark:bg-slate-800/50"
+                        className="bg-[#F3F3F3]"
                         data-testid="input-mentor-expertise"
                       />
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Years of Experience *</label>
+                      <label className="text-sm font-semibold text-[#4A4A4A] mb-2 block">Years of Experience *</label>
                       <Input
                         value={mentorProfile.yearsExperience}
                         onChange={(e) => setMentorProfile({ ...mentorProfile, yearsExperience: e.target.value })}
                         placeholder="e.g., 10+"
-                        className="bg-slate-50 dark:bg-slate-800/50"
+                        className="bg-[#F3F3F3]"
                         data-testid="input-mentor-experience"
                       />
                     </div>
 
                     <Button 
-                      className="w-full bg-cyan-600 hover:bg-cyan-700" 
+                      className="w-full bg-[#FF6B5C] hover:bg-[#e55a4d]" 
                       onClick={handleSaveProfile}
                       disabled={saving}
                       data-testid="button-save-mentor-profile"
@@ -2363,44 +2363,44 @@ export default function DashboardMentor() {
                   </CardContent>
                 </Card>
               ) : (
-                <Card className="border-cyan-200 dark:border-cyan-900/30 max-w-2xl">
+                <Card className="border-[#E8E8E8] max-w-2xl">
                   <CardContent className="pt-6 space-y-6">
                     <div className="flex items-center gap-4 mb-4">
-                      <div className="w-20 h-20 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-2xl overflow-hidden">
+                      <div className="w-20 h-20 rounded-full bg-[#F3F3F3] flex items-center justify-center text-2xl overflow-hidden">
                         {mentorProfile.profileImage ? (
                           <img src={mentorProfile.profileImage} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
-                          <User className="h-10 w-10 text-cyan-600" />
+                          <User className="h-10 w-10 text-[#0D566C]" />
                         )}
                       </div>
                       <div>
-                        <p className="text-xl font-semibold text-slate-900 dark:text-white">{mentorProfile.fullName}</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">{mentorProfile.email}</p>
+                        <p className="text-xl font-semibold text-[#4A4A4A]">{mentorProfile.fullName}</p>
+                        <p className="text-sm text-[#8A8A8A]">{mentorProfile.email}</p>
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Full Name</p>
-                      <p className="text-slate-900 dark:text-white">{mentorProfile.fullName}</p>
+                      <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-2">Full Name</p>
+                      <p className="text-[#4A4A4A]">{mentorProfile.fullName}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Email</p>
-                      <p className="text-slate-900 dark:text-white">{mentorProfile.email}</p>
+                      <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-2">Email</p>
+                      <p className="text-[#4A4A4A]">{mentorProfile.email}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">LinkedIn</p>
-                      <p className="text-cyan-600 dark:text-cyan-400">{mentorProfile.linkedin}</p>
+                      <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-2">LinkedIn</p>
+                      <p className="text-[#0D566C]">{mentorProfile.linkedin}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Professional Bio</p>
-                      <p className="text-slate-900 dark:text-white">{mentorProfile.bio}</p>
+                      <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-2">Professional Bio</p>
+                      <p className="text-[#4A4A4A]">{mentorProfile.bio}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Expertise</p>
-                      <p className="text-slate-900 dark:text-white">{mentorProfile.expertise}</p>
+                      <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-2">Expertise</p>
+                      <p className="text-[#4A4A4A]">{mentorProfile.expertise}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Experience</p>
-                      <p className="text-slate-900 dark:text-white">{mentorProfile.yearsExperience}</p>
+                      <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-2">Experience</p>
+                      <p className="text-[#4A4A4A]">{mentorProfile.yearsExperience}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -2414,30 +2414,30 @@ export default function DashboardMentor() {
       {showNewThreadModal && selectedEntrepreneur && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <Card className="w-[500px] max-w-lg">
-            <CardHeader className="bg-emerald-50 dark:bg-emerald-950/20">
+            <CardHeader className="bg-[#F3F3F3]">
               <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-emerald-600" />
+                <MessageSquare className="h-5 w-5 text-[#0D566C]" />
                 Start Conversation with {selectedEntrepreneur.name}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               <div>
-                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Subject (optional)</label>
+                <label className="text-sm font-semibold text-[#4A4A4A] mb-2 block">Subject (optional)</label>
                 <Input
                   placeholder="e.g., Follow-up on business plan"
                   value={newThreadSubject}
                   onChange={(e) => setNewThreadSubject(e.target.value)}
-                  className="bg-slate-50 dark:bg-slate-800/50"
+                  className="bg-[#F3F3F3]"
                   data-testid="input-new-thread-subject"
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Message *</label>
+                <label className="text-sm font-semibold text-[#4A4A4A] mb-2 block">Message *</label>
                 <textarea
                   placeholder="Type your message..."
                   value={newThreadMessage}
                   onChange={(e) => setNewThreadMessage(e.target.value)}
-                  className="w-full min-h-24 p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full min-h-24 p-3 rounded-lg border border-[#E8E8E8] bg-[#F3F3F3] text-[#4A4A4A] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]"
                   data-testid="textarea-new-thread-message"
                 />
               </div>
@@ -2455,7 +2455,7 @@ export default function DashboardMentor() {
                   Cancel
                 </Button>
                 <Button 
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  className="flex-1 bg-[#FF6B5C] hover:bg-[#e55a4d]"
                   disabled={!newThreadMessage.trim()}
                   onClick={() => createNewThread(
                     selectedEntrepreneur.email,
@@ -2477,9 +2477,9 @@ export default function DashboardMentor() {
       {showMeetingModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <Card className="w-[500px] max-w-lg max-h-[90vh] overflow-y-auto">
-            <CardHeader className="bg-blue-50 dark:bg-blue-950/20">
+            <CardHeader className="bg-[rgba(13,86,108,0.06)]">
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-blue-600" />
+                <Calendar className="h-5 w-5 text-[#0D566C]" />
                 {zoomMeetingResult ? "Meeting Created!" : "Create Zoom Meeting"}
               </CardTitle>
             </CardHeader>
@@ -2487,41 +2487,41 @@ export default function DashboardMentor() {
               {!zoomMeetingResult ? (
                 <>
                   <div>
-                    <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Meeting Topic *</label>
+                    <label className="text-sm font-semibold text-[#4A4A4A] mb-2 block">Meeting Topic *</label>
                     <Input
                       placeholder="e.g., Portfolio Monthly Check-in"
                       value={newMeeting.topic}
                       onChange={(e) => setNewMeeting({ ...newMeeting, topic: e.target.value })}
-                      className="bg-slate-50 dark:bg-slate-800/50"
+                      className="bg-[#F3F3F3]"
                       data-testid="input-meeting-topic"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Date (optional)</label>
+                      <label className="text-sm font-semibold text-[#4A4A4A] mb-2 block">Date (optional)</label>
                       <Input
                         type="date"
                         value={newMeeting.date}
                         onChange={(e) => setNewMeeting({ ...newMeeting, date: e.target.value })}
-                        className="bg-slate-50 dark:bg-slate-800/50"
+                        className="bg-[#F3F3F3]"
                         data-testid="input-meeting-date"
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Time (optional)</label>
+                      <label className="text-sm font-semibold text-[#4A4A4A] mb-2 block">Time (optional)</label>
                       <Input
                         type="time"
                         value={newMeeting.time}
                         onChange={(e) => setNewMeeting({ ...newMeeting, time: e.target.value })}
-                        className="bg-slate-50 dark:bg-slate-800/50"
+                        className="bg-[#F3F3F3]"
                         data-testid="input-meeting-time"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Duration *</label>
+                    <label className="text-sm font-semibold text-[#4A4A4A] mb-2 block">Duration *</label>
                     <div className="flex gap-3">
-                      <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800" style={{flex: 1}}>
+                      <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-[#F3F3F3]" style={{flex: 1}}>
                         <input
                           type="radio"
                           name="duration"
@@ -2533,7 +2533,7 @@ export default function DashboardMentor() {
                         />
                         <span className="font-medium">30 min</span>
                       </label>
-                      <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800" style={{flex: 1}}>
+                      <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-[#F3F3F3]" style={{flex: 1}}>
                         <input
                           type="radio"
                           name="duration"
@@ -2555,7 +2555,7 @@ export default function DashboardMentor() {
                       setNewMeeting({ date: "", time: "", topic: "", duration: 60 });
                     }}>Cancel</Button>
                     <Button 
-                      className="flex-1 bg-blue-600 hover:bg-blue-700" 
+                      className="flex-1 bg-[#0D566C] hover:bg-[#0A4557]" 
                       onClick={async () => {
                         if (!newMeeting.topic.trim()) {
                           toast.error("Please enter a meeting topic");
@@ -2601,19 +2601,19 @@ export default function DashboardMentor() {
                 </>
               ) : (
                 <>
-                  <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                    <p className="font-semibold text-green-800 dark:text-green-200 mb-2">Meeting Created Successfully!</p>
-                    <p className="text-sm text-green-700 dark:text-green-300 mb-3">{zoomMeetingResult.topic}</p>
+                  <div className="bg-[rgba(34,197,94,0.08)] p-4 rounded-lg border border-[rgba(34,197,94,0.2)]">
+                    <p className="font-semibold text-[#16A34A] mb-2">Meeting Created Successfully!</p>
+                    <p className="text-sm text-[#16A34A] mb-3">{zoomMeetingResult.topic}</p>
                     <div className="space-y-2 text-sm">
                       <div>
                         <span className="font-medium">Host Link (for you):</span>
-                        <a href={zoomMeetingResult.start_url} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-600 hover:underline flex items-center gap-1 inline">
+                        <a href={zoomMeetingResult.start_url} target="_blank" rel="noopener noreferrer" className="ml-2 text-[#0D566C] hover:underline flex items-center gap-1 inline">
                           Start Meeting <ExternalLink className="h-3 w-3" />
                         </a>
                       </div>
                       <div>
                         <span className="font-medium">Join Link (for attendees):</span>
-                        <div className="mt-1 p-2 bg-white dark:bg-slate-800 rounded border text-xs break-all">
+                        <div className="mt-1 p-2 bg-white rounded border text-xs break-all">
                           {zoomMeetingResult.join_url}
                         </div>
                       </div>
@@ -2627,11 +2627,11 @@ export default function DashboardMentor() {
 
                   {portfolios.length > 0 && (
                     <div className="border-t pt-4">
-                      <p className="font-semibold text-slate-900 dark:text-white mb-3">Invite Entrepreneurs</p>
+                      <p className="font-semibold text-[#4A4A4A] mb-3">Invite Entrepreneurs</p>
                       <p className="text-sm text-muted-foreground mb-3">Select who should receive the meeting invitation:</p>
                       <div className="max-h-48 overflow-y-auto space-y-2">
                         {portfolios.flatMap(p => p.members).map(member => (
-                          <label key={member.id} className="flex items-center gap-3 p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+                          <label key={member.id} className="flex items-center gap-3 p-2 rounded hover:bg-[#F3F3F3] cursor-pointer">
                             <input
                               type="checkbox"
                               checked={selectedEntrepreneurIds.includes(member.id)}
@@ -2642,7 +2642,7 @@ export default function DashboardMentor() {
                                   setSelectedEntrepreneurIds(selectedEntrepreneurIds.filter(id => id !== member.id));
                                 }
                               }}
-                              className="w-4 h-4 rounded border-slate-300"
+                              className="w-4 h-4 rounded border-[#E8E8E8]"
                             />
                             <div>
                               <p className="font-medium text-sm">{member.name}</p>
@@ -2653,7 +2653,7 @@ export default function DashboardMentor() {
                       </div>
                       {selectedEntrepreneurIds.length > 0 && (
                         <Button 
-                          className="w-full mt-3 bg-cyan-600 hover:bg-cyan-700"
+                          className="w-full mt-3 bg-[#FF6B5C] hover:bg-[#e55a4d]"
                           onClick={async () => {
                             setSendingInvites(true);
                             try {
@@ -2704,7 +2704,7 @@ export default function DashboardMentor() {
                       Close
                     </Button>
                     <Button 
-                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      className="flex-1 bg-[#0D566C] hover:bg-[#0A4557]"
                       onClick={() => window.open(zoomMeetingResult.start_url, "_blank")}
                       data-testid="button-start-meeting"
                     >
@@ -2722,18 +2722,18 @@ export default function DashboardMentor() {
       {/* Agreements Tab */}
       {activeTab === "agreements" && (
         <div className="p-8">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">My Agreements</h2>
+          <h2 className="text-2xl font-bold text-[#4A4A4A] mb-6">My Agreements</h2>
           {mentorProfile?.email && <MyAgreements userEmail={mentorProfile.email} />}
           
           {/* Cancellation Section */}
-          <div className="mt-12 pt-6 border-t border-slate-200 dark:border-slate-700">
-            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">Cancel Mentor Partnership</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+          <div className="mt-12 pt-6 border-t border-[#E8E8E8]">
+            <h3 className="text-lg font-semibold text-[#4A4A4A] mb-2">Cancel Mentor Partnership</h3>
+            <p className="text-sm text-[#8A8A8A] mb-4">
               If you wish to end your partnership with TouchConnectPro, please submit a cancellation request.
             </p>
             <Button 
               variant="outline" 
-              className="border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+              className="border-[rgba(255,107,92,0.3)] text-red-600 hover:bg-[rgba(255,107,92,0.08)]"
               onClick={() => setShowCancelModal(true)}
               data-testid="button-cancel-partnership"
             >
@@ -2751,7 +2751,7 @@ export default function DashboardMentor() {
               <CardTitle className="text-red-600">Cancel Mentor Partnership</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-[#8A8A8A]">
                 We're sorry to see you go. Please let us know why you'd like to end your partnership.
               </p>
               <div>
@@ -2760,7 +2760,7 @@ export default function DashboardMentor() {
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
                   placeholder="Please share your reason..."
-                  className="w-full min-h-[100px] p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white resize-y"
+                  className="w-full min-h-[100px] p-3 rounded-lg border border-[#E8E8E8] bg-[#F3F3F3] text-[#4A4A4A] resize-y"
                   data-testid="input-cancel-reason"
                 />
               </div>

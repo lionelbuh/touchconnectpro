@@ -709,8 +709,8 @@ export default function DashboardCoach() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center" style={{ backgroundColor: "#FAF9F7" }}>
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#FF6B5C" }} />
       </div>
     );
   }
@@ -724,7 +724,7 @@ export default function DashboardCoach() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex flex-col min-h-screen" style={{ backgroundColor: "#FAF9F7" }}>
       <DashboardMobileNav
         tabs={coachNavTabs}
         activeTab={activeTab}
@@ -735,41 +735,44 @@ export default function DashboardCoach() {
         onLogout={handleLogout}
       />
       <div className="flex flex-1">
-      <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex flex-col">
+      <aside className="w-64 hidden md:flex flex-col" style={{ backgroundColor: "#FFFFFF", borderRight: "1px solid #E8E8E8" }}>
         <div className="p-6 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-6">
-            <Avatar className={`h-10 w-10 border border-slate-200 ${profile?.is_disabled ? "bg-red-500" : "bg-cyan-500"}`}>
-              <AvatarFallback className="text-white">
+            <Avatar className="h-10 w-10" style={{ backgroundColor: profile?.is_disabled ? undefined : "#FF6B5C", borderColor: "#E8E8E8", borderWidth: "1px" }}>
+              <AvatarFallback className={`text-white ${profile?.is_disabled ? "bg-red-500" : ""}`} style={!profile?.is_disabled ? { backgroundColor: "#FF6B5C" } : undefined}>
                 {profile?.full_name ? getInitials(profile.full_name) : "CO"}
               </AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-bold text-sm">{profile?.full_name || "Coach"}</div>
-              <div className={`text-xs ${profile?.is_disabled ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
+              <div className="font-bold text-sm" style={{ color: "#0D566C" }}>{profile?.full_name || "Coach"}</div>
+              <div className="text-xs" style={{ color: profile?.is_disabled ? "#dc2626" : "#8A8A8A" }}>
                 {profile?.is_disabled ? "Disabled" : sessionRate ? `$${sessionRate}/session` : "Set your rates"}
               </div>
             </div>
           </div>
           <nav className="space-y-1 flex-1">
             <Button 
-              variant={activeTab === "overview" ? "secondary" : "ghost"} 
-              className="w-full justify-start font-medium"
+              variant="ghost" 
+              className="w-full justify-start font-medium rounded-xl"
+              style={activeTab === "overview" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#4A4A4A" }}
               onClick={() => setActiveTab("overview")}
               data-testid="button-overview-tab"
             >
               <LayoutDashboard className="mr-2 h-4 w-4" /> Overview
             </Button>
             <Button 
-              variant={activeTab === "entrepreneurs" ? "secondary" : "ghost"} 
-              className="w-full justify-start font-medium text-slate-600"
+              variant="ghost" 
+              className="w-full justify-start font-medium rounded-xl"
+              style={activeTab === "entrepreneurs" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#4A4A4A" }}
               onClick={() => setActiveTab("entrepreneurs")}
               data-testid="button-entrepreneurs-tab"
             >
               <Users className="mr-2 h-4 w-4" /> Entrepreneurs
             </Button>
             <Button 
-              variant={activeTab === "messages" ? "secondary" : "ghost"} 
-              className="w-full justify-start font-medium text-slate-600 relative"
+              variant="ghost" 
+              className="w-full justify-start font-medium rounded-xl relative"
+              style={activeTab === "messages" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#4A4A4A" }}
               onClick={() => setActiveTab("messages")}
               data-testid="button-messages-tab"
             >
@@ -781,26 +784,29 @@ export default function DashboardCoach() {
               )}
             </Button>
             <Button 
-              variant={activeTab === "earnings" ? "secondary" : "ghost"} 
-              className="w-full justify-start font-medium text-slate-600"
+              variant="ghost" 
+              className="w-full justify-start font-medium rounded-xl"
+              style={activeTab === "earnings" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#4A4A4A" }}
               onClick={() => setActiveTab("earnings")}
               data-testid="button-earnings-tab"
             >
               <DollarSign className="mr-2 h-4 w-4" /> Earnings
             </Button>
             <Button 
-              variant={activeTab === "agreements" ? "secondary" : "ghost"} 
-              className="w-full justify-start font-medium text-slate-600"
+              variant="ghost" 
+              className="w-full justify-start font-medium rounded-xl"
+              style={activeTab === "agreements" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#4A4A4A" }}
               onClick={() => setActiveTab("agreements")}
               data-testid="button-agreements-tab"
             >
               <ClipboardCheck className="mr-2 h-4 w-4" /> My Agreements
             </Button>
           </nav>
-          <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
+          <div className="pt-6" style={{ borderTop: "1px solid #E8E8E8" }}>
             <Button 
               variant="ghost"
-              className="w-full justify-start font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+              className="w-full justify-start font-medium hover:text-red-600 hover:bg-red-50 rounded-xl"
+              style={{ color: "#4A4A4A" }}
               onClick={handleLogout}
               data-testid="button-logout"
             >
@@ -816,13 +822,13 @@ export default function DashboardCoach() {
           {activeTab === "overview" && (
             <>
             {profile?.is_disabled && (
-              <Card className="mb-6 border-red-300 bg-red-50 dark:bg-red-950/20 dark:border-red-800">
+              <Card className="mb-6 rounded-2xl border-red-300 bg-red-50" style={{ boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                 <CardContent className="pt-6 pb-6">
                   <div className="flex items-start gap-4">
                     <AlertCircle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h3 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-1">Account Disabled</h3>
-                      <p className="text-red-700 dark:text-red-400">Your coaching account has been disabled. Your profile is currently in view-only mode. Please use the Messages tab to contact the Admin team if you would like to reactivate your account.</p>
+                      <h3 className="text-lg font-semibold text-red-800 mb-1">Account Disabled</h3>
+                      <p className="text-red-700">Your coaching account has been disabled. Your profile is currently in view-only mode. Please use the Messages tab to contact the Admin team if you would like to reactivate your account.</p>
                     </div>
                   </div>
                 </CardContent>
@@ -830,13 +836,13 @@ export default function DashboardCoach() {
             )}
 
             {hasPendingCancellation && (
-              <Card className="mb-6 border-orange-300 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800" data-testid="cancellation-banner">
+              <Card className="mb-6 rounded-2xl border-orange-300 bg-orange-50" style={{ boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }} data-testid="cancellation-banner">
                 <CardContent className="pt-6 pb-6">
                   <div className="flex items-start gap-4">
                     <AlertCircle className="h-6 w-6 text-orange-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h3 className="text-lg font-semibold text-orange-800 dark:text-orange-300 mb-1">Cancellation Request Pending</h3>
-                      <p className="text-orange-700 dark:text-orange-400">You have submitted a cancellation request. Our team will process it within 2-3 business days. If you've changed your mind, please contact us at <a href="mailto:hello@touchconnectpro.com" className="underline font-medium">hello@touchconnectpro.com</a> to cancel your request.</p>
+                      <h3 className="text-lg font-semibold text-orange-800 mb-1">Cancellation Request Pending</h3>
+                      <p className="text-orange-700">You have submitted a cancellation request. Our team will process it within 2-3 business days. If you've changed your mind, please contact us at <a href="mailto:hello@touchconnectpro.com" className="underline font-medium">hello@touchconnectpro.com</a> to cancel your request.</p>
                     </div>
                   </div>
                 </CardContent>
@@ -844,13 +850,13 @@ export default function DashboardCoach() {
             )}
 
             {hasProcessedCancellation && (
-              <Card className="mb-6 border-green-300 bg-green-50 dark:bg-green-950/20 dark:border-green-800" data-testid="cancellation-approved-banner">
+              <Card className="mb-6 rounded-2xl border-green-300 bg-green-50" style={{ boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }} data-testid="cancellation-approved-banner">
                 <CardContent className="pt-6 pb-6">
                   <div className="flex items-start gap-4">
                     <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 mb-1">Cancellation Approved</h3>
-                      <p className="text-green-700 dark:text-green-400">Your cancellation request has been received and approved. Thank you for being part of TouchConnectPro. If you ever wish to return, you're always welcome back!</p>
+                      <h3 className="text-lg font-semibold text-green-800 mb-1">Cancellation Approved</h3>
+                      <p className="text-green-700">Your cancellation request has been received and approved. Thank you for being part of TouchConnectPro. If you ever wish to return, you're always welcome back!</p>
                     </div>
                   </div>
                 </CardContent>
@@ -859,17 +865,17 @@ export default function DashboardCoach() {
 
             {/* Stripe Connect Status Card */}
             {!profile?.is_disabled && (
-              <Card className={`mb-6 ${stripeStatus?.chargesEnabled ? 'border-green-300 bg-green-50 dark:bg-green-950/20 dark:border-green-800' : 'border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800'}`}>
+              <Card className={`mb-6 rounded-2xl ${stripeStatus?.chargesEnabled ? 'border-green-300 bg-green-50' : 'border-amber-300 bg-amber-50'}`} style={{ boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                 <CardContent className="pt-6 pb-6">
                   <div className="flex items-start gap-4">
                     <CreditCard className={`h-6 w-6 ${stripeStatus?.chargesEnabled ? 'text-green-500' : 'text-amber-500'} flex-shrink-0 mt-0.5`} />
                     <div className="flex-1">
-                      <h3 className={`text-lg font-semibold ${stripeStatus?.chargesEnabled ? 'text-green-800 dark:text-green-300' : 'text-amber-800 dark:text-amber-300'} mb-1`}>
+                      <h3 className={`text-lg font-semibold ${stripeStatus?.chargesEnabled ? 'text-green-800' : 'text-amber-800'} mb-1`}>
                         {stripeStatus?.chargesEnabled ? 'Payment Setup Complete' : 'Set Up Payments'}
                       </h3>
                       {stripeStatus?.chargesEnabled ? (
                         <div className="space-y-3">
-                          <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                          <div className="flex items-center gap-2 text-green-700">
                             <CheckCircle2 className="h-4 w-4" />
                             <span>You can receive payments from entrepreneurs. You keep 80% of each transaction.</span>
                           </div>
@@ -891,7 +897,8 @@ export default function DashboardCoach() {
                                 toast.error("Error disconnecting Stripe account");
                               }
                             }}
-                            className="text-slate-600 dark:text-slate-400"
+                            className="rounded-xl"
+                            style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
                             data-testid="button-reset-stripe"
                           >
                             <RefreshCw className="mr-2 h-4 w-4" />
@@ -900,13 +907,14 @@ export default function DashboardCoach() {
                         </div>
                       ) : (
                         <>
-                          <p className="text-amber-700 dark:text-amber-400 mb-3">
+                          <p className="text-amber-700 mb-3">
                             Connect your Stripe account to receive payments from entrepreneurs. You'll keep 80% of each transaction.
                           </p>
                           <Button
                             onClick={handleStripeOnboarding}
                             disabled={loadingStripe}
-                            className="bg-amber-600 hover:bg-amber-700 text-white"
+                            className="rounded-full"
+                            style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                             data-testid="button-stripe-onboarding"
                           >
                             {loadingStripe ? (
@@ -926,10 +934,10 @@ export default function DashboardCoach() {
 
             <header className="mb-8 flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
+              <h1 className="text-3xl font-display font-bold" style={{ color: "#0D566C" }}>
                 Welcome, {profile?.full_name?.split(" ")[0] || "Coach"}!
               </h1>
-              <p className="text-muted-foreground mt-2">
+              <p className="mt-2" style={{ color: "#8A8A8A" }}>
                 {profile?.is_disabled 
                   ? "Your profile is currently in view-only mode."
                   : isEditingProfile 
@@ -943,6 +951,8 @@ export default function DashboardCoach() {
                   <>
                     <Button 
                       variant="outline"
+                      className="rounded-xl"
+                      style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
                       onClick={cancelEditMode}
                       disabled={saving}
                       data-testid="button-cancel-edit"
@@ -952,7 +962,8 @@ export default function DashboardCoach() {
                     <Button 
                       onClick={handleSaveAndExitEdit} 
                       disabled={saving}
-                      className="bg-cyan-600 hover:bg-cyan-700"
+                      className="rounded-full"
+                      style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                       data-testid="button-save-profile"
                     >
                       {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
@@ -963,6 +974,8 @@ export default function DashboardCoach() {
                   <>
                     <Button 
                       variant="outline"
+                      className="rounded-xl"
+                      style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
                       onClick={() => {
                         const url = `${window.location.origin}/coach/${profile?.id}`;
                         navigator.clipboard.writeText(url);
@@ -976,7 +989,8 @@ export default function DashboardCoach() {
                     </Button>
                     <Button 
                       onClick={enterEditMode}
-                      className="bg-cyan-600 hover:bg-cyan-700"
+                      className="rounded-full"
+                      style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                       data-testid="button-edit-profile"
                     >
                       <Edit className="mr-2 h-4 w-4" />
@@ -989,24 +1003,24 @@ export default function DashboardCoach() {
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
+            <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Star className="h-5 w-5 text-cyan-600" />
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
+                  <Star className="h-5 w-5" style={{ color: "#FF6B5C" }} />
                   Your Expertise
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">What do you specialize in?</p>
+                <p className="text-sm" style={{ color: "#8A8A8A" }}>What do you specialize in?</p>
                 {expertise.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     {expertise.map(item => (
-                      <Badge key={item} variant="secondary" className="bg-cyan-200 dark:bg-cyan-900 text-cyan-900 dark:text-cyan-100 flex items-center gap-2 pr-1">
+                      <Badge key={item} variant="secondary" className="flex items-center gap-2 pr-1" style={{ backgroundColor: "rgba(13,86,108,0.1)", color: "#0D566C", borderColor: "rgba(13,86,108,0.3)" }}>
                         {item}
                         {isEditingProfile && !profile?.is_disabled && (
                           <button
                             onClick={() => removeExpertise(item)}
-                            className="hover:text-cyan-700 dark:hover:text-cyan-300"
+                            style={{ color: "#0D566C" }}
                             data-testid={`button-remove-expertise-${item}`}
                           >
                             <X className="h-3 w-3" />
@@ -1022,82 +1036,86 @@ export default function DashboardCoach() {
                       multiple
                       value={expertise}
                       onChange={(e) => handleExpertiseChange(e.target.selectedOptions)}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                      className="w-full px-3 py-2 rounded-xl focus:ring-2"
                       data-testid="select-coach-expertise"
-                      style={{ minHeight: "120px" }}
+                      style={{ minHeight: "120px", backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                     >
                       {EXPERTISE_OPTIONS.map(option => (
                         <option key={option} value={option}>{option}</option>
                       ))}
                     </select>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Hold Ctrl/Cmd to select multiple options</p>
+                    <p className="text-xs" style={{ color: "#8A8A8A" }}>Hold Ctrl/Cmd to select multiple options</p>
                   </>
                 ) : (
-                  expertise.length === 0 && <p className="text-slate-500 italic">No expertise selected</p>
+                  expertise.length === 0 && <p className="italic" style={{ color: "#8A8A8A" }}>No expertise selected</p>
                 )}
               </CardContent>
             </Card>
 
-            <Card className="border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
+            <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-cyan-600" />
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
+                  <DollarSign className="h-5 w-5" style={{ color: "#FF6B5C" }} />
                   Your Rates for Your Services
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">You keep 80%, we keep 20%</p>
+                <p className="text-sm" style={{ color: "#8A8A8A" }}>You keep 80%, we keep 20%</p>
                 {isEditingProfile && !profile?.is_disabled ? (
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">15 Minutes Introductory Call</label>
+                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>15 Minutes Introductory Call</label>
                       <div className="flex gap-2">
-                        <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
+                        <span className="flex items-center" style={{ color: "#8A8A8A" }}>$</span>
                         <input 
                           type="number" 
                           value={introCallRate}
                           onChange={(e) => setIntroCallRate(e.target.value)}
                           placeholder="25"
-                          className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                          className="flex-1 px-3 py-2 rounded-xl h-11"
+                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                           data-testid="input-coach-introcall-rate"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Per Session</label>
+                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>Per Session</label>
                       <div className="flex gap-2">
-                        <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
+                        <span className="flex items-center" style={{ color: "#8A8A8A" }}>$</span>
                         <input 
                           type="number" 
                           value={sessionRate}
                           onChange={(e) => setSessionRate(e.target.value)}
                           placeholder="150"
-                          className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                          className="flex-1 px-3 py-2 rounded-xl h-11"
+                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                           data-testid="input-coach-session-rate"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Monthly Coaching Retainer</label>
+                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>Monthly Coaching Retainer</label>
                       <div className="flex gap-2">
-                        <span className="text-slate-600 dark:text-slate-400 flex items-center">$</span>
+                        <span className="flex items-center" style={{ color: "#8A8A8A" }}>$</span>
                         <input 
                           type="number" 
                           value={monthlyRate}
                           onChange={(e) => setMonthlyRate(e.target.value)}
                           placeholder="500"
-                          className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                          className="flex-1 px-3 py-2 rounded-xl h-11"
+                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                           data-testid="input-coach-monthly-rate"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Monthly Retainer Description (Optional)</label>
+                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>Monthly Retainer Description (Optional)</label>
                       <textarea 
                         value={monthlyRetainerDescription}
                         onChange={(e) => setMonthlyRetainerDescription(e.target.value)}
                         placeholder="Describe what's included in your monthly coaching retainer..."
-                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20 min-h-[60px]"
+                        className="w-full px-3 py-2 rounded-xl min-h-[60px]"
+                        style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                         data-testid="input-coach-monthly-description"
                       />
                     </div>
@@ -1105,21 +1123,21 @@ export default function DashboardCoach() {
                 ) : (
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">15 Min Intro Call:</span>
-                      <span className="font-medium text-slate-900 dark:text-white">{introCallRate ? `$${introCallRate}` : "Not set"}</span>
+                      <span className="text-sm" style={{ color: "#8A8A8A" }}>15 Min Intro Call:</span>
+                      <span className="font-medium" style={{ color: "#4A4A4A" }}>{introCallRate ? `$${introCallRate}` : "Not set"}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Per Session:</span>
-                      <span className="font-medium text-slate-900 dark:text-white">{sessionRate ? `$${sessionRate}` : "Not set"}</span>
+                      <span className="text-sm" style={{ color: "#8A8A8A" }}>Per Session:</span>
+                      <span className="font-medium" style={{ color: "#4A4A4A" }}>{sessionRate ? `$${sessionRate}` : "Not set"}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Monthly Retainer:</span>
-                      <span className="font-medium text-slate-900 dark:text-white">{monthlyRate ? `$${monthlyRate}` : "Not set"}</span>
+                      <span className="text-sm" style={{ color: "#8A8A8A" }}>Monthly Retainer:</span>
+                      <span className="font-medium" style={{ color: "#4A4A4A" }}>{monthlyRate ? `$${monthlyRate}` : "Not set"}</span>
                     </div>
                     {monthlyRetainerDescription && (
-                      <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
-                        <span className="text-xs text-slate-500 dark:text-slate-400 block mb-1">What's included:</span>
-                        <p className="text-sm text-slate-700 dark:text-slate-300">{monthlyRetainerDescription}</p>
+                      <div className="pt-2" style={{ borderTop: "1px solid #E8E8E8" }}>
+                        <span className="text-xs block mb-1" style={{ color: "#8A8A8A" }}>What's included:</span>
+                        <p className="text-sm" style={{ color: "#4A4A4A" }}>{monthlyRetainerDescription}</p>
                       </div>
                     )}
                   </div>
@@ -1127,48 +1145,50 @@ export default function DashboardCoach() {
               </CardContent>
             </Card>
 
-            <Card className="border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
+            <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <LinkIcon className="h-5 w-5 text-cyan-600" />
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
+                  <LinkIcon className="h-5 w-5" style={{ color: "#FF6B5C" }} />
                   LinkedIn Profile
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">Your LinkedIn profile URL</p>
+                <p className="text-sm" style={{ color: "#8A8A8A" }}>Your LinkedIn profile URL</p>
                 {isEditingProfile && !profile?.is_disabled ? (
                   <input
                     type="url"
                     value={linkedin}
                     onChange={(e) => setLinkedin(e.target.value)}
                     placeholder="https://linkedin.com/in/..."
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                    className="w-full px-3 py-2 rounded-xl h-11"
+                    style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                     data-testid="input-linkedin"
                   />
                 ) : (
                   linkedin ? (
-                    <a href={linkedin} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline break-all">{linkedin}</a>
+                    <a href={linkedin} target="_blank" rel="noopener noreferrer" className="hover:underline break-all" style={{ color: "#0D566C" }}>{linkedin}</a>
                   ) : (
-                    <p className="text-slate-500 italic">No LinkedIn profile set</p>
+                    <p className="italic" style={{ color: "#8A8A8A" }}>No LinkedIn profile set</p>
                   )
                 )}
               </CardContent>
             </Card>
 
-            <Card className="border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
+            <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Target className="h-5 w-5 text-cyan-600" />
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
+                  <Target className="h-5 w-5" style={{ color: "#FF6B5C" }} />
                   Focus Areas
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">Topics you help entrepreneurs with</p>
+                <p className="text-sm" style={{ color: "#8A8A8A" }}>Topics you help entrepreneurs with</p>
                 {isEditingProfile && !profile?.is_disabled ? (
                   <select 
                     value={focusAreas}
                     onChange={(e) => setFocusAreas(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                    className="w-full px-3 py-2 rounded-xl h-11"
+                    style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                     data-testid="select-focus-areas"
                   >
                     <option value="">Select a focus area...</option>
@@ -1178,47 +1198,48 @@ export default function DashboardCoach() {
                   </select>
                 ) : (
                   focusAreas ? (
-                    <Badge variant="secondary" className="bg-cyan-200 dark:bg-cyan-900 text-cyan-900 dark:text-cyan-100">{focusAreas}</Badge>
+                    <Badge variant="secondary" style={{ backgroundColor: "rgba(13,86,108,0.1)", color: "#0D566C", borderColor: "rgba(13,86,108,0.3)" }}>{focusAreas}</Badge>
                   ) : (
-                    <p className="text-slate-500 italic">No focus area selected</p>
+                    <p className="italic" style={{ color: "#8A8A8A" }}>No focus area selected</p>
                   )
                 )}
               </CardContent>
             </Card>
 
-            <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20 md:col-span-2">
+            <Card className="rounded-2xl md:col-span-2" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Star className="h-5 w-5 text-amber-600" />
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
+                  <Star className="h-5 w-5" style={{ color: "#F5C542" }} />
                   External Reputation
                   {externalVerified && (
-                    <Badge className="bg-green-600 ml-2">Verified</Badge>
+                    <Badge className="ml-2" style={{ backgroundColor: "#16a34a", color: "#FFFFFF" }}>Verified</Badge>
                   )}
                   {!externalVerified && externalPlatform && (
-                    <Badge className="bg-slate-500 ml-2">Pending Verification</Badge>
+                    <Badge className="ml-2" style={{ backgroundColor: "#8A8A8A", color: "#FFFFFF" }}>Pending Verification</Badge>
                   )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="text-sm" style={{ color: "#8A8A8A" }}>
                   Display your ratings from other coaching platforms. Updates reset verification status.
                 </p>
                 {isEditingReputation ? (
                   <div className="space-y-4">
                     <div>
-                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Platform Name *</label>
+                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>Platform Name *</label>
                       <input
                         type="text"
                         value={externalPlatform}
                         onChange={(e) => setExternalPlatform(e.target.value)}
                         placeholder="e.g., MentorCruise, Clarity.fm"
-                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                        className="w-full px-3 py-2 rounded-xl h-11"
+                        style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                         data-testid="input-external-platform"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Average Rating *</label>
+                        <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>Average Rating *</label>
                         <input
                           type="number"
                           step="0.1"
@@ -1227,38 +1248,43 @@ export default function DashboardCoach() {
                           value={externalRating}
                           onChange={(e) => setExternalRating(e.target.value)}
                           placeholder="e.g., 4.9"
-                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                          className="w-full px-3 py-2 rounded-xl h-11"
+                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                           data-testid="input-external-rating"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Number of Reviews *</label>
+                        <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>Number of Reviews *</label>
                         <input
                           type="number"
                           min="1"
                           value={externalReviewCount}
                           onChange={(e) => setExternalReviewCount(e.target.value)}
                           placeholder="e.g., 37"
-                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                          className="w-full px-3 py-2 rounded-xl h-11"
+                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                           data-testid="input-external-review-count"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">External Profile URL * (for verification only)</label>
+                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>External Profile URL * (for verification only)</label>
                       <input
                         type="url"
                         value={externalProfileUrl}
                         onChange={(e) => setExternalProfileUrl(e.target.value)}
                         placeholder="https://mentorcruise.com/mentor/yourname"
-                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                        className="w-full px-3 py-2 rounded-xl h-11"
+                        style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                         data-testid="input-external-url"
                       />
-                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">This link is only used for verification and will never be shown publicly.</p>
+                      <p className="text-xs mt-1" style={{ color: "#F5C542" }}>This link is only used for verification and will never be shown publicly.</p>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
+                        className="rounded-xl"
+                        style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
                         onClick={() => setIsEditingReputation(false)}
                         disabled={savingReputation}
                         data-testid="button-cancel-reputation"
@@ -1268,7 +1294,8 @@ export default function DashboardCoach() {
                       <Button
                         onClick={handleSaveReputation}
                         disabled={savingReputation}
-                        className="bg-amber-600 hover:bg-amber-700"
+                        className="rounded-full"
+                        style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                         data-testid="button-save-reputation"
                       >
                         {savingReputation ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
@@ -1280,7 +1307,7 @@ export default function DashboardCoach() {
                   <div className="space-y-4">
                     {externalPlatform ? (
                       <>
-                        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-amber-100 dark:border-amber-900">
+                        <div className="rounded-lg p-4" style={{ backgroundColor: "#F3F3F3", border: "1px solid #E8E8E8" }}>
                           <div className="flex items-center gap-3 mb-2">
                             <div className="flex items-center gap-1">
                               {[...Array(5)].map((_, i) => (
@@ -1294,20 +1321,20 @@ export default function DashboardCoach() {
                                 />
                               ))}
                             </div>
-                            <span className="font-bold text-lg">{externalRating}</span>
-                            <span className="text-muted-foreground">({externalReviewCount} reviews)</span>
+                            <span className="font-bold text-lg" style={{ color: "#4A4A4A" }}>{externalRating}</span>
+                            <span style={{ color: "#8A8A8A" }}>({externalReviewCount} reviews)</span>
                           </div>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                          <p className="text-sm" style={{ color: "#8A8A8A" }}>
                             Based on ratings from {externalPlatform}
                           </p>
                           {externalVerified && externalVerifiedAt && (
-                            <p className="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center gap-1">
+                            <p className="text-xs mt-2 flex items-center gap-1" style={{ color: "#16a34a" }}>
                               <Check className="h-3 w-3" />
                               Verified by TouchConnectPro on {new Date(externalVerifiedAt).toLocaleDateString()}
                             </p>
                           )}
                           {!externalVerified && (
-                            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                            <p className="text-xs mt-2" style={{ color: "#F5C542" }}>
                               Awaiting verification by our team
                             </p>
                           )}
@@ -1315,8 +1342,9 @@ export default function DashboardCoach() {
                         {!profile?.is_disabled && (
                           <Button
                             variant="outline"
+                            className="rounded-xl"
+                            style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
                             onClick={() => setIsEditingReputation(true)}
-                            className="border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20"
                             data-testid="button-edit-reputation"
                           >
                             <Edit className="mr-2 h-4 w-4" />
@@ -1326,11 +1354,12 @@ export default function DashboardCoach() {
                       </>
                     ) : (
                       <div className="text-center py-4">
-                        <p className="text-slate-500 italic mb-4">No external reputation added yet</p>
+                        <p className="italic mb-4" style={{ color: "#8A8A8A" }}>No external reputation added yet</p>
                         {!profile?.is_disabled && (
                           <Button
                             onClick={() => setIsEditingReputation(true)}
-                            className="bg-amber-600 hover:bg-amber-700"
+                            className="rounded-full"
+                            style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                             data-testid="button-add-reputation"
                           >
                             <Star className="mr-2 h-4 w-4" />
@@ -1344,49 +1373,50 @@ export default function DashboardCoach() {
               </CardContent>
             </Card>
 
-            <Card className="border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
+            <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-cyan-600" />
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
+                  <FileText className="h-5 w-5" style={{ color: "#FF6B5C" }} />
                   Your Bio
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">Tell entrepreneurs about yourself</p>
+                <p className="text-sm" style={{ color: "#8A8A8A" }}>Tell entrepreneurs about yourself</p>
                 {isEditingProfile && !profile?.is_disabled ? (
                   <textarea 
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     placeholder="Share your background, experience, and what makes you a great coach..."
                     rows={4}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-cyan-500 focus:ring-cyan-500/20"
+                    className="w-full px-3 py-2 rounded-xl"
+                    style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                     data-testid="textarea-bio"
                   />
                 ) : (
                   bio ? (
-                    <p className="text-slate-900 dark:text-white whitespace-pre-wrap">{bio}</p>
+                    <p className="whitespace-pre-wrap" style={{ color: "#4A4A4A" }}>{bio}</p>
                   ) : (
-                    <p className="text-slate-500 italic">No bio added yet</p>
+                    <p className="italic" style={{ color: "#8A8A8A" }}>No bio added yet</p>
                   )
                 )}
               </CardContent>
             </Card>
 
-            <Card className="border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
+            <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <User className="h-5 w-5 text-cyan-600" />
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
+                  <User className="h-5 w-5" style={{ color: "#FF6B5C" }} />
                   Profile Picture
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">{isEditingProfile ? "Upload a professional photo" : "Your profile photo"}</p>
+                <p className="text-sm" style={{ color: "#8A8A8A" }}>{isEditingProfile ? "Upload a professional photo" : "Your profile photo"}</p>
                 <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-full bg-cyan-200 dark:bg-cyan-900/50 flex items-center justify-center text-2xl overflow-hidden border-2 border-cyan-300 dark:border-cyan-700">
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl overflow-hidden" style={{ backgroundColor: "#F3F3F3", border: "2px solid #E8E8E8" }}>
                     {profileImage ? (
                       <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
-                      <User className="h-10 w-10 text-cyan-600" />
+                      <User className="h-10 w-10" style={{ color: "#0D566C" }} />
                     )}
                   </div>
                   {isEditingProfile && !profile?.is_disabled && (
@@ -1401,9 +1431,10 @@ export default function DashboardCoach() {
                       />
                       <Button
                         variant="outline"
+                        className="text-sm rounded-xl"
+                        style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
                         onClick={() => document.getElementById("coach-profile-upload")?.click()}
                         disabled={uploadingImage}
-                        className="text-sm"
                         data-testid="button-upload-photo"
                       >
                         {uploadingImage ? (
@@ -1413,7 +1444,7 @@ export default function DashboardCoach() {
                         )}
                         {uploadingImage ? "Uploading..." : "Upload Photo"}
                       </Button>
-                      <p className="text-xs text-slate-500">Max 5MB. JPG, PNG, GIF, WebP</p>
+                      <p className="text-xs" style={{ color: "#8A8A8A" }}>Max 5MB. JPG, PNG, GIF, WebP</p>
                     </div>
                   )}
                 </div>
@@ -1421,9 +1452,9 @@ export default function DashboardCoach() {
             </Card>
           </div>
 
-          <div className="mt-8 p-6 bg-cyan-50 dark:bg-cyan-950/20 border border-cyan-200 dark:border-cyan-900/30 rounded-lg">
-            <h3 className="font-semibold text-cyan-900 dark:text-cyan-300 mb-2">Revenue Share Model</h3>
-            <p className="text-sm text-cyan-800 dark:text-cyan-200">You set your hourly rate. We handle payments and take 20%. You keep 80% of every session.</p>
+          <div className="mt-8 p-6 rounded-2xl" style={{ backgroundColor: "rgba(13,86,108,0.05)", border: "1px solid rgba(13,86,108,0.15)" }}>
+            <h3 className="font-semibold mb-2" style={{ color: "#0D566C" }}>Revenue Share Model</h3>
+            <p className="text-sm" style={{ color: "#4A4A4A" }}>You set your hourly rate. We handle payments and take 20%. You keep 80% of every session.</p>
           </div>
           </>
           )}
@@ -1431,13 +1462,13 @@ export default function DashboardCoach() {
           {/* Messages Tab */}
           {activeTab === "messages" && (
             <div>
-              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Messages</h1>
-              <p className="text-muted-foreground mb-8">Communicate with the TouchConnectPro admin team.</p>
+              <h1 className="text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Messages</h1>
+              <p className="mb-8" style={{ color: "#8A8A8A" }}>Communicate with the TouchConnectPro admin team.</p>
 
-              <Card className="mb-6">
+              <Card className="mb-6 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5 text-cyan-600" />
+                  <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
+                    <MessageSquare className="h-5 w-5" style={{ color: "#FF6B5C" }} />
                     Send a Message to Admin
                   </CardTitle>
                 </CardHeader>
@@ -1446,7 +1477,8 @@ export default function DashboardCoach() {
                     value={adminMessage}
                     onChange={(e) => setAdminMessage(e.target.value)}
                     placeholder="Type your message to the admin team..."
-                    className="w-full min-h-24 p-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    className="w-full min-h-24 p-4 rounded-xl focus:outline-none focus:ring-2"
+                    style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                     data-testid="textarea-admin-message"
                   />
                   <Button 
@@ -1481,7 +1513,8 @@ export default function DashboardCoach() {
                       }
                     }}
                     disabled={!adminMessage.trim()}
-                    className="bg-cyan-600 hover:bg-cyan-700"
+                    className="rounded-full"
+                    style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                     data-testid="button-send-admin-message"
                   >
                     <MessageSquare className="mr-2 h-4 w-4" /> Send Message
@@ -1489,10 +1522,10 @@ export default function DashboardCoach() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5 text-cyan-600" />
+                  <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
+                    <MessageSquare className="h-5 w-5" style={{ color: "#FF6B5C" }} />
                     Message History
                   </CardTitle>
                 </CardHeader>
@@ -1502,22 +1535,25 @@ export default function DashboardCoach() {
                       {[...adminMessages].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => (
                           <div 
                             key={msg.id} 
-                            className={`p-4 rounded-lg ${isAdminEmail(msg.from_email) ? "bg-cyan-50 dark:bg-cyan-950/30 border-l-4 border-l-cyan-500" : "bg-slate-50 dark:bg-slate-800/50 border-l-4 border-l-slate-400"}`}
+                            className="p-4 rounded-lg border-l-4"
+                            style={isAdminEmail(msg.from_email) 
+                              ? { backgroundColor: "rgba(255,107,92,0.05)", borderLeftColor: "#FF6B5C" } 
+                              : { backgroundColor: "#F3F3F3", borderLeftColor: "#E8E8E8" }}
                           >
                             <div className="flex justify-between items-start mb-2">
-                              <span className={`font-semibold ${isAdminEmail(msg.from_email) ? "text-cyan-700 dark:text-cyan-400" : "text-slate-700 dark:text-slate-300"}`}>
+                              <span className="font-semibold" style={{ color: isAdminEmail(msg.from_email) ? "#FF6B5C" : "#4A4A4A" }}>
                                 {isAdminEmail(msg.from_email) ? "From Admin" : "You"}
                               </span>
-                              <span className="text-xs text-muted-foreground">{formatToPST(msg.created_at)}</span>
+                              <span className="text-xs" style={{ color: "#8A8A8A" }}>{formatToPST(msg.created_at)}</span>
                             </div>
-                            <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{msg.message}</p>
+                            <p className="whitespace-pre-wrap" style={{ color: "#4A4A4A" }}>{msg.message}</p>
                           </div>
                         ))}
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                      <p className="text-muted-foreground">No messages yet. Send a message to get started!</p>
+                      <MessageSquare className="h-12 w-12 mx-auto mb-4" style={{ color: "#E8E8E8" }} />
+                      <p style={{ color: "#8A8A8A" }}>No messages yet. Send a message to get started!</p>
                     </div>
                   )}
                 </CardContent>
@@ -1530,59 +1566,59 @@ export default function DashboardCoach() {
             <div className="space-y-8">
               {/* Contact Requests Section */}
               <div>
-                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Contact Requests</h1>
-                <p className="text-muted-foreground mb-4">One-time messages from entrepreneurs interested in your coaching.</p>
+                <h1 className="text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Contact Requests</h1>
+                <p className="mb-4" style={{ color: "#8A8A8A" }}>One-time messages from entrepreneurs interested in your coaching.</p>
                 
                 {loadingContactRequests ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-cyan-500" />
+                    <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#FF6B5C" }} />
                   </div>
                 ) : contactRequests.length > 0 ? (
                   <div className="space-y-4">
                     {contactRequests.map((request: any) => (
-                      <Card key={request.id} className={`border-l-4 ${request.status === 'closed' ? 'border-l-green-500' : 'border-l-cyan-500'}`} data-testid={`card-contact-request-${request.id}`}>
+                      <Card key={request.id} className={`border-l-4 rounded-2xl ${request.status === 'closed' ? 'border-l-green-500' : ''}`} style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)", ...(request.status !== 'closed' ? { borderLeftColor: "#FF6B5C" } : {}) }} data-testid={`card-contact-request-${request.id}`}>
                         <CardContent className="pt-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10 bg-cyan-500">
-                                <AvatarFallback className="text-white">
+                              <Avatar className="h-10 w-10" style={{ backgroundColor: "#FF6B5C" }}>
+                                <AvatarFallback className="text-white" style={{ backgroundColor: "#FF6B5C" }}>
                                   {(request.entrepreneur_name || 'E').substring(0, 2).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="font-semibold text-slate-900 dark:text-white">{request.entrepreneur_name}</p>
-                                <p className="text-sm text-muted-foreground">Entrepreneur</p>
+                                <p className="font-semibold" style={{ color: "#0D566C" }}>{request.entrepreneur_name}</p>
+                                <p className="text-sm" style={{ color: "#8A8A8A" }}>Entrepreneur</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Badge className={request.status === 'closed' ? 'bg-green-600' : request.status === 'pending' ? 'bg-amber-500' : 'bg-slate-500'}>
+                              <Badge style={request.status === 'closed' ? { backgroundColor: "#16a34a", color: "#FFFFFF" } : request.status === 'pending' ? { backgroundColor: "#F5C542", color: "#FFFFFF" } : { backgroundColor: "#8A8A8A", color: "#FFFFFF" }}>
                                 {request.status === 'closed' ? 'Replied' : request.status === 'pending' ? 'Awaiting Reply' : request.status}
                               </Badge>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-xs" style={{ color: "#8A8A8A" }}>
                                 {new Date(request.created_at).toLocaleDateString()}
                               </span>
                             </div>
                           </div>
                           
                           {/* Original Message */}
-                          <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg mb-3">
-                            <p className="text-xs font-semibold text-slate-500 uppercase mb-1">Message</p>
-                            <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{request.message}</p>
+                          <div className="p-3 rounded-lg mb-3" style={{ backgroundColor: "#F3F3F3" }}>
+                            <p className="text-xs font-semibold uppercase mb-1" style={{ color: "#8A8A8A" }}>Message</p>
+                            <p className="text-sm whitespace-pre-wrap" style={{ color: "#4A4A4A" }}>{request.message}</p>
                           </div>
                           
                           {/* Reply Section */}
                           {request.status === 'closed' && request.reply ? (
-                            <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                              <p className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase mb-1 flex items-center gap-1">
+                            <div className="p-3 rounded-lg border" style={{ backgroundColor: "rgba(22,163,106,0.05)", borderColor: "rgba(22,163,106,0.2)" }}>
+                              <p className="text-xs font-semibold uppercase mb-1 flex items-center gap-1" style={{ color: "#16a34a" }}>
                                 <Check className="h-3 w-3" /> Your Reply
                               </p>
-                              <p className="text-sm text-green-800 dark:text-green-200 whitespace-pre-wrap">{request.reply}</p>
+                              <p className="text-sm whitespace-pre-wrap" style={{ color: "#4A4A4A" }}>{request.reply}</p>
                             </div>
                           ) : request.status === 'pending' && (
                             replyingToRequest === request.id ? (
                               <div className="space-y-3">
-                                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-2 rounded-lg">
-                                  <p className="text-xs text-amber-800 dark:text-amber-200">
+                                <div className="p-2 rounded-lg" style={{ backgroundColor: "rgba(245,197,66,0.1)", border: "1px solid rgba(245,197,66,0.3)" }}>
+                                  <p className="text-xs" style={{ color: "#b45309" }}>
                                     <strong>One-time reply:</strong> After you send this reply, the conversation will close. Make it count!
                                   </p>
                                 </div>
@@ -1591,13 +1627,16 @@ export default function DashboardCoach() {
                                   placeholder="Write your reply..."
                                   value={replyMessage}
                                   onChange={(e) => setReplyMessage(e.target.value)}
-                                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20 focus:outline-none"
+                                  className="w-full px-4 py-2 rounded-xl focus:outline-none focus:ring-2"
+                                  style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                                   data-testid={`input-reply-${request.id}`}
                                 />
                                 <div className="flex gap-2">
                                   <Button
                                     variant="outline"
                                     size="sm"
+                                    className="rounded-xl"
+                                    style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
                                     onClick={() => {
                                       setReplyingToRequest(null);
                                       setReplyMessage("");
@@ -1607,7 +1646,8 @@ export default function DashboardCoach() {
                                   </Button>
                                   <Button
                                     size="sm"
-                                    className="bg-cyan-600 hover:bg-cyan-700"
+                                    className="rounded-full"
+                                    style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                                     onClick={() => handleReplyToRequest(request.id)}
                                     disabled={sendingReply || !replyMessage.trim()}
                                     data-testid={`button-send-reply-${request.id}`}
@@ -1625,7 +1665,8 @@ export default function DashboardCoach() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="border-cyan-300 text-cyan-700 hover:bg-cyan-50"
+                                className="rounded-xl"
+                                style={{ borderColor: "rgba(255,107,92,0.3)", color: "#FF6B5C" }}
                                 onClick={() => setReplyingToRequest(request.id)}
                                 data-testid={`button-reply-${request.id}`}
                               >
@@ -1639,10 +1680,10 @@ export default function DashboardCoach() {
                     ))}
                   </div>
                 ) : (
-                  <Card className="text-center py-8">
+                  <Card className="text-center py-8 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                     <CardContent>
-                      <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                      <p className="text-muted-foreground">No contact requests yet. When entrepreneurs reach out, their messages will appear here.</p>
+                      <MessageSquare className="h-12 w-12 mx-auto mb-4" style={{ color: "#E8E8E8" }} />
+                      <p style={{ color: "#8A8A8A" }}>No contact requests yet. When entrepreneurs reach out, their messages will appear here.</p>
                     </CardContent>
                   </Card>
                 )}
@@ -1650,34 +1691,34 @@ export default function DashboardCoach() {
 
               {/* Clients Section */}
               <div>
-                <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-2">My Clients</h2>
-                <p className="text-muted-foreground mb-4">Entrepreneurs who have purchased your coaching services.</p>
+                <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>My Clients</h2>
+                <p className="mb-4" style={{ color: "#8A8A8A" }}>Entrepreneurs who have purchased your coaching services.</p>
 
                 {loadingClients ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+                  <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#FF6B5C" }} />
                 </div>
               ) : coachClients.length > 0 ? (
                 <div className="space-y-4">
                   {coachClients.map((client) => (
-                    <Card key={client.id} className="border-l-4 border-l-purple-500">
+                    <Card key={client.id} className="border-l-4 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)", borderLeftColor: "#4B3F72" }}>
                       <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
-                            <Avatar className="h-12 w-12 bg-purple-500">
-                              <AvatarFallback className="text-white">
+                            <Avatar className="h-12 w-12" style={{ backgroundColor: "#4B3F72" }}>
+                              <AvatarFallback className="text-white" style={{ backgroundColor: "#4B3F72" }}>
                                 {client.name.substring(0, 2).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-semibold text-slate-900 dark:text-white">{client.name}</p>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <p className="font-semibold" style={{ color: "#0D566C" }}>{client.name}</p>
+                              <div className="flex items-center gap-2 text-sm" style={{ color: "#8A8A8A" }}>
                                 <Mail className="h-4 w-4" />
                                 {client.email}
                               </div>
                             </div>
                           </div>
-                          <Badge className={client.status === "active" ? "bg-green-600" : "bg-slate-500"}>
+                          <Badge style={client.status === "active" ? { backgroundColor: "#16a34a", color: "#FFFFFF" } : { backgroundColor: "#8A8A8A", color: "#FFFFFF" }}>
                             {client.status}
                           </Badge>
                         </div>
@@ -1686,11 +1727,11 @@ export default function DashboardCoach() {
                   ))}
                 </div>
               ) : (
-                <Card className="text-center py-12">
+                <Card className="text-center py-12 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                   <CardContent>
-                    <Users className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No Entrepreneurs Yet</h3>
-                    <p className="text-muted-foreground">When entrepreneurs purchase your coaching services, they will appear here.</p>
+                    <Users className="h-16 w-16 mx-auto mb-4" style={{ color: "#E8E8E8" }} />
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: "#4A4A4A" }}>No Entrepreneurs Yet</h3>
+                    <p style={{ color: "#8A8A8A" }}>When entrepreneurs purchase your coaching services, they will appear here.</p>
                   </CardContent>
                 </Card>
               )}
@@ -1701,55 +1742,55 @@ export default function DashboardCoach() {
           {/* Earnings Tab */}
           {activeTab === "earnings" && (
             <div>
-              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Earnings</h1>
-              <p className="text-muted-foreground mb-8">Track your earnings and commission history.</p>
+              <h1 className="text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Earnings</h1>
+              <p className="mb-8" style={{ color: "#8A8A8A" }}>Track your earnings and commission history.</p>
 
               {loadingTransactions ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+                  <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#FF6B5C" }} />
                 </div>
               ) : (
               <>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <Card className="border-l-4 border-l-green-500">
+                <Card className="border-l-4 border-l-green-500 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Earnings</CardTitle>
+                    <CardTitle className="text-sm font-medium" style={{ color: "#8A8A8A" }}>Total Earnings</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-2xl font-bold" style={{ color: "#16a34a" }}>
                       ${transactions.reduce((sum, t) => sum + t.netEarnings, 0).toFixed(2)}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">After 20% commission</p>
+                    <p className="text-xs mt-1" style={{ color: "#8A8A8A" }}>After 20% commission</p>
                   </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-amber-500">
+                <Card className="border-l-4 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)", borderLeftColor: "#F5C542" }}>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
+                    <CardTitle className="text-sm font-medium" style={{ color: "#8A8A8A" }}>Total Revenue</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-amber-600">
+                    <div className="text-2xl font-bold" style={{ color: "#F5C542" }}>
                       ${transactions.reduce((sum, t) => sum + t.amount, 0).toFixed(2)}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">Before commission</p>
+                    <p className="text-xs mt-1" style={{ color: "#8A8A8A" }}>Before commission</p>
                   </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-slate-500">
+                <Card className="border-l-4 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)", borderLeftColor: "#0D566C" }}>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Sessions</CardTitle>
+                    <CardTitle className="text-sm font-medium" style={{ color: "#8A8A8A" }}>Total Sessions</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{transactions.length}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Completed transactions</p>
+                    <div className="text-2xl font-bold" style={{ color: "#0D566C" }}>{transactions.length}</div>
+                    <p className="text-xs mt-1" style={{ color: "#8A8A8A" }}>Completed transactions</p>
                   </CardContent>
                 </Card>
               </div>
 
-              <Card>
+              <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-cyan-600" />
+                  <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
+                    <DollarSign className="h-5 w-5" style={{ color: "#FF6B5C" }} />
                     Transaction History
                   </CardTitle>
                 </CardHeader>
@@ -1758,29 +1799,29 @@ export default function DashboardCoach() {
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
-                          <tr className="border-b border-slate-200 dark:border-slate-700">
-                            <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Date</th>
-                            <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Client</th>
-                            <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Type</th>
-                            <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Amount</th>
-                            <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Commission (20%)</th>
-                            <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Your Earnings</th>
-                            <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Status</th>
+                          <tr style={{ borderBottom: "1px solid #E8E8E8" }}>
+                            <th className="text-left py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Date</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Client</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Type</th>
+                            <th className="text-right py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Amount</th>
+                            <th className="text-right py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Commission (20%)</th>
+                            <th className="text-right py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Your Earnings</th>
+                            <th className="text-center py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Status</th>
                           </tr>
                         </thead>
                         <tbody>
                           {transactions.map((tx) => (
-                            <tr key={tx.id} className="border-b border-slate-100 dark:border-slate-800">
-                              <td className="py-3 px-4 text-sm text-slate-700 dark:text-slate-300">
+                            <tr key={tx.id} style={{ borderBottom: "1px solid #F3F3F3" }}>
+                              <td className="py-3 px-4 text-sm" style={{ color: "#4A4A4A" }}>
                                 {new Date(tx.date).toLocaleDateString()}
                               </td>
-                              <td className="py-3 px-4 text-sm text-slate-700 dark:text-slate-300">{tx.clientName}</td>
-                              <td className="py-3 px-4 text-sm text-slate-700 dark:text-slate-300">{tx.type}</td>
-                              <td className="py-3 px-4 text-sm text-right text-slate-700 dark:text-slate-300">${tx.amount.toFixed(2)}</td>
+                              <td className="py-3 px-4 text-sm" style={{ color: "#4A4A4A" }}>{tx.clientName}</td>
+                              <td className="py-3 px-4 text-sm" style={{ color: "#4A4A4A" }}>{tx.type}</td>
+                              <td className="py-3 px-4 text-sm text-right" style={{ color: "#4A4A4A" }}>${tx.amount.toFixed(2)}</td>
                               <td className="py-3 px-4 text-sm text-right text-red-600">-${tx.commission.toFixed(2)}</td>
-                              <td className="py-3 px-4 text-sm text-right font-semibold text-green-600">${tx.netEarnings.toFixed(2)}</td>
+                              <td className="py-3 px-4 text-sm text-right font-semibold" style={{ color: "#16a34a" }}>${tx.netEarnings.toFixed(2)}</td>
                               <td className="py-3 px-4 text-center">
-                                <Badge className={tx.status === "completed" ? "bg-green-600" : tx.status === "pending" ? "bg-amber-500" : "bg-slate-500"}>
+                                <Badge style={tx.status === "completed" ? { backgroundColor: "#16a34a", color: "#FFFFFF" } : tx.status === "pending" ? { backgroundColor: "#F5C542", color: "#FFFFFF" } : { backgroundColor: "#8A8A8A", color: "#FFFFFF" }}>
                                   {tx.status}
                                 </Badge>
                               </td>
@@ -1791,17 +1832,17 @@ export default function DashboardCoach() {
                     </div>
                   ) : (
                     <div className="text-center py-12">
-                      <DollarSign className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No Transactions Yet</h3>
-                      <p className="text-muted-foreground">When you start earning from coaching sessions, your transaction history will appear here.</p>
+                      <DollarSign className="h-16 w-16 mx-auto mb-4" style={{ color: "#E8E8E8" }} />
+                      <h3 className="text-lg font-semibold mb-2" style={{ color: "#4A4A4A" }}>No Transactions Yet</h3>
+                      <p style={{ color: "#8A8A8A" }}>When you start earning from coaching sessions, your transaction history will appear here.</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              <div className="mt-8 p-6 bg-cyan-50 dark:bg-cyan-950/20 border border-cyan-200 dark:border-cyan-900/30 rounded-lg">
-                <h3 className="font-semibold text-cyan-900 dark:text-cyan-300 mb-2">Revenue Share Model</h3>
-                <p className="text-sm text-cyan-800 dark:text-cyan-200">You keep 80% of every transaction. TouchConnectPro handles payments and takes a 20% commission for platform services.</p>
+              <div className="mt-8 p-6 rounded-2xl" style={{ backgroundColor: "rgba(13,86,108,0.05)", border: "1px solid rgba(13,86,108,0.15)" }}>
+                <h3 className="font-semibold mb-2" style={{ color: "#0D566C" }}>Revenue Share Model</h3>
+                <p className="text-sm" style={{ color: "#4A4A4A" }}>You keep 80% of every transaction. TouchConnectPro handles payments and takes a 20% commission for platform services.</p>
               </div>
               </>
               )}
@@ -1811,18 +1852,18 @@ export default function DashboardCoach() {
           {/* Agreements Tab */}
           {activeTab === "agreements" && (
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">My Agreements</h2>
+              <h2 className="text-2xl font-bold mb-6" style={{ color: "#0D566C" }}>My Agreements</h2>
               {profile?.email && <MyAgreements userEmail={profile.email} />}
               
               {/* Cancellation Section */}
-              <div className="mt-12 pt-6 border-t border-slate-200 dark:border-slate-700">
-                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">Cancel Coach Partnership</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+              <div className="mt-12 pt-6" style={{ borderTop: "1px solid #E8E8E8" }}>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: "#4A4A4A" }}>Cancel Coach Partnership</h3>
+                <p className="text-sm mb-4" style={{ color: "#8A8A8A" }}>
                   If you wish to end your partnership with TouchConnectPro, please submit a cancellation request.
                 </p>
                 <Button 
                   variant="outline" 
-                  className="border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  className="border-red-200 text-red-600 hover:bg-red-50 rounded-xl"
                   onClick={() => setShowCancelModal(true)}
                   data-testid="button-cancel-partnership"
                 >
@@ -1837,27 +1878,30 @@ export default function DashboardCoach() {
       {/* Cancellation Modal */}
       {showCancelModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-md rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
             <CardHeader>
               <CardTitle className="text-red-600">Cancel Coach Partnership</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm" style={{ color: "#8A8A8A" }}>
                 We're sorry to see you go. Please let us know why you'd like to end your partnership.
               </p>
               <div>
-                <label className="text-sm font-medium mb-2 block">Reason for cancellation</label>
+                <label className="text-sm font-medium mb-2 block" style={{ color: "#4A4A4A" }}>Reason for cancellation</label>
                 <textarea
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
                   placeholder="Please share your reason..."
-                  className="w-full min-h-[100px] p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white resize-y"
+                  className="w-full min-h-[100px] p-3 rounded-xl resize-y"
+                  style={{ backgroundColor: "#F3F3F3", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
                   data-testid="input-cancel-reason"
                 />
               </div>
               <div className="flex gap-3 justify-end pt-4">
                 <Button 
                   variant="outline" 
+                  className="rounded-xl"
+                  style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
                   onClick={() => {
                     setShowCancelModal(false);
                     setCancelReason("");
@@ -1868,6 +1912,7 @@ export default function DashboardCoach() {
                 </Button>
                 <Button 
                   variant="destructive"
+                  className="rounded-full"
                   disabled={isCancelling || !cancelReason.trim()}
                   onClick={async () => {
                     if (!cancelReason.trim()) {
@@ -1921,8 +1966,8 @@ export default function DashboardCoach() {
       {/* Blocking Agreement Modal */}
       {needsAgreement && !checkingAgreement && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-            <CardHeader className="bg-gradient-to-r from-cyan-600 to-teal-600 text-white">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
+            <CardHeader style={{ background: "linear-gradient(to right, #0D566C, #FF6B5C)", color: "#FFFFFF" }}>
               <CardTitle className="flex items-center gap-2">
                 <ClipboardCheck className="h-5 w-5" />
                 Coach Agreement Required
@@ -1930,21 +1975,21 @@ export default function DashboardCoach() {
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto p-6">
               <div className="space-y-4">
-                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
-                  <p className="text-amber-800 dark:text-amber-300 text-sm">
+                <div className="p-4 rounded-lg" style={{ backgroundColor: "rgba(245,197,66,0.1)", border: "1px solid rgba(245,197,66,0.3)" }}>
+                  <p className="text-sm" style={{ color: "#b45309" }}>
                     <strong>Important:</strong> We have updated our Coach Agreement. Please review and accept the new terms to continue using your dashboard.
                   </p>
                 </div>
                 
-                <div className="border rounded-lg bg-white dark:bg-slate-900 max-h-[40vh] overflow-y-auto">
+                <div className="rounded-lg max-h-[40vh] overflow-y-auto" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E8E8E8" }}>
                   <div className="p-4">
-                    <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans leading-relaxed">
+                    <pre className="whitespace-pre-wrap text-sm font-sans leading-relaxed" style={{ color: "#4A4A4A" }}>
                       {COACH_CONTRACT}
                     </pre>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="flex items-start gap-2 p-4 rounded-lg" style={{ backgroundColor: "#F3F3F3" }}>
                   <input 
                     type="checkbox" 
                     id="agree-checkbox"
@@ -1953,16 +1998,17 @@ export default function DashboardCoach() {
                     className="mt-1"
                     data-testid="checkbox-agree"
                   />
-                  <label htmlFor="agree-checkbox" className="text-sm text-slate-700 dark:text-slate-300">
+                  <label htmlFor="agree-checkbox" className="text-sm" style={{ color: "#4A4A4A" }}>
                     I have read and agree to the TouchConnectPro Coach Agreement. I understand and accept all terms and conditions.
                   </label>
                 </div>
               </div>
             </CardContent>
-            <div className="p-4 border-t flex justify-end">
+            <div className="p-4 flex justify-end" style={{ borderTop: "1px solid #E8E8E8" }}>
               <Button
                 disabled={!agreementCheckboxChecked || acceptingAgreement}
-                className="bg-cyan-600 hover:bg-cyan-700"
+                className="rounded-full"
+                style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                 onClick={async () => {
                   setAcceptingAgreement(true);
                   try {
