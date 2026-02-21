@@ -47,35 +47,36 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md border-slate-700 bg-slate-800/50 backdrop-blur">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: "#FAF9F7" }}>
+      <Card className="w-full max-w-md rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
         <CardHeader className="text-center">
-          <div className="mx-auto w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "#0D566C" }}>
             <Lock className="h-8 w-8 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold text-white">Admin Login</CardTitle>
-          <p className="text-slate-400 mt-2">Access restricted to authorized administrators</p>
+          <CardTitle className="text-2xl font-bold" style={{ color: "#0D566C" }}>Admin Login</CardTitle>
+          <p className="mt-2" style={{ color: "#8A8A8A" }}>Access restricted to authorized administrators</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-red-900/30 border border-red-700 rounded-lg text-red-300">
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600">
                 <AlertCircle className="h-5 w-5 flex-shrink-0" />
                 <p className="text-sm">{error}</p>
               </div>
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300">Email</Label>
+              <Label htmlFor="email" style={{ color: "#4A4A4A" }}>Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "#8A8A8A" }} />
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@example.com"
-                  className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
+                  className="pl-10 rounded-xl"
+                  style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A" }}
                   required
                   data-testid="input-admin-email"
                 />
@@ -83,16 +84,17 @@ export default function AdminLogin() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">Password</Label>
+              <Label htmlFor="password" style={{ color: "#4A4A4A" }}>Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "#8A8A8A" }} />
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
+                  className="pl-10 rounded-xl"
+                  style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A" }}
                   required
                   data-testid="input-admin-password"
                 />
@@ -101,7 +103,8 @@ export default function AdminLogin() {
             
             <Button
               type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700"
+              className="w-full rounded-full"
+              style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
               disabled={loading}
               data-testid="button-admin-login"
             >
@@ -116,8 +119,8 @@ export default function AdminLogin() {
             </Button>
           </form>
           
-          <div className="mt-6 pt-6 border-t border-slate-700">
-            <p className="text-center text-sm text-slate-500">
+          <div className="mt-6 pt-6" style={{ borderTop: "1px solid #E8E8E8" }}>
+            <p className="text-center text-sm" style={{ color: "#8A8A8A" }}>
               This area is for TouchConnectPro administrators only.
             </p>
           </div>
