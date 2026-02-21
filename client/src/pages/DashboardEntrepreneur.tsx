@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, CheckCircle, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply, ShoppingCart, CreditCard, X, Rocket, BarChart3, HelpCircle } from "lucide-react";
+import { LayoutDashboard, Lightbulb, Target, Users, MessageSquare, Settings, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, CheckCircle, AlertCircle, User, LogOut, GraduationCap, Calendar, Send, ExternalLink, ClipboardList, BookOpen, RefreshCw, Star, Loader2, Paperclip, Download, FileText, Reply, ShoppingCart, CreditCard, X, Rocket, BarChart3, HelpCircle, Circle } from "lucide-react";
 import { DashboardMobileNav, NavTab } from "@/components/DashboardNav";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -94,6 +94,24 @@ export default function DashboardEntrepreneur() {
  const [isCancelling, setIsCancelling] = useState(false);
  const [hasPendingCancellation, setHasPendingCancellation] = useState(false);
  const [hasProcessedCancellation, setHasProcessedCancellation] = useState(false);
+ const [needsIntakeData, setNeedsIntakeData] = useState<{ needs: string[]; message: string; completedAt?: string } | null>(null);
+ const [needsSelected, setNeedsSelected] = useState<string[]>([]);
+ const [needsMessage, setNeedsMessage] = useState("");
+ const [needsOtherText, setNeedsOtherText] = useState("");
+ const [savingNeeds, setSavingNeeds] = useState(false);
+ const [founderSnapshot, setFounderSnapshot] = useState<any>(null);
+ const [snapshotSummary, setSnapshotSummary] = useState<any>(null);
+ const [showSnapshotForm, setShowSnapshotForm] = useState(false);
+ const [snapshotAnswers, setSnapshotAnswers] = useState({
+  building: "",
+  stage: "",
+  targetCustomer: "",
+  biggestBlocker: "",
+  blockerOther: "",
+  traction: "",
+  ninetyDayGoal: ""
+ });
+ const [savingSnapshot, setSavingSnapshot] = useState(false);
  const [businessPlanData, setBusinessPlanData] = useState<any>({
   executiveSummary: "",
   problemStatement: "",
@@ -484,6 +502,19 @@ export default function DashboardEntrepreneur() {
        profileImage: data.data?.profileImage || prev.profileImage
       }));
       
+      // Load needs intake data
+      if (data.data?.needsIntake) {
+       setNeedsIntakeData(data.data.needsIntake);
+      }
+      // Load founder snapshot data
+      if (data.data?.founderSnapshot) {
+       setFounderSnapshot(data.data.founderSnapshot);
+      }
+      // Load snapshot summary
+      if (data.data?.snapshotSummary) {
+       setSnapshotSummary(data.data.snapshotSummary);
+      }
+
       // Set mentor data if assigned
       if (data.mentorAssignment) {
        setMentorData(data.mentorAssignment);
@@ -1286,6 +1317,139 @@ export default function DashboardEntrepreneur() {
   }));
  };
 
+ const generateSnapshotSummary = (answers: typeof snapshotAnswers) => {
+  const stageLabels: Record<string, string> = {
+   "just-an-idea": "Just an Idea",
+   "mvp-or-prototype": "MVP / Prototype",
+   "website-live": "Website Live",
+   "paying-clients": "Paying Clients",
+   "recurring-revenue": "Generating Recurring Revenue"
+  };
+  const blockerLabels: Record<string, string> = {
+   "clarity-positioning": "Clarity on Positioning",
+   "get-customers": "Customer Acquisition",
+   "structure-offer": "Structuring the Offer",
+   "focus-execution": "Focus & Execution",
+   "funding-finance": "Funding / Financial Structure",
+   "overwhelmed": "Feeling Overwhelmed",
+   "other": "Other"
+  };
+  const tractionLabels: Record<string, string> = {
+   "no-validation": "No Validation Yet",
+   "early-feedback": "Early Feedback from Potential Users",
+   "beta-users": "Beta Users",
+   "first-paying": "First Paying Clients",
+   "growing-revenue": "Growing Revenue"
+  };
+  const stage = stageLabels[answers.stage] || answers.stage;
+  const blocker = answers.biggestBlocker === "other" ? (answers.blockerOther || "Other") : (blockerLabels[answers.biggestBlocker] || answers.biggestBlocker);
+  const traction = tractionLabels[answers.traction] || answers.traction;
+
+  const focusSteps: string[] = [];
+  if (answers.traction === "no-validation" || answers.traction === "early-feedback") {
+   focusSteps.push("Validate your problem with real conversations.");
+  }
+  if (answers.biggestBlocker === "clarity-positioning" || answers.biggestBlocker === "structure-offer") {
+   focusSteps.push("Narrow down your target niche and refine your positioning.");
+  }
+  if (answers.biggestBlocker === "get-customers") {
+   focusSteps.push("Define a simple offer and test it with your target audience.");
+  }
+  if (answers.stage === "just-an-idea" || answers.stage === "mvp-or-prototype") {
+   focusSteps.push("Focus on building a minimum viable product before adding features.");
+  }
+  if (answers.biggestBlocker === "focus-execution" || answers.biggestBlocker === "overwhelmed") {
+   focusSteps.push("Set one clear weekly priority and track your progress.");
+  }
+  if (answers.biggestBlocker === "funding-finance") {
+   focusSteps.push("Create a basic financial model before approaching investors.");
+  }
+  if (answers.traction === "first-paying" || answers.traction === "growing-revenue") {
+   focusSteps.push("Double down on what's working and optimize your conversion funnel.");
+  }
+  if (focusSteps.length === 0) {
+   focusSteps.push("Define your next milestone and work backward to create an action plan.");
+   focusSteps.push("Talk to 5 potential customers this week to gather real insights.");
+  }
+
+  return {
+   stage,
+   mainChallenge: blocker,
+   traction,
+   ninetyDayGoal: answers.ninetyDayGoal,
+   focusSteps: focusSteps.slice(0, 3),
+   completedAt: new Date().toISOString()
+  };
+ };
+
+ const handleSaveNeedsIntake = async () => {
+  if (needsSelected.length === 0) {
+   toast.error("Please select at least one option.");
+   return;
+  }
+  if (!profileData.email) {
+   toast.error("Profile not loaded yet. Please wait a moment and try again.");
+   return;
+  }
+  setSavingNeeds(true);
+  try {
+   const finalNeeds = needsSelected.includes("Other") && needsOtherText
+    ? [...needsSelected.filter(n => n !== "Other"), `Other: ${needsOtherText}`]
+    : needsSelected;
+   const intake = { needs: finalNeeds, message: needsMessage, completedAt: new Date().toISOString() };
+   const response = await fetch(`${API_BASE_URL}/api/entrepreneurs/intake/${encodeURIComponent(profileData.email)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ needsIntake: intake })
+   });
+   if (response.ok) {
+    setNeedsIntakeData(intake);
+    toast.success("Thank you! Our team will review this and guide you with next steps.");
+   } else {
+    toast.error("Failed to save. Please try again.");
+   }
+  } catch (err) {
+   console.error("Error saving needs intake:", err);
+   toast.error("Failed to save. Please try again.");
+  } finally {
+   setSavingNeeds(false);
+  }
+ };
+
+ const handleSaveSnapshot = async () => {
+  if (!snapshotAnswers.building || !snapshotAnswers.stage || !snapshotAnswers.targetCustomer || !snapshotAnswers.biggestBlocker || !snapshotAnswers.traction || !snapshotAnswers.ninetyDayGoal) {
+   toast.error("Please fill in all required fields.");
+   return;
+  }
+  if (!profileData.email) {
+   toast.error("Profile not loaded yet. Please wait a moment and try again.");
+   return;
+  }
+  setSavingSnapshot(true);
+  try {
+   const snapshot = { ...snapshotAnswers, completedAt: new Date().toISOString() };
+   const summary = generateSnapshotSummary(snapshotAnswers);
+   const response = await fetch(`${API_BASE_URL}/api/entrepreneurs/intake/${encodeURIComponent(profileData.email)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ founderSnapshot: snapshot, snapshotSummary: summary })
+   });
+   if (response.ok) {
+    setFounderSnapshot(snapshot);
+    setSnapshotSummary(summary);
+    setShowSnapshotForm(false);
+    toast.success("Your Founder Snapshot has been saved!");
+   } else {
+    toast.error("Failed to save. Please try again.");
+   }
+  } catch (err) {
+   console.error("Error saving snapshot:", err);
+   toast.error("Failed to save. Please try again.");
+  } finally {
+   setSavingSnapshot(false);
+  }
+ };
+
  const handleLogout = async () => {
   try {
    const supabase = await getSupabase();
@@ -1897,21 +2061,42 @@ export default function DashboardEntrepreneur() {
           </CardContent>
          </Card>
         )}
-        {isPreApproved && !hasPaid && !ideaSubmitted && (
+        {isPreApproved && !hasPaid && !ideaSubmitted && !founderSnapshot && (
          <Card className="mb-6 border-[#E8E8E8] bg-[#F3F3F3]">
           <CardContent className="pt-6 pb-6">
            <div className="flex items-start gap-4">
             <Rocket className="h-6 w-6 text-[#FF6B5C] flex-shrink-0 mt-0.5" />
             <div className="flex-1">
              <h3 className="text-lg font-semibold text-[#0D566C] mb-1" data-testid="text-community-welcome">Welcome to the Community!</h3>
-             <p className="text-[#0D566C] mb-4">You're part of the TouchConnectPro Community Free plan. To unlock your full dashboard, submit your business idea. Once submitted, you'll be able to explore coaches, build your business plan, and more.</p>
-             <a 
-              href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}
+             <p className="text-[#0D566C] mb-4">You're part of the TouchConnectPro Community Free plan. Complete your Founder Snapshot to unlock your full dashboard, explore coaches, and get personalized guidance.</p>
+             <Button 
+              className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white"
+              onClick={() => setShowSnapshotForm(true)}
               data-testid="link-submit-idea"
              >
-              <Button className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white">
-               <Rocket className="mr-2 h-4 w-4" />
-               Submit Your Business Idea
+              <Rocket className="mr-2 h-4 w-4" />
+              Start Your Founder Snapshot
+             </Button>
+            </div>
+           </div>
+          </CardContent>
+         </Card>
+        )}
+        {isPreApproved && !hasPaid && founderSnapshot && !ideaSubmitted && (
+         <Card className="mb-6 border-[#E8E8E8] bg-[#F3F3F3]">
+          <CardContent className="pt-6 pb-6">
+           <div className="flex items-start gap-4">
+            <CheckCircle className="h-6 w-6 text-[#0D566C] flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+             <h3 className="text-lg font-semibold text-[#0D566C] mb-1">Snapshot Complete - Explore Your Dashboard</h3>
+             <p className="text-[#0D566C] mb-3">Great start! You can now explore coaches and get guidance. When you're ready, complete your full Founder Blueprint for deeper insights.</p>
+             <a 
+              href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}
+              data-testid="link-full-blueprint"
+             >
+              <Button className="bg-[#0D566C] hover:bg-[#0a4557] text-white rounded-full">
+               <Target className="mr-2 h-4 w-4" />
+               Complete Your Full Founder Blueprint
               </Button>
              </a>
             </div>
@@ -1989,11 +2174,11 @@ export default function DashboardEntrepreneur() {
            <CardTitle className="text-sm font-medium text-[#8A8A8A]">Current Stage</CardTitle>
           </CardHeader>
           <CardContent>
-           <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : (isPreApproved && !ideaSubmitted) ? "text-[#FF6B5C]" : (isPreApproved && ideaSubmitted && !hasPaid) ? "text-[#FF6B5C]" : (isPreApproved && hasPaid) ? "text-emerald-600" : ""}`}>
-            {isAccountDisabled ? "Disabled Member" : (isPreApproved && !ideaSubmitted) ? "Getting Started" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Idea Submitted" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
+           <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "text-[#FF6B5C]" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "text-[#4B3F72]" : (isPreApproved && ideaSubmitted && !hasPaid) ? "text-[#FF6B5C]" : (isPreApproved && hasPaid) ? "text-emerald-600" : ""}`}>
+            {isAccountDisabled ? "Disabled Member" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Getting Started" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Snapshot Done" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Idea Submitted" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
            </div>
            <p className="text-xs text-[#8A8A8A] mt-1">
-            {isAccountDisabled ? "Contact admin to reactivate" : (isPreApproved && !ideaSubmitted) ? "Submit your idea to unlock features" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Community Free - explore coaches & build plans" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
+            {isAccountDisabled ? "Contact admin to reactivate" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Complete snapshot to unlock features" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Exploring community features" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Community Free - explore coaches & build plans" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
            </p>
           </CardContent>
          </Card>
@@ -2017,6 +2202,293 @@ export default function DashboardEntrepreneur() {
           </CardContent>
          </Card>
         </div>
+
+        {/* Tell Us What You Need - Interactive Intake */}
+        {isPreApproved && !needsIntakeData && (
+         <Card className="mb-6 border-l-4 border-l-[#F5C542]" data-testid="card-needs-intake">
+          <CardHeader>
+           <CardTitle className="flex items-center gap-2 text-[#0D566C]">
+            <Lightbulb className="h-5 w-5 text-[#F5C542]" />
+            Tell Us What You Need
+           </CardTitle>
+           <CardDescription>Help us understand where you are so we can guide you better. Select all that apply.</CardDescription>
+          </CardHeader>
+          <CardContent>
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            {[
+             "I need help clarifying my idea",
+             "I want to find a co-founder",
+             "I need funding guidance",
+             "I want coaching or mentorship",
+             "I need help with my pitch deck",
+             "I want to connect with other founders",
+             "I need help with product development",
+             "Other"
+            ].map((option) => (
+             <button
+              key={option}
+              onClick={() => setNeedsSelected(prev => prev.includes(option) ? prev.filter(n => n !== option) : [...prev, option])}
+              className={`p-3 rounded-xl border text-left text-sm font-medium transition-all ${
+               needsSelected.includes(option)
+                ? "border-[#FF6B5C] bg-[#FFF5F4] text-[#0D566C]"
+                : "border-[#E8E8E8] bg-white text-[#0D566C] hover:border-[#FF6B5C]/50"
+              }`}
+              data-testid={`button-need-${option.toLowerCase().replace(/\s+/g, "-")}`}
+             >
+              <span className="flex items-center gap-2">
+               {needsSelected.includes(option) ? <CheckCircle className="h-4 w-4 text-[#FF6B5C]" /> : <Circle className="h-4 w-4 text-[#C0C0C0]" />}
+               {option}
+              </span>
+             </button>
+            ))}
+           </div>
+           {needsSelected.includes("Other") && (
+            <input
+             type="text"
+             placeholder="Please specify..."
+             value={needsOtherText}
+             onChange={(e) => setNeedsOtherText(e.target.value)}
+             className="w-full mb-4 p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]/30"
+             data-testid="input-need-other"
+            />
+           )}
+           <textarea
+            placeholder="Anything else you'd like to share? (optional)"
+            value={needsMessage}
+            onChange={(e) => setNeedsMessage(e.target.value)}
+            rows={2}
+            className="w-full mb-4 p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]/30 resize-none"
+            data-testid="input-needs-message"
+           />
+           <Button 
+            onClick={handleSaveNeedsIntake} 
+            disabled={savingNeeds || needsSelected.length === 0} 
+            className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full"
+            data-testid="button-save-needs"
+           >
+            {savingNeeds ? "Saving..." : "Submit"}
+           </Button>
+          </CardContent>
+         </Card>
+        )}
+        {needsIntakeData && (
+         <Card className="mb-6 border-l-4 border-l-[#F5C542]" data-testid="card-needs-complete">
+          <CardContent className="pt-6 pb-4">
+           <div className="flex items-center gap-2 mb-2">
+            <CheckCircle className="h-5 w-5 text-[#F5C542]" />
+            <span className="text-sm font-semibold text-[#0D566C]">Needs Submitted</span>
+           </div>
+           <div className="flex flex-wrap gap-2">
+            {needsIntakeData.needs.map((need, i) => (
+             <span key={i} className="text-xs bg-[#FFF8E5] text-[#0D566C] px-3 py-1 rounded-full border border-[#F5C542]/30">{need}</span>
+            ))}
+           </div>
+          </CardContent>
+         </Card>
+        )}
+
+        {/* Smart Founder Snapshot Form */}
+        {showSnapshotForm && !founderSnapshot && (
+         <Card className="mb-6 border-l-4 border-l-[#4B3F72]" data-testid="card-snapshot-form">
+          <CardHeader>
+           <CardTitle className="flex items-center gap-2 text-[#0D566C]">
+            <Target className="h-5 w-5 text-[#4B3F72]" />
+            Smart Founder Snapshot
+           </CardTitle>
+           <CardDescription>Answer 6 quick questions so we can tailor your experience. This takes about 2 minutes.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+           <div>
+            <label className="block text-sm font-semibold text-[#0D566C] mb-2">1. What are you building? *</label>
+            <input
+             type="text"
+             placeholder="e.g. A platform that helps freelancers manage their invoices"
+             value={snapshotAnswers.building}
+             onChange={(e) => setSnapshotAnswers(prev => ({ ...prev, building: e.target.value }))}
+             className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30"
+             data-testid="input-snapshot-building"
+            />
+           </div>
+           <div>
+            <label className="block text-sm font-semibold text-[#0D566C] mb-2">2. What stage are you at? *</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+             {[
+              { value: "just-an-idea", label: "Just an Idea" },
+              { value: "mvp-or-prototype", label: "MVP / Prototype" },
+              { value: "website-live", label: "Website Live" },
+              { value: "paying-clients", label: "Paying Clients" },
+              { value: "recurring-revenue", label: "Generating Recurring Revenue" }
+             ].map((opt) => (
+              <button
+               key={opt.value}
+               onClick={() => setSnapshotAnswers(prev => ({ ...prev, stage: opt.value }))}
+               className={`p-3 rounded-xl border text-left text-sm font-medium transition-all ${
+                snapshotAnswers.stage === opt.value
+                 ? "border-[#4B3F72] bg-[#F3F0FA] text-[#0D566C]"
+                 : "border-[#E8E8E8] bg-white text-[#0D566C] hover:border-[#4B3F72]/50"
+               }`}
+               data-testid={`button-stage-${opt.value}`}
+              >
+               {snapshotAnswers.stage === opt.value ? <CheckCircle className="inline h-4 w-4 mr-2 text-[#4B3F72]" /> : <Circle className="inline h-4 w-4 mr-2 text-[#C0C0C0]" />}
+               {opt.label}
+              </button>
+             ))}
+            </div>
+           </div>
+           <div>
+            <label className="block text-sm font-semibold text-[#0D566C] mb-2">3. Who is your target customer? *</label>
+            <input
+             type="text"
+             placeholder="e.g. Small business owners, college students, busy parents"
+             value={snapshotAnswers.targetCustomer}
+             onChange={(e) => setSnapshotAnswers(prev => ({ ...prev, targetCustomer: e.target.value }))}
+             className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30"
+             data-testid="input-snapshot-customer"
+            />
+           </div>
+           <div>
+            <label className="block text-sm font-semibold text-[#0D566C] mb-2">4. What's your biggest blocker right now? *</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+             {[
+              { value: "clarity-positioning", label: "Clarity on Positioning" },
+              { value: "get-customers", label: "Getting Customers" },
+              { value: "structure-offer", label: "Structuring My Offer" },
+              { value: "focus-execution", label: "Focus & Execution" },
+              { value: "funding-finance", label: "Funding / Financial Structure" },
+              { value: "overwhelmed", label: "Feeling Overwhelmed" },
+              { value: "other", label: "Other" }
+             ].map((opt) => (
+              <button
+               key={opt.value}
+               onClick={() => setSnapshotAnswers(prev => ({ ...prev, biggestBlocker: opt.value }))}
+               className={`p-3 rounded-xl border text-left text-sm font-medium transition-all ${
+                snapshotAnswers.biggestBlocker === opt.value
+                 ? "border-[#4B3F72] bg-[#F3F0FA] text-[#0D566C]"
+                 : "border-[#E8E8E8] bg-white text-[#0D566C] hover:border-[#4B3F72]/50"
+               }`}
+               data-testid={`button-blocker-${opt.value}`}
+              >
+               {snapshotAnswers.biggestBlocker === opt.value ? <CheckCircle className="inline h-4 w-4 mr-2 text-[#4B3F72]" /> : <Circle className="inline h-4 w-4 mr-2 text-[#C0C0C0]" />}
+               {opt.label}
+              </button>
+             ))}
+            </div>
+            {snapshotAnswers.biggestBlocker === "other" && (
+             <input
+              type="text"
+              placeholder="Please describe..."
+              value={snapshotAnswers.blockerOther}
+              onChange={(e) => setSnapshotAnswers(prev => ({ ...prev, blockerOther: e.target.value }))}
+              className="w-full mt-2 p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30"
+              data-testid="input-blocker-other"
+             />
+            )}
+           </div>
+           <div>
+            <label className="block text-sm font-semibold text-[#0D566C] mb-2">5. Where are you in terms of traction? *</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+             {[
+              { value: "no-validation", label: "No Validation Yet" },
+              { value: "early-feedback", label: "Early Feedback from Potential Users" },
+              { value: "beta-users", label: "Beta Users" },
+              { value: "first-paying", label: "First Paying Clients" },
+              { value: "growing-revenue", label: "Growing Revenue" }
+             ].map((opt) => (
+              <button
+               key={opt.value}
+               onClick={() => setSnapshotAnswers(prev => ({ ...prev, traction: opt.value }))}
+               className={`p-3 rounded-xl border text-left text-sm font-medium transition-all ${
+                snapshotAnswers.traction === opt.value
+                 ? "border-[#4B3F72] bg-[#F3F0FA] text-[#0D566C]"
+                 : "border-[#E8E8E8] bg-white text-[#0D566C] hover:border-[#4B3F72]/50"
+               }`}
+               data-testid={`button-traction-${opt.value}`}
+              >
+               {snapshotAnswers.traction === opt.value ? <CheckCircle className="inline h-4 w-4 mr-2 text-[#4B3F72]" /> : <Circle className="inline h-4 w-4 mr-2 text-[#C0C0C0]" />}
+               {opt.label}
+              </button>
+             ))}
+            </div>
+           </div>
+           <div>
+            <label className="block text-sm font-semibold text-[#0D566C] mb-2">6. What's your #1 goal for the next 90 days? *</label>
+            <textarea
+             placeholder="e.g. Launch my MVP, get my first 10 customers, raise a pre-seed round..."
+             value={snapshotAnswers.ninetyDayGoal}
+             onChange={(e) => setSnapshotAnswers(prev => ({ ...prev, ninetyDayGoal: e.target.value }))}
+             rows={3}
+             className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30 resize-none"
+             data-testid="input-snapshot-goal"
+            />
+           </div>
+           <div className="flex gap-3">
+            <Button 
+             onClick={handleSaveSnapshot} 
+             disabled={savingSnapshot} 
+             className="bg-[#4B3F72] hover:bg-[#3d3360] text-white rounded-full"
+             data-testid="button-save-snapshot"
+            >
+             {savingSnapshot ? "Saving..." : "Complete Snapshot"}
+            </Button>
+            <Button 
+             variant="outline" 
+             onClick={() => setShowSnapshotForm(false)} 
+             className="border-[#E8E8E8] text-[#8A8A8A] rounded-full"
+             data-testid="button-cancel-snapshot"
+            >
+             Cancel
+            </Button>
+           </div>
+          </CardContent>
+         </Card>
+        )}
+
+        {/* Snapshot Summary */}
+        {snapshotSummary && (
+         <Card className="mb-6 border-l-4 border-l-[#4B3F72]" data-testid="card-snapshot-summary">
+          <CardHeader>
+           <CardTitle className="flex items-center gap-2 text-[#0D566C]">
+            <Target className="h-5 w-5 text-[#4B3F72]" />
+            Your Founder Snapshot
+           </CardTitle>
+          </CardHeader>
+          <CardContent>
+           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <div className="bg-[#F3F0FA] rounded-xl p-4">
+             <p className="text-xs text-[#8A8A8A] mb-1">Stage</p>
+             <p className="text-sm font-semibold text-[#0D566C]" data-testid="text-snapshot-stage">{snapshotSummary.stage}</p>
+            </div>
+            <div className="bg-[#FFF5F4] rounded-xl p-4">
+             <p className="text-xs text-[#8A8A8A] mb-1">Main Challenge</p>
+             <p className="text-sm font-semibold text-[#0D566C]" data-testid="text-snapshot-challenge">{snapshotSummary.mainChallenge}</p>
+            </div>
+            <div className="bg-[#FFF8E5] rounded-xl p-4">
+             <p className="text-xs text-[#8A8A8A] mb-1">Traction</p>
+             <p className="text-sm font-semibold text-[#0D566C]" data-testid="text-snapshot-traction">{snapshotSummary.traction}</p>
+            </div>
+           </div>
+           {snapshotSummary.ninetyDayGoal && (
+            <div className="bg-[#F5F9FA] rounded-xl p-4 mb-4">
+             <p className="text-xs text-[#8A8A8A] mb-1">90-Day Goal</p>
+             <p className="text-sm text-[#0D566C]" data-testid="text-snapshot-goal">{snapshotSummary.ninetyDayGoal}</p>
+            </div>
+           )}
+           {snapshotSummary.focusSteps && snapshotSummary.focusSteps.length > 0 && (
+            <div>
+             <p className="text-xs font-semibold text-[#8A8A8A] mb-2 uppercase tracking-wide">Recommended Next Steps</p>
+             <div className="space-y-2">
+              {snapshotSummary.focusSteps.map((step: string, i: number) => (
+               <div key={i} className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-[#4B3F72] text-white text-xs flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</div>
+                <p className="text-sm text-[#0D566C]">{step}</p>
+               </div>
+              ))}
+             </div>
+            </div>
+           )}
+          </CardContent>
+         </Card>
+        )}
 
         {isPreApproved && focusScoreData && (() => {
          const score = focusScoreData.totalScore || focusScoreData.overallScore || 0;
@@ -2384,7 +2856,7 @@ export default function DashboardEntrepreneur() {
         <p className="text-[#8A8A8A] mb-4">Browse our approved coaches who can help accelerate your startup journey with specialized expertise.</p>
 
         {/* Areas of Expertise Filter */}
-        {shuffledCoaches.length > 0 && !isAccountDisabled && !(isPreApproved && !ideaSubmitted) && (() => {
+        {shuffledCoaches.length > 0 && !isAccountDisabled && !(isPreApproved && !ideaSubmitted && !founderSnapshot) && (() => {
          const allExpertiseAreas = Array.from(new Set(shuffledCoaches.flatMap(c => {
           const areas = c.focus_areas || "";
           return areas.split(",").map((a: string) => a.trim()).filter((a: string) => a);
@@ -2439,18 +2911,20 @@ export default function DashboardEntrepreneur() {
            <p className="text-red-700">Your account is currently disabled. Please contact the Admin team via the Messages tab to reactivate your membership and access the coaches list.</p>
           </CardContent>
          </Card>
-        ) : (isPreApproved && !ideaSubmitted) ? (
+        ) : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? (
          <Card className="border-[#E8E8E8] bg-[#F3F3F3]">
           <CardContent className="pt-6 pb-6 text-center">
-           <Rocket className="h-12 w-12 text-[#FF6B5C] mx-auto mb-4" />
-           <h3 className="text-lg font-semibold text-[#0D566C] mb-2">Submit Your Idea to Unlock Coaches</h3>
-           <p className="text-[#0D566C] mb-4">Complete your business idea submission to browse our coaches, get feedback, and access all community features.</p>
-           <a href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}>
-            <Button className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white" data-testid="button-submit-idea-coaches">
-             <Rocket className="mr-2 h-4 w-4" />
-             Submit Your Business Idea
-            </Button>
-           </a>
+           <Target className="h-12 w-12 text-[#4B3F72] mx-auto mb-4" />
+           <h3 className="text-lg font-semibold text-[#0D566C] mb-2">Complete Your Founder Snapshot to Unlock Coaches</h3>
+           <p className="text-[#0D566C] mb-4">Answer 6 quick questions in your Founder Snapshot to browse coaches, get feedback, and access community features.</p>
+           <Button 
+            className="bg-[#4B3F72] hover:bg-[#3d3360] text-white rounded-full" 
+            onClick={() => { setActiveTab("overview"); setShowSnapshotForm(true); }}
+            data-testid="button-submit-idea-coaches"
+           >
+            <Target className="mr-2 h-4 w-4" />
+            Start Founder Snapshot
+           </Button>
           </CardContent>
          </Card>
         ) : shuffledCoaches.length > 0 ? (
@@ -3169,21 +3643,23 @@ export default function DashboardEntrepreneur() {
       })()}
 
       {/* My Idea Tab */}
-      {activeTab === "idea" && isPreApproved && !ideaSubmitted && (
+      {activeTab === "idea" && isPreApproved && !ideaSubmitted && !founderSnapshot && (
        <div className="text-center py-16">
-        <Lightbulb className="h-16 w-16 text-[#FF6B5C] mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-[#0D566C] mb-3">Submit Your Idea First</h2>
-        <p className="text-[#8A8A8A] mb-6 max-w-md mx-auto">Complete your business idea submission to view and manage your idea details here.</p>
-        <a href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}>
-         <Button className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white" data-testid="button-submit-idea-tab">
-          <Rocket className="mr-2 h-4 w-4" />
-          Submit Your Business Idea
-         </Button>
-        </a>
+        <Target className="h-16 w-16 text-[#4B3F72] mx-auto mb-4" />
+        <h2 className="text-2xl font-bold text-[#0D566C] mb-3">Complete Your Founder Snapshot First</h2>
+        <p className="text-[#8A8A8A] mb-6 max-w-md mx-auto">Answer 6 quick questions in your Founder Snapshot to view and manage your idea details here.</p>
+        <Button 
+         className="bg-[#4B3F72] hover:bg-[#3d3360] text-white rounded-full" 
+         onClick={() => { setActiveTab("overview"); setShowSnapshotForm(true); }}
+         data-testid="button-submit-idea-tab"
+        >
+         <Target className="mr-2 h-4 w-4" />
+         Start Founder Snapshot
+        </Button>
        </div>
       )}
 
-      {activeTab === "idea" && !(isPreApproved && !ideaSubmitted) && (
+      {activeTab === "idea" && !(isPreApproved && !ideaSubmitted && !founderSnapshot) && (
        <div>
         <h1 className="text-3xl font-display font-bold text-[#0D566C] mb-2">Your Idea Submission</h1>
         <p className="text-[#8A8A8A] mb-8">Here's a complete summary of your business idea that was submitted to our mentors.</p>
@@ -3212,21 +3688,23 @@ export default function DashboardEntrepreneur() {
       )}
 
       {/* Business Plan Tab */}
-      {activeTab === "plan" && isPreApproved && !ideaSubmitted && (
+      {activeTab === "plan" && isPreApproved && !ideaSubmitted && !founderSnapshot && (
        <div className="text-center py-16">
-        <Target className="h-16 w-16 text-[#FF6B5C] mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-[#0D566C] mb-3">Submit Your Idea First</h2>
-        <p className="text-[#8A8A8A] mb-6 max-w-md mx-auto">Your business plan will be generated after you submit your idea. Start by telling us about your business.</p>
-        <a href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}>
-         <Button className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white" data-testid="button-submit-idea-plan-tab">
-          <Rocket className="mr-2 h-4 w-4" />
-          Submit Your Business Idea
-         </Button>
-        </a>
+        <Target className="h-16 w-16 text-[#4B3F72] mx-auto mb-4" />
+        <h2 className="text-2xl font-bold text-[#0D566C] mb-3">Complete Your Founder Snapshot First</h2>
+        <p className="text-[#8A8A8A] mb-6 max-w-md mx-auto">Your business plan will be available after completing your Founder Snapshot and full Blueprint.</p>
+        <Button 
+         className="bg-[#4B3F72] hover:bg-[#3d3360] text-white rounded-full" 
+         onClick={() => { setActiveTab("overview"); setShowSnapshotForm(true); }}
+         data-testid="button-submit-idea-plan-tab"
+        >
+         <Target className="mr-2 h-4 w-4" />
+         Start Founder Snapshot
+        </Button>
        </div>
       )}
 
-      {activeTab === "plan" && !(isPreApproved && !ideaSubmitted) && (
+      {activeTab === "plan" && !(isPreApproved && !ideaSubmitted && !founderSnapshot) && (
        <div>
         <div className="flex justify-between items-center mb-8">
          <div>
@@ -3668,21 +4146,23 @@ export default function DashboardEntrepreneur() {
       )}
 
       {/* Profile Tab */}
-      {activeTab === "profile" && isPreApproved && !ideaSubmitted && (
+      {activeTab === "profile" && isPreApproved && !ideaSubmitted && !founderSnapshot && (
        <div className="text-center py-16">
-        <User className="h-16 w-16 text-[#FF6B5C] mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-[#0D566C] mb-3">Submit Your Idea First</h2>
-        <p className="text-[#8A8A8A] mb-6 max-w-md mx-auto">Your profile will become available after you submit your business idea.</p>
-        <a href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}>
-         <Button className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white" data-testid="button-submit-idea-profile-tab">
-          <Rocket className="mr-2 h-4 w-4" />
-          Submit Your Business Idea
-         </Button>
-        </a>
+        <User className="h-16 w-16 text-[#4B3F72] mx-auto mb-4" />
+        <h2 className="text-2xl font-bold text-[#0D566C] mb-3">Complete Your Founder Snapshot First</h2>
+        <p className="text-[#8A8A8A] mb-6 max-w-md mx-auto">Your profile will become available after completing your Founder Snapshot.</p>
+        <Button 
+         className="bg-[#4B3F72] hover:bg-[#3d3360] text-white rounded-full" 
+         onClick={() => { setActiveTab("overview"); setShowSnapshotForm(true); }}
+         data-testid="button-submit-idea-profile-tab"
+        >
+         <Target className="mr-2 h-4 w-4" />
+         Start Founder Snapshot
+        </Button>
        </div>
       )}
 
-      {activeTab === "profile" && !(isPreApproved && !ideaSubmitted) && (
+      {activeTab === "profile" && !(isPreApproved && !ideaSubmitted && !founderSnapshot) && (
        <div>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 sm:mb-8">
          <div>

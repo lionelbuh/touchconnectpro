@@ -1341,6 +1341,59 @@ export async function registerRoutes(
     }
   });
 
+  // Save entrepreneur needs intake and founder snapshot data
+  app.put("/api/entrepreneurs/intake/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const { email } = req.params;
+      const decodedEmail = decodeURIComponent(email);
+      const { needsIntake, founderSnapshot, snapshotSummary } = req.body;
+
+      console.log("[PUT /api/entrepreneurs/intake/:email] Saving intake data for:", decodedEmail);
+
+      // First fetch the current data to merge
+      const { data: currentData, error: fetchError } = await (client
+        .from("ideas")
+        .select("data")
+        .ilike("entrepreneur_email", decodedEmail)
+        .single() as any);
+
+      if (fetchError) {
+        console.error("[PUT /api/entrepreneurs/intake/:email] Fetch error:", fetchError);
+        return res.status(400).json({ error: fetchError.message });
+      }
+
+      // Merge intake data into existing data object
+      const updatedData = {
+        ...currentData?.data,
+        ...(needsIntake && { needsIntake }),
+        ...(founderSnapshot && { founderSnapshot }),
+        ...(snapshotSummary && { snapshotSummary })
+      };
+
+      // Update the ideas table with merged data
+      const { data, error } = await (client
+        .from("ideas")
+        .update({ data: updatedData } as any)
+        .ilike("entrepreneur_email", decodedEmail)
+        .select() as any);
+
+      if (error) {
+        console.error("[PUT /api/entrepreneurs/intake/:email] Update error:", error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json({ success: true, entrepreneur: data?.[0] });
+    } catch (error: any) {
+      console.error("[PUT /api/entrepreneurs/intake/:email] Exception:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   // Save mentor application
   app.post("/api/mentors", async (req, res) => {
     console.log("[POST /api/mentors] Called");

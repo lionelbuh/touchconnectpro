@@ -1601,6 +1601,51 @@ app.put("/api/entrepreneurs/profile/:email", async (req, res) => {
   }
 });
 
+// Save entrepreneur needs intake and founder snapshot data
+app.put("/api/entrepreneurs/intake/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const decodedEmail = decodeURIComponent(email);
+    const { needsIntake, founderSnapshot, snapshotSummary } = req.body;
+
+    console.log("[PUT /api/entrepreneurs/intake/:email] Saving intake data for:", decodedEmail);
+
+    const { data: currentData, error: fetchError } = await supabase
+      .from("ideas")
+      .select("data")
+      .ilike("entrepreneur_email", decodedEmail)
+      .single();
+
+    if (fetchError) {
+      console.error("[PUT /api/entrepreneurs/intake/:email] Fetch error:", fetchError);
+      return res.status(400).json({ error: fetchError.message });
+    }
+
+    const updatedData = {
+      ...currentData?.data,
+      ...(needsIntake && { needsIntake }),
+      ...(founderSnapshot && { founderSnapshot }),
+      ...(snapshotSummary && { snapshotSummary })
+    };
+
+    const { data, error } = await supabase
+      .from("ideas")
+      .update({ data: updatedData })
+      .ilike("entrepreneur_email", decodedEmail)
+      .select();
+
+    if (error) {
+      console.error("[PUT /api/entrepreneurs/intake/:email] Update error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, entrepreneur: data?.[0] });
+  } catch (error) {
+    console.error("[PUT /api/entrepreneurs/intake/:email] Exception:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 app.post("/api/mentors", async (req, res) => {
   console.log("[POST /api/mentors] Called");
   try {
