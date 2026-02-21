@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, ArrowLeft, Target, Compass, DollarSign, Settings, Rocket, CheckCircle, Loader2, Zap, Clock, BarChart3, Users, Briefcase, Lightbulb, Building2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Target, Compass, DollarSign, Settings, Rocket, CheckCircle, Loader2, Zap, Clock, Users, Briefcase, Lightbulb, Check } from "lucide-react";
 import { Link } from "wouter";
 import {
   SEGMENTATION_QUESTION,
@@ -28,25 +25,11 @@ const categoryIcons: Record<Category, React.ReactNode> = {
   Execution: <Rocket className="h-6 w-6" />,
 };
 
-const categoryColors: Record<Category, string> = {
-  Strategy: "from-indigo-500 to-indigo-600",
-  Sales: "from-emerald-500 to-emerald-600",
-  Operations: "from-amber-500 to-amber-600",
-  Execution: "from-cyan-500 to-cyan-600",
-};
-
-const categoryTextColors: Record<Category, string> = {
-  Strategy: "text-indigo-500",
-  Sales: "text-emerald-500",
-  Operations: "text-amber-500",
-  Execution: "text-cyan-500",
-};
-
-const categoryBgColors: Record<Category, string> = {
-  Strategy: "bg-indigo-500/10 border-indigo-500/30",
-  Sales: "bg-emerald-500/10 border-emerald-500/30",
-  Operations: "bg-amber-500/10 border-amber-500/30",
-  Execution: "bg-cyan-500/10 border-cyan-500/30",
+const categoryAccentColors: Record<Category, string> = {
+  Strategy: "#4B3F72",
+  Sales: "#0D566C",
+  Operations: "#F5C542",
+  Execution: "#FF6B5C",
 };
 
 const segmentIcons = [
@@ -183,67 +166,63 @@ export default function FounderFocusScore() {
     }
   };
 
+  // ── Landing ──
   if (phase === "landing") {
     return (
-      <div className="min-h-screen bg-slate-950 text-white">
-        <section className="relative py-24 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 via-slate-950 to-indigo-900/20"></div>
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="max-w-3xl mx-auto text-center">
-              <Badge variant="secondary" className="mb-6 px-4 py-2 bg-cyan-500/10 text-cyan-300 border-cyan-500/30" data-testid="badge-free-tool">
-                Focus Score
-              </Badge>
-              <h1 className="text-4xl md:text-6xl font-display font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-100 to-cyan-400" data-testid="text-quiz-title">
-                Founder Focus Score
-              </h1>
-              <p className="text-xl text-slate-300 mb-4 leading-relaxed">
-                Discover your single biggest growth blocker in under 5 minutes.
-              </p>
-              <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto">
-                Answer 8 personalized questions based on your profile and get a tailored diagnosis of what's holding you back, plus one concrete action to fix it.
-              </p>
+      <div className="flex flex-col">
+        <section className="pt-28 pb-16 md:pt-36 md:pb-20" style={{ backgroundColor: "#FAF9F7" }}>
+          <div className="container px-4 mx-auto max-w-3xl text-center">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-snug tracking-tight mb-5" style={{ color: "#0D566C" }} data-testid="text-quiz-title">
+              Founder Focus Score
+            </h1>
+            <p className="text-xl md:text-2xl font-display font-medium mb-4" style={{ color: "#4B3F72" }}>
+              Discover your biggest growth blocker in under five minutes.
+            </p>
+            <p className="text-lg max-w-2xl mx-auto leading-relaxed mb-10" style={{ color: "#4A4A4A" }}>
+              Answer 8 personalized questions based on your profile and get a clear diagnosis of what is holding you back, plus one concrete step to move forward this week.
+            </p>
 
-              <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto mb-12">
-                {[
-                  { icon: <Clock className="h-5 w-5 text-cyan-400" />, label: "5 minutes" },
-                  { icon: <Target className="h-5 w-5 text-cyan-400" />, label: "Personalized" },
-                  { icon: <Zap className="h-5 w-5 text-cyan-400" />, label: "No signup" },
-                ].map((item, i) => (
-                  <div key={i} className="flex flex-col items-center gap-2 p-4 rounded-lg bg-white/5 border border-white/10">
-                    {item.icon}
-                    <span className="text-sm text-slate-300">{item.label}</span>
-                  </div>
-                ))}
-              </div>
-
-              <Button
-                size="lg"
-                className="h-14 px-10 text-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.6)] hover:scale-105 transition-all"
-                onClick={() => { setPhase("segmentation"); }}
-                data-testid="button-start-quiz"
-              >
-                Start the Diagnostic <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+            <div className="grid grid-cols-3 gap-4 max-w-md mx-auto mb-12">
+              {[
+                { icon: <Clock className="h-5 w-5" style={{ color: "#F5C542" }} />, label: "5 minutes" },
+                { icon: <Target className="h-5 w-5" style={{ color: "#F5C542" }} />, label: "Personalized" },
+                { icon: <Zap className="h-5 w-5" style={{ color: "#F5C542" }} />, label: "No signup required" },
+              ].map((item, i) => (
+                <div key={i} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white" style={{ boxShadow: "0 2px 12px rgba(224,224,224,0.5)" }}>
+                  {item.icon}
+                  <span className="text-sm font-medium" style={{ color: "#4A4A4A" }}>{item.label}</span>
+                </div>
+              ))}
             </div>
+
+            <Button
+              size="lg"
+              className="h-14 px-10 text-lg font-semibold rounded-full shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-[1.03] active:scale-[0.98]"
+              style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+              onClick={() => setPhase("segmentation")}
+              data-testid="button-start-quiz"
+            >
+              Start the diagnostic <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
           </div>
         </section>
 
-        <section className="py-16 border-t border-slate-800">
-          <div className="container mx-auto px-4 max-w-4xl">
-            <h2 className="text-2xl font-display font-bold text-center mb-10 text-white">How It Works</h2>
-            <div className="grid md:grid-cols-4 gap-6">
+        <section className="py-16 md:py-20" style={{ backgroundColor: "#F3F3F3" }}>
+          <div className="container px-4 mx-auto max-w-4xl">
+            <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-12" style={{ color: "#0D566C" }}>How it works</h2>
+            <div className="grid md:grid-cols-4 gap-8">
               {[
-                { num: "1", title: "Tell Us", desc: "Select the profile that best describes you" },
-                { num: "2", title: "Answer", desc: "8 personalized questions about your challenges" },
-                { num: "3", title: "Discover", desc: "Your primary blocker across 4 key areas" },
-                { num: "4", title: "Act", desc: "One concrete step to take this week" },
+                { num: "1", title: "Tell us", desc: "Select the profile that best describes you." },
+                { num: "2", title: "Answer", desc: "Respond to 8 short, personalized questions about your current challenges." },
+                { num: "3", title: "Discover", desc: "See your primary blocker across four key areas of growth." },
+                { num: "4", title: "Act", desc: "Receive one clear action step to take this week." },
               ].map((step) => (
                 <div key={step.num} className="text-center">
-                  <div className="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mx-auto mb-3">
-                    <span className="text-cyan-400 font-bold">{step.num}</span>
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 font-bold" style={{ backgroundColor: "rgba(245,197,66,0.2)", color: "#0D566C" }}>
+                    {step.num}
                   </div>
-                  <h3 className="font-bold text-white mb-1">{step.title}</h3>
-                  <p className="text-sm text-slate-400">{step.desc}</p>
+                  <h3 className="font-bold mb-2" style={{ color: "#0D566C" }}>{step.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: "#4A4A4A" }}>{step.desc}</p>
                 </div>
               ))}
             </div>
@@ -253,20 +232,23 @@ export default function FounderFocusScore() {
     );
   }
 
+  // ── Segmentation ──
   if (phase === "segmentation") {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex flex-col">
-        <div className="container mx-auto px-4 py-8 flex-1 flex flex-col max-w-3xl">
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#FAF9F7" }}>
+        <div className="container mx-auto px-4 py-12 flex-1 flex flex-col max-w-3xl">
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-slate-400">Getting started</span>
-              <span className="text-sm text-cyan-400 font-medium">Step 1 of 2</span>
+              <span className="text-sm font-medium" style={{ color: "#8A8A8A" }}>Getting started</span>
+              <span className="text-sm font-medium" style={{ color: "#0D566C" }}>Step 1 of 2</span>
             </div>
-            <Progress value={5} className="h-2 bg-slate-800" />
+            <div className="w-full h-2 rounded-full" style={{ backgroundColor: "#E8E8E8" }}>
+              <div className="h-2 rounded-full transition-all duration-500" style={{ width: "5%", backgroundColor: "#FF6B5C" }} />
+            </div>
           </div>
 
           <div className="flex-1 flex flex-col justify-center">
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-10 text-white leading-tight text-center" data-testid="text-segmentation-question">
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-10 leading-tight text-center" style={{ color: "#0D566C" }} data-testid="text-segmentation-question">
               {SEGMENTATION_QUESTION.question}
             </h2>
 
@@ -274,15 +256,18 @@ export default function FounderFocusScore() {
               {SEGMENTATION_QUESTION.options.map((option, i) => (
                 <button
                   key={i}
-                  className="w-full text-left p-5 rounded-xl border transition-all duration-200 bg-slate-900/50 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-cyan-500/50 hover:text-white"
+                  className="w-full text-left p-5 rounded-xl border-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md bg-white"
+                  style={{ borderColor: "#E8E8E8" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#FF6B5C"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E8E8E8"; }}
                   onClick={() => handleSegmentSelect(i)}
                   data-testid={`button-segment-${i}`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0 text-cyan-400">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(245,197,66,0.15)", color: "#F5C542" }}>
                       {segmentIcons[i]}
                     </div>
-                    <span className="text-lg">{option.text}</span>
+                    <span className="text-lg font-medium" style={{ color: "#4A4A4A" }}>{option.text}</span>
                   </div>
                 </button>
               ))}
@@ -292,7 +277,8 @@ export default function FounderFocusScore() {
               <Button
                 variant="ghost"
                 onClick={() => setPhase("landing")}
-                className="text-slate-400 hover:text-white"
+                className="font-medium"
+                style={{ color: "#8A8A8A" }}
                 data-testid="button-back-landing"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
@@ -304,29 +290,32 @@ export default function FounderFocusScore() {
     );
   }
 
+  // ── Quiz ──
   if (phase === "quiz" && selectedTrack) {
     const question = questions[currentQuestion];
     const progress = ((currentQuestion + 1) / questions.length) * 100;
     const selectedAnswer = answers[currentQuestion];
 
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex flex-col">
-        <div className="container mx-auto px-4 py-8 flex-1 flex flex-col max-w-3xl">
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#FAF9F7" }}>
+        <div className="container mx-auto px-4 py-12 flex-1 flex flex-col max-w-3xl">
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="bg-cyan-500/10 text-cyan-300 border-cyan-500/30 text-xs">
+                <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: "rgba(13,86,108,0.08)", color: "#0D566C" }}>
                   {TRACK_LABELS[selectedTrack]}
-                </Badge>
-                <span className="text-sm text-slate-400">Question {currentQuestion + 1} of {questions.length}</span>
+                </span>
+                <span className="text-sm font-medium" style={{ color: "#8A8A8A" }}>Question {currentQuestion + 1} of {questions.length}</span>
               </div>
-              <span className="text-sm text-cyan-400 font-medium">{Math.round(progress)}% complete</span>
+              <span className="text-sm font-medium" style={{ color: "#0D566C" }}>{Math.round(progress)}%</span>
             </div>
-            <Progress value={progress} className="h-2 bg-slate-800" />
+            <div className="w-full h-2 rounded-full" style={{ backgroundColor: "#E8E8E8" }}>
+              <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%`, backgroundColor: "#FF6B5C" }} />
+            </div>
           </div>
 
           <div className="flex-1 flex flex-col justify-center">
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-10 text-white leading-tight" data-testid={`text-question-${currentQuestion}`}>
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-10 leading-tight" style={{ color: "#0D566C" }} data-testid={`text-question-${currentQuestion}`}>
               {question.question}
             </h2>
 
@@ -334,23 +323,27 @@ export default function FounderFocusScore() {
               {question.answers.map((answer, i) => (
                 <button
                   key={i}
-                  className={`w-full text-left p-5 rounded-xl border transition-all duration-200 ${
-                    selectedAnswer === i
-                      ? "bg-cyan-500/10 border-cyan-500/50 text-white ring-1 ring-cyan-500/30"
-                      : "bg-slate-900/50 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-slate-600"
-                  }`}
+                  className="w-full text-left p-5 rounded-xl border-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                  style={{
+                    backgroundColor: selectedAnswer === i ? "rgba(255,107,92,0.06)" : "#FFFFFF",
+                    borderColor: selectedAnswer === i ? "#FF6B5C" : "#E8E8E8",
+                  }}
+                  onMouseEnter={(e) => { if (selectedAnswer !== i) e.currentTarget.style.borderColor = "#FF6B5C"; }}
+                  onMouseLeave={(e) => { if (selectedAnswer !== i) e.currentTarget.style.borderColor = "#E8E8E8"; }}
                   onClick={() => handleAnswer(i)}
                   data-testid={`button-answer-${currentQuestion}-${i}`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-                      selectedAnswer === i
-                        ? "bg-cyan-500 text-slate-950"
-                        : "bg-slate-800 text-slate-400"
-                    }`}>
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                      style={{
+                        backgroundColor: selectedAnswer === i ? "#FF6B5C" : "rgba(13,86,108,0.08)",
+                        color: selectedAnswer === i ? "#FFFFFF" : "#0D566C",
+                      }}
+                    >
                       {String.fromCharCode(65 + i)}
                     </div>
-                    <span className="text-lg">{answer.text}</span>
+                    <span className="text-lg" style={{ color: "#4A4A4A" }}>{answer.text}</span>
                   </div>
                 </button>
               ))}
@@ -366,7 +359,8 @@ export default function FounderFocusScore() {
                     handlePrevious();
                   }
                 }}
-                className="text-slate-400 hover:text-white"
+                className="font-medium"
+                style={{ color: "#8A8A8A" }}
                 data-testid="button-previous"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" /> {currentQuestion === 0 ? "Change Profile" : "Previous"}
@@ -375,13 +369,10 @@ export default function FounderFocusScore() {
                 {questions.map((_, i) => (
                   <div
                     key={i}
-                    className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                      i === currentQuestion
-                        ? "bg-cyan-500"
-                        : answers[i] >= 0
-                        ? "bg-cyan-500/40"
-                        : "bg-slate-700"
-                    }`}
+                    className="w-2.5 h-2.5 rounded-full transition-colors"
+                    style={{
+                      backgroundColor: i === currentQuestion ? "#FF6B5C" : answers[i] >= 0 ? "rgba(255,107,92,0.4)" : "#E8E8E8",
+                    }}
                   />
                 ))}
               </div>
@@ -393,113 +384,121 @@ export default function FounderFocusScore() {
     );
   }
 
+  // ── Results ──
   if (phase === "results" && result && selectedTrack) {
     const trackBlocker = TRACK_BLOCKER_INFO[selectedTrack][result.primaryBlocker];
     const blocker = trackBlocker || BLOCKER_INFO[result.primaryBlocker];
 
     return (
-      <div className="min-h-screen bg-slate-950 text-white">
-        <div className="container mx-auto px-4 py-16 max-w-4xl">
-          <div className="text-center mb-12">
-            <Badge variant="secondary" className="mb-4 px-4 py-2 bg-cyan-500/10 text-cyan-300 border-cyan-500/30">
+      <div className="flex flex-col">
+        {/* Results Header */}
+        <section className="pt-28 pb-12 md:pt-36 md:pb-16" style={{ backgroundColor: "#FAF9F7" }}>
+          <div className="container px-4 mx-auto max-w-4xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-wider mb-3 inline-block px-4 py-1.5 rounded-full" style={{ backgroundColor: "rgba(13,86,108,0.08)", color: "#0D566C" }}>
               Your Results
-            </Badge>
-            <h1 className="text-3xl md:text-4xl font-display font-bold mb-4" data-testid="text-results-title">
+            </p>
+            <h1 className="text-3xl md:text-4xl font-display font-bold mb-3" style={{ color: "#0D566C" }} data-testid="text-results-title">
               Your Founder Focus Score
             </h1>
-            <p className="text-slate-400 text-sm">
-              Track: <span className="text-cyan-300 font-medium">{TRACK_LABELS[selectedTrack]}</span>
+            <p className="text-sm" style={{ color: "#8A8A8A" }}>
+              Track: <span className="font-medium" style={{ color: "#4B3F72" }}>{TRACK_LABELS[selectedTrack]}</span>
             </p>
           </div>
+        </section>
 
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            <Card className="bg-slate-900 border-slate-700 overflow-hidden">
-              <CardContent className="p-8 text-center">
+        {/* Score + Blocker Cards */}
+        <section className="pb-12" style={{ backgroundColor: "#FAF9F7" }}>
+          <div className="container px-4 mx-auto max-w-4xl">
+            <div className="grid md:grid-cols-2 gap-8 mb-12">
+              {/* Score Circle */}
+              <div className="bg-white rounded-2xl p-8 text-center" style={{ boxShadow: "0 2px 16px rgba(224,224,224,0.5)" }}>
                 <div className="relative w-36 h-36 mx-auto mb-6">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="8" className="text-slate-800" />
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#E8E8E8" strokeWidth="8" />
                     <circle
                       cx="50" cy="50" r="42" fill="none"
-                      stroke="url(#scoreGradient)" strokeWidth="8"
+                      stroke="#FF6B5C" strokeWidth="8"
                       strokeLinecap="round"
                       strokeDasharray={`${(result.totalScore / 100) * 264} 264`}
                     />
-                    <defs>
-                      <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#06b6d4" />
-                        <stop offset="100%" stopColor="#6366f1" />
-                      </linearGradient>
-                    </defs>
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-4xl font-display font-bold text-white" data-testid="text-score-value">{result.totalScore}</span>
+                    <span className="text-4xl font-display font-bold" style={{ color: "#0D566C" }} data-testid="text-score-value">{result.totalScore}</span>
                   </div>
                 </div>
-                <p className="text-slate-400 text-sm">
+                <p className="text-sm font-medium" style={{ color: "#8A8A8A" }}>
                   {result.totalScore >= 80 ? "Strong foundation" : result.totalScore >= 60 ? "Solid but blocked" : "High friction"}
                 </p>
-              </CardContent>
-            </Card>
+              </div>
 
-            <Card className={`bg-gradient-to-br ${categoryColors[result.primaryBlocker]} border-none overflow-hidden`}>
-              <CardContent className="p-8 text-center flex flex-col justify-center h-full">
-                <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-4">
+              {/* Primary Blocker */}
+              <div className="rounded-2xl p-8 text-center flex flex-col justify-center" style={{ backgroundColor: categoryAccentColors[result.primaryBlocker] }}>
+                <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-4 text-white">
                   {categoryIcons[result.primaryBlocker]}
                 </div>
-                <p className="text-white/80 text-sm uppercase tracking-wider mb-2">Primary Blocker</p>
-                <h2 className="text-2xl font-display font-bold text-white mb-2" data-testid="text-primary-blocker">{blocker.title}</h2>
-              </CardContent>
-            </Card>
+                <p className="text-white/70 text-sm uppercase tracking-wider mb-2">Primary Blocker</p>
+                <h2 className="text-2xl font-display font-bold text-white" data-testid="text-primary-blocker">{blocker.title}</h2>
+              </div>
+            </div>
           </div>
+        </section>
 
-          <Card className="bg-slate-900 border-slate-700 mb-8">
-            <CardContent className="p-8">
-              <h3 className="text-xl font-bold text-white mb-4">What This Means</h3>
-              <p className="text-slate-300 leading-relaxed mb-6" data-testid="text-blocker-explanation">{blocker.explanation}</p>
-              <div className={`p-5 rounded-xl border ${categoryBgColors[result.primaryBlocker]}`}>
+        {/* What This Means */}
+        <section className="py-12" style={{ backgroundColor: "#F3F3F3" }}>
+          <div className="container px-4 mx-auto max-w-4xl">
+            <div className="bg-white rounded-2xl p-8" style={{ boxShadow: "0 2px 16px rgba(224,224,224,0.5)" }}>
+              <h3 className="text-xl font-display font-bold mb-4" style={{ color: "#0D566C" }}>What This Means</h3>
+              <p className="leading-relaxed mb-6" style={{ color: "#4A4A4A" }} data-testid="text-blocker-explanation">{blocker.explanation}</p>
+              <div className="p-5 rounded-xl" style={{ backgroundColor: "rgba(245,197,66,0.1)", border: "1px solid rgba(245,197,66,0.3)" }}>
                 <div className="flex items-start gap-3">
-                  <Target className={`h-5 w-5 ${categoryTextColors[result.primaryBlocker]} shrink-0 mt-0.5`} />
+                  <Target className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "#F5C542" }} />
                   <div>
-                    <p className="font-bold text-white mb-1">Your Next Action</p>
-                    <p className="text-slate-300 text-sm" data-testid="text-next-action">{blocker.action}</p>
+                    <p className="font-bold mb-1" style={{ color: "#0D566C" }}>Your Next Action</p>
+                    <p className="text-sm" style={{ color: "#4A4A4A" }} data-testid="text-next-action">{blocker.action}</p>
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        </section>
 
-          <Card className="bg-slate-900 border-slate-700 mb-12">
-            <CardContent className="p-8">
-              <h3 className="text-xl font-bold text-white mb-6">Score Breakdown</h3>
-              <div className="space-y-4">
+        {/* Score Breakdown */}
+        <section className="py-12" style={{ backgroundColor: "#F3F3F3" }}>
+          <div className="container px-4 mx-auto max-w-4xl">
+            <div className="bg-white rounded-2xl p-8" style={{ boxShadow: "0 2px 16px rgba(224,224,224,0.5)" }}>
+              <h3 className="text-xl font-display font-bold mb-6" style={{ color: "#0D566C" }}>Score Breakdown</h3>
+              <div className="space-y-5">
                 {result.categoryResults.map((cat) => (
                   <div key={cat.category}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span className={categoryTextColors[cat.category]}>{categoryIcons[cat.category]}</span>
-                        <span className="text-white font-medium">{cat.category}</span>
+                        <span style={{ color: categoryAccentColors[cat.category] }}>{categoryIcons[cat.category]}</span>
+                        <span className="font-medium" style={{ color: "#0D566C" }}>{cat.category}</span>
                       </div>
-                      <span className="text-slate-400 text-sm">{cat.score} pts</span>
+                      <span className="text-sm" style={{ color: "#8A8A8A" }}>{cat.score} pts</span>
                     </div>
-                    <div className="w-full bg-slate-800 rounded-full h-2.5">
+                    <div className="w-full h-2.5 rounded-full" style={{ backgroundColor: "#E8E8E8" }}>
                       <div
-                        className={`h-2.5 rounded-full bg-gradient-to-r ${categoryColors[cat.category]}`}
-                        style={{ width: `${Math.max(cat.percentage, 5)}%` }}
+                        className="h-2.5 rounded-full transition-all duration-700"
+                        style={{ width: `${Math.max(cat.percentage, 5)}%`, backgroundColor: categoryAccentColors[cat.category] }}
                       />
                     </div>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        </section>
 
-          <Card className="bg-gradient-to-br from-indigo-900/80 to-cyan-900/80 border-indigo-500/30 overflow-hidden">
-            <CardContent className="p-8 md:p-12 text-center">
-              <Users className="h-10 w-10 text-cyan-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-display font-bold text-white mb-3" data-testid="text-community-cta">
+        {/* Community Signup CTA */}
+        <section className="py-16 md:py-20" style={{ backgroundColor: "#0D566C" }}>
+          <div className="container px-4 mx-auto max-w-3xl">
+            <div className="text-center">
+              <Users className="h-10 w-10 mx-auto mb-4" style={{ color: "#F5C542" }} />
+              <h3 className="text-2xl md:text-3xl font-display font-bold text-white mb-3" data-testid="text-community-cta">
                 Join the Free Entrepreneur Community
               </h3>
-              <p className="text-slate-300 mb-6 max-w-xl mx-auto">
+              <p className="mb-8 max-w-xl mx-auto leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>
                 Sign up with your email and password to unlock your dashboard. Access clarity and focus tools, priority-setting exercises, and connect with coaches and other founders to accelerate your next steps.
               </p>
               <div className="grid grid-cols-3 gap-3 max-w-md mx-auto mb-8">
@@ -508,7 +507,7 @@ export default function FounderFocusScore() {
                   { label: "Coach access", icon: <CheckCircle className="h-4 w-4" /> },
                   { label: "100% free", icon: <Zap className="h-4 w-4" /> },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-1.5 text-xs text-indigo-200 bg-white/5 rounded-lg px-3 py-2 justify-center">
+                  <div key={i} className="flex items-center gap-1.5 text-xs rounded-lg px-3 py-2 justify-center" style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }}>
                     {item.icon}
                     {item.label}
                   </div>
@@ -523,7 +522,8 @@ export default function FounderFocusScore() {
                     value={signupName}
                     onChange={(e) => setSignupName(e.target.value)}
                     autoComplete="name"
-                    className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 h-12"
+                    className="h-12 rounded-xl border-white/20 text-white placeholder:text-white/40"
+                    style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
                     data-testid="input-signup-name"
                   />
                   <Input
@@ -534,7 +534,8 @@ export default function FounderFocusScore() {
                     value={signupEmail}
                     onChange={(e) => setSignupEmail(e.target.value)}
                     autoComplete="email"
-                    className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 h-12"
+                    className="h-12 rounded-xl border-white/20 text-white placeholder:text-white/40"
+                    style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
                     data-testid="input-signup-email"
                   />
                   <Input
@@ -545,7 +546,8 @@ export default function FounderFocusScore() {
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
                     autoComplete="new-password"
-                    className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 h-12"
+                    className="h-12 rounded-xl border-white/20 text-white placeholder:text-white/40"
+                    style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
                     data-testid="input-signup-password"
                   />
                   <div className="text-left">
@@ -554,15 +556,17 @@ export default function FounderFocusScore() {
                         type="checkbox"
                         checked={agreedToContract}
                         onChange={(e) => setAgreedToContract(e.target.checked)}
-                        className="mt-1 h-4 w-4 rounded border-white/30 accent-cyan-500"
+                        className="mt-1 h-4 w-4 rounded"
+                        style={{ accentColor: "#FF6B5C" }}
                         data-testid="checkbox-agree-contract"
                       />
-                      <span className="text-sm text-slate-300">
+                      <span className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
                         I agree to the{" "}
                         <button
                           type="button"
                           onClick={() => setShowContractText(!showContractText)}
-                          className="text-cyan-400 underline hover:text-cyan-300"
+                          className="underline transition-colors"
+                          style={{ color: "#F5C542" }}
                           data-testid="button-view-contract"
                         >
                           Community Free Membership Agreement
@@ -570,7 +574,7 @@ export default function FounderFocusScore() {
                       </span>
                     </label>
                     {showContractText && (
-                      <div className="mt-3 max-h-48 overflow-y-auto bg-white/5 border border-white/10 rounded-lg p-4 text-xs text-slate-400 whitespace-pre-wrap">
+                      <div className="mt-3 max-h-48 overflow-y-auto rounded-lg p-4 text-xs whitespace-pre-wrap" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
                         {COMMUNITY_FREE_CONTRACT}
                       </div>
                     )}
@@ -578,35 +582,40 @@ export default function FounderFocusScore() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full h-12 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-full"
+                    className="w-full h-12 font-semibold rounded-full transition-all duration-200 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                    style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                     disabled={isCreatingAccount}
                     data-testid="button-join-community"
                   >
                     {isCreatingAccount ? (
                       <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating your account...</>
                     ) : (
-                      <>Join the Community – Free <ArrowRight className="ml-2 h-5 w-5" /></>
+                      <>Join the Community — Free <ArrowRight className="ml-2 h-5 w-5" /></>
                     )}
                   </Button>
-                  <p className="text-xs text-slate-400 text-center">No credit card required. No commitment.</p>
+                  <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.5)" }}>No credit card required. No commitment.</p>
                 </form>
               ) : (
-                <div className="max-w-md mx-auto bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6" data-testid="text-signup-success">
-                  <CheckCircle className="h-10 w-10 text-emerald-400 mx-auto mb-3" />
+                <div className="max-w-md mx-auto rounded-xl p-6" style={{ backgroundColor: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }} data-testid="text-signup-success">
+                  <CheckCircle className="h-10 w-10 mx-auto mb-3" style={{ color: "#F5C542" }} />
                   <h4 className="text-lg font-bold text-white mb-2">Welcome to the Community!</h4>
-                  <p className="text-slate-300 text-sm mb-4">
+                  <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.8)" }}>
                     Your account is ready. Log in to access your entrepreneur dashboard.
                   </p>
                   <Link href="/login">
-                    <Button className="bg-emerald-500 hover:bg-emerald-400 text-white rounded-full" data-testid="button-go-to-login">
+                    <Button
+                      className="rounded-full font-semibold transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
+                      style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                      data-testid="button-go-to-login"
+                    >
                       Go to Login <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
+        </section>
       </div>
     );
   }
