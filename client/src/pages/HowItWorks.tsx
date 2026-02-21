@@ -74,7 +74,10 @@ export default function HowItWorks() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: "#FF6B5C" }}>Phase 2</p>
-              <h2 className="text-2xl md:text-3xl font-display font-bold mb-4" style={{ color: "#0D566C" }}>Get Matched With a Mentor</h2>
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Get Matched With a Mentor</h2>
+              <p className="text-sm font-semibold mb-4 inline-block px-4 py-1.5 rounded-full" style={{ backgroundColor: "rgba(13,86,108,0.08)", color: "#0D566C" }}>
+                Free — Part of the Community Free Plan
+              </p>
               <p className="text-lg leading-relaxed mb-3" style={{ color: "#4A4A4A" }}>
                 When your idea is ready, submit it for review. A dedicated mentor evaluates it and, if aligned, welcomes you into their portfolio.
               </p>
