@@ -116,15 +116,18 @@ export default function Pricing() {
                 ))}
               </ul>
 
-              <Link href="/become-entrepreneur">
+              <Link href="/founder-focus">
                 <Button
                   className="w-full h-12 text-base font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
                   style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                   data-testid="button-founders-circle-pricing"
                 >
-                  Join Founders Circle <ArrowRight className="ml-2 h-4 w-4" />
+                  Start with Community Free <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
+              <p className="text-xs text-center mt-3" style={{ color: "#8A8A8A" }}>
+                Begin with the free plan, then upgrade after mentor acceptance.
+              </p>
             </div>
 
             {/* Capital Circle */}
@@ -171,7 +174,7 @@ export default function Pricing() {
                 Limited seats to ensure focused, high-quality support.
               </p>
 
-              <Link href="/become-entrepreneur">
+              <Link href="/founder-focus">
                 <Button
                   className="w-full h-12 text-base font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
                   style={{ backgroundColor: "#F5C542", color: "#0D566C", border: "none" }}
@@ -180,6 +183,9 @@ export default function Pricing() {
                   Apply for Capital Circle <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
+              <p className="text-xs text-center mt-3" style={{ color: "rgba(255,255,255,0.45)" }}>
+                Start with Community Free, then progress through Founders Circle.
+              </p>
             </div>
 
           </div>
