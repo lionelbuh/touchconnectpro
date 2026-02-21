@@ -1,0 +1,107 @@
+Hero Section
+
+Headline: AI helps organize your thoughts. Mentors help you make them real.
+Subtext: Turn your ideas into action with clarity and guidance. AI structures your ideas, but your mentor keeps them creative, personal, and actionable.
+CTA: Try it free
+
+Color Guidance:
+
+Background: Soft cream (#FAF9F7)
+
+Headline: Deep teal (#0D566C)
+
+Subtext: Dark gray (#4A4A4A)
+
+Button: Coral (#FF6B5C)
+
+Button text: White (#FFFFFF)
+
+How It Works / Features Section
+
+Feature 1 – Focus with Clarity: Get simple tools that help you see exactly what to do next, without feeling overwhelmed.
+Feature 2 – Track Your Progress: Know what’s working and what needs attention, so you can move forward confidently.
+Feature 3 – Learn from Real Founders: Tips, insights, and practical guidance from people who have been in your shoes.
+
+Color Guidance:
+
+Section Background: Light gray (#F3F3F3)
+
+Feature headings: Teal (#0D566C)
+
+Feature text: Dark gray (#4A4A4A)
+
+Accent icons or highlights: Warm yellow (#F5C542)
+
+Why TouchConnectPro Section
+
+Heading: A human touch for every idea
+Text: AI can organize your thinking, but humans provide creativity, perspective, and guidance. You’ll never feel stuck. Every next step is clear, purposeful, and actionable.
+
+Color Guidance:
+
+Background: Soft cream (#FAF9F7)
+
+Heading: Indigo (#4B3F72)
+
+Text: Dark gray (#4A4A4A)
+
+What Is TouchConnectPro Section
+
+Heading: What Is TouchConnectPro?
+Text: TouchConnectPro is a mentorship platform designed to support early stage entrepreneurs through structured, real world guidance.
+
+We help founders move from idea to execution by connecting them with vetted mentors who understand the challenges of building a business from the ground up.
+
+Whether you are validating an idea, launching a product, or preparing for growth, TouchConnectPro gives you access to experience that accelerates progress.
+
+Color Guidance:
+
+Background: Light gray (#F3F3F3)
+
+Heading: Teal (#0D566C)
+
+Text: Dark gray (#4A4A4A)
+
+Accent highlights: Warm yellow (#F5C542)
+
+Call to Action Section
+
+Heading: Ready to turn your idea into action?
+Text: Start today for free and see how a mentor-guided approach helps you focus, learn, and move forward.
+CTA: Get started now
+
+Color Guidance:
+
+Background: Deep teal (#0D566C)
+
+Heading and text: White (#FFFFFF)
+
+Button: Coral (#FF6B5C) with white text (#FFFFFF)
+
+Footer Section
+
+Heading: Questions or curious to learn more?
+Text: We love helping founders get unstuck. Explore our tools or reach out anytime.
+Links: About | Tools | Community | Contact
+
+Color Guidance:
+
+Background: Dark gray (#2B2B2B)
+
+Text: Soft cream (#FAF9F7)
+
+Links: Coral (#FF6B5C)
+
+Hover link effect: Warm yellow (#F5C542)
+
+Micro-interactions & Style Notes for AI Tool / Developer
+
+Buttons: subtle hover effect (slightly darker coral)
+
+Cards or sections: soft shadow (#E0E0E0) for depth
+
+Sections: slightly varied spacing and asymmetry to avoid a rigid, template look
+
+Fonts: readable, friendly, approachable
+
+Overall palette: Neutral backgrounds, strong teal/indigo for trust and structure, coral and yellow for highlights and CTAs
