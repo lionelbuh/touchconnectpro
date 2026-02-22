@@ -72,7 +72,7 @@ export default function InsightArticle() {
       />
 
       {/* Hero */}
-      <section className="pt-28 pb-12 md:pt-36 md:pb-16" style={{ backgroundColor: "#FAF9F7" }}>
+      <section className="pt-20 pb-10 md:pt-24 md:pb-14" style={{ backgroundColor: "#FAF9F7" }}>
         <div className="container px-4 mx-auto max-w-3xl">
           <Link href="/insights" data-testid="link-back-insights">
             <span className="inline-flex items-center gap-1.5 text-sm font-medium mb-6 cursor-pointer transition-colors duration-200" style={{ color: "#FF6B5C" }}>

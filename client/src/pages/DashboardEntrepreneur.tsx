@@ -2071,7 +2071,7 @@ export default function DashboardEntrepreneur() {
              <p className="text-[#0D566C] mb-4">You're part of the TouchConnectPro Community Free plan. Complete your Founder Snapshot to unlock your full dashboard, explore coaches, and get personalized guidance.</p>
              <Button 
               className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white"
-              onClick={() => setShowSnapshotForm(true)}
+              onClick={() => { setShowSnapshotForm(true); setTimeout(() => { const el = document.getElementById('snapshot-form-section'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100); }}
               data-testid="link-submit-idea"
              >
               <Rocket className="mr-2 h-4 w-4" />
@@ -2289,7 +2289,7 @@ export default function DashboardEntrepreneur() {
 
         {/* Smart Founder Snapshot Form */}
         {showSnapshotForm && !founderSnapshot && (
-         <Card className="mb-6 border-l-4 border-l-[#4B3F72]" data-testid="card-snapshot-form">
+         <Card id="snapshot-form-section" className="mb-6 border-l-4 border-l-[#4B3F72]" data-testid="card-snapshot-form">
           <CardHeader>
            <CardTitle className="flex items-center gap-2 text-[#0D566C]">
             <Target className="h-5 w-5 text-[#4B3F72]" />

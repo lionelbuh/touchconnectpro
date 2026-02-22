@@ -6,7 +6,7 @@ export default function HowItWorks() {
   return (
     <div className="flex flex-col">
       {/* Hero */}
-      <section className="pt-28 pb-20 md:pt-36 md:pb-28" style={{ backgroundColor: "#FAF9F7" }}>
+      <section className="pt-20 pb-14 md:pt-24 md:pb-20" style={{ backgroundColor: "#FAF9F7" }}>
         <div className="container px-4 mx-auto max-w-3xl text-center">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-snug tracking-tight mb-5" style={{ color: "#0D566C" }} data-testid="text-hiw-headline">
             How It Works

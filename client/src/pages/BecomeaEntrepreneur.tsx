@@ -706,7 +706,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
       </Dialog>
 
       {/* Hero Section */}
-      <section className="py-24 bg-gradient-to-b from-emerald-900/30 to-background">
+      <section className="py-16 bg-gradient-to-b from-emerald-900/30 to-background">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
             <Badge variant="secondary" className="mb-6 px-6 py-3 text-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border-emerald-500/30">

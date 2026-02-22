@@ -52,7 +52,7 @@ export default function Insights() {
   return (
     <div className="flex flex-col" data-testid="page-insights">
       {/* Hero */}
-      <section className="pt-28 pb-16 md:pt-36 md:pb-20" style={{ backgroundColor: "#FAF9F7" }} data-testid="section-insights-hero">
+      <section className="pt-20 pb-12 md:pt-24 md:pb-16" style={{ backgroundColor: "#FAF9F7" }} data-testid="section-insights-hero">
         <div className="container px-4 mx-auto max-w-4xl">
           <p className="text-sm font-bold uppercase tracking-wider mb-4 inline-block px-4 py-1.5 rounded-full" style={{ backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" }}>
             Startup Radar

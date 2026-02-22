@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden pt-16" style={{ backgroundColor: "#FAF9F7" }}>
+      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden pt-10" style={{ backgroundColor: "#FAF9F7" }}>
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full opacity-[0.08]" style={{ background: "radial-gradient(circle, #0D566C 0%, transparent 70%)" }} />
           <div className="absolute -bottom-20 -left-20 w-[400px] h-[400px] rounded-full opacity-[0.06]" style={{ background: "radial-gradient(circle, #FF6B5C 0%, transparent 70%)" }} />

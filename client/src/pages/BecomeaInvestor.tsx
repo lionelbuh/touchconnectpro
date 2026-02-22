@@ -139,7 +139,7 @@ export default function BecomeaInvestor() {
       </Dialog>
 
       {/* Hero Section */}
-      <section className="py-24 bg-gradient-to-b from-amber-900/30 to-background">
+      <section className="py-16 bg-gradient-to-b from-amber-900/30 to-background">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
             <Badge variant="secondary" className="mb-6 px-6 py-3 text-lg bg-amber-500/10 text-amber-600 dark:text-amber-300 border-amber-500/30">
