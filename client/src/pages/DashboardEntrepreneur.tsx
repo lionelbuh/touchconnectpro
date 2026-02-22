@@ -1285,15 +1285,30 @@ export default function DashboardEntrepreneur() {
   setSubmitted(true);
  };
 
- const handleAcceptAIEnhancements = () => {
+ const handleAcceptAIEnhancements = async () => {
   const updatedFormData = { ...formData };
+  const ideaReviewData: Record<string, string> = {};
   Object.keys(aiEnhancedData).forEach((key) => {
    updatedFormData[key as keyof typeof formData] = aiEnhancedData[key].aiEnhanced;
+   ideaReviewData[key] = aiEnhancedData[key].aiEnhanced;
   });
   setFormData(updatedFormData);
   setShowAIReview(false);
   setShowSuccessPage(true);
   window.scrollTo(0, 0);
+
+  if (profileData.email) {
+   try {
+    await fetch(`${API_BASE_URL}/api/entrepreneurs/intake/${encodeURIComponent(profileData.email)}`, {
+     method: "PUT",
+     headers: { "Content-Type": "application/json" },
+     body: JSON.stringify({ ideaReview: ideaReviewData, ...updatedFormData })
+    });
+    console.log("[AI ACCEPT] Saved AI-enhanced answers to database");
+   } catch (err) {
+    console.error("[AI ACCEPT] Failed to save AI-enhanced answers:", err);
+   }
+  }
  };
 
  const handleCreateBusinessPlan = () => {
@@ -3665,7 +3680,9 @@ export default function DashboardEntrepreneur() {
         <p className="text-[#8A8A8A] mb-8">Here's a complete summary of your business idea that was submitted to our mentors.</p>
 
         <div className="space-y-6">
-         {steps.map((sec, secIdx) => (
+         {steps.map((sec, secIdx) => {
+          const ideaReview = entrepreneurData?.data?.ideaReview;
+          return (
           <Card key={secIdx} className="border-[#E8E8E8]">
            <CardHeader className="pb-3 bg-[#F3F3F3]">
             <CardTitle className="text-lg flex items-center gap-2">
@@ -3674,15 +3691,20 @@ export default function DashboardEntrepreneur() {
             </CardTitle>
            </CardHeader>
            <CardContent className="space-y-4 pt-6">
-            {sec.fields.map((field: any) => (
+            {sec.fields.map((field: any) => {
+             const aiValue = ideaReview?.[field.key];
+             const displayValue = aiValue || formData[field.key as keyof typeof formData] || "Not provided";
+             return (
              <div key={field.key}>
               <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-2">{field.label}</p>
-              <p className="text-[#0D566C] bg-[#FAF9F7] p-3 rounded-lg">{formData[field.key as keyof typeof formData] || "Not provided"}</p>
+              <p className="text-[#0D566C] bg-[#FAF9F7] p-3 rounded-lg">{displayValue}</p>
              </div>
-            ))}
+             );
+            })}
            </CardContent>
           </Card>
-         ))}
+          );
+         })}
         </div>
        </div>
       )}
