@@ -5500,7 +5500,7 @@ CREATE POLICY "Allow service role full access on mentor_questions" ON public.men
             await resendData.client.emails.send({
               from: resendData.fromEmail,
               to: existingData.email,
-              subject: "Admin Response to Your Note - TouchConnectPro",
+              subject: "Response from The Founder Guidance Team - TouchConnectPro",
               html: `
                 <!DOCTYPE html>
                 <html>
@@ -5516,11 +5516,11 @@ CREATE POLICY "Allow service role full access on mentor_questions" ON public.men
                 <body style="background-color: #FAF9F7;">
                   <div class="container">
                     <div class="header">
-                      <h1>Admin Response</h1>
+                      <h1>Response from The Founder Guidance Team</h1>
                     </div>
                     <div class="content">
                       <p>Hi ${existingData.full_name || "there"},</p>
-                      <p>The admin has responded to a note on your investor dashboard:</p>
+                      <p>The Founder Guidance Team has responded to a note on your investor dashboard:</p>
                       <div class="note-box">
                         <p>${text || "Please check your dashboard for the response."}</p>
                         ${attachmentName ? `<p><strong>Attachment:</strong> ${attachmentName}</p>` : ''}
@@ -5667,11 +5667,11 @@ CREATE POLICY "Allow service role full access on mentor_questions" ON public.men
               <body style="background-color: #FAF9F7;">
                 <div class="container">
                   <div class="header">
-                    <h1>New Note from Admin</h1>
+                    <h1>New Note from The Founder Guidance Team</h1>
                   </div>
                   <div class="content">
                     <p>Hi ${existingData.full_name || "there"},</p>
-                    <p>You have received a new note from the TouchConnectPro admin team:</p>
+                    <p>You have received a new note from The Founder Guidance Team at TouchConnectPro:</p>
                     <div class="note-box">
                       <p>${text?.trim() || "Please check your dashboard for an attached file."}</p>
                       ${attachmentName ? `<p><strong>Attachment:</strong> ${attachmentName}</p>` : ''}

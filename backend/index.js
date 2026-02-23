@@ -957,7 +957,8 @@ async function sendMessageNotificationEmail(recipientEmail, recipientName, sende
   // Show full message content - convert newlines to <br> for HTML
   const formattedMessage = messagePreview.replace(/\n/g, '<br>');
   
-  const subject = `New Message from ${senderName} - TouchConnectPro`;
+  const displayName = senderName === "Admin" ? "The Founder Guidance Team" : senderName;
+  const subject = `New Message from ${displayName} - TouchConnectPro`;
   const htmlContent = `
     <!DOCTYPE html>
     <html>
@@ -980,10 +981,10 @@ async function sendMessageNotificationEmail(recipientEmail, recipientName, sende
         <div class="content">
           <p>Hi ${recipientName || "there"},</p>
           
-          <p>You have received a new message from <strong>${senderName}</strong> on TouchConnectPro.</p>
+          <p>You have received a new message from <strong>${displayName}</strong> on TouchConnectPro.</p>
           
           <div class="message-box">
-            <p style="margin: 0; color: #8A8A8A; font-size: 14px;"><strong>From:</strong> ${senderName}</p>
+            <p style="margin: 0; color: #8A8A8A; font-size: 14px;"><strong>From:</strong> ${displayName}</p>
             <p style="margin: 15px 0 0 0;">${formattedMessage}</p>
           </div>
           
@@ -3421,7 +3422,7 @@ app.post("/api/investor-notes/:investorId/respond", async (req, res) => {
           await resendData.client.emails.send({
             from: resendData.fromEmail,
             to: existingData.email,
-            subject: "Admin Response to Your Note - TouchConnectPro",
+            subject: "Response from The Founder Guidance Team - TouchConnectPro",
             html: `
               <!DOCTYPE html>
               <html>
@@ -3437,11 +3438,11 @@ app.post("/api/investor-notes/:investorId/respond", async (req, res) => {
               <body style="background-color: #FAF9F7;">
                 <div class="container">
                   <div class="header">
-                    <h1>Admin Response</h1>
+                    <h1>Response from The Founder Guidance Team</h1>
                   </div>
                   <div class="content">
                     <p>Hi ${existingData.full_name || "there"},</p>
-                    <p>The admin has responded to a note on your investor dashboard:</p>
+                    <p>The Founder Guidance Team has responded to a note on your investor dashboard:</p>
                     <div class="note-box">
                       <p>${text || "Please check your dashboard for the response."}</p>
                       ${attachmentName ? `<p><strong>Attachment:</strong> ${attachmentName}</p>` : ''}
@@ -3583,11 +3584,11 @@ app.post("/api/investor-notes/:investorId", async (req, res) => {
             <body style="background-color: #FAF9F7;">
               <div class="container">
                 <div class="header">
-                  <h1>New Note from Admin</h1>
+                  <h1>New Note from The Founder Guidance Team</h1>
                 </div>
                 <div class="content">
                   <p>Hi ${existingData.full_name || "there"},</p>
-                  <p>You have received a new note from the TouchConnectPro admin team:</p>
+                  <p>You have received a new note from The Founder Guidance Team at TouchConnectPro:</p>
                   <div class="note-box">
                     <p>${text?.trim() || "Please check your dashboard for an attached file."}</p>
                     ${attachmentName ? `<p><strong>Attachment:</strong> ${attachmentName}</p>` : ''}
