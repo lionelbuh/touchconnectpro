@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback } from "react";
-import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API_BASE_URL } from "@/config";
 import {
-  ChevronLeft,
   Save,
   RotateCcw,
   Settings,
@@ -18,6 +16,7 @@ import {
   Download,
   Lock,
   Loader2,
+  LogOut,
 } from "lucide-react";
 import {
   NoroAssumptions,
@@ -88,8 +87,13 @@ function NoroLoginGate() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("tcp_noroToken");
+    setAuthenticated(false);
+  };
+
   if (authenticated) {
-    return <NoroDashboardContent />;
+    return <NoroDashboardContent onLogout={handleLogout} />;
   }
 
   return (
@@ -139,7 +143,7 @@ function NoroLoginGate() {
 
 export default NoroLoginGate;
 
-function NoroDashboardContent() {
+function NoroDashboardContent({ onLogout }: { onLogout: () => void }) {
   const [assumptions, setAssumptions] = useState<NoroAssumptions>(() => loadAssumptions() || { ...defaultAssumptions });
   const [screen, setScreen] = useState<Screen>("assumptions");
   const [selectedYear, setSelectedYear] = useState<Year>(2026);
@@ -223,11 +227,6 @@ function NoroDashboardContent() {
       <div className="border-b border-slate-700 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
         <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/admin-dashboard">
-              <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white" data-testid="button-back">
-                <ChevronLeft className="h-4 w-4 mr-1" /> Back
-              </Button>
-            </Link>
             <h1 className="text-xl font-bold text-white">NORO Financial Model</h1>
           </div>
           <div className="flex items-center gap-2">
@@ -241,6 +240,9 @@ function NoroDashboardContent() {
             </Button>
             <Button size="sm" onClick={handleSave} className={saved ? "bg-green-600" : "bg-blue-600 hover:bg-blue-700"} data-testid="button-save">
               <Save className="h-4 w-4 mr-1" /> {saved ? "Saved!" : "Save"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={onLogout} className="border-red-600/50 text-red-400 hover:text-red-300 hover:bg-red-600/10" data-testid="button-logout">
+              <LogOut className="h-4 w-4 mr-1" /> Logout
             </Button>
           </div>
         </div>
