@@ -38,6 +38,7 @@ import RateCoach from "@/pages/RateCoach";
 import ContactCoach from "@/pages/ContactCoach";
 import CoachProfile from "@/pages/CoachProfile";
 import RevenueCalculator from "@/pages/RevenueCalculator";
+import NoroDashboard from "@/pages/NoroDashboard";
 import { TestForm } from "@/pages/TestForm";
 import FounderFocusScore from "@/pages/FounderFocusScore";
 import TrialDashboard from "@/pages/TrialDashboard";
@@ -99,6 +100,13 @@ function Router() {
           {() => (
             <AdminProtectedRoute>
               <RevenueCalculator />
+            </AdminProtectedRoute>
+          )}
+        </Route>
+        <Route path="/noro">
+          {() => (
+            <AdminProtectedRoute>
+              <NoroDashboard />
             </AdminProtectedRoute>
           )}
         </Route>
