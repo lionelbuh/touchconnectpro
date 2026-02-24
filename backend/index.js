@@ -29,7 +29,7 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
 // NORO Financial Model - separate password auth
 app.post("/api/noro/login", (req, res) => {
   const { password } = req.body;
-  const noroPassword = process.env.NORO_PASSWORD || "Admin";
+  const noroPassword = process.env.NORO_PASSWORD || "NoroAdmin!9";
   if (password === noroPassword) {
     const token = crypto.randomBytes(32).toString("hex");
     return res.json({ success: true, token });
