@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { API_BASE_URL } from "@/config";
 import {
   ChevronLeft,
   Save,
@@ -15,6 +16,8 @@ import {
   DollarSign,
   TrendingUp,
   Download,
+  Lock,
+  Loader2,
 } from "lucide-react";
 import {
   NoroAssumptions,
@@ -53,7 +56,90 @@ function NumInput({ value, onChange, prefix, suffix, className, min, step, id }:
   );
 }
 
-export default function NoroDashboard() {
+function NoroLoginGate() {
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const existingToken = localStorage.getItem("tcp_noroToken");
+  const [authenticated, setAuthenticated] = useState(!!existingToken);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/noro/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        localStorage.setItem("tcp_noroToken", data.token);
+        setAuthenticated(true);
+      } else {
+        setError(data.error || "Invalid password");
+      }
+    } catch {
+      setError("Unable to connect. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (authenticated) {
+    return <NoroDashboardContent />;
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: "#0f172a" }}>
+      <Card className="w-full max-w-md bg-slate-800/80 border-slate-700">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-3 h-14 w-14 rounded-full bg-blue-600/20 flex items-center justify-center">
+            <Lock className="h-7 w-7 text-blue-400" />
+          </div>
+          <CardTitle className="text-white text-xl">NORO Financial Model</CardTitle>
+          <p className="text-slate-400 text-sm mt-1">Enter your password to access the dashboard</p>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-2 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+            <div>
+              <Label className="text-slate-300 text-sm">Password</Label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="bg-slate-700 border-slate-600 text-white mt-1"
+                placeholder="Enter password"
+                autoFocus
+                data-testid="input-noro-password"
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={loading || !password}
+              data-testid="button-noro-login"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {loading ? "Verifying..." : "Access Dashboard"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default NoroLoginGate;
+
+function NoroDashboardContent() {
   const [assumptions, setAssumptions] = useState<NoroAssumptions>(() => loadAssumptions() || { ...defaultAssumptions });
   const [screen, setScreen] = useState<Screen>("assumptions");
   const [selectedYear, setSelectedYear] = useState<Year>(2026);

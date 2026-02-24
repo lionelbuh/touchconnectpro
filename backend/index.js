@@ -26,6 +26,17 @@ app.use((req, res, next) => {
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
 
+// NORO Financial Model - separate password auth
+app.post("/api/noro/login", (req, res) => {
+  const { password } = req.body;
+  const noroPassword = process.env.NORO_PASSWORD || "Admin";
+  if (password === noroPassword) {
+    const token = crypto.randomBytes(32).toString("hex");
+    return res.json({ success: true, token });
+  }
+  return res.status(401).json({ success: false, error: "Invalid password" });
+});
+
 // Config endpoint for frontend to get Supabase credentials
 app.get("/api/config", (req, res) => {
   console.log("[GET /api/config] Serving Supabase config");

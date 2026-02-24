@@ -103,13 +103,7 @@ function Router() {
             </AdminProtectedRoute>
           )}
         </Route>
-        <Route path="/noro">
-          {() => (
-            <AdminProtectedRoute>
-              <NoroDashboard />
-            </AdminProtectedRoute>
-          )}
-        </Route>
+        <Route path="/noro" component={NoroDashboard} />
         <Route path="/founder-focus" component={FounderFocusScore} />
         <Route path="/trial-dashboard" component={TrialDashboard} />
         <Route path="/insights" component={Insights} />
