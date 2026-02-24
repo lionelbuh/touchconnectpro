@@ -460,6 +460,16 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  app.post("/api/noro/login", (req, res) => {
+    const { password } = req.body;
+    const noroPassword = process.env.NORO_PASSWORD || "Admin";
+    if (password === noroPassword) {
+      const token = crypto.randomBytes(32).toString("hex");
+      return res.json({ success: true, token });
+    }
+    return res.status(401).json({ success: false, error: "Invalid password" });
+  });
+
   app.get("/api/test-resend", async (_req, res) => {
     try {
       const resendData = await getResendClient();
