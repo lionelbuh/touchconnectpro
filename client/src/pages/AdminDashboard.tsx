@@ -2373,7 +2373,19 @@ export default function AdminDashboard() {
  <CardTitle>{app.fullName}</CardTitle>
  <p className="text-sm text-[#8A8A8A] mt-2">{app.email}</p>
  </div>
+ <div className="flex flex-wrap gap-2">
  <Badge className="bg-amber-500">Community Member</Badge>
+ {app.needsIntake ? (
+ <Badge className="bg-emerald-600 text-white" data-testid={`badge-needs-intake-done-${idx}`}>Needs Intake Done</Badge>
+ ) : (
+ <Badge variant="outline" className="border-slate-300 text-slate-400" data-testid={`badge-needs-intake-pending-${idx}`}>Needs Intake Pending</Badge>
+ )}
+ {app.founderSnapshot ? (
+ <Badge className="bg-[#4B3F72] text-white" data-testid={`badge-snapshot-done-${idx}`}>Founder Snapshot Done</Badge>
+ ) : (
+ <Badge variant="outline" className="border-slate-300 text-slate-400" data-testid={`badge-snapshot-pending-${idx}`}>Founder Snapshot Pending</Badge>
+ )}
+ </div>
  </div>
  </CardHeader>
  <CardContent className="space-y-4">
@@ -3268,11 +3280,17 @@ export default function AdminDashboard() {
  <p className="text-sm text-[#8A8A8A] mt-2">{app.email}</p>
  </div>
  </div>
- <div className="flex gap-2">
+ <div className="flex flex-wrap gap-2">
  {app.status === "pre-approved" ? (
  <Badge className="bg-amber-500">Community Member</Badge>
  ) : (
  <Badge className="bg-green-600">Approved</Badge>
+ )}
+ {app.status === "pre-approved" && app.needsIntake && (
+ <Badge className="bg-emerald-600 text-white">Needs Intake Done</Badge>
+ )}
+ {app.status === "pre-approved" && app.founderSnapshot && (
+ <Badge className="bg-[#4B3F72] text-white">Snapshot Done</Badge>
  )}
  {app.is_disabled && (
  <Badge className="bg-red-600">Disabled</Badge>
