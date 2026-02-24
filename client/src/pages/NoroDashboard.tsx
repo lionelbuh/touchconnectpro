@@ -38,17 +38,17 @@ function NumInput({ value, onChange, prefix, suffix, className, min, step, id }:
 }) {
   return (
     <div className="relative">
-      {prefix && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">{prefix}</span>}
+      {prefix && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">{prefix}</span>}
       <Input
         type="number"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className={`${prefix ? "pl-7" : ""} ${suffix ? "pr-8" : ""} ${className || ""}`}
+        className={`bg-slate-700 border-slate-600 text-white placeholder:text-slate-400 ${prefix ? "pl-7" : ""} ${suffix ? "pr-8" : ""} ${className || ""}`}
         min={min}
         step={step || 1}
         data-testid={id ? `input-${id}` : undefined}
       />
-      {suffix && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">{suffix}</span>}
+      {suffix && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">{suffix}</span>}
     </div>
   );
 }
@@ -389,7 +389,7 @@ function AssumptionsScreen({ assumptions, setAssumptions }: { assumptions: NoroA
                           type="number"
                           value={val}
                           onChange={(e) => update2026Customers(type, idx, Number(e.target.value))}
-                          className="w-14 text-center text-xs px-1"
+                          className="w-14 text-center text-xs px-1 bg-slate-700 border-slate-600 text-white"
                           min={0}
                         />
                       </td>
