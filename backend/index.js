@@ -7975,8 +7975,12 @@ app.post("/api/stripe/connect/create-account", async (req, res) => {
     }
 
     const account = await stripe.accounts.create({
-      type: 'standard',
+      type: 'express',
       email: email,
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
       metadata: {
         coach_id: coachId,
         platform: 'TouchConnectPro'
@@ -8037,8 +8041,12 @@ app.get("/api/stripe/connect/account-link/:coachId", async (req, res) => {
     let accountId = coach.stripe_account_id;
     if (!accountId) {
       const account = await stripe.accounts.create({
-        type: 'standard',
+        type: 'express',
         email: coach.email,
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
         metadata: {
           coach_id: coachId,
           platform: 'TouchConnectPro'
@@ -8167,6 +8175,43 @@ app.post("/api/stripe/connect/reset/:coachId", async (req, res) => {
     });
   } catch (error) {
     console.error("[STRIPE CONNECT] Reset account error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Stripe Express dashboard login link for coach
+app.get("/api/stripe/connect/dashboard-link/:coachId", async (req, res) => {
+  try {
+    const { coachId } = req.params;
+
+    console.log("[STRIPE CONNECT] Getting dashboard link for coach:", coachId);
+
+    const { data: coach, error: fetchError } = await supabase
+      .from("coach_applications")
+      .select("*")
+      .eq("id", coachId)
+      .single();
+
+    if (fetchError || !coach) {
+      return res.status(404).json({ error: "Coach not found" });
+    }
+
+    if (!coach.stripe_account_id) {
+      return res.status(400).json({ error: "No Stripe account connected" });
+    }
+
+    const stripe = getStripeClient();
+    if (!stripe) {
+      return res.status(500).json({ error: "Stripe not configured" });
+    }
+
+    const loginLink = await stripe.accounts.createLoginLink(coach.stripe_account_id);
+
+    console.log("[STRIPE CONNECT] Dashboard link created for:", coach.stripe_account_id);
+
+    return res.json({ url: loginLink.url });
+  } catch (error) {
+    console.error("[STRIPE CONNECT] Dashboard link error:", error.message);
     return res.status(500).json({ error: error.message });
   }
 });
