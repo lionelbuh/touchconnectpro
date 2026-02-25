@@ -168,7 +168,7 @@ function NoroDashboardContent({ onLogout }: { onLogout: () => void }) {
     saveAssumptions(defaultAssumptions);
   }, []);
 
-  const monthlyData = useMemo(() => calculateMonthlyData(assumptions, selectedYear), [assumptions, selectedYear]);
+  const monthlyData = useMemo(() => calculateMonthlyData(assumptions, selectedYear, businessUnit), [assumptions, selectedYear, businessUnit]);
   const plData = useMemo(() => calculatePL(assumptions, selectedYear, businessUnit), [assumptions, selectedYear, businessUnit]);
   const cashData = useMemo(() => calculateCash(assumptions, selectedYear, businessUnit), [assumptions, selectedYear, businessUnit]);
   const annualSummaries = useMemo(() => calculateAnnualSummaries(assumptions, businessUnit), [assumptions, businessUnit]);
@@ -431,28 +431,48 @@ function AssumptionsScreen({ assumptions, setAssumptions, businessUnit }: { assu
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className={`bg-slate-800/50 border-slate-700 ${isNoro ? "border-l-4 border-l-blue-500" : "border-l-4 border-l-emerald-500"}`}>
           <CardHeader className="pb-3">
-            <CardTitle className="text-white text-base">NORO Portals & Shared Studios</CardTitle>
+            <CardTitle className="text-white text-base">
+              {isNoro ? "Revenue & Costs — NORO Only" : "Revenue & Costs — Shared Studios (Total)"}
+            </CardTitle>
+            <p className="text-xs text-slate-400 mt-1">
+              {isNoro
+                ? "Enter NORO's portion of software and hardware revenue per portal"
+                : "Enter total consolidated values (Shared Studios + NORO combined)"
+              }
+            </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="text-slate-300 text-xs">Annual Software / Portal</Label>
-                <NumInput value={assumptions.annualSoftwarePerPortal} onChange={(v) => update("annualSoftwarePerPortal", v)} prefix="$" />
+                <NumInput
+                  value={isNoro ? assumptions.noroAnnualSoftwarePerPortal : assumptions.annualSoftwarePerPortal}
+                  onChange={(v) => update(isNoro ? "noroAnnualSoftwarePerPortal" : "annualSoftwarePerPortal", v)}
+                  prefix="$"
+                />
               </div>
               <div>
                 <Label className="text-slate-300 text-xs">HW Margin / Portal</Label>
-                <NumInput value={assumptions.hwMarginPerPortal} onChange={(v) => update("hwMarginPerPortal", v)} prefix="$" />
+                <NumInput
+                  value={isNoro ? assumptions.noroHwMarginPerPortal : assumptions.hwMarginPerPortal}
+                  onChange={(v) => update(isNoro ? "noroHwMarginPerPortal" : "hwMarginPerPortal", v)}
+                  prefix="$"
+                />
               </div>
-              <div>
-                <Label className="text-slate-300 text-xs">Avg Monthly Bookings</Label>
-                <NumInput value={assumptions.sharedStudiosAvgMonthlyBookings} onChange={(v) => update("sharedStudiosAvgMonthlyBookings", v)} prefix="$" />
-              </div>
-              <div>
-                <Label className="text-slate-300 text-xs">COGS %</Label>
-                <NumInput value={assumptions.sharedStudiosCogsPct} onChange={(v) => update("sharedStudiosCogsPct", v)} suffix="%" />
-              </div>
+              {!isNoro && (
+                <>
+                  <div>
+                    <Label className="text-slate-300 text-xs">Avg Monthly Bookings</Label>
+                    <NumInput value={assumptions.sharedStudiosAvgMonthlyBookings} onChange={(v) => update("sharedStudiosAvgMonthlyBookings", v)} prefix="$" />
+                  </div>
+                  <div>
+                    <Label className="text-slate-300 text-xs">COGS %</Label>
+                    <NumInput value={assumptions.sharedStudiosCogsPct} onChange={(v) => update("sharedStudiosCogsPct", v)} suffix="%" />
+                  </div>
+                </>
+              )}
               <div>
                 <Label className="text-slate-300 text-xs">Install Lag (months)</Label>
                 <NumInput value={assumptions.installLagMonths} onChange={(v) => update("installLagMonths", v)} min={0} />
@@ -540,28 +560,34 @@ function AssumptionsScreen({ assumptions, setAssumptions, businessUnit }: { assu
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className={`bg-slate-800/50 border-slate-700 ${isNoro ? "border-l-4 border-l-blue-500" : "border-l-4 border-l-emerald-500"}`}>
           <CardHeader className="pb-3">
-            <CardTitle className="text-white text-base">People</CardTitle>
+            <CardTitle className="text-white text-base">
+              {isNoro ? "People — NORO" : "People — Shared Studios (Total)"}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-slate-300 text-xs">Total Monthly Payroll (Shared Studios)</Label>
-                <NumInput value={assumptions.people.monthlyPayroll} onChange={(v) => updatePeople("monthlyPayroll", v)} prefix="$" />
-              </div>
-              <div>
-                <Label className="text-slate-300 text-xs">NORO Monthly Payroll</Label>
-                <NumInput value={assumptions.people.noroMonthlyPayroll} onChange={(v) => updatePeople("noroMonthlyPayroll", v)} prefix="$" />
+                <Label className="text-slate-300 text-xs">
+                  {isNoro ? "NORO Monthly Payroll" : "Total Monthly Payroll"}
+                </Label>
+                <NumInput
+                  value={isNoro ? assumptions.people.noroMonthlyPayroll : assumptions.people.monthlyPayroll}
+                  onChange={(v) => updatePeople(isNoro ? "noroMonthlyPayroll" : "monthlyPayroll", v)}
+                  prefix="$"
+                />
               </div>
               <div>
                 <Label className="text-slate-300 text-xs">Benefits %</Label>
                 <NumInput value={assumptions.people.benefitsPct} onChange={(v) => updatePeople("benefitsPct", v)} suffix="%" />
               </div>
-              <div>
-                <Label className="text-slate-300 text-xs">Founders Contractor Threshold</Label>
-                <NumInput value={assumptions.people.foundersContractorThreshold} onChange={(v) => updatePeople("foundersContractorThreshold", v)} prefix="$" />
-              </div>
+              {!isNoro && (
+                <div>
+                  <Label className="text-slate-300 text-xs">Founders Contractor Threshold</Label>
+                  <NumInput value={assumptions.people.foundersContractorThreshold} onChange={(v) => updatePeople("foundersContractorThreshold", v)} prefix="$" />
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -596,9 +622,11 @@ function AssumptionsScreen({ assumptions, setAssumptions, businessUnit }: { assu
         </Card>
       </div>
 
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className={`bg-slate-800/50 border-slate-700 ${isNoro ? "border-l-4 border-l-blue-500" : "border-l-4 border-l-emerald-500"}`}>
         <CardHeader className="pb-3">
-          <CardTitle className="text-white text-base">Operating Expenses — Shared Studios (Monthly)</CardTitle>
+          <CardTitle className="text-white text-base">
+            {isNoro ? "Operating Expenses — NORO Only (Monthly)" : "Operating Expenses — Shared Studios (Monthly)"}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -622,49 +650,8 @@ function AssumptionsScreen({ assumptions, setAssumptions, businessUnit }: { assu
                     {([2026, 2027, 2028] as const).map((yr) => (
                       <td key={yr} className="py-2 px-4">
                         <NumInput
-                          value={assumptions.opex[yr][field]}
-                          onChange={(v) => updateOpex(yr, field, v)}
-                          prefix="$"
-                          className="w-28 mx-auto"
-                        />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-slate-800/50 border-slate-700 border-l-4 border-l-blue-500">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-white text-base">Operating Expenses — NORO Only (Monthly)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-slate-400 border-b border-slate-700">
-                  <th className="text-left py-2">Category</th>
-                  <th className="text-center py-2 px-4">2026</th>
-                  <th className="text-center py-2 px-4">2027</th>
-                  <th className="text-center py-2 px-4">2028</th>
-                </tr>
-              </thead>
-              <tbody>
-                {([
-                  { field: "marketingMonthly", label: "Marketing" },
-                  { field: "gaMonthly", label: "G&A" },
-                  { field: "rdMonthly", label: "R&D" },
-                ] as const).map(({ field, label }) => (
-                  <tr key={field} className="border-b border-slate-700/50">
-                    <td className="py-2 pr-4 text-slate-300 font-medium">{label}</td>
-                    {([2026, 2027, 2028] as const).map((yr) => (
-                      <td key={yr} className="py-2 px-4">
-                        <NumInput
-                          value={assumptions.noroOpex[yr][field]}
-                          onChange={(v) => updateNoroOpex(yr, field, v)}
+                          value={isNoro ? assumptions.noroOpex[yr][field] : assumptions.opex[yr][field]}
+                          onChange={(v) => isNoro ? updateNoroOpex(yr, field, v) : updateOpex(yr, field, v)}
                           prefix="$"
                           className="w-28 mx-auto"
                         />

@@ -38,6 +38,9 @@ export interface NoroAssumptions {
   annualSoftwarePerPortal: number;
   hwMarginPerPortal: number;
 
+  noroAnnualSoftwarePerPortal: number;
+  noroHwMarginPerPortal: number;
+
   sharedStudiosAvgMonthlyBookings: number;
   sharedStudiosCogsPct: number;
   installLagMonths: number;
@@ -157,6 +160,9 @@ export const defaultAssumptions: NoroAssumptions = {
   annualSoftwarePerPortal: 4800,
   hwMarginPerPortal: 2000,
 
+  noroAnnualSoftwarePerPortal: 2400,
+  noroHwMarginPerPortal: 1200,
+
   sharedStudiosAvgMonthlyBookings: 500,
   sharedStudiosCogsPct: 20,
   installLagMonths: 2,
@@ -216,10 +222,14 @@ function distributeByQuarter(total: number, q1: number, q2: number, q3: number, 
   return monthly;
 }
 
-export function calculateMonthlyData(assumptions: NoroAssumptions, year: 2026 | 2027 | 2028): MonthlyData[] {
+export function calculateMonthlyData(assumptions: NoroAssumptions, year: 2026 | 2027 | 2028, businessUnit: BusinessUnit = "shared-studios"): MonthlyData[] {
+  const isNoro = businessUnit === "noro";
   const churnRate = assumptions.monthlyChurnRate / 100;
   const lag = assumptions.installLagMonths;
   const ct = assumptions.customerTypes;
+
+  const annualSoftware = isNoro ? assumptions.noroAnnualSoftwarePerPortal : assumptions.annualSoftwarePerPortal;
+  const hwMargin = isNoro ? assumptions.noroHwMarginPerPortal : assumptions.hwMarginPerPortal;
 
   let newStartByMonth: number[];
   let newEnterpriseByMonth: number[];
@@ -289,12 +299,12 @@ export function calculateMonthlyData(assumptions: NoroAssumptions, year: 2026 | 
                              installedE * ct.enterprise.portalsPerCustomer +
                              installedG * ct.global.portalsPerCustomer;
 
-    const softwareRevenue = activePortals * (assumptions.annualSoftwarePerPortal / 12);
-    const usageRevenue = totalActive * assumptions.sharedStudiosAvgMonthlyBookings;
+    const softwareRevenue = activePortals * (annualSoftware / 12);
+    const usageRevenue = isNoro ? 0 : totalActive * assumptions.sharedStudiosAvgMonthlyBookings;
 
     const signedPortals = newS * ct.start.portalsPerCustomer + newE * ct.enterprise.portalsPerCustomer + newG * ct.global.portalsPerCustomer;
-    const upfrontHw = signedPortals * assumptions.hwMarginPerPortal * (assumptions.upfrontPctHardware / 100);
-    const deliveryHw = portalsInstalled * assumptions.hwMarginPerPortal * (assumptions.onDeliveryPctHardware / 100);
+    const upfrontHw = signedPortals * hwMargin * (assumptions.upfrontPctHardware / 100);
+    const deliveryHw = portalsInstalled * hwMargin * (assumptions.onDeliveryPctHardware / 100);
     const hardwareCashIn = upfrontHw + deliveryHw;
 
     results.push({
@@ -337,21 +347,22 @@ function getPriorYearActiveCustomers(assumptions: NoroAssumptions, year: 2026 | 
 }
 
 export function calculatePL(assumptions: NoroAssumptions, year: 2026 | 2027 | 2028, businessUnit: BusinessUnit = "shared-studios"): PLData[] {
-  const monthlyData = calculateMonthlyData(assumptions, year);
+  const monthlyData = calculateMonthlyData(assumptions, year, businessUnit);
   const isNoro = businessUnit === "noro";
   const yearOpex = isNoro ? assumptions.noroOpex[year] : assumptions.opex[year];
+  const hwMargin = isNoro ? assumptions.noroHwMarginPerPortal : assumptions.hwMarginPerPortal;
 
   return monthlyData.map((md) => {
     const contractedARR = md.softwareRevenue;
-    const contractedVRR = isNoro ? 0 : md.usageRevenue;
+    const contractedVRR = md.usageRevenue;
     const contractedNewRevenue = md.hardwareCashIn;
     const newNoroRevenue = md.softwareRevenue + md.hardwareCashIn;
-    const newSharedStudiosRevenue = isNoro ? 0 : md.usageRevenue;
-    const totalRevenue = isNoro ? newNoroRevenue : md.totalRevenue;
+    const newSharedStudiosRevenue = md.usageRevenue;
+    const totalRevenue = md.totalRevenue;
     const totalRevenueNonVRR = totalRevenue - contractedVRR;
 
-    const hardwareCOGS = md.portalsInstalled * assumptions.hwMarginPerPortal * 0.6;
-    const cogsNonNewNoro = isNoro ? 0 : (md.totalRevenue - newNoroRevenue) * (assumptions.sharedStudiosCogsPct / 100);
+    const hardwareCOGS = md.portalsInstalled * hwMargin * 0.6;
+    const cogsNonNewNoro = isNoro ? 0 : (md.usageRevenue) * (assumptions.sharedStudiosCogsPct / 100);
     const totalCOGS = hardwareCOGS + cogsNonNewNoro;
     const grossProfit = totalRevenue - totalCOGS;
 
@@ -493,6 +504,12 @@ export function loadAssumptions(): NoroAssumptions | null {
       }
       if (!parsed.noroOpex) {
         parsed.noroOpex = { ...defaultAssumptions.noroOpex };
+      }
+      if (parsed.noroAnnualSoftwarePerPortal === undefined) {
+        parsed.noroAnnualSoftwarePerPortal = defaultAssumptions.noroAnnualSoftwarePerPortal;
+      }
+      if (parsed.noroHwMarginPerPortal === undefined) {
+        parsed.noroHwMarginPerPortal = defaultAssumptions.noroHwMarginPerPortal;
       }
       return parsed;
     }
