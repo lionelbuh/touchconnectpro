@@ -17,8 +17,11 @@ import {
   Lock,
   Loader2,
   LogOut,
+  Building2,
+  Zap,
 } from "lucide-react";
 import {
+  BusinessUnit,
   NoroAssumptions,
   defaultAssumptions,
   calculateMonthlyData,
@@ -148,6 +151,7 @@ function NoroDashboardContent({ onLogout }: { onLogout: () => void }) {
   const [screen, setScreen] = useState<Screen>("assumptions");
   const [selectedYear, setSelectedYear] = useState<Year>(2026);
   const [saved, setSaved] = useState(false);
+  const [businessUnit, setBusinessUnit] = useState<BusinessUnit>("shared-studios");
 
   const updateAssumption = useCallback(<K extends keyof NoroAssumptions>(key: K, value: NoroAssumptions[K]) => {
     setAssumptions((prev) => ({ ...prev, [key]: value }));
@@ -165,11 +169,12 @@ function NoroDashboardContent({ onLogout }: { onLogout: () => void }) {
   }, []);
 
   const monthlyData = useMemo(() => calculateMonthlyData(assumptions, selectedYear), [assumptions, selectedYear]);
-  const plData = useMemo(() => calculatePL(assumptions, selectedYear), [assumptions, selectedYear]);
-  const cashData = useMemo(() => calculateCash(assumptions, selectedYear), [assumptions, selectedYear]);
-  const annualSummaries = useMemo(() => calculateAnnualSummaries(assumptions), [assumptions]);
+  const plData = useMemo(() => calculatePL(assumptions, selectedYear, businessUnit), [assumptions, selectedYear, businessUnit]);
+  const cashData = useMemo(() => calculateCash(assumptions, selectedYear, businessUnit), [assumptions, selectedYear, businessUnit]);
+  const annualSummaries = useMemo(() => calculateAnnualSummaries(assumptions, businessUnit), [assumptions, businessUnit]);
 
   const handleExportCSV = useCallback(() => {
+    const unitLabel = businessUnit === "noro" ? "NORO" : "SharedStudios";
     let csv = "";
     if (screen === "revenue") {
       csv = "Month,New Start,New Enterprise,New Global,Active Customers,Active Portals,Software Rev,Usage Rev,Hardware Rev,Total Rev\n";
@@ -208,11 +213,11 @@ function NoroDashboardContent({ onLogout }: { onLogout: () => void }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `noro-${screen}-${selectedYear}.csv`;
+      a.download = `noro-${unitLabel}-${screen}-${selectedYear}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     }
-  }, [screen, selectedYear, monthlyData, plData, cashData, annualSummaries]);
+  }, [screen, selectedYear, monthlyData, plData, cashData, annualSummaries, businessUnit]);
 
   const navItems = [
     { id: "assumptions" as Screen, label: "Assumptions", icon: Settings },
@@ -222,12 +227,40 @@ function NoroDashboardContent({ onLogout }: { onLogout: () => void }) {
     { id: "annual" as Screen, label: "Summary", icon: TrendingUp },
   ];
 
+  const isNoro = businessUnit === "noro";
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#0f172a" }}>
       <div className="border-b border-slate-700 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
         <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-bold text-white">NORO Financial Model</h1>
+            <div className="flex rounded-lg overflow-hidden border border-slate-600">
+              <button
+                onClick={() => setBusinessUnit("shared-studios")}
+                className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium transition-all ${
+                  !isNoro
+                    ? "bg-emerald-600 text-white"
+                    : "bg-slate-800 text-slate-400 hover:text-white"
+                }`}
+                data-testid="toggle-shared-studios"
+              >
+                <Building2 className="h-4 w-4" />
+                Head Office Shared Studios
+              </button>
+              <button
+                onClick={() => setBusinessUnit("noro")}
+                className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium transition-all ${
+                  isNoro
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-800 text-slate-400 hover:text-white"
+                }`}
+                data-testid="toggle-noro"
+              >
+                <Zap className="h-4 w-4" />
+                New Brand NORO
+              </button>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {screen !== "assumptions" && (
@@ -279,11 +312,18 @@ function NoroDashboardContent({ onLogout }: { onLogout: () => void }) {
       </div>
 
       <div className="max-w-[1600px] mx-auto px-4 py-6">
-        {screen === "assumptions" && <AssumptionsScreen assumptions={assumptions} setAssumptions={setAssumptions} />}
-        {screen === "revenue" && <RevenueScreen data={monthlyData} year={selectedYear} currency={assumptions.currency} />}
-        {screen === "pl" && <PLScreen data={plData} year={selectedYear} currency={assumptions.currency} />}
-        {screen === "cash" && <CashScreen data={cashData} year={selectedYear} currency={assumptions.currency} />}
-        {screen === "annual" && <AnnualScreen data={annualSummaries} currency={assumptions.currency} />}
+        <div className={`mb-4 px-4 py-2 rounded-lg text-sm font-medium ${isNoro ? "bg-blue-600/10 border border-blue-500/30 text-blue-300" : "bg-emerald-600/10 border border-emerald-500/30 text-emerald-300"}`}>
+          {isNoro
+            ? "Viewing: New Brand NORO — Software + Hardware revenue, NORO payroll & NORO operating expenses only"
+            : "Viewing: Head Office Shared Studios — 100% consolidated view (all revenues, all costs)"
+          }
+        </div>
+
+        {screen === "assumptions" && <AssumptionsScreen assumptions={assumptions} setAssumptions={setAssumptions} businessUnit={businessUnit} />}
+        {screen === "revenue" && <RevenueScreen data={monthlyData} year={selectedYear} currency={assumptions.currency} businessUnit={businessUnit} />}
+        {screen === "pl" && <PLScreen data={plData} year={selectedYear} currency={assumptions.currency} businessUnit={businessUnit} />}
+        {screen === "cash" && <CashScreen data={cashData} year={selectedYear} currency={assumptions.currency} businessUnit={businessUnit} />}
+        {screen === "annual" && <AnnualScreen data={annualSummaries} currency={assumptions.currency} businessUnit={businessUnit} />}
       </div>
     </div>
   );
@@ -293,7 +333,9 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h3 className="text-lg font-semibold text-white mb-4 border-b border-slate-700 pb-2">{children}</h3>;
 }
 
-function AssumptionsScreen({ assumptions, setAssumptions }: { assumptions: NoroAssumptions; setAssumptions: React.Dispatch<React.SetStateAction<NoroAssumptions>> }) {
+function AssumptionsScreen({ assumptions, setAssumptions, businessUnit }: { assumptions: NoroAssumptions; setAssumptions: React.Dispatch<React.SetStateAction<NoroAssumptions>>; businessUnit: BusinessUnit }) {
+  const isNoro = businessUnit === "noro";
+
   const update = <K extends keyof NoroAssumptions>(key: K, value: NoroAssumptions[K]) => {
     setAssumptions((prev) => ({ ...prev, [key]: value }));
   };
@@ -312,6 +354,13 @@ function AssumptionsScreen({ assumptions, setAssumptions }: { assumptions: NoroA
     setAssumptions((prev) => ({
       ...prev,
       opex: { ...prev.opex, [year]: { ...prev.opex[year], [field]: value } },
+    }));
+  };
+
+  const updateNoroOpex = (year: 2026 | 2027 | 2028, field: string, value: number) => {
+    setAssumptions((prev) => ({
+      ...prev,
+      noroOpex: { ...prev.noroOpex, [year]: { ...prev.noroOpex[year], [field]: value } },
     }));
   };
 
@@ -498,14 +547,18 @@ function AssumptionsScreen({ assumptions, setAssumptions }: { assumptions: NoroA
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-slate-300 text-xs">Monthly Payroll</Label>
+                <Label className="text-slate-300 text-xs">Total Monthly Payroll (Head Office)</Label>
                 <NumInput value={assumptions.people.monthlyPayroll} onChange={(v) => updatePeople("monthlyPayroll", v)} prefix="$" />
+              </div>
+              <div>
+                <Label className="text-slate-300 text-xs">NORO Monthly Payroll</Label>
+                <NumInput value={assumptions.people.noroMonthlyPayroll} onChange={(v) => updatePeople("noroMonthlyPayroll", v)} prefix="$" />
               </div>
               <div>
                 <Label className="text-slate-300 text-xs">Benefits %</Label>
                 <NumInput value={assumptions.people.benefitsPct} onChange={(v) => updatePeople("benefitsPct", v)} suffix="%" />
               </div>
-              <div className="col-span-2">
+              <div>
                 <Label className="text-slate-300 text-xs">Founders Contractor Threshold</Label>
                 <NumInput value={assumptions.people.foundersContractorThreshold} onChange={(v) => updatePeople("foundersContractorThreshold", v)} prefix="$" />
               </div>
@@ -529,7 +582,7 @@ function AssumptionsScreen({ assumptions, setAssumptions }: { assumptions: NoroA
               </div>
             </div>
             <div>
-              <Label className="text-slate-300 text-xs mb-2 block">Fundraise Inflows</Label>
+              <Label className="text-slate-300 text-xs block mb-2">Fundraise Inflows</Label>
               <div className="grid grid-cols-3 gap-3">
                 {([2026, 2027, 2028] as const).map((yr) => (
                   <div key={yr}>
@@ -545,7 +598,7 @@ function AssumptionsScreen({ assumptions, setAssumptions }: { assumptions: NoroA
 
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader className="pb-3">
-          <CardTitle className="text-white text-base">Operating Expenses (Monthly)</CardTitle>
+          <CardTitle className="text-white text-base">Operating Expenses — Head Office (Monthly)</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -571,6 +624,47 @@ function AssumptionsScreen({ assumptions, setAssumptions }: { assumptions: NoroA
                         <NumInput
                           value={assumptions.opex[yr][field]}
                           onChange={(v) => updateOpex(yr, field, v)}
+                          prefix="$"
+                          className="w-28 mx-auto"
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-slate-800/50 border-slate-700 border-l-4 border-l-blue-500">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-white text-base">Operating Expenses — NORO Only (Monthly)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-slate-400 border-b border-slate-700">
+                  <th className="text-left py-2">Category</th>
+                  <th className="text-center py-2 px-4">2026</th>
+                  <th className="text-center py-2 px-4">2027</th>
+                  <th className="text-center py-2 px-4">2028</th>
+                </tr>
+              </thead>
+              <tbody>
+                {([
+                  { field: "marketingMonthly", label: "Marketing" },
+                  { field: "gaMonthly", label: "G&A" },
+                  { field: "rdMonthly", label: "R&D" },
+                ] as const).map(({ field, label }) => (
+                  <tr key={field} className="border-b border-slate-700/50">
+                    <td className="py-2 pr-4 text-slate-300 font-medium">{label}</td>
+                    {([2026, 2027, 2028] as const).map((yr) => (
+                      <td key={yr} className="py-2 px-4">
+                        <NumInput
+                          value={assumptions.noroOpex[yr][field]}
+                          onChange={(v) => updateNoroOpex(yr, field, v)}
                           prefix="$"
                           className="w-28 mx-auto"
                         />
@@ -629,7 +723,9 @@ function AssumptionsScreen({ assumptions, setAssumptions }: { assumptions: NoroA
   );
 }
 
-function RevenueScreen({ data, year, currency }: { data: ReturnType<typeof calculateMonthlyData>; year: Year; currency: string }) {
+function RevenueScreen({ data, year, currency, businessUnit }: { data: ReturnType<typeof calculateMonthlyData>; year: Year; currency: string; businessUnit: BusinessUnit }) {
+  const isNoro = businessUnit === "noro";
+
   const totals = useMemo(() => ({
     newStart: data.reduce((s, m) => s + m.newStartSigned, 0),
     newEnterprise: data.reduce((s, m) => s + m.newEnterpriseSigned, 0),
@@ -637,21 +733,23 @@ function RevenueScreen({ data, year, currency }: { data: ReturnType<typeof calcu
     softwareRev: data.reduce((s, m) => s + m.softwareRevenue, 0),
     usageRev: data.reduce((s, m) => s + m.usageRevenue, 0),
     hardwareRev: data.reduce((s, m) => s + m.hardwareCashIn, 0),
-    totalRev: data.reduce((s, m) => s + m.totalRevenue, 0),
-  }), [data]);
+    totalRev: data.reduce((s, m) => s + (isNoro ? m.softwareRevenue + m.hardwareCashIn : m.totalRevenue), 0),
+  }), [data, isNoro]);
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className={`grid gap-4 ${isNoro ? "grid-cols-2 md:grid-cols-3" : "grid-cols-2 md:grid-cols-4"}`}>
         <MetricCard label="Total Revenue" value={formatCurrency(totals.totalRev, currency)} color="blue" />
         <MetricCard label="Software Revenue" value={formatCurrency(totals.softwareRev, currency)} color="green" />
-        <MetricCard label="Usage Revenue" value={formatCurrency(totals.usageRev, currency)} color="purple" />
+        {!isNoro && <MetricCard label="Usage Revenue" value={formatCurrency(totals.usageRev, currency)} color="purple" />}
         <MetricCard label="Hardware Revenue" value={formatCurrency(totals.hardwareRev, currency)} color="amber" />
       </div>
 
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader className="pb-2">
-          <CardTitle className="text-white text-base">Revenue Model — {year}</CardTitle>
+          <CardTitle className="text-white text-base">
+            Revenue Model — {year} {isNoro && <span className="text-blue-400 text-sm ml-2">(NORO Only)</span>}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -676,11 +774,15 @@ function RevenueScreen({ data, year, currency }: { data: ReturnType<typeof calcu
                 <TableSection title="Portals" />
                 <DataRow label="Active Portals" data={data} field="activePortals" decimal />
                 <DataRow label="Installed" data={data} field="portalsInstalled" />
-                <TableSection title="Revenue" />
+                <TableSection title={isNoro ? "Revenue (NORO Only)" : "Revenue"} />
                 <DataRow label="Software" data={data} field="softwareRevenue" currency={currency} total={totals.softwareRev} />
-                <DataRow label="Usage" data={data} field="usageRevenue" currency={currency} total={totals.usageRev} />
+                {!isNoro && <DataRow label="Usage (Shared Studios)" data={data} field="usageRevenue" currency={currency} total={totals.usageRev} />}
                 <DataRow label="Hardware" data={data} field="hardwareCashIn" currency={currency} total={totals.hardwareRev} />
-                <DataRow label="Total Revenue" data={data} field="totalRevenue" currency={currency} bold total={totals.totalRev} highlight />
+                {isNoro ? (
+                  <NoroTotalRow label="Total NORO Revenue" data={data} currency={currency} total={totals.totalRev} />
+                ) : (
+                  <DataRow label="Total Revenue" data={data} field="totalRevenue" currency={currency} bold total={totals.totalRev} highlight />
+                )}
               </tbody>
             </table>
           </div>
@@ -690,7 +792,9 @@ function RevenueScreen({ data, year, currency }: { data: ReturnType<typeof calcu
   );
 }
 
-function PLScreen({ data, year, currency }: { data: ReturnType<typeof calculatePL>; year: Year; currency: string }) {
+function PLScreen({ data, year, currency, businessUnit }: { data: ReturnType<typeof calculatePL>; year: Year; currency: string; businessUnit: BusinessUnit }) {
+  const isNoro = businessUnit === "noro";
+
   const totals = useMemo(() => {
     const sum = (field: keyof typeof data[0]) => data.reduce((s, m) => s + (m[field] as number), 0);
     return {
@@ -726,7 +830,9 @@ function PLScreen({ data, year, currency }: { data: ReturnType<typeof calculateP
 
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader className="pb-2">
-          <CardTitle className="text-white text-base">Profit & Loss — {year}</CardTitle>
+          <CardTitle className="text-white text-base">
+            Profit & Loss — {year} {isNoro && <span className="text-blue-400 text-sm ml-2">(NORO Only)</span>}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -740,19 +846,19 @@ function PLScreen({ data, year, currency }: { data: ReturnType<typeof calculateP
               </thead>
               <tbody>
                 <TableSection title="Revenue" />
-                <PLRow label="Contracted ARR" data={data} field="contractedARR" currency={currency} total={totals.contractedARR} />
-                <PLRow label="Contracted VRR" data={data} field="contractedVRR" currency={currency} total={totals.contractedVRR} />
-                <PLRow label="New Noro Revenue" data={data} field="newNoroRevenue" currency={currency} total={totals.newNoroRevenue} />
-                <PLRow label="New Shared Studios" data={data} field="newSharedStudiosRevenue" currency={currency} total={totals.newSharedStudiosRevenue} />
+                <PLRow label={isNoro ? "NORO Software ARR" : "Contracted ARR"} data={data} field="contractedARR" currency={currency} total={totals.contractedARR} />
+                {!isNoro && <PLRow label="Contracted VRR" data={data} field="contractedVRR" currency={currency} total={totals.contractedVRR} />}
+                <PLRow label={isNoro ? "NORO Hardware" : "New Noro Revenue"} data={data} field="newNoroRevenue" currency={currency} total={totals.newNoroRevenue} />
+                {!isNoro && <PLRow label="New Shared Studios" data={data} field="newSharedStudiosRevenue" currency={currency} total={totals.newSharedStudiosRevenue} />}
                 <PLRow label="Total Revenue" data={data} field="totalRevenue" currency={currency} bold total={totals.totalRevenue} highlight />
                 <TableSection title="Cost of Goods Sold" />
                 <PLRow label="Hardware COGS" data={data} field="hardwareCOGS" currency={currency} total={totals.hardwareCOGS} />
-                <PLRow label="COGS (Non-New Noro)" data={data} field="cogsNonNewNoro" currency={currency} total={totals.cogsNonNewNoro} />
+                {!isNoro && <PLRow label="COGS (Shared Studios)" data={data} field="cogsNonNewNoro" currency={currency} total={totals.cogsNonNewNoro} />}
                 <PLRow label="Total COGS" data={data} field="totalCOGS" currency={currency} bold total={totals.totalCOGS} />
                 <TableSection title="Gross Profit" />
                 <PLRow label="Gross Profit" data={data} field="grossProfit" currency={currency} bold total={totals.grossProfit} highlight />
-                <TableSection title="Operating Expenses" />
-                <PLRow label="Payroll" data={data} field="payroll" currency={currency} total={totals.payroll} />
+                <TableSection title={isNoro ? "Operating Expenses (NORO)" : "Operating Expenses"} />
+                <PLRow label={isNoro ? "NORO Payroll" : "Payroll"} data={data} field="payroll" currency={currency} total={totals.payroll} />
                 <PLRow label="Marketing" data={data} field="marketing" currency={currency} total={totals.marketing} />
                 <PLRow label="R&D" data={data} field="rd" currency={currency} total={totals.rd} />
                 <PLRow label="G&A" data={data} field="ga" currency={currency} total={totals.ga} />
@@ -768,7 +874,9 @@ function PLScreen({ data, year, currency }: { data: ReturnType<typeof calculateP
   );
 }
 
-function CashScreen({ data, year, currency }: { data: ReturnType<typeof calculateCash>; year: Year; currency: string }) {
+function CashScreen({ data, year, currency, businessUnit }: { data: ReturnType<typeof calculateCash>; year: Year; currency: string; businessUnit: BusinessUnit }) {
+  const isNoro = businessUnit === "noro";
+
   const totals = useMemo(() => ({
     cashIn: data.reduce((s, m) => s + m.cashIn, 0),
     cashOut: data.reduce((s, m) => s + m.cashOut, 0),
@@ -787,7 +895,9 @@ function CashScreen({ data, year, currency }: { data: ReturnType<typeof calculat
 
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader className="pb-2">
-          <CardTitle className="text-white text-base">Cash Summary — {year}</CardTitle>
+          <CardTitle className="text-white text-base">
+            Cash Summary — {year} {isNoro && <span className="text-blue-400 text-sm ml-2">(NORO Only)</span>}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -815,11 +925,13 @@ function CashScreen({ data, year, currency }: { data: ReturnType<typeof calculat
   );
 }
 
-function AnnualScreen({ data, currency }: { data: ReturnType<typeof calculateAnnualSummaries>; currency: string }) {
-  const rows: { label: string; key: keyof typeof data[0]; bold?: boolean; highlight?: boolean }[] = [
+function AnnualScreen({ data, currency, businessUnit }: { data: ReturnType<typeof calculateAnnualSummaries>; currency: string; businessUnit: BusinessUnit }) {
+  const isNoro = businessUnit === "noro";
+
+  const rows: { label: string; key: keyof typeof data[0]; bold?: boolean; highlight?: boolean; hideForNoro?: boolean }[] = [
     { label: "ARR Revenue", key: "arrRevenue" },
-    { label: "New Noro Revenue", key: "newNoroRevenue" },
-    { label: "New Shared Studios Revenue", key: "newSharedStudiosRevenue" },
+    { label: isNoro ? "NORO Revenue" : "New Noro Revenue", key: "newNoroRevenue" },
+    { label: "Shared Studios Revenue", key: "newSharedStudiosRevenue", hideForNoro: true },
     { label: "Total Revenue", key: "totalRevenue", bold: true, highlight: true },
     { label: "Total COGS", key: "totalCOGS" },
     { label: "Gross Profit", key: "grossProfit", bold: true },
@@ -827,6 +939,8 @@ function AnnualScreen({ data, currency }: { data: ReturnType<typeof calculateAnn
     { label: "EBITDA", key: "ebitda", bold: true, highlight: true },
     { label: "Ending Cash", key: "endingCash", bold: true },
   ];
+
+  const filteredRows = rows.filter((r) => !(isNoro && r.hideForNoro));
 
   return (
     <div className="space-y-6">
@@ -850,7 +964,9 @@ function AnnualScreen({ data, currency }: { data: ReturnType<typeof calculateAnn
 
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader className="pb-2">
-          <CardTitle className="text-white text-base">Annual Summary — 3-Year View</CardTitle>
+          <CardTitle className="text-white text-base">
+            Annual Summary — 3-Year View {isNoro && <span className="text-blue-400 text-sm ml-2">(NORO Only)</span>}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <table className="w-full text-sm">
@@ -863,7 +979,7 @@ function AnnualScreen({ data, currency }: { data: ReturnType<typeof calculateAnn
               </tr>
             </thead>
             <tbody>
-              {rows.map(({ label, key, bold, highlight }) => (
+              {filteredRows.map(({ label, key, bold, highlight }) => (
                 <tr key={key} className={`border-b border-slate-700/50 ${highlight ? "bg-slate-700/20" : ""}`}>
                   <td className={`py-3 pr-4 text-slate-300 ${bold ? "font-semibold" : ""}`}>{label}</td>
                   {data.map((yr) => (
@@ -931,6 +1047,27 @@ function DataRow({ label, data, field, currency, bold, total, highlight, decimal
       })}
       <td className={`py-1.5 px-2 text-right font-semibold ${total !== undefined && total < 0 ? "text-red-400" : "text-blue-400"}`}>
         {total !== undefined ? (currency ? formatCurrencyFull(total, currency) : total) : ""}
+      </td>
+    </tr>
+  );
+}
+
+function NoroTotalRow({ label, data, currency, total }: {
+  label: string; data: any[]; currency: string; total: number;
+}) {
+  return (
+    <tr className="border-b border-slate-700/30 bg-blue-900/10">
+      <td className="py-1.5 pr-2 text-slate-300 sticky left-0 bg-slate-800/90 font-semibold">{label}</td>
+      {data.map((m: any, i: number) => {
+        const val = m.softwareRevenue + m.hardwareCashIn;
+        return (
+          <td key={i} className="py-1.5 px-2 text-right font-semibold text-slate-200">
+            {formatCurrencyFull(val, currency)}
+          </td>
+        );
+      })}
+      <td className="py-1.5 px-2 text-right font-semibold text-blue-400">
+        {formatCurrencyFull(total, currency)}
       </td>
     </tr>
   );

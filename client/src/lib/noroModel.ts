@@ -1,3 +1,5 @@
+export type BusinessUnit = "shared-studios" | "noro";
+
 export interface CustomerType {
   portalsPerCustomer: number;
   organizersPerCustomer: number;
@@ -23,6 +25,7 @@ export interface PeopleAssumptions {
   benefitsPct: number;
   foundersContractorThreshold: number;
   monthlyPayroll: number;
+  noroMonthlyPayroll: number;
 }
 
 export interface NoroAssumptions {
@@ -48,6 +51,12 @@ export interface NoroAssumptions {
   people: PeopleAssumptions;
 
   opex: {
+    2026: YearlyOpEx;
+    2027: YearlyOpEx;
+    2028: YearlyOpEx;
+  };
+
+  noroOpex: {
     2026: YearlyOpEx;
     2027: YearlyOpEx;
     2028: YearlyOpEx;
@@ -162,12 +171,19 @@ export const defaultAssumptions: NoroAssumptions = {
     benefitsPct: 25,
     foundersContractorThreshold: 500000,
     monthlyPayroll: 15000,
+    noroMonthlyPayroll: 8000,
   },
 
   opex: {
     2026: { marketingMonthly: 5000, gaMonthly: 3000, rdMonthly: 8000 },
     2027: { marketingMonthly: 8000, gaMonthly: 5000, rdMonthly: 12000 },
     2028: { marketingMonthly: 12000, gaMonthly: 8000, rdMonthly: 15000 },
+  },
+
+  noroOpex: {
+    2026: { marketingMonthly: 2000, gaMonthly: 1000, rdMonthly: 6000 },
+    2027: { marketingMonthly: 4000, gaMonthly: 2000, rdMonthly: 9000 },
+    2028: { marketingMonthly: 6000, gaMonthly: 3000, rdMonthly: 12000 },
   },
 
   startingCash: 100000,
@@ -320,26 +336,26 @@ function getPriorYearActiveCustomers(assumptions: NoroAssumptions, year: 2026 | 
   };
 }
 
-export function calculatePL(assumptions: NoroAssumptions, year: 2026 | 2027 | 2028): PLData[] {
+export function calculatePL(assumptions: NoroAssumptions, year: 2026 | 2027 | 2028, businessUnit: BusinessUnit = "shared-studios"): PLData[] {
   const monthlyData = calculateMonthlyData(assumptions, year);
-  const yearOpex = assumptions.opex[year];
-  const ct = assumptions.customerTypes;
+  const isNoro = businessUnit === "noro";
+  const yearOpex = isNoro ? assumptions.noroOpex[year] : assumptions.opex[year];
 
   return monthlyData.map((md) => {
     const contractedARR = md.softwareRevenue;
-    const contractedVRR = md.usageRevenue;
+    const contractedVRR = isNoro ? 0 : md.usageRevenue;
     const contractedNewRevenue = md.hardwareCashIn;
     const newNoroRevenue = md.softwareRevenue + md.hardwareCashIn;
-    const newSharedStudiosRevenue = md.usageRevenue;
-    const totalRevenue = md.totalRevenue;
+    const newSharedStudiosRevenue = isNoro ? 0 : md.usageRevenue;
+    const totalRevenue = isNoro ? newNoroRevenue : md.totalRevenue;
     const totalRevenueNonVRR = totalRevenue - contractedVRR;
 
     const hardwareCOGS = md.portalsInstalled * assumptions.hwMarginPerPortal * 0.6;
-    const cogsNonNewNoro = (totalRevenue - newNoroRevenue) * (assumptions.sharedStudiosCogsPct / 100);
+    const cogsNonNewNoro = isNoro ? 0 : (md.totalRevenue - newNoroRevenue) * (assumptions.sharedStudiosCogsPct / 100);
     const totalCOGS = hardwareCOGS + cogsNonNewNoro;
     const grossProfit = totalRevenue - totalCOGS;
 
-    const payrollBase = assumptions.people.monthlyPayroll;
+    const payrollBase = isNoro ? assumptions.people.noroMonthlyPayroll : assumptions.people.monthlyPayroll;
     const payroll = payrollBase * (1 + assumptions.people.benefitsPct / 100);
 
     const totalOpEx = payroll + yearOpex.marketingMonthly + yearOpex.rdMonthly + yearOpex.gaMonthly;
@@ -369,18 +385,18 @@ export function calculatePL(assumptions: NoroAssumptions, year: 2026 | 2027 | 20
   });
 }
 
-export function calculateCash(assumptions: NoroAssumptions, year: 2026 | 2027 | 2028): CashData[] {
+export function calculateCash(assumptions: NoroAssumptions, year: 2026 | 2027 | 2028, businessUnit: BusinessUnit = "shared-studios"): CashData[] {
   let beginningCash: number;
 
   if (year === 2026) {
     beginningCash = assumptions.startingCash + assumptions.fundraiseInflows[2026];
   } else {
     const priorYear = (year - 1) as 2026 | 2027;
-    const priorCash = calculateCash(assumptions, priorYear);
+    const priorCash = calculateCash(assumptions, priorYear, businessUnit);
     beginningCash = priorCash[11].endingCash + assumptions.fundraiseInflows[year];
   }
 
-  const plData = calculatePL(assumptions, year);
+  const plData = calculatePL(assumptions, year, businessUnit);
   const results: CashData[] = [];
 
   for (let m = 0; m < 12; m++) {
@@ -408,12 +424,12 @@ export function calculateCash(assumptions: NoroAssumptions, year: 2026 | 2027 | 
   return results;
 }
 
-export function calculateAnnualSummaries(assumptions: NoroAssumptions): AnnualSummary[] {
+export function calculateAnnualSummaries(assumptions: NoroAssumptions, businessUnit: BusinessUnit = "shared-studios"): AnnualSummary[] {
   const years: (2026 | 2027 | 2028)[] = [2026, 2027, 2028];
 
   return years.map((year) => {
-    const plData = calculatePL(assumptions, year);
-    const cashData = calculateCash(assumptions, year);
+    const plData = calculatePL(assumptions, year, businessUnit);
+    const cashData = calculateCash(assumptions, year, businessUnit);
 
     const arrRevenue = plData.reduce((sum, m) => sum + m.contractedARR, 0);
     const newNoroRevenue = plData.reduce((sum, m) => sum + m.newNoroRevenue, 0);
@@ -471,7 +487,14 @@ export function loadAssumptions(): NoroAssumptions | null {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (!parsed.people.noroMonthlyPayroll && parsed.people.noroMonthlyPayroll !== 0) {
+        parsed.people.noroMonthlyPayroll = defaultAssumptions.people.noroMonthlyPayroll;
+      }
+      if (!parsed.noroOpex) {
+        parsed.noroOpex = { ...defaultAssumptions.noroOpex };
+      }
+      return parsed;
     }
   } catch (e) {
     console.error("Failed to load assumptions:", e);
