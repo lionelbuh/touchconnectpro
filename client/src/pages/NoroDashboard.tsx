@@ -246,7 +246,7 @@ function NoroDashboardContent({ onLogout }: { onLogout: () => void }) {
                 data-testid="toggle-shared-studios"
               >
                 <Building2 className="h-4 w-4" />
-                Head Office Shared Studios
+                Shared Studios
               </button>
               <button
                 onClick={() => setBusinessUnit("noro")}
@@ -315,7 +315,7 @@ function NoroDashboardContent({ onLogout }: { onLogout: () => void }) {
         <div className={`mb-4 px-4 py-2 rounded-lg text-sm font-medium ${isNoro ? "bg-blue-600/10 border border-blue-500/30 text-blue-300" : "bg-emerald-600/10 border border-emerald-500/30 text-emerald-300"}`}>
           {isNoro
             ? "Viewing: New Brand NORO — Software + Hardware revenue, NORO payroll & NORO operating expenses only"
-            : "Viewing: Head Office Shared Studios — 100% consolidated view (all revenues, all costs)"
+            : "Viewing: Shared Studios — 100% consolidated view (all revenues, all costs)"
           }
         </div>
 
@@ -547,7 +547,7 @@ function AssumptionsScreen({ assumptions, setAssumptions, businessUnit }: { assu
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-slate-300 text-xs">Total Monthly Payroll (Head Office)</Label>
+                <Label className="text-slate-300 text-xs">Total Monthly Payroll (Shared Studios)</Label>
                 <NumInput value={assumptions.people.monthlyPayroll} onChange={(v) => updatePeople("monthlyPayroll", v)} prefix="$" />
               </div>
               <div>
@@ -598,7 +598,7 @@ function AssumptionsScreen({ assumptions, setAssumptions, businessUnit }: { assu
 
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader className="pb-3">
-          <CardTitle className="text-white text-base">Operating Expenses — Head Office (Monthly)</CardTitle>
+          <CardTitle className="text-white text-base">Operating Expenses — Shared Studios (Monthly)</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
