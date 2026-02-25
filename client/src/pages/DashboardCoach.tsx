@@ -879,31 +879,56 @@ export default function DashboardCoach() {
                             <CheckCircle2 className="h-4 w-4" />
                             <span>You can receive payments from entrepreneurs. You keep 80% of each transaction.</span>
                           </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={async () => {
-                              if (!confirm("Are you sure you want to disconnect your Stripe account? You'll need to connect a new one to receive payments.")) return;
-                              try {
-                                const response = await fetch(`${API_BASE_URL}/api/stripe/connect/reset/${profile?.id}`, { method: 'POST' });
-                                if (response.ok) {
-                                  toast.success("Stripe account disconnected. You can now connect a new account.");
-                                  setStripeStatus({ hasAccount: false, onboardingComplete: false, chargesEnabled: false, payoutsEnabled: false });
-                                } else {
-                                  const error = await response.json();
-                                  toast.error(error.error || "Failed to disconnect Stripe account");
+                          <div className="flex gap-2 flex-wrap">
+                            <Button
+                              size="sm"
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch(`${API_BASE_URL}/api/stripe/connect/dashboard-link/${profile?.id}`);
+                                  if (response.ok) {
+                                    const data = await response.json();
+                                    window.open(data.url, '_blank');
+                                  } else {
+                                    const error = await response.json();
+                                    toast.error(error.error || "Failed to open Stripe dashboard");
+                                  }
+                                } catch (error) {
+                                  toast.error("Error opening Stripe dashboard");
                                 }
-                              } catch (error) {
-                                toast.error("Error disconnecting Stripe account");
-                              }
-                            }}
-                            className="rounded-xl"
-                            style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
-                            data-testid="button-reset-stripe"
-                          >
-                            <RefreshCw className="mr-2 h-4 w-4" />
-                            Connect Different Account
-                          </Button>
+                              }}
+                              className="rounded-xl"
+                              style={{ backgroundColor: "#0D566C", color: "#FFFFFF", border: "none" }}
+                              data-testid="button-stripe-dashboard"
+                            >
+                              <ExternalLink className="mr-2 h-4 w-4" />
+                              View Stripe Dashboard
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={async () => {
+                                if (!confirm("Are you sure you want to disconnect your Stripe account? You'll need to connect a new one to receive payments.")) return;
+                                try {
+                                  const response = await fetch(`${API_BASE_URL}/api/stripe/connect/reset/${profile?.id}`, { method: 'POST' });
+                                  if (response.ok) {
+                                    toast.success("Stripe account disconnected. You can now connect a new account.");
+                                    setStripeStatus({ hasAccount: false, onboardingComplete: false, chargesEnabled: false, payoutsEnabled: false });
+                                  } else {
+                                    const error = await response.json();
+                                    toast.error(error.error || "Failed to disconnect Stripe account");
+                                  }
+                                } catch (error) {
+                                  toast.error("Error disconnecting Stripe account");
+                                }
+                              }}
+                              className="rounded-xl"
+                              style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
+                              data-testid="button-reset-stripe"
+                            >
+                              <RefreshCw className="mr-2 h-4 w-4" />
+                              Connect Different Account
+                            </Button>
+                          </div>
                         </div>
                       ) : (
                         <>

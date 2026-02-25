@@ -8128,10 +8128,14 @@ Full terms available at: https://touchconnectpro.com/coach-agreement`;
       const { getUncachableStripeClient } = await import('./stripeClient');
       const stripe = await getUncachableStripeClient();
 
-      // Create a Standard connected account
+      // Create an Express connected account
       const account = await stripe.accounts.create({
-        type: 'standard',
+        type: 'express',
         email: email,
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
         metadata: {
           coach_id: coachId,
           platform: 'TouchConnectPro'
@@ -8202,8 +8206,12 @@ Full terms available at: https://touchconnectpro.com/coach-agreement`;
       let accountId = coach.stripe_account_id;
       if (!accountId) {
         const account = await stripe.accounts.create({
-          type: 'standard',
+          type: 'express',
           email: coach.email,
+          capabilities: {
+            card_payments: { requested: true },
+            transfers: { requested: true },
+          },
           metadata: {
             coach_id: coachId,
             platform: 'TouchConnectPro'
@@ -8340,6 +8348,46 @@ Full terms available at: https://touchconnectpro.com/coach-agreement`;
       });
     } catch (error: any) {
       console.error("[STRIPE CONNECT] Reset account error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get Stripe Express dashboard login link for coach
+  app.get("/api/stripe/connect/dashboard-link/:coachId", async (req, res) => {
+    try {
+      const { coachId } = req.params;
+
+      console.log("[STRIPE CONNECT] Getting dashboard link for coach:", coachId);
+
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { data: coach, error: fetchError } = await (client
+        .from("coach_applications")
+        .select("*")
+        .eq("id", coachId)
+        .single() as any);
+
+      if (fetchError || !coach) {
+        return res.status(404).json({ error: "Coach not found" });
+      }
+
+      if (!coach.stripe_account_id) {
+        return res.status(400).json({ error: "No Stripe account connected" });
+      }
+
+      const { getUncachableStripeClient } = await import('./stripeClient');
+      const stripe = await getUncachableStripeClient();
+
+      const loginLink = await stripe.accounts.createLoginLink(coach.stripe_account_id);
+
+      console.log("[STRIPE CONNECT] Dashboard link created for:", coach.stripe_account_id);
+
+      return res.json({ url: loginLink.url });
+    } catch (error: any) {
+      console.error("[STRIPE CONNECT] Dashboard link error:", error.message);
       return res.status(500).json({ error: error.message });
     }
   });

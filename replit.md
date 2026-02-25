@@ -35,7 +35,7 @@ The platform adopts a component-based, responsive, and mobile-first design. It i
 -   **Three-Tier Coach Pricing**: Coaches can set Intro Call, Per Session, and Per Month/Full Courses rates.
 -   **Investor Notes**: Admins can track and respond to investor notes with email notifications.
 -   **Coach Profile Enhancements**: Coaches can add bios, focus areas, and profile pictures.
--   **Stripe Connect for Coach Marketplace**: Facilitates payments to coaches with a 20% platform fee via destination charges.
+-   **Stripe Connect for Coach Marketplace**: Uses Express connected accounts for simplified coach onboarding. Facilitates payments with a 20% platform fee via destination charges. Coaches access earnings via Express dashboard login links. Stripe handles 1099 tax reporting.
 -   **Admin Earnings Tab**: Provides a consolidated view of revenue from the coach marketplace and subscriptions.
 -   **One-Time Coach Contact Requests**: Entrepreneurs can send an initial contact message to coaches, with a single reply allowed before conversation closure. Email notifications are sent to all parties.
 -   **Public Coach Profile Pages**: Shareable profile pages display coach details, pricing, reviews, and a contact CTA.
