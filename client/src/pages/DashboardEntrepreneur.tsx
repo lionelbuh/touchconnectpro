@@ -112,6 +112,13 @@ export default function DashboardEntrepreneur() {
   ninetyDayGoal: ""
  });
  const [savingSnapshot, setSavingSnapshot] = useState(false);
+ const [showAgreementGate, setShowAgreementGate] = useState(false);
+ const [agreementChecked, setAgreementChecked] = useState(false);
+ const [agreedToContract, setAgreedToContract] = useState(false);
+ const [showContractText, setShowContractText] = useState(false);
+ const [newPassword, setNewPassword] = useState("");
+ const [confirmPassword, setConfirmPassword] = useState("");
+ const [savingAgreement, setSavingAgreement] = useState(false);
  const [businessPlanData, setBusinessPlanData] = useState<any>({
   executiveSummary: "",
   problemStatement: "",
@@ -675,6 +682,27 @@ export default function DashboardEntrepreneur() {
 
   fetchUserData();
  }, []);
+
+ // Check if entrepreneur has accepted the agreement
+ useEffect(() => {
+  if (!userEmail || agreementChecked) return;
+  const checkAgreement = async () => {
+   try {
+    const res = await fetch(`${API_BASE_URL}/api/contract-acceptances/check-entrepreneur-agreement/${encodeURIComponent(userEmail)}`);
+    if (res.ok) {
+     const data = await res.json();
+     if (!data.hasAccepted) {
+      setShowAgreementGate(true);
+     }
+    }
+   } catch (err) {
+    console.error("[DASHBOARD] Error checking agreement:", err);
+   } finally {
+    setAgreementChecked(true);
+   }
+  };
+  checkAgreement();
+ }, [userEmail, agreementChecked]);
 
  // Load meetings for entrepreneur
  useEffect(() => {
@@ -1485,6 +1513,63 @@ export default function DashboardEntrepreneur() {
   }
  };
 
+ const handleAcceptAgreement = async () => {
+  if (!agreedToContract) {
+   toast.error("Please read and agree to the membership agreement.");
+   return;
+  }
+  if (newPassword && newPassword.length < 6) {
+   toast.error("Password must be at least 6 characters.");
+   return;
+  }
+  if (newPassword && newPassword !== confirmPassword) {
+   toast.error("Passwords do not match.");
+   return;
+  }
+  setSavingAgreement(true);
+  try {
+   const res = await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+     email: userEmail,
+     role: "entrepreneur",
+     contractVersion: ENTREPRENEUR_CONTRACT_VERSION,
+     contractText: ENTREPRENEUR_CONTRACT,
+     userAgent: navigator.userAgent
+    })
+   });
+   if (!res.ok) {
+    toast.error("Failed to save agreement. Please try again.");
+    return;
+   }
+   if (newPassword) {
+    try {
+     const supabase = await getSupabase();
+     if (supabase) {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+       toast.error("Agreement saved but password update failed: " + error.message);
+      } else {
+       toast.success("Agreement accepted and password updated!");
+      }
+     }
+    } catch (err) {
+     console.error("[DASHBOARD] Password update error:", err);
+     toast.error("Agreement saved but password update failed.");
+    }
+   } else {
+    toast.success("Agreement accepted! Welcome to TouchConnectPro.");
+   }
+   setShowAgreementGate(false);
+  } catch (err) {
+   console.error("[DASHBOARD] Agreement acceptance error:", err);
+   toast.error("Failed to save agreement. Please try again.");
+  } finally {
+   setSavingAgreement(false);
+  }
+ };
+
  const handleLogout = async () => {
   try {
    const supabase = await getSupabase();
@@ -1841,6 +1926,85 @@ export default function DashboardEntrepreneur() {
     <div className="text-center">
      <div className="h-16 w-16 border-4 border-[#FF6B5C] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
      <p className="text-[#8A8A8A]">Loading your dashboard...</p>
+    </div>
+   </div>
+  );
+ }
+
+ if (showAgreementGate) {
+  return (
+   <div className="flex min-h-[calc(100vh-4rem)] bg-[#FAF9F7] items-center justify-center p-4">
+    <div className="bg-white rounded-2xl shadow-lg max-w-2xl w-full p-8">
+     <div className="text-center mb-6">
+      <div className="h-16 w-16 bg-[#0D566C] rounded-full flex items-center justify-center mx-auto mb-4">
+       <ClipboardList className="h-8 w-8 text-white" />
+      </div>
+      <h2 className="text-2xl font-bold text-[#0D566C]" data-testid="text-agreement-title">Welcome to TouchConnectPro</h2>
+      <p className="text-[#8A8A8A] mt-2">Before you get started, please review and accept our membership agreement.</p>
+     </div>
+
+     <div className="border border-[#E8E8E8] rounded-xl mb-6">
+      <button
+       onClick={() => setShowContractText(!showContractText)}
+       className="w-full flex items-center justify-between p-4 text-sm font-medium text-[#0D566C] hover:bg-[#FAF9F7] rounded-xl transition-colors"
+       data-testid="button-toggle-agreement"
+      >
+       <span>Entrepreneur Membership Agreement</span>
+       <span>{showContractText ? "▲" : "▼"}</span>
+      </button>
+      {showContractText && (
+       <div className="px-4 pb-4 max-h-60 overflow-y-auto">
+        <pre className="text-xs text-[#4A4A4A] whitespace-pre-wrap font-sans leading-relaxed">{ENTREPRENEUR_CONTRACT}</pre>
+       </div>
+      )}
+     </div>
+
+     <label className="flex items-start gap-3 mb-6 cursor-pointer" data-testid="label-agree-contract">
+      <input
+       type="checkbox"
+       checked={agreedToContract}
+       onChange={(e) => setAgreedToContract(e.target.checked)}
+       className="mt-1 h-4 w-4 rounded border-[#E8E8E8] text-[#0D566C] focus:ring-[#0D566C]"
+       data-testid="checkbox-agree-contract"
+      />
+      <span className="text-sm text-[#4A4A4A]">
+       I have read and agree to the <button onClick={() => setShowContractText(true)} className="text-[#0D566C] underline font-semibold">Entrepreneur Membership Agreement</button>. I understand this constitutes my legal electronic signature.
+      </span>
+     </label>
+
+     <div className="border-t border-[#E8E8E8] pt-6 mb-6">
+      <h3 className="text-sm font-semibold text-[#0D566C] mb-1">Set Your Password (optional)</h3>
+      <p className="text-xs text-[#8A8A8A] mb-3">If you'd like to change your password, enter a new one below. Otherwise, leave blank to keep your current password.</p>
+      <div className="space-y-3">
+       <input
+        type="password"
+        placeholder="New password (min 6 characters)"
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.target.value)}
+        className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#0D566C]/30"
+        data-testid="input-new-password"
+       />
+       {newPassword && (
+        <input
+         type="password"
+         placeholder="Confirm new password"
+         value={confirmPassword}
+         onChange={(e) => setConfirmPassword(e.target.value)}
+         className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#0D566C]/30"
+         data-testid="input-confirm-password"
+        />
+       )}
+      </div>
+     </div>
+
+     <Button
+      onClick={handleAcceptAgreement}
+      disabled={!agreedToContract || savingAgreement}
+      className="w-full bg-[#0D566C] hover:bg-[#0a4557] text-white rounded-full py-3 text-base font-semibold"
+      data-testid="button-accept-agreement"
+     >
+      {savingAgreement ? "Saving..." : "Accept & Continue to Dashboard"}
+     </Button>
     </div>
    </div>
   );

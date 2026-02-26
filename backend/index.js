@@ -8886,6 +8886,39 @@ app.get("/api/contract-acceptances/check-coach-agreement/:email", async (req, re
   }
 });
 
+// GET /api/contract-acceptances/check-entrepreneur-agreement/:email - Check if entrepreneur has accepted latest agreement
+app.get("/api/contract-acceptances/check-entrepreneur-agreement/:email", async (req, res) => {
+  console.log("[CHECK ENTREPRENEUR AGREEMENT] Checking for:", req.params.email);
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+
+    const { email } = req.params;
+
+    const { data, error } = await supabase
+      .from("contract_acceptances")
+      .select("*")
+      .eq("email", email.toLowerCase())
+      .eq("role", "entrepreneur")
+      .eq("contract_version", "2026-02-17 v1")
+      .order("accepted_at", { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error("[CHECK ENTREPRENEUR AGREEMENT] Error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    const hasAccepted = data && data.length > 0;
+    console.log("[CHECK ENTREPRENEUR AGREEMENT] Has accepted:", hasAccepted);
+    return res.json({ hasAccepted });
+  } catch (error) {
+    console.error("[CHECK ENTREPRENEUR AGREEMENT] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // POST /api/contract-acceptances/accept-coach-agreement - Accept coach agreement
 app.post("/api/contract-acceptances/accept-coach-agreement", async (req, res) => {
   console.log("[ACCEPT COACH AGREEMENT] Request received");
