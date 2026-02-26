@@ -14,7 +14,7 @@ import {
   type Category,
   type TrackType,
 } from "@/lib/founderFocusData";
-import { COMMUNITY_FREE_CONTRACT, COMMUNITY_FREE_CONTRACT_VERSION } from "@/lib/contracts";
+import { COMMUNITY_FREE_CONTRACT } from "@/lib/contracts";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 
@@ -144,22 +144,6 @@ export default function FounderFocusScore() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create account");
-
-      try {
-        await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: signupEmail.toLowerCase().trim(),
-            role: "entrepreneur",
-            contractVersion: COMMUNITY_FREE_CONTRACT_VERSION,
-            contractText: COMMUNITY_FREE_CONTRACT,
-            userAgent: navigator.userAgent,
-          }),
-        });
-      } catch (contractErr) {
-        console.error("Contract acceptance save error (non-blocking):", contractErr);
-      }
 
       setAccountCreated(true);
       toast.success("Account created! You can now log in to your dashboard.");
@@ -407,21 +391,6 @@ export default function FounderFocusScore() {
           const data = await res.json();
           if (res.ok) {
             setAutoAccountCreated(true);
-            try {
-              await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  email: contactEmail.toLowerCase().trim(),
-                  role: "entrepreneur",
-                  contractVersion: COMMUNITY_FREE_CONTRACT_VERSION,
-                  contractText: COMMUNITY_FREE_CONTRACT,
-                  userAgent: navigator.userAgent,
-                }),
-              });
-            } catch (contractErr) {
-              console.error("Contract acceptance save error (non-blocking):", contractErr);
-            }
           } else {
             if (data.error?.includes("already exists")) {
               setAutoAccountCreated(true);

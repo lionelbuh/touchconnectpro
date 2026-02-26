@@ -2285,8 +2285,8 @@ export default function DashboardEntrepreneur() {
            <div className="flex items-start gap-4">
             <CheckCircle className="h-6 w-6 text-[#0D566C] flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-             <h3 className="text-lg font-semibold text-[#0D566C] mb-1">Snapshot Complete - Explore Your Dashboard</h3>
-             <p className="text-[#0D566C] mb-3">Great start! You can now explore coaches and get guidance. When you're ready, complete your full Founder Blueprint for deeper insights.</p>
+             <h3 className="text-lg font-semibold text-[#0D566C] mb-1">Snapshot Complete - Your Next Step</h3>
+             <p className="text-[#0D566C] mb-3">Great start! Your next free journey is to share your business idea in detail so mentors and coaches can guide you more precisely.</p>
              <a 
               href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}
               data-testid="link-full-blueprint"
