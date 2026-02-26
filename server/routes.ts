@@ -8222,6 +8222,25 @@ Full terms available at: https://touchconnectpro.com/coach-agreement`;
 
       // If no account exists, create one
       let accountId = coach.stripe_account_id;
+
+      // Verify existing account is still valid
+      if (accountId) {
+        try {
+          await stripe.accounts.retrieve(accountId);
+        } catch (stripeError: any) {
+          if (stripeError.code === 'account_invalid' || stripeError.message?.includes('No such account')) {
+            console.log("[STRIPE CONNECT] Stale account detected during onboarding, clearing:", accountId);
+            await (client
+              .from("coach_applications")
+              .update({ stripe_account_id: null } as any)
+              .eq("id", coachId) as any);
+            accountId = null;
+          } else {
+            throw stripeError;
+          }
+        }
+      }
+
       if (!accountId) {
         const account = await stripe.accounts.create({
           type: 'express',
@@ -8308,16 +8327,34 @@ Full terms available at: https://touchconnectpro.com/coach-agreement`;
       const { getUncachableStripeClient } = await import('./stripeClient');
       const stripe = await getUncachableStripeClient();
 
-      const account = await stripe.accounts.retrieve(coach.stripe_account_id);
+      try {
+        const account = await stripe.accounts.retrieve(coach.stripe_account_id);
 
-      return res.json({
-        hasAccount: true,
-        accountId: account.id,
-        onboardingComplete: account.details_submitted,
-        chargesEnabled: account.charges_enabled,
-        payoutsEnabled: account.payouts_enabled,
-        email: account.email
-      });
+        return res.json({
+          hasAccount: true,
+          accountId: account.id,
+          onboardingComplete: account.details_submitted,
+          chargesEnabled: account.charges_enabled,
+          payoutsEnabled: account.payouts_enabled,
+          email: account.email
+        });
+      } catch (stripeError: any) {
+        if (stripeError.code === 'account_invalid' || stripeError.message?.includes('No such account')) {
+          console.log("[STRIPE CONNECT] Stale account detected, clearing:", coach.stripe_account_id);
+          await (client
+            .from("coach_applications")
+            .update({ stripe_account_id: null } as any)
+            .eq("id", coachId) as any);
+          return res.json({
+            hasAccount: false,
+            onboardingComplete: false,
+            chargesEnabled: false,
+            payoutsEnabled: false,
+            wasReset: true
+          });
+        }
+        throw stripeError;
+      }
     } catch (error: any) {
       console.error("[STRIPE CONNECT] Account status error:", error.message);
       return res.status(500).json({ error: error.message });
