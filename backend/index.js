@@ -9683,9 +9683,11 @@ app.post("/api/community/auto-signup", async (req, res) => {
     console.log("[AUTO SIGNUP] Account created for:", normalizedEmail);
 
     try {
-      if (resend) {
-        await resend.emails.send({
-          from: RESEND_FROM_EMAIL,
+      const resendData = await getResendClient();
+      if (resendData) {
+        const { client: resendClient, fromEmail } = resendData;
+        await resendClient.emails.send({
+          from: fromEmail,
           to: normalizedEmail,
           subject: "Your TouchConnectPro Dashboard Is Ready — Set Your Password",
           html: `
@@ -9735,8 +9737,8 @@ app.post("/api/community/auto-signup", async (req, res) => {
         console.log("[AUTO SIGNUP] Welcome email with password reset sent to:", normalizedEmail);
 
         try {
-          await resend.emails.send({
-            from: RESEND_FROM_EMAIL,
+          await resendClient.emails.send({
+            from: fromEmail,
             to: ADMIN_EMAIL,
             subject: `New Auto-Signup from Quiz: ${name}`,
             html: `
