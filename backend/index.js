@@ -9671,11 +9671,20 @@ app.post("/api/community/auto-signup", async (req, res) => {
     const { data: resetData, error: resetError } = await supabase.auth.admin.generateLink({
       type: "recovery",
       email: normalizedEmail,
+      options: {
+        redirectTo: `${FRONTEND_URL}/reset-password`
+      }
     });
 
-    let resetLink = "https://touchconnectpro.com/login";
+    let resetLink = `${FRONTEND_URL}/reset-password`;
     if (resetData?.properties?.action_link) {
-      resetLink = resetData.properties.action_link;
+      try {
+        const linkUrl = new URL(resetData.properties.action_link);
+        linkUrl.searchParams.set('redirect_to', `${FRONTEND_URL}/reset-password`);
+        resetLink = linkUrl.toString();
+      } catch (e) {
+        resetLink = resetData.properties.action_link;
+      }
     } else if (resetError) {
       console.error("[AUTO SIGNUP] Reset link generation error:", resetError);
     }

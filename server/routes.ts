@@ -9097,14 +9097,24 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
         console.error("[AUTO SIGNUP] Users upsert warning:", e);
       }
 
+      const frontendBase = process.env.FRONTEND_URL || (process.env.NODE_ENV === "development" ? "http://localhost:5000" : "https://touchconnectpro.com");
       const { data: resetData, error: resetError } = await (client.auth.admin.generateLink({
         type: "recovery",
         email: normalizedEmail,
+        options: {
+          redirectTo: `${frontendBase}/reset-password`
+        }
       }) as any);
 
-      let resetLink = "https://touchconnectpro.com/login";
+      let resetLink = `${frontendBase}/reset-password`;
       if (resetData?.properties?.action_link) {
-        resetLink = resetData.properties.action_link;
+        try {
+          const linkUrl = new URL(resetData.properties.action_link);
+          linkUrl.searchParams.set('redirect_to', `${frontendBase}/reset-password`);
+          resetLink = linkUrl.toString();
+        } catch (e) {
+          resetLink = resetData.properties.action_link;
+        }
       } else if (resetError) {
         console.error("[AUTO SIGNUP] Reset link generation error:", resetError);
       }

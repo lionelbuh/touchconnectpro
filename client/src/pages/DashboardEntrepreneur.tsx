@@ -1518,11 +1518,15 @@ export default function DashboardEntrepreneur() {
    toast.error("Please read and agree to the membership agreement.");
    return;
   }
-  if (newPassword && newPassword.length < 6) {
+  if (!newPassword) {
+   toast.error("Please set a password for your account.");
+   return;
+  }
+  if (newPassword.length < 6) {
    toast.error("Password must be at least 6 characters.");
    return;
   }
-  if (newPassword && newPassword !== confirmPassword) {
+  if (newPassword !== confirmPassword) {
    toast.error("Passwords do not match.");
    return;
   }
@@ -1543,23 +1547,19 @@ export default function DashboardEntrepreneur() {
     toast.error("Failed to save agreement. Please try again.");
     return;
    }
-   if (newPassword) {
-    try {
-     const supabase = await getSupabase();
-     if (supabase) {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) {
-       toast.error("Agreement saved but password update failed: " + error.message);
-      } else {
-       toast.success("Agreement accepted and password updated!");
-      }
+   try {
+    const supabase = await getSupabase();
+    if (supabase) {
+     const { error } = await supabase.auth.updateUser({ password: newPassword });
+     if (error) {
+      toast.error("Agreement saved but password update failed: " + error.message);
+     } else {
+      toast.success("Agreement accepted and password updated!");
      }
-    } catch (err) {
-     console.error("[DASHBOARD] Password update error:", err);
-     toast.error("Agreement saved but password update failed.");
     }
-   } else {
-    toast.success("Agreement accepted! Welcome to TouchConnectPro.");
+   } catch (err) {
+    console.error("[DASHBOARD] Password update error:", err);
+    toast.error("Agreement saved but password update failed.");
    }
    setShowAgreementGate(false);
   } catch (err) {
@@ -1973,8 +1973,8 @@ export default function DashboardEntrepreneur() {
      </label>
 
      <div className="border-t border-[#E8E8E8] pt-6 mb-6">
-      <h3 className="text-sm font-semibold text-[#0D566C] mb-1">Set Your Password (optional)</h3>
-      <p className="text-xs text-[#8A8A8A] mb-3">If you'd like to change your password, enter a new one below. Otherwise, leave blank to keep your current password.</p>
+      <h3 className="text-sm font-semibold text-[#0D566C] mb-1">Set Your Password <span className="text-[#FF6B5C]">*</span></h3>
+      <p className="text-xs text-[#8A8A8A] mb-3">Please create a secure password for your account.</p>
       <div className="space-y-3">
        <input
         type="password"
@@ -1984,22 +1984,20 @@ export default function DashboardEntrepreneur() {
         className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#0D566C]/30"
         data-testid="input-new-password"
        />
-       {newPassword && (
-        <input
-         type="password"
-         placeholder="Confirm new password"
-         value={confirmPassword}
-         onChange={(e) => setConfirmPassword(e.target.value)}
-         className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#0D566C]/30"
-         data-testid="input-confirm-password"
-        />
-       )}
+       <input
+        type="password"
+        placeholder="Confirm new password"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#0D566C]/30"
+        data-testid="input-confirm-password"
+       />
       </div>
      </div>
 
      <Button
       onClick={handleAcceptAgreement}
-      disabled={!agreedToContract || savingAgreement}
+      disabled={!agreedToContract || !newPassword || !confirmPassword || savingAgreement}
       className="w-full bg-[#0D566C] hover:bg-[#0a4557] text-white rounded-full py-3 text-base font-semibold"
       data-testid="button-accept-agreement"
      >
