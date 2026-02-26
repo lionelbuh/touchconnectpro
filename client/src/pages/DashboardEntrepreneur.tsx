@@ -112,6 +112,13 @@ export default function DashboardEntrepreneur() {
   ninetyDayGoal: ""
  });
  const [savingSnapshot, setSavingSnapshot] = useState(false);
+ const [showAgreementGate, setShowAgreementGate] = useState(false);
+ const [agreementChecked, setAgreementChecked] = useState(false);
+ const [agreedToContract, setAgreedToContract] = useState(false);
+ const [showContractText, setShowContractText] = useState(false);
+ const [newPassword, setNewPassword] = useState("");
+ const [confirmPassword, setConfirmPassword] = useState("");
+ const [savingAgreement, setSavingAgreement] = useState(false);
  const [businessPlanData, setBusinessPlanData] = useState<any>({
   executiveSummary: "",
   problemStatement: "",
@@ -502,9 +509,20 @@ export default function DashboardEntrepreneur() {
        profileImage: data.data?.profileImage || prev.profileImage
       }));
       
-      // Load needs intake data
+      // Load needs intake data and hydrate form state
       if (data.data?.needsIntake) {
        setNeedsIntakeData(data.data.needsIntake);
+       const loadedNeeds = data.data.needsIntake.needs || [];
+       const otherEntry = loadedNeeds.find((n: string) => n.startsWith("Other: "));
+       if (otherEntry) {
+        setNeedsSelected([...loadedNeeds.filter((n: string) => !n.startsWith("Other: ")), "Other"]);
+        setNeedsOtherText(otherEntry.replace("Other: ", ""));
+       } else {
+        setNeedsSelected(loadedNeeds);
+       }
+       if (data.data.needsIntake.message) {
+        setNeedsMessage(data.data.needsIntake.message);
+       }
       }
       // Load founder snapshot data
       if (data.data?.founderSnapshot) {
@@ -664,6 +682,27 @@ export default function DashboardEntrepreneur() {
 
   fetchUserData();
  }, []);
+
+ // Check if entrepreneur has accepted the agreement
+ useEffect(() => {
+  if (!userEmail || agreementChecked) return;
+  const checkAgreement = async () => {
+   try {
+    const res = await fetch(`${API_BASE_URL}/api/contract-acceptances/check-entrepreneur-agreement/${encodeURIComponent(userEmail)}`);
+    if (res.ok) {
+     const data = await res.json();
+     if (!data.hasAccepted) {
+      setShowAgreementGate(true);
+     }
+    }
+   } catch (err) {
+    console.error("[DASHBOARD] Error checking agreement:", err);
+   } finally {
+    setAgreementChecked(true);
+   }
+  };
+  checkAgreement();
+ }, [userEmail, agreementChecked]);
 
  // Load meetings for entrepreneur
  useEffect(() => {
@@ -1436,6 +1475,10 @@ export default function DashboardEntrepreneur() {
    toast.error("Please fill in all required fields.");
    return;
   }
+  if (needsSelected.length === 0) {
+   toast.error("Please select at least one option for what you need help with.");
+   return;
+  }
   if (!profileData.email) {
    toast.error("Profile not loaded yet. Please wait a moment and try again.");
    return;
@@ -1444,14 +1487,19 @@ export default function DashboardEntrepreneur() {
   try {
    const snapshot = { ...snapshotAnswers, completedAt: new Date().toISOString() };
    const summary = generateSnapshotSummary(snapshotAnswers);
+   const finalNeeds = needsSelected.includes("Other") && needsOtherText
+    ? [...needsSelected.filter(n => n !== "Other"), `Other: ${needsOtherText}`]
+    : needsSelected;
+   const intake = { needs: finalNeeds, message: needsMessage, completedAt: new Date().toISOString() };
    const response = await fetch(`${API_BASE_URL}/api/entrepreneurs/intake/${encodeURIComponent(profileData.email)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ founderSnapshot: snapshot, snapshotSummary: summary })
+    body: JSON.stringify({ founderSnapshot: snapshot, snapshotSummary: summary, needsIntake: intake })
    });
    if (response.ok) {
     setFounderSnapshot(snapshot);
     setSnapshotSummary(summary);
+    setNeedsIntakeData(intake);
     setShowSnapshotForm(false);
     toast.success("Your Founder Snapshot has been saved!");
    } else {
@@ -1462,6 +1510,63 @@ export default function DashboardEntrepreneur() {
    toast.error("Failed to save. Please try again.");
   } finally {
    setSavingSnapshot(false);
+  }
+ };
+
+ const handleAcceptAgreement = async () => {
+  if (!agreedToContract) {
+   toast.error("Please read and agree to the membership agreement.");
+   return;
+  }
+  if (!newPassword) {
+   toast.error("Please set a password for your account.");
+   return;
+  }
+  if (newPassword.length < 6) {
+   toast.error("Password must be at least 6 characters.");
+   return;
+  }
+  if (newPassword !== confirmPassword) {
+   toast.error("Passwords do not match.");
+   return;
+  }
+  setSavingAgreement(true);
+  try {
+   const res = await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+     email: userEmail,
+     role: "entrepreneur",
+     contractVersion: ENTREPRENEUR_CONTRACT_VERSION,
+     contractText: ENTREPRENEUR_CONTRACT,
+     userAgent: navigator.userAgent
+    })
+   });
+   if (!res.ok) {
+    toast.error("Failed to save agreement. Please try again.");
+    return;
+   }
+   try {
+    const supabase = await getSupabase();
+    if (supabase) {
+     const { error } = await supabase.auth.updateUser({ password: newPassword });
+     if (error) {
+      toast.error("Agreement saved but password update failed: " + error.message);
+     } else {
+      toast.success("Agreement accepted and password updated!");
+     }
+    }
+   } catch (err) {
+    console.error("[DASHBOARD] Password update error:", err);
+    toast.error("Agreement saved but password update failed.");
+   }
+   setShowAgreementGate(false);
+  } catch (err) {
+   console.error("[DASHBOARD] Agreement acceptance error:", err);
+   toast.error("Failed to save agreement. Please try again.");
+  } finally {
+   setSavingAgreement(false);
   }
  };
 
@@ -1826,6 +1931,83 @@ export default function DashboardEntrepreneur() {
   );
  }
 
+ if (showAgreementGate) {
+  return (
+   <div className="flex min-h-[calc(100vh-4rem)] bg-[#FAF9F7] items-center justify-center p-4">
+    <div className="bg-white rounded-2xl shadow-lg max-w-2xl w-full p-8">
+     <div className="text-center mb-6">
+      <div className="h-16 w-16 bg-[#0D566C] rounded-full flex items-center justify-center mx-auto mb-4">
+       <ClipboardList className="h-8 w-8 text-white" />
+      </div>
+      <h2 className="text-2xl font-bold text-[#0D566C]" data-testid="text-agreement-title">Welcome to TouchConnectPro</h2>
+      <p className="text-[#8A8A8A] mt-2">Before you get started, please review and accept our membership agreement.</p>
+     </div>
+
+     <div className="border border-[#E8E8E8] rounded-xl mb-6">
+      <button
+       onClick={() => setShowContractText(!showContractText)}
+       className="w-full flex items-center justify-between p-4 text-sm font-medium text-[#0D566C] hover:bg-[#FAF9F7] rounded-xl transition-colors"
+       data-testid="button-toggle-agreement"
+      >
+       <span>Entrepreneur Membership Agreement</span>
+       <span>{showContractText ? "▲" : "▼"}</span>
+      </button>
+      {showContractText && (
+       <div className="px-4 pb-4 max-h-60 overflow-y-auto">
+        <pre className="text-xs text-[#4A4A4A] whitespace-pre-wrap font-sans leading-relaxed">{ENTREPRENEUR_CONTRACT}</pre>
+       </div>
+      )}
+     </div>
+
+     <label className="flex items-start gap-3 mb-6 cursor-pointer" data-testid="label-agree-contract">
+      <input
+       type="checkbox"
+       checked={agreedToContract}
+       onChange={(e) => setAgreedToContract(e.target.checked)}
+       className="mt-1 h-4 w-4 rounded border-[#E8E8E8] text-[#0D566C] focus:ring-[#0D566C]"
+       data-testid="checkbox-agree-contract"
+      />
+      <span className="text-sm text-[#4A4A4A]">
+       I have read and agree to the <button onClick={() => setShowContractText(true)} className="text-[#0D566C] underline font-semibold">Entrepreneur Membership Agreement</button>. I understand this constitutes my legal electronic signature.
+      </span>
+     </label>
+
+     <div className="border-t border-[#E8E8E8] pt-6 mb-6">
+      <h3 className="text-sm font-semibold text-[#0D566C] mb-1">Set Your Password <span className="text-[#FF6B5C]">*</span></h3>
+      <p className="text-xs text-[#8A8A8A] mb-3">Please create a secure password for your account.</p>
+      <div className="space-y-3">
+       <input
+        type="password"
+        placeholder="New password (min 6 characters)"
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.target.value)}
+        className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#0D566C]/30"
+        data-testid="input-new-password"
+       />
+       <input
+        type="password"
+        placeholder="Confirm new password"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#0D566C]/30"
+        data-testid="input-confirm-password"
+       />
+      </div>
+     </div>
+
+     <Button
+      onClick={handleAcceptAgreement}
+      disabled={!agreedToContract || !newPassword || !confirmPassword || savingAgreement}
+      className="w-full bg-[#0D566C] hover:bg-[#0a4557] text-white rounded-full py-3 text-base font-semibold"
+      data-testid="button-accept-agreement"
+     >
+      {savingAgreement ? "Saving..." : "Accept & Continue to Dashboard"}
+     </Button>
+    </div>
+   </div>
+  );
+ }
+
  if (showSuccessPage && !submitted) {
   return (
    <div className="flex min-h-[calc(100vh-4rem)] bg-[#FAF9F7]">
@@ -2083,7 +2265,7 @@ export default function DashboardEntrepreneur() {
             <Rocket className="h-6 w-6 text-[#FF6B5C] flex-shrink-0 mt-0.5" />
             <div className="flex-1">
              <h3 className="text-lg font-semibold text-[#0D566C] mb-1" data-testid="text-community-welcome">Welcome to the Community!</h3>
-             <p className="text-[#0D566C] mb-4">You're part of the TouchConnectPro Community Free plan. Complete your Founder Snapshot to unlock your full dashboard, explore coaches, and get personalized guidance.</p>
+             <p className="text-[#0D566C] mb-4">You're part of the TouchConnectPro Community Free plan. Take 4 minutes to complete your Founder Snapshot so we can understand your business idea, stage, and goals, and connect you with the right mentors and coaches.</p>
              <Button 
               className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white"
               onClick={() => { setShowSnapshotForm(true); setTimeout(() => { const el = document.getElementById('snapshot-form-section'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100); }}
@@ -2218,74 +2400,6 @@ export default function DashboardEntrepreneur() {
          </Card>
         </div>
 
-        {/* Tell Us What You Need - Interactive Intake */}
-        {isPreApproved && !needsIntakeData && (
-         <Card className="mb-6 border-l-4 border-l-[#F5C542]" data-testid="card-needs-intake">
-          <CardHeader>
-           <CardTitle className="flex items-center gap-2 text-[#0D566C]">
-            <Lightbulb className="h-5 w-5 text-[#F5C542]" />
-            Tell Us What You Need
-           </CardTitle>
-           <CardDescription>Help us understand where you are so we can guide you better. Select all that apply.</CardDescription>
-          </CardHeader>
-          <CardContent>
-           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            {[
-             "I need help clarifying my idea",
-             "I want to find a co-founder",
-             "I need funding guidance",
-             "I want coaching or mentorship",
-             "I need help with my pitch deck",
-             "I want to connect with other founders",
-             "I need help with product development",
-             "Other"
-            ].map((option) => (
-             <button
-              key={option}
-              onClick={() => setNeedsSelected(prev => prev.includes(option) ? prev.filter(n => n !== option) : [...prev, option])}
-              className={`p-3 rounded-xl border text-left text-sm font-medium transition-all ${
-               needsSelected.includes(option)
-                ? "border-[#FF6B5C] bg-[#FFF5F4] text-[#0D566C]"
-                : "border-[#E8E8E8] bg-white text-[#0D566C] hover:border-[#FF6B5C]/50"
-              }`}
-              data-testid={`button-need-${option.toLowerCase().replace(/\s+/g, "-")}`}
-             >
-              <span className="flex items-center gap-2">
-               {needsSelected.includes(option) ? <CheckCircle className="h-4 w-4 text-[#FF6B5C]" /> : <Circle className="h-4 w-4 text-[#C0C0C0]" />}
-               {option}
-              </span>
-             </button>
-            ))}
-           </div>
-           {needsSelected.includes("Other") && (
-            <input
-             type="text"
-             placeholder="Please specify..."
-             value={needsOtherText}
-             onChange={(e) => setNeedsOtherText(e.target.value)}
-             className="w-full mb-4 p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]/30"
-             data-testid="input-need-other"
-            />
-           )}
-           <textarea
-            placeholder="Anything else you'd like to share? (optional)"
-            value={needsMessage}
-            onChange={(e) => setNeedsMessage(e.target.value)}
-            rows={2}
-            className="w-full mb-4 p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]/30 resize-none"
-            data-testid="input-needs-message"
-           />
-           <Button 
-            onClick={handleSaveNeedsIntake} 
-            disabled={savingNeeds || needsSelected.length === 0} 
-            className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full"
-            data-testid="button-save-needs"
-           >
-            {savingNeeds ? "Saving..." : "Submit"}
-           </Button>
-          </CardContent>
-         </Card>
-        )}
         {needsIntakeData && (
          <Card className="mb-6 border-l-4 border-l-[#F5C542]" data-testid="card-needs-complete">
           <CardContent className="pt-6 pb-4">
@@ -2310,7 +2424,7 @@ export default function DashboardEntrepreneur() {
             <Target className="h-5 w-5 text-[#4B3F72]" />
             Smart Founder Snapshot
            </CardTitle>
-           <CardDescription>Answer 6 quick questions so we can tailor your experience. This takes about 2 minutes.</CardDescription>
+           <CardDescription>Answer a few quick questions so we can understand your business, goals, and needs. This takes about 4 minutes.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
            <div>
@@ -2434,6 +2548,58 @@ export default function DashboardEntrepreneur() {
              rows={3}
              className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30 resize-none"
              data-testid="input-snapshot-goal"
+            />
+           </div>
+           <div>
+            <label className="block text-sm font-semibold text-[#0D566C] mb-2">7. What do you need help with? (Select all that apply) *</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+             {[
+              "I need help clarifying my idea",
+              "I want to find a co-founder",
+              "I need funding guidance",
+              "I want coaching or mentorship",
+              "I need help with my pitch deck",
+              "I want to connect with other founders",
+              "I need help with product development",
+              "Other"
+             ].map((option) => (
+              <button
+               key={option}
+               onClick={() => setNeedsSelected(prev => prev.includes(option) ? prev.filter(n => n !== option) : [...prev, option])}
+               className={`p-3 rounded-xl border text-left text-sm font-medium transition-all ${
+                needsSelected.includes(option)
+                 ? "border-[#4B3F72] bg-[#F3F0FA] text-[#0D566C]"
+                 : "border-[#E8E8E8] bg-white text-[#0D566C] hover:border-[#4B3F72]/50"
+               }`}
+               data-testid={`button-need-${option.toLowerCase().replace(/\s+/g, "-")}`}
+              >
+               <span className="flex items-center gap-2">
+                {needsSelected.includes(option) ? <CheckCircle className="inline h-4 w-4 text-[#4B3F72]" /> : <Circle className="inline h-4 w-4 text-[#C0C0C0]" />}
+                {option}
+               </span>
+              </button>
+             ))}
+            </div>
+            {needsSelected.includes("Other") && (
+             <input
+              type="text"
+              placeholder="Please specify..."
+              value={needsOtherText}
+              onChange={(e) => setNeedsOtherText(e.target.value)}
+              className="w-full mt-2 p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30"
+              data-testid="input-need-other"
+             />
+            )}
+           </div>
+           <div>
+            <label className="block text-sm font-semibold text-[#0D566C] mb-2">Anything else you'd like to share?</label>
+            <textarea
+             placeholder="Optional — tell us anything else that might help us guide you better"
+             value={needsMessage}
+             onChange={(e) => setNeedsMessage(e.target.value)}
+             rows={2}
+             className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30 resize-none"
+             data-testid="input-needs-message"
             />
            </div>
            <div className="flex gap-3">
@@ -2931,7 +3097,7 @@ export default function DashboardEntrepreneur() {
           <CardContent className="pt-6 pb-6 text-center">
            <Target className="h-12 w-12 text-[#4B3F72] mx-auto mb-4" />
            <h3 className="text-lg font-semibold text-[#0D566C] mb-2">Complete Your Founder Snapshot to Unlock Coaches</h3>
-           <p className="text-[#0D566C] mb-4">Answer 6 quick questions in your Founder Snapshot to browse coaches, get feedback, and access community features.</p>
+           <p className="text-[#0D566C] mb-4">Complete your Founder Snapshot to browse coaches, get feedback, and access community features.</p>
            <Button 
             className="bg-[#4B3F72] hover:bg-[#3d3360] text-white rounded-full" 
             onClick={() => { setActiveTab("overview"); setShowSnapshotForm(true); }}
@@ -3662,7 +3828,7 @@ export default function DashboardEntrepreneur() {
        <div className="text-center py-16">
         <Target className="h-16 w-16 text-[#4B3F72] mx-auto mb-4" />
         <h2 className="text-2xl font-bold text-[#0D566C] mb-3">Complete Your Founder Snapshot First</h2>
-        <p className="text-[#8A8A8A] mb-6 max-w-md mx-auto">Answer 6 quick questions in your Founder Snapshot to view and manage your idea details here.</p>
+        <p className="text-[#8A8A8A] mb-6 max-w-md mx-auto">Complete your Founder Snapshot to view and manage your idea details here.</p>
         <Button 
          className="bg-[#4B3F72] hover:bg-[#3d3360] text-white rounded-full" 
          onClick={() => { setActiveTab("overview"); setShowSnapshotForm(true); }}
