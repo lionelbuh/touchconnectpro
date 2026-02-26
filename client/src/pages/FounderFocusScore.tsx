@@ -637,22 +637,19 @@ export default function FounderFocusScore() {
               <div className="text-center">
                 <div className="max-w-md mx-auto rounded-xl p-8" style={{ backgroundColor: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }} data-testid="text-auto-signup-success">
                   <CheckCircle className="h-12 w-12 mx-auto mb-4" style={{ color: "#F5C542" }} />
-                  <h4 className="text-xl font-display font-bold text-white mb-3">Your Dashboard Is Ready!</h4>
+                  <h4 className="text-xl font-display font-bold text-white mb-3">Your Dashboard Is Almost Ready!</h4>
                   <p className="text-sm mb-2" style={{ color: "rgba(255,255,255,0.8)" }}>
-                    We've sent an email to <span className="font-semibold text-white">{contactEmail}</span> with instructions to set your password and access your entrepreneur dashboard.
+                    We've sent an email to <span className="font-semibold text-white">{contactEmail}</span> with a link to set your password.
                   </p>
-                  <p className="text-xs mb-6" style={{ color: "rgba(255,255,255,0.5)" }}>
-                    Check your inbox (and spam folder) for the email from TouchConnectPro.
+                  <div className="rounded-lg p-4 mb-4" style={{ backgroundColor: "rgba(245,197,66,0.15)", border: "1px solid rgba(245,197,66,0.3)" }}>
+                    <p className="text-sm font-semibold text-white mb-1">Next step:</p>
+                    <p className="text-sm" style={{ color: "rgba(255,255,255,0.9)" }}>
+                      Open the email from TouchConnectPro and click <strong>"Set Your Password & Log In"</strong> to create your password and access your dashboard.
+                    </p>
+                  </div>
+                  <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    Check your inbox (and spam folder) for the email.
                   </p>
-                  <Link href="/login">
-                    <Button
-                      className="rounded-full font-semibold transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
-                      style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
-                      data-testid="button-go-to-login"
-                    >
-                      Go to Login <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
                 </div>
               </div>
             </div>
