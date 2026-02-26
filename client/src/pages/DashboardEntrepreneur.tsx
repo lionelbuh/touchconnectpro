@@ -13,7 +13,7 @@ import { useLocation } from "wouter";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
-import { ENTREPRENEUR_CONTRACT, ENTREPRENEUR_CONTRACT_VERSION } from "@/lib/contracts";
+import { ENTREPRENEUR_CONTRACT, ENTREPRENEUR_CONTRACT_VERSION, COMMUNITY_FREE_CONTRACT, COMMUNITY_FREE_CONTRACT_VERSION } from "@/lib/contracts";
 import { BLOCKER_INFO, type Category } from "@/lib/founderFocusData";
 
 // Helper to format UTC timestamps from database to PST
@@ -1524,8 +1524,8 @@ export default function DashboardEntrepreneur() {
     body: JSON.stringify({
      email: userEmail,
      role: "entrepreneur",
-     contractVersion: ENTREPRENEUR_CONTRACT_VERSION,
-     contractText: ENTREPRENEUR_CONTRACT,
+     contractVersion: hasPaid ? ENTREPRENEUR_CONTRACT_VERSION : COMMUNITY_FREE_CONTRACT_VERSION,
+     contractText: hasPaid ? ENTREPRENEUR_CONTRACT : COMMUNITY_FREE_CONTRACT,
      userAgent: navigator.userAgent
     })
    });
@@ -1922,12 +1922,12 @@ export default function DashboardEntrepreneur() {
        className="w-full flex items-center justify-between p-4 text-sm font-medium text-[#0D566C] hover:bg-[#FAF9F7] rounded-xl transition-colors"
        data-testid="button-toggle-agreement"
       >
-       <span>Entrepreneur Membership Agreement</span>
+       <span>{hasPaid ? "Entrepreneur Membership Agreement" : "Community Free Membership Agreement"}</span>
        <span>{showContractText ? "▲" : "▼"}</span>
       </button>
       {showContractText && (
        <div className="px-4 pb-4 max-h-60 overflow-y-auto">
-        <pre className="text-xs text-[#4A4A4A] whitespace-pre-wrap font-sans leading-relaxed">{ENTREPRENEUR_CONTRACT}</pre>
+        <pre className="text-xs text-[#4A4A4A] whitespace-pre-wrap font-sans leading-relaxed">{hasPaid ? ENTREPRENEUR_CONTRACT : COMMUNITY_FREE_CONTRACT}</pre>
        </div>
       )}
      </div>
@@ -1941,7 +1941,7 @@ export default function DashboardEntrepreneur() {
        data-testid="checkbox-agree-contract"
       />
       <span className="text-sm text-[#4A4A4A]">
-       I have read and agree to the <button onClick={() => setShowContractText(true)} className="text-[#0D566C] underline font-semibold">Entrepreneur Membership Agreement</button>. I understand this constitutes my legal electronic signature.
+       I have read and agree to the <button onClick={() => setShowContractText(true)} className="text-[#0D566C] underline font-semibold">{hasPaid ? "Entrepreneur Membership Agreement" : "Community Free Membership Agreement"}</button>. I understand this constitutes my legal electronic signature.
       </span>
      </label>
 
