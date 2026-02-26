@@ -8023,6 +8023,25 @@ app.get("/api/stripe/connect/account-link/:coachId", async (req, res) => {
     }
 
     let accountId = coach.stripe_account_id;
+
+    // Verify existing account is still valid
+    if (accountId) {
+      try {
+        await stripe.accounts.retrieve(accountId);
+      } catch (stripeError) {
+        if (stripeError.code === 'account_invalid' || stripeError.message?.includes('No such account')) {
+          console.log("[STRIPE CONNECT] Stale account detected during onboarding, clearing:", accountId);
+          await supabase
+            .from("coach_applications")
+            .update({ stripe_account_id: null })
+            .eq("id", coachId);
+          accountId = null;
+        } else {
+          throw stripeError;
+        }
+      }
+    }
+
     if (!accountId) {
       const account = await stripe.accounts.create({
         type: 'express',
@@ -8106,16 +8125,34 @@ app.get("/api/stripe/connect/account-status/:coachId", async (req, res) => {
       return res.status(500).json({ error: "Stripe not configured" });
     }
 
-    const account = await stripe.accounts.retrieve(coach.stripe_account_id);
+    try {
+      const account = await stripe.accounts.retrieve(coach.stripe_account_id);
 
-    return res.json({
-      hasAccount: true,
-      accountId: account.id,
-      onboardingComplete: account.details_submitted,
-      chargesEnabled: account.charges_enabled,
-      payoutsEnabled: account.payouts_enabled,
-      email: account.email
-    });
+      return res.json({
+        hasAccount: true,
+        accountId: account.id,
+        onboardingComplete: account.details_submitted,
+        chargesEnabled: account.charges_enabled,
+        payoutsEnabled: account.payouts_enabled,
+        email: account.email
+      });
+    } catch (stripeError) {
+      if (stripeError.code === 'account_invalid' || stripeError.message?.includes('No such account')) {
+        console.log("[STRIPE CONNECT] Stale account detected, clearing:", coach.stripe_account_id);
+        await supabase
+          .from("coach_applications")
+          .update({ stripe_account_id: null })
+          .eq("id", coachId);
+        return res.json({
+          hasAccount: false,
+          onboardingComplete: false,
+          chargesEnabled: false,
+          payoutsEnabled: false,
+          wasReset: true
+        });
+      }
+      throw stripeError;
+    }
   } catch (error) {
     console.error("[STRIPE CONNECT] Account status error:", error.message);
     return res.status(500).json({ error: error.message });
