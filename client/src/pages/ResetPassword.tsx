@@ -40,49 +40,56 @@ export default function ResetPassword() {
       if (hash && hash.includes("access_token") && hash.includes("type=recovery")) {
         console.log("[RESET] Found recovery token in URL hash");
         
-        const params = new URLSearchParams(hash.substring(1));
-        const tokenHash = params.get("access_token");
-        const type = params.get("type");
-        
-        console.log("[RESET] Token hash (first 10 chars):", tokenHash?.substring(0, 10) + "...");
-        console.log("[RESET] Type:", type);
-        
-        if (tokenHash && type === "recovery") {
-          try {
-            console.log("[RESET] Calling verifyOtp...");
-            const { data, error: verifyError } = await supabase.auth.verifyOtp({
-              token_hash: tokenHash,
-              type: "recovery"
-            });
-            
-            console.log("[RESET] verifyOtp result:", { 
-              hasData: !!data, 
-              hasSession: !!data?.session,
-              error: verifyError?.message 
-            });
-            
-            if (verifyError) {
-              console.error("[RESET] Verify error:", verifyError);
-              setError("Invalid or expired recovery link. Please request a new one.");
-              setSessionValid(false);
-            } else if (data?.session) {
-              console.log("[RESET] Session established successfully!");
-              setSessionValid(true);
-              window.history.replaceState(null, "", window.location.pathname);
-            } else {
-              console.error("[RESET] No session in response");
-              setError("Could not establish session. Please try again.");
+        const { data: { session: existingSession } } = await supabase.auth.getSession();
+        if (existingSession) {
+          console.log("[RESET] Session already established by Supabase (detectSessionInUrl)");
+          setSessionValid(true);
+          window.history.replaceState(null, "", window.location.pathname);
+        } else {
+          const params = new URLSearchParams(hash.substring(1));
+          const tokenHash = params.get("access_token");
+          const type = params.get("type");
+          
+          console.log("[RESET] Token hash (first 10 chars):", tokenHash?.substring(0, 10) + "...");
+          console.log("[RESET] Type:", type);
+          
+          if (tokenHash && type === "recovery") {
+            try {
+              console.log("[RESET] Calling verifyOtp...");
+              const { data, error: verifyError } = await supabase.auth.verifyOtp({
+                token_hash: tokenHash,
+                type: "recovery"
+              });
+              
+              console.log("[RESET] verifyOtp result:", { 
+                hasData: !!data, 
+                hasSession: !!data?.session,
+                error: verifyError?.message 
+              });
+              
+              if (verifyError) {
+                console.error("[RESET] Verify error:", verifyError);
+                setError("Invalid or expired recovery link. Please request a new one.");
+                setSessionValid(false);
+              } else if (data?.session) {
+                console.log("[RESET] Session established successfully!");
+                setSessionValid(true);
+                window.history.replaceState(null, "", window.location.pathname);
+              } else {
+                console.error("[RESET] No session in response");
+                setError("Could not establish session. Please try again.");
+                setSessionValid(false);
+              }
+            } catch (err: any) {
+              console.error("[RESET] Exception:", err);
+              setError("An error occurred. Please request a new reset link.");
               setSessionValid(false);
             }
-          } catch (err: any) {
-            console.error("[RESET] Exception:", err);
-            setError("An error occurred. Please request a new reset link.");
+          } else {
+            console.error("[RESET] Invalid token format");
+            setError("Invalid recovery link format.");
             setSessionValid(false);
           }
-        } else {
-          console.error("[RESET] Invalid token format");
-          setError("Invalid recovery link format.");
-          setSessionValid(false);
         }
       } else {
         console.log("[RESET] No recovery token in hash, checking existing session");
