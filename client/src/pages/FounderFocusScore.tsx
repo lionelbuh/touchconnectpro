@@ -39,7 +39,7 @@ const segmentIcons = [
   <Compass className="h-6 w-6" />,
 ];
 
-type Phase = "landing" | "segmentation" | "quiz" | "results" | "community-signup";
+type Phase = "landing" | "segmentation" | "quiz" | "contact" | "results" | "community-signup";
 
 export default function FounderFocusScore() {
   const [phase, setPhase] = useState<Phase>("landing");
@@ -54,6 +54,10 @@ export default function FounderFocusScore() {
   const [accountCreated, setAccountCreated] = useState(false);
   const [agreedToContract, setAgreedToContract] = useState(false);
   const [showContractText, setShowContractText] = useState(false);
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [autoAccountCreated, setAutoAccountCreated] = useState(false);
+  const [isAutoCreating, setIsAutoCreating] = useState(false);
   const prevPhaseRef = useRef<Phase>("landing");
   const prevQuestionRef = useRef(0);
 
@@ -85,7 +89,7 @@ export default function FounderFocusScore() {
     } else {
       const quizResult = calculateResults(newAnswers, selectedTrack!);
       setResult(quizResult);
-      setTimeout(() => setPhase("results"), 400);
+      setTimeout(() => setPhase("contact"), 400);
 
       try {
         fetch(`${API_BASE_URL}/api/founder-focus-completed`, {
@@ -384,6 +388,143 @@ export default function FounderFocusScore() {
     );
   }
 
+  // ── Contact Info (after Q8) ──
+  if (phase === "contact" && result) {
+    const handleSeeResults = async () => {
+      if (contactName.trim() && contactEmail.trim()) {
+        setIsAutoCreating(true);
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/community/auto-signup`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: contactEmail.trim(),
+              name: contactName.trim(),
+              quizResult: result,
+            }),
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            setAutoAccountCreated(true);
+            try {
+              await fetch(`${API_BASE_URL}/api/contract-acceptances`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  email: contactEmail.toLowerCase().trim(),
+                  role: "entrepreneur",
+                  contractVersion: COMMUNITY_FREE_CONTRACT_VERSION,
+                  contractText: COMMUNITY_FREE_CONTRACT,
+                  userAgent: navigator.userAgent,
+                }),
+              });
+            } catch (contractErr) {
+              console.error("Contract acceptance save error (non-blocking):", contractErr);
+            }
+          } else {
+            if (data.error?.includes("already exists")) {
+              setAutoAccountCreated(true);
+            } else {
+              console.error("[AUTO SIGNUP] Error:", data.error);
+            }
+          }
+        } catch (err) {
+          console.error("[AUTO SIGNUP] Network error:", err);
+        } finally {
+          setIsAutoCreating(false);
+        }
+      }
+      setPhase("results");
+    };
+
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#FAF9F7" }}>
+        <div className="container mx-auto px-4 py-12 flex-1 flex flex-col max-w-3xl">
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: "rgba(13,86,108,0.08)", color: "#0D566C" }}>
+                  Almost Done
+                </span>
+                <span className="text-sm font-medium" style={{ color: "#8A8A8A" }}>Last Step</span>
+              </div>
+              <span className="text-sm font-medium" style={{ color: "#0D566C" }}>100%</span>
+            </div>
+            <div className="w-full h-2 rounded-full" style={{ backgroundColor: "#E8E8E8" }}>
+              <div className="h-2 rounded-full transition-all duration-500" style={{ width: "100%", backgroundColor: "#FF6B5C" }} />
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col justify-center">
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-4 leading-tight" style={{ color: "#0D566C" }} data-testid="text-contact-title">
+              Where should we send your results?
+            </h2>
+            <p className="text-lg mb-10" style={{ color: "#8A8A8A" }}>
+              Enter your details below so we can save your Founder Focus Score and set up your free dashboard.
+            </p>
+
+            <div className="space-y-4 mb-10 max-w-lg">
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: "#4A4A4A" }}>Full Name</label>
+                <Input
+                  placeholder="Your full name"
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  autoComplete="name"
+                  className="h-12 rounded-xl text-base"
+                  style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A" }}
+                  data-testid="input-contact-name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: "#4A4A4A" }}>Email Address</label>
+                <Input
+                  type="email"
+                  placeholder="Your email address"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  autoComplete="email"
+                  className="h-12 rounded-xl text-base"
+                  style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A" }}
+                  data-testid="input-contact-email"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setPhase("quiz");
+                  setCurrentQuestion(questions.length - 1);
+                }}
+                className="font-medium"
+                style={{ color: "#8A8A8A" }}
+                data-testid="button-back-to-quiz"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back
+              </Button>
+              <Button
+                onClick={handleSeeResults}
+                disabled={isAutoCreating}
+                className="rounded-full px-8 h-12 font-semibold transition-all duration-200 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                data-testid="button-see-results"
+              >
+                {isAutoCreating ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Setting up...</>
+                ) : (
+                  <>See My Results <ArrowRight className="ml-2 h-5 w-5" /></>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ── Results ──
   if (phase === "results" && result && selectedTrack) {
     const trackBlocker = TRACK_BLOCKER_INFO[selectedTrack][result.primaryBlocker];
@@ -490,117 +631,18 @@ export default function FounderFocusScore() {
           </div>
         </section>
 
-        {/* Community Signup CTA */}
-        <section className="py-16 md:py-20" style={{ backgroundColor: "#0D566C" }}>
-          <div className="container px-4 mx-auto max-w-3xl">
-            <div className="text-center">
-              <Users className="h-10 w-10 mx-auto mb-4" style={{ color: "#F5C542" }} />
-              <h3 className="text-2xl md:text-3xl font-display font-bold text-white mb-3" data-testid="text-community-cta">
-                Join the Free Entrepreneur Community
-              </h3>
-              <p className="mb-8 max-w-xl mx-auto leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>
-                Sign up with your email and password to unlock your dashboard. Access clarity and focus tools, priority-setting exercises, and connect with coaches and other founders to accelerate your next steps.
-              </p>
-              <div className="grid grid-cols-3 gap-3 max-w-md mx-auto mb-8">
-                {[
-                  { label: "Focus tools", icon: <Target className="h-4 w-4" /> },
-                  { label: "Coach access", icon: <CheckCircle className="h-4 w-4" /> },
-                  { label: "100% free", icon: <Zap className="h-4 w-4" /> },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-1.5 text-xs rounded-lg px-3 py-2 justify-center" style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }}>
-                    {item.icon}
-                    {item.label}
-                  </div>
-                ))}
-              </div>
-              {!accountCreated ? (
-                <form className="max-w-md mx-auto space-y-3" onSubmit={(e) => { e.preventDefault(); handleCommunitySignup(); }} autoComplete="off">
-                  <Input
-                    name="signup-name"
-                    id="signup-name"
-                    placeholder="Your full name"
-                    value={signupName}
-                    onChange={(e) => setSignupName(e.target.value)}
-                    autoComplete="name"
-                    className="h-12 rounded-xl border-white/20 text-white placeholder:text-white/40"
-                    style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                    data-testid="input-signup-name"
-                  />
-                  <Input
-                    name="signup-email"
-                    id="signup-email"
-                    type="email"
-                    placeholder="Your email address"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    autoComplete="email"
-                    className="h-12 rounded-xl border-white/20 text-white placeholder:text-white/40"
-                    style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                    data-testid="input-signup-email"
-                  />
-                  <Input
-                    name="signup-password"
-                    id="signup-password"
-                    type="password"
-                    placeholder="Choose a password (min 6 characters)"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    autoComplete="new-password"
-                    className="h-12 rounded-xl border-white/20 text-white placeholder:text-white/40"
-                    style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                    data-testid="input-signup-password"
-                  />
-                  <div className="text-left">
-                    <label className="flex items-start gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={agreedToContract}
-                        onChange={(e) => setAgreedToContract(e.target.checked)}
-                        className="mt-1 h-4 w-4 rounded"
-                        style={{ accentColor: "#FF6B5C" }}
-                        data-testid="checkbox-agree-contract"
-                      />
-                      <span className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
-                        I agree to the{" "}
-                        <button
-                          type="button"
-                          onClick={() => setShowContractText(!showContractText)}
-                          className="underline transition-colors"
-                          style={{ color: "#F5C542" }}
-                          data-testid="button-view-contract"
-                        >
-                          Community Free Membership Agreement
-                        </button>
-                      </span>
-                    </label>
-                    {showContractText && (
-                      <div className="mt-3 max-h-48 overflow-y-auto rounded-lg p-4 text-xs whitespace-pre-wrap" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
-                        {COMMUNITY_FREE_CONTRACT}
-                      </div>
-                    )}
-                  </div>
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="w-full h-12 font-semibold rounded-full transition-all duration-200 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
-                    style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
-                    disabled={isCreatingAccount}
-                    data-testid="button-join-community"
-                  >
-                    {isCreatingAccount ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating your account...</>
-                    ) : (
-                      <>Join the Community — Free <ArrowRight className="ml-2 h-5 w-5" /></>
-                    )}
-                  </Button>
-                  <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.5)" }}>No credit card required. No commitment.</p>
-                </form>
-              ) : (
-                <div className="max-w-md mx-auto rounded-xl p-6" style={{ backgroundColor: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }} data-testid="text-signup-success">
-                  <CheckCircle className="h-10 w-10 mx-auto mb-3" style={{ color: "#F5C542" }} />
-                  <h4 className="text-lg font-bold text-white mb-2">Welcome to the Community!</h4>
-                  <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.8)" }}>
-                    Your account is ready. Log in to access your entrepreneur dashboard.
+        {autoAccountCreated ? (
+          <section className="py-16 md:py-20" style={{ backgroundColor: "#0D566C" }}>
+            <div className="container px-4 mx-auto max-w-3xl">
+              <div className="text-center">
+                <div className="max-w-md mx-auto rounded-xl p-8" style={{ backgroundColor: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }} data-testid="text-auto-signup-success">
+                  <CheckCircle className="h-12 w-12 mx-auto mb-4" style={{ color: "#F5C542" }} />
+                  <h4 className="text-xl font-display font-bold text-white mb-3">Your Dashboard Is Ready!</h4>
+                  <p className="text-sm mb-2" style={{ color: "rgba(255,255,255,0.8)" }}>
+                    We've sent an email to <span className="font-semibold text-white">{contactEmail}</span> with instructions to set your password and access your entrepreneur dashboard.
+                  </p>
+                  <p className="text-xs mb-6" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    Check your inbox (and spam folder) for the email from TouchConnectPro.
                   </p>
                   <Link href="/login">
                     <Button
@@ -612,10 +654,136 @@ export default function FounderFocusScore() {
                     </Button>
                   </Link>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : (
+          <section className="py-16 md:py-20" style={{ backgroundColor: "#0D566C" }}>
+            <div className="container px-4 mx-auto max-w-3xl">
+              <div className="text-center">
+                <Users className="h-10 w-10 mx-auto mb-4" style={{ color: "#F5C542" }} />
+                <h3 className="text-2xl md:text-3xl font-display font-bold text-white mb-3" data-testid="text-community-cta">
+                  Join the Free Entrepreneur Community
+                </h3>
+                <p className="mb-8 max-w-xl mx-auto leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>
+                  Sign up with your email and password to unlock your dashboard. Access clarity and focus tools, priority-setting exercises, and connect with coaches and other founders to accelerate your next steps.
+                </p>
+                <div className="grid grid-cols-3 gap-3 max-w-md mx-auto mb-8">
+                  {[
+                    { label: "Focus tools", icon: <Target className="h-4 w-4" /> },
+                    { label: "Coach access", icon: <CheckCircle className="h-4 w-4" /> },
+                    { label: "100% free", icon: <Zap className="h-4 w-4" /> },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-1.5 text-xs rounded-lg px-3 py-2 justify-center" style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }}>
+                      {item.icon}
+                      {item.label}
+                    </div>
+                  ))}
+                </div>
+                {!accountCreated ? (
+                  <form className="max-w-md mx-auto space-y-3" onSubmit={(e) => { e.preventDefault(); handleCommunitySignup(); }} autoComplete="off">
+                    <Input
+                      name="signup-name"
+                      id="signup-name"
+                      placeholder="Your full name"
+                      value={signupName}
+                      onChange={(e) => setSignupName(e.target.value)}
+                      autoComplete="name"
+                      className="h-12 rounded-xl border-white/20 text-white placeholder:text-white/40"
+                      style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                      data-testid="input-signup-name"
+                    />
+                    <Input
+                      name="signup-email"
+                      id="signup-email"
+                      type="email"
+                      placeholder="Your email address"
+                      value={signupEmail}
+                      onChange={(e) => setSignupEmail(e.target.value)}
+                      autoComplete="email"
+                      className="h-12 rounded-xl border-white/20 text-white placeholder:text-white/40"
+                      style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                      data-testid="input-signup-email"
+                    />
+                    <Input
+                      name="signup-password"
+                      id="signup-password"
+                      type="password"
+                      placeholder="Choose a password (min 6 characters)"
+                      value={signupPassword}
+                      onChange={(e) => setSignupPassword(e.target.value)}
+                      autoComplete="new-password"
+                      className="h-12 rounded-xl border-white/20 text-white placeholder:text-white/40"
+                      style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                      data-testid="input-signup-password"
+                    />
+                    <div className="text-left">
+                      <label className="flex items-start gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={agreedToContract}
+                          onChange={(e) => setAgreedToContract(e.target.checked)}
+                          className="mt-1 h-4 w-4 rounded"
+                          style={{ accentColor: "#FF6B5C" }}
+                          data-testid="checkbox-agree-contract"
+                        />
+                        <span className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
+                          I agree to the{" "}
+                          <button
+                            type="button"
+                            onClick={() => setShowContractText(!showContractText)}
+                            className="underline transition-colors"
+                            style={{ color: "#F5C542" }}
+                            data-testid="button-view-contract"
+                          >
+                            Community Free Membership Agreement
+                          </button>
+                        </span>
+                      </label>
+                      {showContractText && (
+                        <div className="mt-3 max-h-48 overflow-y-auto rounded-lg p-4 text-xs whitespace-pre-wrap" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
+                          {COMMUNITY_FREE_CONTRACT}
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="w-full h-12 font-semibold rounded-full transition-all duration-200 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                      style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                      disabled={isCreatingAccount}
+                      data-testid="button-join-community"
+                    >
+                      {isCreatingAccount ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating your account...</>
+                      ) : (
+                        <>Join the Community — Free <ArrowRight className="ml-2 h-5 w-5" /></>
+                      )}
+                    </Button>
+                    <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.5)" }}>No credit card required. No commitment.</p>
+                  </form>
+                ) : (
+                  <div className="max-w-md mx-auto rounded-xl p-6" style={{ backgroundColor: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }} data-testid="text-signup-success">
+                    <CheckCircle className="h-10 w-10 mx-auto mb-3" style={{ color: "#F5C542" }} />
+                    <h4 className="text-lg font-bold text-white mb-2">Welcome to the Community!</h4>
+                    <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.8)" }}>
+                      Your account is ready. Log in to access your entrepreneur dashboard.
+                    </p>
+                    <Link href="/login">
+                      <Button
+                        className="rounded-full font-semibold transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
+                        style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                        data-testid="button-go-to-login"
+                      >
+                        Go to Login <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
       </div>
     );
   }

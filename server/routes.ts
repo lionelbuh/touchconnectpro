@@ -8984,6 +8984,214 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
   // COMMUNITY FREE SIGNUP & TRIAL ROUTES
   // =============================================
 
+  // POST /api/community/auto-signup - Auto-create account from quiz contact step (no password needed)
+  app.post("/api/community/auto-signup", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+
+      const { email, name, quizResult } = req.body;
+      if (!email || !name) {
+        return res.status(400).json({ error: "Name and email are required" });
+      }
+
+      const normalizedEmail = email.toLowerCase().trim();
+
+      const { data: existingApp } = await (client
+        .from("ideas")
+        .select("id, status")
+        .eq("entrepreneur_email", normalizedEmail)
+        .limit(1) as any);
+
+      if (existingApp && existingApp.length > 0) {
+        return res.status(409).json({ 
+          error: "An account already exists for this email. Please log in instead."
+        });
+      }
+
+      const tempPassword = `TCP_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+
+      const { data: authData, error: authError } = await (client.auth.admin.createUser({
+        email: normalizedEmail,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          user_type: "entrepreneur",
+          full_name: name
+        }
+      }) as any);
+
+      if (authError) {
+        if (authError.message.includes("already been registered")) {
+          return res.status(409).json({ error: "An account already exists for this email. Please log in instead." });
+        }
+        console.error("[AUTO SIGNUP] Auth error:", authError);
+        return res.status(400).json({ error: authError.message });
+      }
+
+      const { data: ideaData, error: ideaError } = await (client
+        .from("ideas")
+        .insert({
+          status: "pre-approved",
+          entrepreneur_email: normalizedEmail,
+          entrepreneur_name: name,
+          data: quizResult ? { focusScore: quizResult } : {},
+          business_plan: {},
+          linkedin_profile: "",
+          user_id: authData?.user?.id || null,
+        } as any)
+        .select() as any);
+
+      if (ideaError) {
+        console.error("[AUTO SIGNUP] Ideas insert error:", ideaError);
+        return res.status(400).json({ error: ideaError.message });
+      }
+
+      try {
+        await (client
+          .from("users")
+          .upsert({
+            email: normalizedEmail,
+            name: name,
+            user_type: "entrepreneur",
+            status: "pre-approved",
+            created_at: new Date().toISOString()
+          }, { onConflict: "email" }) as any);
+      } catch (e) {
+        console.error("[AUTO SIGNUP] Users upsert warning:", e);
+      }
+
+      const { data: resetData, error: resetError } = await (client.auth.admin.generateLink({
+        type: "recovery",
+        email: normalizedEmail,
+      }) as any);
+
+      let resetLink = "https://touchconnectpro.com/login";
+      if (resetData?.properties?.action_link) {
+        resetLink = resetData.properties.action_link;
+      } else if (resetError) {
+        console.error("[AUTO SIGNUP] Reset link generation error:", resetError);
+      }
+
+      console.log("[AUTO SIGNUP] Account created for:", normalizedEmail);
+
+      try {
+        const resendData = await getResendClient();
+        if (resendData) {
+          const { client: resendClient, fromEmail } = resendData;
+          await resendClient.emails.send({
+            from: fromEmail,
+            to: normalizedEmail,
+            subject: "Your TouchConnectPro Dashboard Is Ready — Set Your Password",
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                  .header h1 { margin: 0; font-size: 24px; }
+                  .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                  .highlight-box { background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 15px; margin: 20px 0; border-radius: 8px; }
+                  .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
+                  a { color: #FF6B5C; }
+                </style>
+              </head>
+              <body style="background-color: #FAF9F7;">
+                <div class="container">
+                  <div class="header">
+                    <h1>Welcome to TouchConnectPro!</h1>
+                  </div>
+                  <div class="content">
+                    <p>Hi ${name},</p>
+                    <p>Thanks for taking the Founder Focus Score! Your free Community dashboard has been created and your quiz results have been saved.</p>
+                    ${quizResult ? `<div class="highlight-box"><strong>Your Focus Score:</strong> ${quizResult.totalScore || 'Completed'}/100</div>` : ""}
+                    <p>To get started, please set your password by clicking the button below:</p>
+                    <p style="text-align: center;">
+                      <a href="${resetLink}" style="display: inline-block; background-color: #FF6B5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600;">Set Your Password & Log In</a>
+                    </p>
+                    <p>As a Community member, you have access to:</p>
+                    <ul>
+                      <li>AI-powered business planning tools</li>
+                      <li>Coach marketplace browsing</li>
+                      <li>Focus Score diagnostics</li>
+                    </ul>
+                    <p>Ready to upgrade? Our Founders Circle ($9.99/month) and Capital Circle ($49/month) tiers unlock mentor access and investor connections.</p>
+                  </div>
+                  <div class="footer">
+                    <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `
+          });
+          console.log("[AUTO SIGNUP] Welcome email with password reset sent to:", normalizedEmail);
+
+          try {
+            await resendClient.emails.send({
+              from: fromEmail,
+              to: ADMIN_EMAIL,
+              subject: `New Auto-Signup from Quiz: ${name}`,
+              html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <style>
+                    body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 30px; text-align: center; border-radius: 16px 16px 0 0; }
+                    .header h1 { margin: 0; font-size: 24px; }
+                    .content { background: #FFFFFF; padding: 30px; border-radius: 0 0 16px 16px; }
+                    .footer { text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px; }
+                  </style>
+                </head>
+                <body style="background-color: #FAF9F7;">
+                  <div class="container">
+                    <div class="header">
+                      <h1>New Auto-Signup from Quiz</h1>
+                    </div>
+                    <div class="content">
+                      <p>A new entrepreneur signed up automatically from the Founder Focus Score quiz.</p>
+                      <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+                        <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #E8E8E8;">Name</td><td style="padding: 8px; border-bottom: 1px solid #E8E8E8;">${name}</td></tr>
+                        <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #E8E8E8;">Email</td><td style="padding: 8px; border-bottom: 1px solid #E8E8E8;">${normalizedEmail}</td></tr>
+                        <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #E8E8E8;">Focus Score</td><td style="padding: 8px; border-bottom: 1px solid #E8E8E8;">${quizResult ? (quizResult.totalScore || 'Completed') : 'Not taken'}</td></tr>
+                        <tr><td style="padding: 8px; font-weight: bold;">Signup Method</td><td style="padding: 8px;">Auto (from quiz contact step)</td></tr>
+                      </table>
+                      <p><a href="https://touchconnectpro.com/admin-dashboard" style="display: inline-block; background-color: #FF6B5C; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold;">View in Admin Dashboard</a></p>
+                    </div>
+                    <div class="footer">
+                      <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.</p>
+                    </div>
+                  </div>
+                </body>
+                </html>
+              `
+            });
+            console.log("[AUTO SIGNUP] Admin notification sent to:", ADMIN_EMAIL);
+          } catch (adminEmailErr) {
+            console.error("[AUTO SIGNUP] Admin email error (non-blocking):", adminEmailErr);
+          }
+        }
+      } catch (emailErr) {
+        console.error("[AUTO SIGNUP] Email send error (non-blocking):", emailErr);
+      }
+
+      return res.json({ 
+        success: true, 
+        id: ideaData?.[0]?.id,
+        message: "Account created. Password setup email sent."
+      });
+    } catch (error: any) {
+      console.error("[AUTO SIGNUP] Error:", error);
+      return res.status(500).json({ error: error.message || "Server error" });
+    }
+  });
+
   // POST /api/community/signup - Create Community-Free account from Founder Focus Score
   app.post("/api/community/signup", async (req, res) => {
     try {
