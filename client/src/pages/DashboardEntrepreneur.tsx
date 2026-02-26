@@ -502,9 +502,20 @@ export default function DashboardEntrepreneur() {
        profileImage: data.data?.profileImage || prev.profileImage
       }));
       
-      // Load needs intake data
+      // Load needs intake data and hydrate form state
       if (data.data?.needsIntake) {
        setNeedsIntakeData(data.data.needsIntake);
+       const loadedNeeds = data.data.needsIntake.needs || [];
+       const otherEntry = loadedNeeds.find((n: string) => n.startsWith("Other: "));
+       if (otherEntry) {
+        setNeedsSelected([...loadedNeeds.filter((n: string) => !n.startsWith("Other: ")), "Other"]);
+        setNeedsOtherText(otherEntry.replace("Other: ", ""));
+       } else {
+        setNeedsSelected(loadedNeeds);
+       }
+       if (data.data.needsIntake.message) {
+        setNeedsMessage(data.data.needsIntake.message);
+       }
       }
       // Load founder snapshot data
       if (data.data?.founderSnapshot) {
@@ -1436,6 +1447,10 @@ export default function DashboardEntrepreneur() {
    toast.error("Please fill in all required fields.");
    return;
   }
+  if (needsSelected.length === 0) {
+   toast.error("Please select at least one option for what you need help with.");
+   return;
+  }
   if (!profileData.email) {
    toast.error("Profile not loaded yet. Please wait a moment and try again.");
    return;
@@ -1444,14 +1459,19 @@ export default function DashboardEntrepreneur() {
   try {
    const snapshot = { ...snapshotAnswers, completedAt: new Date().toISOString() };
    const summary = generateSnapshotSummary(snapshotAnswers);
+   const finalNeeds = needsSelected.includes("Other") && needsOtherText
+    ? [...needsSelected.filter(n => n !== "Other"), `Other: ${needsOtherText}`]
+    : needsSelected;
+   const intake = { needs: finalNeeds, message: needsMessage, completedAt: new Date().toISOString() };
    const response = await fetch(`${API_BASE_URL}/api/entrepreneurs/intake/${encodeURIComponent(profileData.email)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ founderSnapshot: snapshot, snapshotSummary: summary })
+    body: JSON.stringify({ founderSnapshot: snapshot, snapshotSummary: summary, needsIntake: intake })
    });
    if (response.ok) {
     setFounderSnapshot(snapshot);
     setSnapshotSummary(summary);
+    setNeedsIntakeData(intake);
     setShowSnapshotForm(false);
     toast.success("Your Founder Snapshot has been saved!");
    } else {
@@ -2083,7 +2103,7 @@ export default function DashboardEntrepreneur() {
             <Rocket className="h-6 w-6 text-[#FF6B5C] flex-shrink-0 mt-0.5" />
             <div className="flex-1">
              <h3 className="text-lg font-semibold text-[#0D566C] mb-1" data-testid="text-community-welcome">Welcome to the Community!</h3>
-             <p className="text-[#0D566C] mb-4">You're part of the TouchConnectPro Community Free plan. Complete your Founder Snapshot to unlock your full dashboard, explore coaches, and get personalized guidance.</p>
+             <p className="text-[#0D566C] mb-4">You're part of the TouchConnectPro Community Free plan. Take 4 minutes to complete your Founder Snapshot so we can understand your business idea, stage, and goals, and connect you with the right mentors and coaches.</p>
              <Button 
               className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white"
               onClick={() => { setShowSnapshotForm(true); setTimeout(() => { const el = document.getElementById('snapshot-form-section'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100); }}
@@ -2218,74 +2238,6 @@ export default function DashboardEntrepreneur() {
          </Card>
         </div>
 
-        {/* Tell Us What You Need - Interactive Intake */}
-        {isPreApproved && !needsIntakeData && (
-         <Card className="mb-6 border-l-4 border-l-[#F5C542]" data-testid="card-needs-intake">
-          <CardHeader>
-           <CardTitle className="flex items-center gap-2 text-[#0D566C]">
-            <Lightbulb className="h-5 w-5 text-[#F5C542]" />
-            Tell Us What You Need
-           </CardTitle>
-           <CardDescription>Help us understand where you are so we can guide you better. Select all that apply.</CardDescription>
-          </CardHeader>
-          <CardContent>
-           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            {[
-             "I need help clarifying my idea",
-             "I want to find a co-founder",
-             "I need funding guidance",
-             "I want coaching or mentorship",
-             "I need help with my pitch deck",
-             "I want to connect with other founders",
-             "I need help with product development",
-             "Other"
-            ].map((option) => (
-             <button
-              key={option}
-              onClick={() => setNeedsSelected(prev => prev.includes(option) ? prev.filter(n => n !== option) : [...prev, option])}
-              className={`p-3 rounded-xl border text-left text-sm font-medium transition-all ${
-               needsSelected.includes(option)
-                ? "border-[#FF6B5C] bg-[#FFF5F4] text-[#0D566C]"
-                : "border-[#E8E8E8] bg-white text-[#0D566C] hover:border-[#FF6B5C]/50"
-              }`}
-              data-testid={`button-need-${option.toLowerCase().replace(/\s+/g, "-")}`}
-             >
-              <span className="flex items-center gap-2">
-               {needsSelected.includes(option) ? <CheckCircle className="h-4 w-4 text-[#FF6B5C]" /> : <Circle className="h-4 w-4 text-[#C0C0C0]" />}
-               {option}
-              </span>
-             </button>
-            ))}
-           </div>
-           {needsSelected.includes("Other") && (
-            <input
-             type="text"
-             placeholder="Please specify..."
-             value={needsOtherText}
-             onChange={(e) => setNeedsOtherText(e.target.value)}
-             className="w-full mb-4 p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]/30"
-             data-testid="input-need-other"
-            />
-           )}
-           <textarea
-            placeholder="Anything else you'd like to share? (optional)"
-            value={needsMessage}
-            onChange={(e) => setNeedsMessage(e.target.value)}
-            rows={2}
-            className="w-full mb-4 p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]/30 resize-none"
-            data-testid="input-needs-message"
-           />
-           <Button 
-            onClick={handleSaveNeedsIntake} 
-            disabled={savingNeeds || needsSelected.length === 0} 
-            className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full"
-            data-testid="button-save-needs"
-           >
-            {savingNeeds ? "Saving..." : "Submit"}
-           </Button>
-          </CardContent>
-         </Card>
-        )}
         {needsIntakeData && (
          <Card className="mb-6 border-l-4 border-l-[#F5C542]" data-testid="card-needs-complete">
           <CardContent className="pt-6 pb-4">
@@ -2310,7 +2262,7 @@ export default function DashboardEntrepreneur() {
             <Target className="h-5 w-5 text-[#4B3F72]" />
             Smart Founder Snapshot
            </CardTitle>
-           <CardDescription>Answer 6 quick questions so we can tailor your experience. This takes about 2 minutes.</CardDescription>
+           <CardDescription>Answer a few quick questions so we can understand your business, goals, and needs. This takes about 4 minutes.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
            <div>
@@ -2434,6 +2386,58 @@ export default function DashboardEntrepreneur() {
              rows={3}
              className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30 resize-none"
              data-testid="input-snapshot-goal"
+            />
+           </div>
+           <div>
+            <label className="block text-sm font-semibold text-[#0D566C] mb-2">7. What do you need help with? (Select all that apply) *</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+             {[
+              "I need help clarifying my idea",
+              "I want to find a co-founder",
+              "I need funding guidance",
+              "I want coaching or mentorship",
+              "I need help with my pitch deck",
+              "I want to connect with other founders",
+              "I need help with product development",
+              "Other"
+             ].map((option) => (
+              <button
+               key={option}
+               onClick={() => setNeedsSelected(prev => prev.includes(option) ? prev.filter(n => n !== option) : [...prev, option])}
+               className={`p-3 rounded-xl border text-left text-sm font-medium transition-all ${
+                needsSelected.includes(option)
+                 ? "border-[#4B3F72] bg-[#F3F0FA] text-[#0D566C]"
+                 : "border-[#E8E8E8] bg-white text-[#0D566C] hover:border-[#4B3F72]/50"
+               }`}
+               data-testid={`button-need-${option.toLowerCase().replace(/\s+/g, "-")}`}
+              >
+               <span className="flex items-center gap-2">
+                {needsSelected.includes(option) ? <CheckCircle className="inline h-4 w-4 text-[#4B3F72]" /> : <Circle className="inline h-4 w-4 text-[#C0C0C0]" />}
+                {option}
+               </span>
+              </button>
+             ))}
+            </div>
+            {needsSelected.includes("Other") && (
+             <input
+              type="text"
+              placeholder="Please specify..."
+              value={needsOtherText}
+              onChange={(e) => setNeedsOtherText(e.target.value)}
+              className="w-full mt-2 p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30"
+              data-testid="input-need-other"
+             />
+            )}
+           </div>
+           <div>
+            <label className="block text-sm font-semibold text-[#0D566C] mb-2">Anything else you'd like to share?</label>
+            <textarea
+             placeholder="Optional — tell us anything else that might help us guide you better"
+             value={needsMessage}
+             onChange={(e) => setNeedsMessage(e.target.value)}
+             rows={2}
+             className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30 resize-none"
+             data-testid="input-needs-message"
             />
            </div>
            <div className="flex gap-3">
@@ -2931,7 +2935,7 @@ export default function DashboardEntrepreneur() {
           <CardContent className="pt-6 pb-6 text-center">
            <Target className="h-12 w-12 text-[#4B3F72] mx-auto mb-4" />
            <h3 className="text-lg font-semibold text-[#0D566C] mb-2">Complete Your Founder Snapshot to Unlock Coaches</h3>
-           <p className="text-[#0D566C] mb-4">Answer 6 quick questions in your Founder Snapshot to browse coaches, get feedback, and access community features.</p>
+           <p className="text-[#0D566C] mb-4">Complete your Founder Snapshot to browse coaches, get feedback, and access community features.</p>
            <Button 
             className="bg-[#4B3F72] hover:bg-[#3d3360] text-white rounded-full" 
             onClick={() => { setActiveTab("overview"); setShowSnapshotForm(true); }}
@@ -3662,7 +3666,7 @@ export default function DashboardEntrepreneur() {
        <div className="text-center py-16">
         <Target className="h-16 w-16 text-[#4B3F72] mx-auto mb-4" />
         <h2 className="text-2xl font-bold text-[#0D566C] mb-3">Complete Your Founder Snapshot First</h2>
-        <p className="text-[#8A8A8A] mb-6 max-w-md mx-auto">Answer 6 quick questions in your Founder Snapshot to view and manage your idea details here.</p>
+        <p className="text-[#8A8A8A] mb-6 max-w-md mx-auto">Complete your Founder Snapshot to view and manage your idea details here.</p>
         <Button 
          className="bg-[#4B3F72] hover:bg-[#3d3360] text-white rounded-full" 
          onClick={() => { setActiveTab("overview"); setShowSnapshotForm(true); }}
