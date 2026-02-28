@@ -157,6 +157,7 @@ export default function DashboardCoach() {
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [stripeStatus, setStripeStatus] = useState<StripeConnectStatus | null>(null);
   const [loadingStripe, setLoadingStripe] = useState(false);
+  const [stripeCountry, setStripeCountry] = useState("US");
   
   // Contact requests state
   const [contactRequests, setContactRequests] = useState<any[]>([]);
@@ -528,7 +529,7 @@ export default function DashboardCoach() {
     }
     setLoadingStripe(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/stripe/connect/account-link/${profile.id}`);
+      const response = await fetch(`${API_BASE_URL}/api/stripe/connect/account-link/${profile.id}?country=${stripeCountry}`);
       if (response.ok) {
         const data = await response.json();
         if (data.url) {
@@ -935,6 +936,40 @@ export default function DashboardCoach() {
                           <p className="text-amber-700 mb-3">
                             Connect your Stripe account to receive payments from entrepreneurs. You'll keep 80% of each transaction.
                           </p>
+                          {!stripeStatus?.hasAccount && (
+                            <div className="mb-3">
+                              <label className="block text-sm font-medium text-amber-800 mb-1">Your country</label>
+                              <select
+                                value={stripeCountry}
+                                onChange={(e) => setStripeCountry(e.target.value)}
+                                className="w-full max-w-xs p-2 border border-amber-300 rounded-lg bg-white text-[#0D566C] text-sm focus:outline-none focus:ring-2 focus:ring-[#0D566C]/30"
+                                data-testid="select-stripe-country"
+                              >
+                                <option value="US">United States</option>
+                                <option value="CA">Canada</option>
+                                <option value="BR">Brazil</option>
+                                <option value="GB">United Kingdom</option>
+                                <option value="NL">Netherlands</option>
+                                <option value="PT">Portugal</option>
+                                <option value="GH">Ghana</option>
+                                <option value="FR">France</option>
+                                <option value="DE">Germany</option>
+                                <option value="ES">Spain</option>
+                                <option value="IT">Italy</option>
+                                <option value="IE">Ireland</option>
+                                <option value="AU">Australia</option>
+                                <option value="NZ">New Zealand</option>
+                                <option value="SG">Singapore</option>
+                                <option value="JP">Japan</option>
+                                <option value="IN">India</option>
+                                <option value="MX">Mexico</option>
+                                <option value="NG">Nigeria</option>
+                                <option value="KE">Kenya</option>
+                                <option value="ZA">South Africa</option>
+                                <option value="AE">United Arab Emirates</option>
+                              </select>
+                            </div>
+                          )}
                           <Button
                             onClick={handleStripeOnboarding}
                             disabled={loadingStripe}
