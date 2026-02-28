@@ -946,27 +946,20 @@ export default function DashboardCoach() {
                                 data-testid="select-stripe-country"
                               >
                                 <option value="US">United States</option>
+                                <option value="AU">Australia</option>
+                                <option value="BE">Belgium</option>
                                 <option value="CA">Canada</option>
-                                <option value="BR">Brazil</option>
-                                <option value="GB">United Kingdom</option>
-                                <option value="NL">Netherlands</option>
-                                <option value="PT">Portugal</option>
-                                <option value="GH">Ghana</option>
                                 <option value="FR">France</option>
                                 <option value="DE">Germany</option>
-                                <option value="ES">Spain</option>
-                                <option value="IT">Italy</option>
-                                <option value="IE">Ireland</option>
-                                <option value="AU">Australia</option>
-                                <option value="NZ">New Zealand</option>
-                                <option value="SG">Singapore</option>
                                 <option value="JP">Japan</option>
-                                <option value="IN">India</option>
                                 <option value="MX">Mexico</option>
-                                <option value="NG">Nigeria</option>
-                                <option value="KE">Kenya</option>
-                                <option value="ZA">South Africa</option>
-                                <option value="AE">United Arab Emirates</option>
+                                <option value="NL">Netherlands</option>
+                                <option value="PT">Portugal</option>
+                                <option value="SG">Singapore</option>
+                                <option value="ES">Spain</option>
+                                <option value="SE">Sweden</option>
+                                <option value="CH">Switzerland</option>
+                                <option value="GB">United Kingdom</option>
                               </select>
                             </div>
                           )}
