@@ -8023,6 +8023,7 @@ app.get("/api/stripe/connect/account-link/:coachId", async (req, res) => {
     }
 
     let accountId = coach.stripe_account_id;
+    const country = (req.query.country || "US").toString();
 
     // Verify existing account is still valid
     if (accountId) {
@@ -8043,8 +8044,10 @@ app.get("/api/stripe/connect/account-link/:coachId", async (req, res) => {
     }
 
     if (!accountId) {
+      console.log("[STRIPE CONNECT] Creating Express account for country:", country);
       const account = await stripe.accounts.create({
         type: 'express',
+        country: country.toUpperCase(),
         email: coach.email,
         capabilities: {
           card_payments: { requested: true },

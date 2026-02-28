@@ -8222,6 +8222,7 @@ Full terms available at: https://touchconnectpro.com/coach-agreement`;
 
       // If no account exists, create one
       let accountId = coach.stripe_account_id;
+      const country = (req.query.country as string) || "US";
 
       // Verify existing account is still valid
       if (accountId) {
@@ -8242,8 +8243,10 @@ Full terms available at: https://touchconnectpro.com/coach-agreement`;
       }
 
       if (!accountId) {
+        console.log("[STRIPE CONNECT] Creating Express account for country:", country);
         const account = await stripe.accounts.create({
           type: 'express',
+          country: country.toUpperCase(),
           email: coach.email,
           capabilities: {
             card_payments: { requested: true },
