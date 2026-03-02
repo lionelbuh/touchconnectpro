@@ -335,6 +335,18 @@ export default function Login() {
           dashboardPath = `${dashboardPath}?${params.toString()}`;
         }
         
+        try {
+          const apiBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "" : "https://touchconnectprowebswervice.onrender.com");
+          fetch(`${apiBase}/api/track-login`, {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${data.session?.access_token || ""}`
+            },
+            body: JSON.stringify({ email: userEmail, role: userRole }),
+          }).catch(() => {});
+        } catch {}
+        
         toast.success("Logged in successfully!");
         navigate(dashboardPath);
       }

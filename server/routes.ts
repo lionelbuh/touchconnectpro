@@ -506,6 +506,52 @@ export async function registerRoutes(
     });
   });
 
+  app.post("/api/track-login", async (req, res) => {
+    try {
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      if (!token) return res.status(401).json({ error: "Auth required" });
+      
+      const sb = getSupabaseClient();
+      if (!sb) return res.status(500).json({ error: "Database unavailable" });
+      
+      const { data: authData, error: authError } = await sb.auth.getUser(token);
+      if (authError || !authData?.user?.email) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+      
+      const now = new Date().toISOString();
+      const userEmail = authData.user.email.toLowerCase();
+      const { role } = req.body;
+      
+      const tableMap: Record<string, { table: string; emailCol: string }> = {
+        entrepreneur: { table: "ideas", emailCol: "entrepreneur_email" },
+        coach: { table: "coach_applications", emailCol: "email" },
+        mentor: { table: "mentor_applications", emailCol: "email" },
+        investor: { table: "investor_applications", emailCol: "email" },
+        trial_entrepreneur: { table: "trial_users", emailCol: "email" },
+      };
+      
+      const mapping = tableMap[role || ""];
+      if (mapping) {
+        const { error } = await sb
+          .from(mapping.table)
+          .update({ last_login_at: now })
+          .ilike(mapping.emailCol, userEmail);
+        
+        if (error) {
+          console.log(`[TRACK LOGIN] Warning: Could not update ${mapping.table}:`, error.message);
+        } else {
+          console.log(`[TRACK LOGIN] Updated last_login_at for ${userEmail} in ${mapping.table}`);
+        }
+      }
+      
+      res.json({ success: true });
+    } catch (err: any) {
+      console.error("[TRACK LOGIN] Error:", err.message);
+      res.json({ success: true });
+    }
+  });
+
   // Notify admin when someone completes Founder Focus quiz without registering
   app.post("/api/founder-focus-completed", async (req, res) => {
     console.log("[FOUNDER FOCUS] Quiz completed notification received");

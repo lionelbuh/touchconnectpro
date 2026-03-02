@@ -1,0 +1,5 @@
+ALTER TABLE ideas ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
+ALTER TABLE coach_applications ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
+ALTER TABLE mentor_applications ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
+ALTER TABLE investor_applications ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
+ALTER TABLE trial_users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;

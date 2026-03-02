@@ -61,6 +61,7 @@ interface CoachApplication {
  updated_at?: string;
  is_resubmitted?: boolean;
  stripe_account_id?: string | null;
+ last_login_at?: string | null;
  externalReputation?: {
  platform_name: string;
  average_rating: number;
@@ -107,6 +108,7 @@ interface EntrepreneurApplication {
  rejection_reason?: string;
  updated_at?: string;
  is_resubmitted?: boolean;
+ last_login_at?: string | null;
  [key: string]: any;
 }
 
@@ -459,6 +461,7 @@ export default function AdminDashboard() {
  is_resubmitted: c.is_resubmitted,
  is_disabled: c.is_disabled || false,
  stripe_account_id: c.stripe_account_id || null,
+ last_login_at: c.last_login_at || null,
  externalReputation: c.external_reputation || null
  }));
  setCoachApplications(mappedCoaches);
@@ -559,7 +562,8 @@ export default function AdminDashboard() {
  linkedin: baseData.linkedin || "",
  website: baseData.website || "",
  is_resubmitted: idea.is_resubmitted,
- is_disabled: idea.is_disabled || false
+ is_disabled: idea.is_disabled || false,
+ last_login_at: idea.last_login_at || null
  };
  });
  console.log("Mapped entrepreneurs:", entrepreneurs.length);
@@ -3340,6 +3344,12 @@ export default function AdminDashboard() {
  <p className="">{app.email}</p>
  </div>
  <div>
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">Last Connected</p>
+ <p className={app.last_login_at ? "" : "text-[#C0C0C0]"} data-testid={`text-entrepreneur-last-login-${app.id}`}>
+ {app.last_login_at ? new Date(app.last_login_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Never"}
+ </p>
+ </div>
+ <div>
  <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">LinkedIn</p>
  {app.linkedin ? (
  <a href={app.linkedin.startsWith('http') ? app.linkedin : `https://${app.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-[#FF6B5C] hover:text-[#e55a4d] truncate block">
@@ -4053,6 +4063,12 @@ export default function AdminDashboard() {
  <div>
  <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">Email</p>
  <p className="">{app.email}</p>
+ </div>
+ <div>
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">Last Connected</p>
+ <p className={app.last_login_at ? "" : "text-[#C0C0C0]"} data-testid={`text-coach-last-login-${app.id}`}>
+ {app.last_login_at ? new Date(app.last_login_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Never"}
+ </p>
  </div>
  <div>
  <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">Expertise</p>
