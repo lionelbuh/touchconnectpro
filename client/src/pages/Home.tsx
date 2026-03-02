@@ -17,7 +17,7 @@ export default function Home() {
             Your Next Chapter Starts Here.<br className="hidden md:inline" /> Because Waiting Isn't a Strategy.
           </h1>
           <p className="text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed" style={{ color: "#4A4A4A" }}>
-            Turn your ideas into action with clarity and guidance. Structure keeps you focused. A mentor keeps it personal, creative, and actionable. Whether you're starting your first business, unemployed, or ready for a new professional direction, TouchConnectPro provides structured mentorship and real-world guidance to help you move forward with clarity.
+            Turn your ideas into action with clarity and guidance. Structure keeps you focused. A mentor keeps it personal, creative, and actionable. <strong>Whether you're starting your first business, unemployed, or ready for a new professional direction</strong>, TouchConnectPro provides structured mentorship and real-world guidance to help you move forward with clarity.
           </p>
           <Link href="/founder-focus">
             <Button
