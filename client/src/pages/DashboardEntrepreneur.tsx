@@ -2381,7 +2381,7 @@ export default function DashboardEntrepreneur() {
             <label className="block text-sm font-semibold text-[#0D566C] mb-2">1. What are you building? *</label>
             <input
              type="text"
-             placeholder="e.g. A platform that helps freelancers manage their invoices"
+             placeholder="e.g. A platform that helps freelancers manage their invoices (or 'Still figuring it out')"
              value={snapshotAnswers.building}
              onChange={(e) => setSnapshotAnswers(prev => ({ ...prev, building: e.target.value }))}
              className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30"
@@ -2392,6 +2392,7 @@ export default function DashboardEntrepreneur() {
             <label className="block text-sm font-semibold text-[#0D566C] mb-2">2. What stage are you at? *</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
              {[
+              { value: "exploring", label: "Exploring / Not Sure Yet" },
               { value: "just-an-idea", label: "Just an Idea" },
               { value: "mvp-or-prototype", label: "MVP / Prototype" },
               { value: "website-live", label: "Website Live" },
@@ -2434,6 +2435,8 @@ export default function DashboardEntrepreneur() {
               { value: "structure-offer", label: "Structuring My Offer" },
               { value: "focus-execution", label: "Focus & Execution" },
               { value: "funding-finance", label: "Funding / Financial Structure" },
+              { value: "no-idea-yet", label: "I Don't Have an Idea Yet" },
+              { value: "need-income-fast", label: "I Need to Generate Income Fast" },
               { value: "overwhelmed", label: "Feeling Overwhelmed" },
               { value: "other", label: "Other" }
              ].map((opt) => (
@@ -2468,6 +2471,7 @@ export default function DashboardEntrepreneur() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
              {[
               { value: "no-validation", label: "No Validation Yet" },
+              { value: "researching", label: "Researching Ideas & Markets" },
               { value: "early-feedback", label: "Early Feedback from Potential Users" },
               { value: "beta-users", label: "Beta Users" },
               { value: "first-paying", label: "First Paying Clients" },
@@ -2492,7 +2496,7 @@ export default function DashboardEntrepreneur() {
            <div>
             <label className="block text-sm font-semibold text-[#0D566C] mb-2">6. What's your #1 goal for the next 90 days? *</label>
             <textarea
-             placeholder="e.g. Launch my MVP, get my first 10 customers, raise a pre-seed round..."
+             placeholder="e.g. Launch my MVP, get my first 10 customers, find a viable business idea, start earning income..."
              value={snapshotAnswers.ninetyDayGoal}
              onChange={(e) => setSnapshotAnswers(prev => ({ ...prev, ninetyDayGoal: e.target.value }))}
              rows={3}
@@ -2505,12 +2509,14 @@ export default function DashboardEntrepreneur() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
              {[
               "I need help clarifying my idea",
+              "I need to figure out what business to start",
               "I want to find a co-founder",
               "I need funding guidance",
               "I want coaching or mentorship",
               "I need help with my pitch deck",
               "I want to connect with other founders",
               "I need help with product development",
+              "I need to start earning income quickly",
               "Other"
              ].map((option) => (
               <button
