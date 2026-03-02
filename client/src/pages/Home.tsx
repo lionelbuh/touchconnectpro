@@ -14,10 +14,10 @@ export default function Home() {
 
         <div className="container relative z-10 px-4 text-center max-w-4xl mx-auto">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-snug tracking-tight mb-6" style={{ color: "#0D566C" }} data-testid="text-hero-headline">
-            AI helps organize your thoughts.<br className="hidden md:inline" /> Mentors help you make them real.
+            Your Next Chapter Starts Here.<br className="hidden md:inline" /> Because Waiting Isn't a Strategy.
           </h1>
           <p className="text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed" style={{ color: "#4A4A4A" }}>
-            Turn your ideas into action with clarity and guidance. AI structures your ideas, but your mentor keeps them creative, personal, and actionable.
+            Turn your ideas into action with clarity and guidance. Structure keeps you focused. A mentor keeps it personal, creative, and actionable. <strong>Whether you're starting your first business, unemployed, or ready for a new professional direction</strong>, TouchConnectPro provides structured mentorship and real-world guidance to help you move forward with clarity.
           </p>
           <Link href="/founder-focus">
             <Button

@@ -13,7 +13,7 @@ export const SEGMENTATION_QUESTION = {
   options: [
     { text: "I am building my own business", track: "founder" as TrackType, label: "Founder" },
     { text: "I run a service business (consultant, agency, freelancer, coach)", track: "consultant" as TrackType, label: "Consultant" },
-    { text: "I am employed but want to start something", track: "future_founder" as TrackType, label: "Future Founder" },
+    { text: "I'm employed/unemployed but want to start something", track: "future_founder" as TrackType, label: "Future Founder" },
     { text: "I am exploring ideas", track: "founder" as TrackType, label: "Founder" },
   ],
 };
@@ -185,11 +185,20 @@ export const TRACK_QUESTIONS: Record<TrackType, QuizQuestion[]> = {
   ],
   future_founder: [
     {
+      question: "What best describes your current situation?",
+      answers: [
+        { text: "I'm employed but dreaming of building my own thing", category: "Strategy" },
+        { text: "I'm between jobs and want to use this time to start something", category: "Sales" },
+        { text: "I was recently laid off and ready to bet on myself", category: "Operations" },
+        { text: "I'm unemployed and need to create my own opportunity", category: "Execution" },
+      ],
+    },
+    {
       question: "What is the main reason you want to start something of your own?",
       answers: [
         { text: "I want more freedom to shape my own direction", category: "Strategy" },
-        { text: "I want to earn more and build real financial independence", category: "Sales" },
-        { text: "I want to escape the corporate grind and work on my terms", category: "Operations" },
+        { text: "I want to earn income on my own terms and build financial independence", category: "Sales" },
+        { text: "I want to stop depending on employers and take control of my career", category: "Operations" },
         { text: "I have an idea burning inside me that I need to pursue", category: "Execution" },
       ],
     },
@@ -197,8 +206,8 @@ export const TRACK_QUESTIONS: Record<TrackType, QuizQuestion[]> = {
       question: "What is stopping you from taking the first real step?",
       answers: [
         { text: "I don't know where to start or what business to build", category: "Strategy" },
-        { text: "I'm worried I won't be able to make money from it", category: "Sales" },
-        { text: "I don't have enough time alongside my current job", category: "Operations" },
+        { text: "I'm worried I won't be able to make money from it fast enough", category: "Sales" },
+        { text: "I don't have the time, savings, or resources to get started", category: "Operations" },
         { text: "Fear of failure and what others might think", category: "Execution" },
       ],
     },
@@ -221,30 +230,21 @@ export const TRACK_QUESTIONS: Record<TrackType, QuizQuestion[]> = {
       ],
     },
     {
-      question: "How much time per week could you realistically invest?",
+      question: "How urgently do you need to generate income?",
       answers: [
-        { text: "Less than 2 hours — I need to figure things out first", category: "Strategy" },
-        { text: "2-5 hours — but only if I see a clear path to revenue", category: "Sales" },
-        { text: "5-10 hours — but I need structure and a plan", category: "Operations" },
-        { text: "10+ hours — I'm ready, I just need to commit", category: "Execution" },
+        { text: "Not urgent — I have a job or savings, I'm planning ahead", category: "Strategy" },
+        { text: "Within the next few months — I need something real soon", category: "Sales" },
+        { text: "Very urgent — I need to replace my income as soon as possible", category: "Operations" },
+        { text: "I'm ready to go all-in right now, I just need direction", category: "Execution" },
       ],
     },
     {
       question: "What scares you most about starting?",
       answers: [
-        { text: "Picking the wrong idea and wasting time", category: "Strategy" },
-        { text: "Not making enough money to justify leaving my job", category: "Sales" },
-        { text: "Not being able to manage everything on top of life", category: "Operations" },
+        { text: "Picking the wrong idea and wasting time I don't have", category: "Strategy" },
+        { text: "Not making enough money to support myself or my family", category: "Sales" },
+        { text: "Not being able to manage everything on top of life's pressures", category: "Operations" },
         { text: "Actually putting myself out there and possibly failing", category: "Execution" },
-      ],
-    },
-    {
-      question: "Do you feel you have people around you who understand your ambition?",
-      answers: [
-        { text: "No, and I feel like I'm figuring this out alone", category: "Strategy" },
-        { text: "Some, but no one who can help me with the business side", category: "Sales" },
-        { text: "Yes, but I need more practical support and accountability", category: "Operations" },
-        { text: "I have supporters but I still can't get myself to start", category: "Execution" },
       ],
     },
     {
@@ -252,7 +252,7 @@ export const TRACK_QUESTIONS: Record<TrackType, QuizQuestion[]> = {
       answers: [
         { text: "I need a clear, validated idea I believe in", category: "Strategy" },
         { text: "I need proof that I can actually make money from it", category: "Sales" },
-        { text: "I need a step-by-step plan that fits my schedule", category: "Operations" },
+        { text: "I need a step-by-step plan that fits my situation right now", category: "Operations" },
         { text: "I just need to stop overthinking and take the leap", category: "Execution" },
       ],
     },
