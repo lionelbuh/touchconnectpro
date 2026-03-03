@@ -5604,10 +5604,12 @@ app.post("/api/mentor-questions/admin-initiate", async (req, res) => {
     }
 
     try {
-      if (resend) {
+      const resendData = await getResendClient();
+      if (resendData) {
+        const { client: resendClient, fromEmail } = resendData;
         const FRONTEND_URL = process.env.FRONTEND_URL || "https://touchconnectpro.com";
-        await resend.emails.send({
-          from: RESEND_FROM,
+        await resendClient.emails.send({
+          from: fromEmail,
           to: entrepreneurEmail,
           subject: `${subject} - TouchConnectPro`,
           html: `
