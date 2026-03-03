@@ -64,8 +64,47 @@ export default function Home() {
         </div>
       </section>
 
+      {/* What Is TouchConnectPro Section */}
+      <section className="py-20 md:py-28" style={{ backgroundColor: "#F3F3F3" }} data-testid="section-what-is-tcp">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="text-center mb-10">
+            <div className="w-12 h-12 rounded-xl mx-auto flex items-center justify-center mb-5" style={{ backgroundColor: "rgba(245,197,66,0.15)" }}>
+              <Target className="h-6 w-6" style={{ color: "#F5C542" }} />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6" style={{ color: "#0D566C" }}>
+              What Is TouchConnectPro?
+            </h2>
+          </div>
+          <div className="space-y-6 text-lg leading-relaxed max-w-3xl mx-auto" style={{ color: "#4A4A4A" }}>
+            <p>
+              TouchConnectPro is where ideas stop being ideas.
+            </p>
+            <p>
+              We connect early-stage founders with experienced mentors who have actually built businesses and understand what execution really takes.
+            </p>
+            <p>
+              From validation to launch to growth, you get structured guidance that turns momentum into measurable progress.
+            </p>
+          </div>
+          <div className="mt-12 grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+            {[
+              { num: "1", text: "Validate your idea with real feedback" },
+              { num: "2", text: "Build with structured mentor guidance" },
+              { num: "3", text: "Grow with confidence and clarity" },
+            ].map((step) => (
+              <div key={step.num} className="flex items-center gap-3 bg-white rounded-xl p-4" style={{ boxShadow: "0 2px 10px rgba(224,224,224,0.5)" }}>
+                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 font-bold text-sm" style={{ backgroundColor: "rgba(245,197,66,0.2)", color: "#0D566C" }}>
+                  {step.num}
+                </div>
+                <p className="text-sm font-medium" style={{ color: "#4A4A4A" }}>{step.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features / How It Works Section */}
-      <section className="py-20 md:py-28" style={{ backgroundColor: "#F3F3F3" }} data-testid="section-features">
+      <section className="py-20 md:py-28" style={{ backgroundColor: "#FAF9F7" }} data-testid="section-features">
         <div className="container px-4 mx-auto max-w-5xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-4" style={{ color: "#0D566C" }}>
@@ -145,44 +184,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* What Is TouchConnectPro Section */}
-      <section className="py-20 md:py-28" style={{ backgroundColor: "#F3F3F3" }} data-testid="section-what-is-tcp">
-        <div className="container px-4 mx-auto max-w-4xl">
-          <div className="text-center mb-10">
-            <div className="w-12 h-12 rounded-xl mx-auto flex items-center justify-center mb-5" style={{ backgroundColor: "rgba(245,197,66,0.15)" }}>
-              <Target className="h-6 w-6" style={{ color: "#F5C542" }} />
-            </div>
-            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6" style={{ color: "#0D566C" }}>
-              What Is TouchConnectPro?
-            </h2>
-          </div>
-          <div className="space-y-6 text-lg leading-relaxed max-w-3xl mx-auto" style={{ color: "#4A4A4A" }}>
-            <p>
-              TouchConnectPro is a mentorship platform designed to support early stage entrepreneurs through structured, real world guidance.
-            </p>
-            <p>
-              We help founders move from idea to execution by connecting them with vetted mentors who understand the challenges of building a business from the ground up.
-            </p>
-            <p>
-              Whether you are validating an idea, launching a product, or preparing for growth, TouchConnectPro gives you access to experience that accelerates progress.
-            </p>
-          </div>
-          <div className="mt-12 grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-            {[
-              { num: "1", text: "Validate your idea with real feedback" },
-              { num: "2", text: "Build with structured mentor guidance" },
-              { num: "3", text: "Grow with confidence and clarity" },
-            ].map((step) => (
-              <div key={step.num} className="flex items-center gap-3 bg-white rounded-xl p-4" style={{ boxShadow: "0 2px 10px rgba(224,224,224,0.5)" }}>
-                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 font-bold text-sm" style={{ backgroundColor: "rgba(245,197,66,0.2)", color: "#0D566C" }}>
-                  {step.num}
-                </div>
-                <p className="text-sm font-medium" style={{ color: "#4A4A4A" }}>{step.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Call to Action Section */}
       <section className="py-20 md:py-28" style={{ backgroundColor: "#0D566C" }} data-testid="section-cta">
