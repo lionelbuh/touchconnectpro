@@ -21,7 +21,7 @@ export default function Home() {
         setGroupIndex((prev) => (prev + 1) % rotatingGroups.length);
         setVisible(true);
       }, 600);
-    }, 3500);
+    }, 4500);
     return () => clearInterval(interval);
   }, []);
 
