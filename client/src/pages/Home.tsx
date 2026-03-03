@@ -1,8 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Target, BarChart3, BookOpen, Eye, Compass } from "lucide-react";
 import { Link } from "wouter";
+import { useState, useEffect } from "react";
+
+const rotatingGroups = [
+  ["Structured support.", "Experienced mentors.", "Real progress."],
+  ["First-time founders.", "Side-hustlers ready to commit.", "Talents ready for a new direction."],
+  ["Clarity first.", "Action next.", "Results that matter."],
+  ["Early founders.", "Career shifters.", "Unemployed but not without ambition."],
+];
 
 export default function Home() {
+  const [groupIndex, setGroupIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setGroupIndex((prev) => (prev + 1) % rotatingGroups.length);
+        setVisible(true);
+      }, 600);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -13,12 +35,21 @@ export default function Home() {
         </div>
 
         <div className="container relative z-10 px-4 text-center max-w-4xl mx-auto">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-snug tracking-tight mb-6" style={{ color: "#0D566C" }} data-testid="text-hero-headline">
-            Your Next Chapter Starts Here.<br className="hidden md:inline" /> Because Waiting Isn't a Strategy.
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-snug tracking-tight mb-8" style={{ color: "#0D566C" }} data-testid="text-hero-headline">
+            Because waiting is not a strategy.
           </h1>
-          <p className="text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed" style={{ color: "#4A4A4A" }}>
-            Turn your ideas into action with clarity and guidance. Structure keeps you focused. A mentor keeps it personal, creative, and actionable. <strong>Whether you're starting your first business, unemployed, or ready for a new professional direction</strong>, TouchConnectPro provides structured mentorship and real-world guidance to help you move forward with clarity.
-          </p>
+          <div className="min-h-[120px] flex items-center justify-center mb-10" data-testid="text-hero-rotating">
+            <div
+              className="transition-all duration-500 ease-in-out"
+              style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(12px)" }}
+            >
+              {rotatingGroups[groupIndex].map((line, i) => (
+                <p key={i} className="text-xl md:text-2xl font-medium leading-relaxed" style={{ color: "#4A4A4A" }}>
+                  {line}
+                </p>
+              ))}
+            </div>
+          </div>
           <Link href="/founder-focus">
             <Button
               size="lg"
