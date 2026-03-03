@@ -370,6 +370,11 @@ export default function AdminDashboard() {
  const [mentorQuestionReply, setMentorQuestionReply] = useState<{[key: string]: string}>({});
  const [generatingDraft, setGeneratingDraft] = useState<{[key: string]: boolean}>({});
  const [sendingReply, setSendingReply] = useState<{[key: string]: boolean}>({});
+ const [adminContactEmail, setAdminContactEmail] = useState("");
+ const [adminContactMessage, setAdminContactMessage] = useState("");
+ const [adminContactSubject, setAdminContactSubject] = useState("");
+ const [sendingAdminContact, setSendingAdminContact] = useState(false);
+ const [showAdminContactForm, setShowAdminContactForm] = useState(false);
 
  const handleResendInvite = async (userId: string, userType: "entrepreneur" | "mentor" | "coach" | "investor", email: string) => {
  setResendingInvite(userId);
@@ -6233,14 +6238,131 @@ export default function AdminDashboard() {
  <h2 className="text-2xl font-display font-bold mb-2">Ask a Mentor - Community Questions</h2>
  <p className="text-[#8A8A8A] mb-6">Questions from community members who don't have an assigned mentor. Review, generate AI answers, and respond.</p>
  
- <div className="flex gap-2 mb-6">
+ <div className="flex gap-2 mb-6 flex-wrap">
  <Button variant="outline" size="sm" onClick={() => {}} className="bg-purple-100 text-[#4B3F72] border-purple-300" data-testid="button-mq-filter-pending">
  Pending ({mentorQuestions.filter(q => q.status === "pending").length})
  </Button>
  <Button variant="outline" size="sm" onClick={() => {}} className="text-green-600 border-green-300" data-testid="button-mq-filter-answered">
  Answered ({mentorQuestions.filter(q => q.status === "answered").length})
  </Button>
+ <Button
+ variant={showAdminContactForm ? "default" : "outline"}
+ size="sm"
+ onClick={() => setShowAdminContactForm(!showAdminContactForm)}
+ className={showAdminContactForm ? "bg-[#FF6B5C] hover:bg-[#e55a4d]" : "text-[#FF6B5C] border-[#FF6B5C]"}
+ data-testid="button-admin-contact-member"
+ >
+ <Send className="mr-2 h-4 w-4" /> Contact a Community Member
+ </Button>
  </div>
+
+ {showAdminContactForm && (
+ <Card className="mb-6 border-l-4 border-l-[#FF6B5C]">
+ <CardHeader>
+ <CardTitle className="text-lg flex items-center gap-2">
+ <Send className="h-5 w-5 text-[#FF6B5C]" />
+ Send a Message to a Community Member
+ </CardTitle>
+ <CardDescription>Start a conversation with a community member. They will receive an email notification and see the message in their dashboard.</CardDescription>
+ </CardHeader>
+ <CardContent className="space-y-4">
+ <div>
+ <label className="block text-sm font-semibold text-[#0D566C] mb-2">Select Community Member *</label>
+ <select
+ value={adminContactEmail}
+ onChange={(e) => setAdminContactEmail(e.target.value)}
+ className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]/30"
+ data-testid="select-admin-contact-member"
+ >
+ <option value="">Choose a community member...</option>
+ {entrepreneurApplications
+ .filter(app => app.status === "pre-approved" && !app.is_disabled)
+ .sort((a, b) => (a.fullName || "").localeCompare(b.fullName || ""))
+ .map((app) => (
+ <option key={app.id} value={app.email}>
+ {app.fullName || "Unknown"} — {app.email}
+ </option>
+ ))}
+ </select>
+ </div>
+ <div>
+ <label className="block text-sm font-semibold text-[#0D566C] mb-2">Subject *</label>
+ <input
+ type="text"
+ value={adminContactSubject}
+ onChange={(e) => setAdminContactSubject(e.target.value)}
+ placeholder="e.g. A quick note from your TouchConnectPro mentor team"
+ className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]/30"
+ data-testid="input-admin-contact-subject"
+ />
+ </div>
+ <div>
+ <label className="block text-sm font-semibold text-[#0D566C] mb-2">Message *</label>
+ <textarea
+ value={adminContactMessage}
+ onChange={(e) => setAdminContactMessage(e.target.value)}
+ placeholder="Write your message to the community member..."
+ rows={5}
+ className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#FF6B5C]/30 resize-none"
+ data-testid="textarea-admin-contact-message"
+ />
+ </div>
+ <div className="flex justify-end">
+ <Button
+ className="bg-[#FF6B5C] hover:bg-[#e55a4d]"
+ disabled={!adminContactEmail || !adminContactMessage.trim() || !adminContactSubject.trim() || sendingAdminContact}
+ onClick={async () => {
+ setSendingAdminContact(true);
+ try {
+ const selectedMember = entrepreneurApplications.find(a => a.email === adminContactEmail);
+ const adminToken = localStorage.getItem("tcp_adminToken");
+ const response = await fetch(`${API_BASE_URL}/api/mentor-questions/admin-initiate`, {
+ method: "POST",
+ headers: { 
+ "Content-Type": "application/json",
+ "Authorization": `Bearer ${adminToken}`
+ },
+ body: JSON.stringify({
+ entrepreneurEmail: adminContactEmail,
+ entrepreneurName: selectedMember?.fullName || "Community Member",
+ subject: adminContactSubject,
+ message: adminContactMessage
+ })
+ });
+ if (response.ok) {
+ toast.success(`Message sent to ${selectedMember?.fullName || adminContactEmail}`);
+ setAdminContactEmail("");
+ setAdminContactMessage("");
+ setAdminContactSubject("");
+ setShowAdminContactForm(false);
+ const refreshResponse = await fetch(`${API_BASE_URL}/api/mentor-questions`);
+ if (refreshResponse.ok) {
+ const data = await refreshResponse.json();
+ setMentorQuestions(data.questions || []);
+ }
+ } else {
+ const err = await response.json();
+ toast.error(err.error || "Failed to send message");
+ }
+ } catch (err) {
+ console.error("Error sending admin contact:", err);
+ toast.error("Failed to send message");
+ } finally {
+ setSendingAdminContact(false);
+ }
+ }}
+ data-testid="button-send-admin-contact"
+ >
+ {sendingAdminContact ? (
+ <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
+ ) : (
+ <><Send className="mr-2 h-4 w-4" /> Send Message</>
+ )}
+ </Button>
+ </div>
+ </CardContent>
+ </Card>
+ )}
 
  {mentorQuestions.length === 0 ? (
  <Card>
@@ -6252,7 +6374,7 @@ export default function AdminDashboard() {
  ) : (
  <div className="space-y-6">
  {mentorQuestions.map((q: any, idx: number) => (
- <Card key={q.id || idx} className={`border-l-4 ${q.status === "answered" ? "border-l-green-500" : "border-l-purple-500"}`}>
+ <Card key={q.id || idx} className={`border-l-4 ${q.question?.startsWith("[Message from TouchConnectPro Team]") ? "border-l-[#FF6B5C]" : q.status === "answered" ? "border-l-green-500" : "border-l-purple-500"}`}>
  <CardHeader>
  <div className="flex justify-between items-start">
  <div>
@@ -6260,6 +6382,9 @@ export default function AdminDashboard() {
  <p className="text-sm text-[#8A8A8A]">{q.entrepreneur_email}</p>
  </div>
  <div className="flex items-center gap-2">
+ {q.question?.startsWith("[Message from TouchConnectPro Team]") && (
+ <Badge className="bg-[#FF6B5C]">Admin Initiated</Badge>
+ )}
  <Badge className={q.status === "answered" ? "bg-green-600" : "bg-purple-600"}>
  {q.status === "answered" ? "Answered" : "Pending"}
  </Badge>
@@ -6270,9 +6395,11 @@ export default function AdminDashboard() {
  </div>
  </CardHeader>
  <CardContent className="space-y-4">
- <div className="bg-[rgba(75,63,114,0.06)] p-4 rounded-lg">
- <p className="text-xs font-semibold text-[#4B3F72] uppercase mb-1">Question</p>
- <p className=" whitespace-pre-wrap">{q.question}</p>
+ <div className={`${q.question?.startsWith("[Message from TouchConnectPro Team]") ? "bg-[rgba(255,107,92,0.06)]" : "bg-[rgba(75,63,114,0.06)]"} p-4 rounded-lg`}>
+ <p className={`text-xs font-semibold ${q.question?.startsWith("[Message from TouchConnectPro Team]") ? "text-[#FF6B5C]" : "text-[#4B3F72]"} uppercase mb-1`}>
+ {q.question?.startsWith("[Message from TouchConnectPro Team]") ? "Admin Message" : "Question"}
+ </p>
+ <p className="whitespace-pre-wrap">{q.question?.startsWith("[Message from TouchConnectPro Team]") ? q.question.replace("[Message from TouchConnectPro Team] ", "") : q.question}</p>
  </div>
 
  {q.ideaData && (

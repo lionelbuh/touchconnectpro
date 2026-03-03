@@ -3095,6 +3095,130 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/mentor-questions/admin-initiate", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) {
+        return res.status(500).json({ error: "Supabase not configured" });
+      }
+
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace("Bearer ", "");
+      if (!token) {
+        return res.status(401).json({ error: "Admin authentication required" });
+      }
+
+      const { data: session, error: sessionError } = await (client
+        .from("admin_sessions")
+        .select("*")
+        .eq("token", token)
+        .gt("expires_at", new Date().toISOString())
+        .single() as any);
+
+      if (sessionError || !session) {
+        return res.status(401).json({ error: "Invalid or expired admin token" });
+      }
+
+      const { entrepreneurEmail, entrepreneurName, subject, message } = req.body;
+      if (!entrepreneurEmail || !message?.trim() || !subject?.trim()) {
+        return res.status(400).json({ error: "Email, subject, and message are required" });
+      }
+
+      console.log("[ADMIN INITIATE] Sending message to:", entrepreneurEmail, "by admin:", session.admin_email || "unknown");
+
+      const { data, error } = await (client
+        .from("mentor_questions")
+        .insert({
+          entrepreneur_email: entrepreneurEmail,
+          entrepreneur_name: entrepreneurName || "Community Member",
+          question: `[Message from TouchConnectPro Team] ${subject}`,
+          status: "answered",
+          created_at: new Date().toISOString(),
+          admin_reply: message,
+          replied_at: new Date().toISOString(),
+          ai_draft: null,
+          is_read_by_admin: true,
+          initiated_by: "admin"
+        })
+        .select() as any);
+
+      if (error) {
+        console.error("[ADMIN INITIATE] Error:", error);
+
+        const { data: data2, error: error2 } = await (client
+          .from("mentor_questions")
+          .insert({
+            entrepreneur_email: entrepreneurEmail,
+            entrepreneur_name: entrepreneurName || "Community Member",
+            question: `[Message from TouchConnectPro Team] ${subject}`,
+            status: "answered",
+            created_at: new Date().toISOString(),
+            admin_reply: message,
+            replied_at: new Date().toISOString(),
+            ai_draft: null,
+            is_read_by_admin: true
+          })
+          .select() as any);
+
+        if (error2) {
+          console.error("[ADMIN INITIATE] Retry error:", error2);
+          return res.status(500).json({ error: error2.message });
+        }
+      }
+
+      try {
+        const resendData = await getResendClient();
+        if (resendData) {
+          const { client: resend, fromEmail } = resendData;
+          const FRONTEND_URL = process.env.FRONTEND_URL || (process.env.NODE_ENV === "development" ? "http://localhost:5000" : "https://touchconnectpro.com");
+          await resend.emails.send({
+            from: fromEmail,
+            to: entrepreneurEmail,
+            subject: `${subject} - TouchConnectPro`,
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #4A4A4A; margin: 0; padding: 0; background-color: #FAF9F7; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                </style>
+              </head>
+              <body style="background-color: #FAF9F7;">
+                <div class="container">
+                  <div style="background: linear-gradient(135deg, #0D566C, #0a4557); color: white; padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+                    <h1 style="margin: 0; font-size: 22px;">Message from TouchConnectPro</h1>
+                  </div>
+                  <div style="background: #FFFFFF; padding: 24px; border-radius: 0 0 16px 16px;">
+                    <p>Hi ${entrepreneurName || "there"},</p>
+                    <p>You have a new message from the TouchConnectPro team:</p>
+                    <div style="background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 16px; margin: 16px 0; border-radius: 8px;">
+                      <p style="margin: 0; white-space: pre-wrap;">${message}</p>
+                    </div>
+                    <a href="${FRONTEND_URL}/login" style="display: inline-block; background-color: #FF6B5C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: 600;">View in Your Dashboard</a>
+                    <p style="margin-top: 20px; color: #8A8A8A; font-size: 14px;">We're here to help you succeed.</p>
+                  </div>
+                  <div style="text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px;">
+                    <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `
+          });
+          console.log("[ADMIN INITIATE] Email sent to:", entrepreneurEmail);
+        }
+      } catch (emailError: any) {
+        console.error("[ADMIN INITIATE] Failed to send email:", emailError.message);
+      }
+
+      return res.json({ success: true });
+    } catch (error: any) {
+      console.error("[ADMIN INITIATE] Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/mentor-questions/:id/generate-draft", async (req, res) => {
     try {
       const client = getSupabaseClient();

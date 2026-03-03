@@ -2026,7 +2026,7 @@ export default function DashboardEntrepreneur() {
    { id: "purchases", label: "My Purchases", icon: <ShoppingCart className="h-4 w-4" />, badge: coachPurchases.length > 0 ? <span className="bg-green-100 text-green-600 text-xs px-2 py-0.5 rounded-full">{coachPurchases.length}</span> : undefined },
    { id: "notes", label: "Mentor Notes", icon: <ClipboardList className="h-4 w-4" />, badge: mentorNotes.length > 0 ? <span className="bg-[#F3F3F3] text-[#FF6B5C] text-xs px-2 py-0.5 rounded-full">{mentorNotes.length}</span> : undefined },
    { id: "messages", label: "Messages", icon: <MessageSquare className="h-4 w-4" />, badge: unreadMessageCount > 0 ? <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{unreadMessageCount}</span> : undefined },
-   ...(ideaSubmitted ? [{ id: "ask-mentor", label: "Ask a Mentor", icon: <HelpCircle className="h-4 w-4" />, badge: mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length > 0 ? <span className="bg-emerald-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length}</span> : undefined }] : []),
+   ...((ideaSubmitted || mentorQuestions.length > 0) ? [{ id: "ask-mentor", label: "Ask a Mentor", icon: <HelpCircle className="h-4 w-4" />, badge: mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length > 0 ? <span className="bg-emerald-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length}</span> : undefined }] : []),
    { id: "profile", label: "Profile", icon: <Settings className="h-4 w-4" /> },
   ];
 
@@ -4264,9 +4264,13 @@ export default function DashboardEntrepreneur() {
                  {q.created_at ? new Date(q.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : ""}
                 </span>
                </div>
-               <div className="bg-purple-50 p-4 rounded-lg">
-                <p className="text-xs font-semibold text-purple-600 uppercase mb-1">Your Question</p>
-                <p className="text-[#0D566C] whitespace-pre-wrap">{q.question}</p>
+               <div className={`${q.question?.startsWith("[Message from TouchConnectPro Team]") ? "bg-blue-50" : "bg-purple-50"} p-4 rounded-lg`}>
+                <p className={`text-xs font-semibold ${q.question?.startsWith("[Message from TouchConnectPro Team]") ? "text-blue-600" : "text-purple-600"} uppercase mb-1`}>
+                 {q.question?.startsWith("[Message from TouchConnectPro Team]") ? "Message from Your Mentor Team" : "Your Question"}
+                </p>
+                <p className="text-[#0D566C] whitespace-pre-wrap">
+                 {q.question?.startsWith("[Message from TouchConnectPro Team]") ? q.question.replace("[Message from TouchConnectPro Team] ", "") : q.question}
+                </p>
                </div>
               </div>
              </div>
