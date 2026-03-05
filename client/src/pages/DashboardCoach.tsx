@@ -951,6 +951,7 @@ export default function DashboardCoach() {
                                 <option value="CA">Canada</option>
                                 <option value="FR">France</option>
                                 <option value="DE">Germany</option>
+                                <option value="IT">Italy</option>
                                 <option value="JP">Japan</option>
                                 <option value="MX">Mexico</option>
                                 <option value="NL">Netherlands</option>
