@@ -52,7 +52,7 @@ export default function Home() {
             Built for founders who are tired of figuring it out alone.
           </h1>
           <p className="text-lg md:text-xl mb-6 max-w-2xl mx-auto" style={{ color: "#4A4A4A" }}>
-            Find out where you actually stand, what's holding you back, and what to do next — in 5 minutes.
+            Find out where you actually stand, what's holding you back, and what to do next, in 5 minutes.
           </p>
           <div className="min-h-[100px] flex items-center justify-center mb-8" data-testid="text-hero-rotating">
             <div
@@ -122,7 +122,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-6 mb-10 max-w-3xl mx-auto">
             {[
-              { title: "See your blind spots", desc: "Find out what's really holding you back — not what you think is." },
+              { title: "See your blind spots", desc: "Find out what's really holding you back, not what you think is." },
               { title: "Get a personalized snapshot", desc: "Your score breaks down clarity, readiness, and next steps in plain language." },
               { title: "Know what to do next", desc: "No vague advice. You get a specific starting point based on your answers." },
             ].map((item, i) => (
