@@ -1,13 +1,26 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Target, BarChart3, BookOpen, Eye, Compass } from "lucide-react";
+import { ArrowRight, Target, BarChart3, BookOpen, Eye, Compass, CheckCircle, Quote } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 
 const rotatingGroups = [
-  ["Structured support.", "Experienced mentors.", "Real progress."],
+  ["No more guessing.", "No more going in circles.", "No more doing it alone."],
   ["First-time founders.", "Side-hustlers ready to commit.", "Talents ready for a new direction."],
   ["Clarity first.", "Action next.", "Results that matter."],
-  ["Early founders.", "Career shifters.", "Unemployed but not without ambition."],
+  ["Career changers.", "Aspiring entrepreneurs.", "People ready to start."],
+];
+
+const founderQuotes = [
+  {
+    quote: "I had the idea for months but no clue where to start. The Focus Score gave me a clear picture in five minutes.",
+    name: "Jason M.",
+    role: "First-time founder",
+  },
+  {
+    quote: "I thought I was further along than I was. The diagnostic showed me exactly what I was missing before I wasted more time.",
+    name: "Priya K.",
+    role: "Side-hustle to startup",
+  },
 ];
 
 export default function Home() {
@@ -35,16 +48,19 @@ export default function Home() {
         </div>
 
         <div className="container relative z-10 px-4 text-center max-w-4xl mx-auto">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-snug tracking-tight mb-8" style={{ color: "#0D566C" }} data-testid="text-hero-headline">
-            Because waiting is not a strategy.
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-snug tracking-tight mb-4" style={{ color: "#0D566C" }} data-testid="text-hero-headline">
+            Built for founders who are tired of figuring it out alone.
           </h1>
-          <div className="min-h-[120px] flex items-center justify-center mb-10" data-testid="text-hero-rotating">
+          <p className="text-lg md:text-xl mb-6 max-w-2xl mx-auto" style={{ color: "#4A4A4A" }}>
+            Find out where you actually stand, what's holding you back, and what to do next, in 5 minutes.
+          </p>
+          <div className="min-h-[100px] flex items-center justify-center mb-8" data-testid="text-hero-rotating">
             <div
               className="transition-all duration-500 ease-in-out"
               style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(12px)" }}
             >
               {rotatingGroups[groupIndex].map((line, i) => (
-                <p key={i} className="text-xl md:text-2xl font-medium leading-relaxed" style={{ color: "#4A4A4A" }}>
+                <p key={i} className="text-lg md:text-xl font-medium leading-relaxed" style={{ color: "#4A4A4A" }}>
                   {line}
                 </p>
               ))}
@@ -57,10 +73,80 @@ export default function Home() {
               style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
               data-testid="button-hero-cta"
             >
-              Try it free <ArrowRight className="ml-2 h-5 w-5" />
+              Take the Founder Focus Score <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
-          <p className="mt-5 text-sm" style={{ color: "#8A8A8A" }}>No credit card required. Start in under 5 minutes.</p>
+          <p className="mt-4 text-sm" style={{ color: "#8A8A8A" }}>Free. 5 minutes. Tells you exactly where you stand.</p>
+        </div>
+      </section>
+
+      {/* Social Proof */}
+      <section className="py-12 md:py-16" style={{ backgroundColor: "#F3F3F3" }} data-testid="section-social-proof">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="grid md:grid-cols-2 gap-6">
+            {founderQuotes.map((item, i) => (
+              <div key={i} className="bg-white rounded-2xl p-6 relative" style={{ boxShadow: "0 2px 12px rgba(224,224,224,0.5)" }} data-testid={`card-quote-${i}`}>
+                <Quote className="h-8 w-8 mb-3 opacity-20" style={{ color: "#0D566C" }} />
+                <p className="text-base leading-relaxed mb-4 italic" style={{ color: "#4A4A4A" }}>
+                  "{item.quote}"
+                </p>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "#0D566C" }}>
+                    {item.name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "#0D566C" }}>{item.name}</p>
+                    <p className="text-xs" style={{ color: "#8A8A8A" }}>{item.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Founder Focus Score Section */}
+      <section className="py-20 md:py-28" style={{ backgroundColor: "#FAF9F7" }} data-testid="section-founder-focus">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="text-center mb-10">
+            <div className="w-14 h-14 rounded-xl mx-auto flex items-center justify-center mb-5" style={{ backgroundColor: "rgba(255,107,92,0.12)" }}>
+              <Target className="h-7 w-7" style={{ color: "#FF6B5C" }} />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-4" style={{ color: "#0D566C" }}>
+              Your Founder Focus Score
+            </h2>
+            <p className="text-lg max-w-2xl mx-auto mb-2" style={{ color: "#4A4A4A" }}>
+              A free diagnostic built for early-stage founders. Answer 8 honest questions and get a clear picture of where your startup journey actually stands.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-10 max-w-3xl mx-auto">
+            {[
+              { title: "See your blind spots", desc: "Find out what's really holding you back, not what you think is." },
+              { title: "Get a personalized snapshot", desc: "Your score breaks down clarity, readiness, and next steps in plain language." },
+              { title: "Know what to do next", desc: "No vague advice. You get a specific starting point based on your answers." },
+            ].map((item, i) => (
+              <div key={i} className="bg-white rounded-2xl p-6 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg" style={{ boxShadow: "0 2px 12px rgba(224,224,224,0.5)" }} data-testid={`card-focus-benefit-${i}`}>
+                <CheckCircle className="h-8 w-8 mx-auto mb-3" style={{ color: "#FF6B5C" }} />
+                <h3 className="text-base font-bold mb-2" style={{ color: "#0D566C" }}>{item.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: "#4A4A4A" }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link href="/founder-focus">
+              <Button
+                size="lg"
+                className="h-14 px-10 text-lg font-semibold rounded-full shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-[1.03] active:scale-[0.98]"
+                style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                data-testid="button-focus-score-cta"
+              >
+                Take the Founder Focus Score <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <p className="mt-4 text-sm" style={{ color: "#8A8A8A" }}>No sign-up required to start. Results are instant.</p>
+          </div>
         </div>
       </section>
 
@@ -69,28 +155,28 @@ export default function Home() {
         <div className="container px-4 mx-auto max-w-4xl">
           <div className="text-center mb-10">
             <div className="w-12 h-12 rounded-xl mx-auto flex items-center justify-center mb-5" style={{ backgroundColor: "rgba(245,197,66,0.15)" }}>
-              <Target className="h-6 w-6" style={{ color: "#F5C542" }} />
+              <Compass className="h-6 w-6" style={{ color: "#F5C542" }} />
             </div>
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-6" style={{ color: "#0D566C" }}>
-              What Is TouchConnectPro?
+              What Happens After Your Score?
             </h2>
           </div>
           <div className="space-y-6 text-lg leading-relaxed max-w-3xl mx-auto" style={{ color: "#4A4A4A" }}>
             <p>
-              TouchConnectPro is where ideas stop being ideas.
+              Your Focus Score is the starting point. What comes next is what makes the difference.
             </p>
             <p>
-              We connect early-stage founders with experienced mentors who have actually built businesses and understand what execution really takes.
+              TouchConnectPro connects you with experienced mentors who have actually built businesses. They help you go from "I have an idea" to "I have a plan someone would fund."
             </p>
             <p>
-              From validation to launch to growth, you get structured guidance that turns momentum into measurable progress.
+              You get structured guidance, not generic advice. Every step is clear, purposeful, and built around where you are right now.
             </p>
           </div>
           <div className="mt-12 grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
             {[
-              { num: "1", text: "Validate your idea with real feedback" },
-              { num: "2", text: "Build with structured mentor guidance" },
-              { num: "3", text: "Grow with confidence and clarity" },
+              { num: "1", text: "Take your Focus Score and see where you stand" },
+              { num: "2", text: "Get matched with a mentor who fits your stage" },
+              { num: "3", text: "Build with structure, clarity, and real support" },
             ].map((step) => (
               <div key={step.num} className="flex items-center gap-3 bg-white rounded-xl p-4" style={{ boxShadow: "0 2px 10px rgba(224,224,224,0.5)" }}>
                 <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 font-bold text-sm" style={{ backgroundColor: "rgba(245,197,66,0.2)", color: "#0D566C" }}>
@@ -103,7 +189,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features / How It Works Section */}
+      {/* How It Works Section */}
       <section className="py-20 md:py-28" style={{ backgroundColor: "#FAF9F7" }} data-testid="section-features">
         <div className="container px-4 mx-auto max-w-5xl">
           <div className="text-center mb-16">
@@ -150,8 +236,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why TouchConnectPro Section */}
-      <section className="py-20 md:py-28" style={{ backgroundColor: "#FAF9F7" }} data-testid="section-why-tcp">
+      {/* Why TouchConnectPro / Mentorship Section */}
+      <section className="py-20 md:py-28" style={{ backgroundColor: "#F3F3F3" }} data-testid="section-why-tcp">
         <div className="container px-4 mx-auto max-w-4xl">
           <div className="flex flex-col md:flex-row items-center gap-12">
             <div className="md:w-1/2">
@@ -184,15 +270,14 @@ export default function Home() {
         </div>
       </section>
 
-
       {/* Call to Action Section */}
       <section className="py-20 md:py-28" style={{ backgroundColor: "#0D566C" }} data-testid="section-cta">
         <div className="container px-4 mx-auto max-w-3xl text-center">
           <h2 className="text-3xl md:text-5xl font-display font-bold mb-6 text-white">
-            Ready to turn your idea into action?
+            Stop overthinking. Start with your score.
           </h2>
           <p className="text-lg md:text-xl mb-10 leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>
-            Start today for free and see how a mentor-guided approach helps you focus, learn, and move forward.
+            Five minutes to find out where you stand, what's missing, and what to do first. It's free and the results are yours to keep.
           </p>
           <Link href="/founder-focus">
             <Button
@@ -201,9 +286,10 @@ export default function Home() {
               style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
               data-testid="button-cta-get-started"
             >
-              Get started now <ArrowRight className="ml-2 h-5 w-5" />
+              Take the Founder Focus Score <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
+          <p className="mt-4 text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>No credit card. No sign-up to start. Just answers.</p>
         </div>
       </section>
 
