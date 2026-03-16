@@ -5515,9 +5515,9 @@ app.post("/api/mentor-questions/:id/reply", async (req, res) => {
                   </div>
                   <div style="background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 16px; margin: 16px 0; border-radius: 8px;">
                     <p style="margin: 0 0 4px 0; font-weight: 600; color: #065f46;">Mentor's Answer:</p>
-                    <p style="margin: 0; white-space: pre-wrap;">${(() => { const s = reply.match(/[^.!?]+[.!?]+/g) || [reply]; const p = s.slice(0, 2).join(" ").trim(); return s.length > 2 ? p + "..." : p; })()}</p>
+                    <p style="margin: 0; white-space: pre-wrap;">${(() => { const s = reply.match(/[^.!?]+[.!?]+/g); if (s && s.length > 2) return s.slice(0,2).join(" ").trim() + "..."; if (reply.length > 200) return reply.substring(0,200).trim() + "..."; return reply; })()}</p>
                   </div>
-                  ${(() => { const s = reply.match(/[^.!?]+[.!?]+/g) || [reply]; return s.length > 2 ? '<p style="color: #0D566C; font-weight: 600; font-size: 14px;">Log in to your dashboard to read the full answer.</p>' : ''; })()}
+                  ${(() => { const s = reply.match(/[^.!?]+[.!?]+/g); return (s && s.length > 2) || reply.length > 200 ? '<p style="color: #0D566C; font-weight: 600; font-size: 14px;">Log in to your dashboard to read the full answer.</p>' : ''; })()}
                   <a href="${baseUrl}/login" style="display: inline-block; background-color: #FF6B5C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: 600;">Read Full Answer in Dashboard</a>
                   <p style="margin-top: 20px; color: #8A8A8A; font-size: 14px;">Keep building. We're here to help you succeed.</p>
                 </div>
@@ -5609,10 +5609,19 @@ app.post("/api/mentor-questions/admin-initiate", async (req, res) => {
       if (resendData) {
         const { client: resendClient, fromEmail } = resendData;
         const FRONTEND_URL = process.env.FRONTEND_URL || "https://touchconnectpro.com";
-        const sentences = message.match(/[^.!?]+[.!?]+/g) || [message];
-        const preview = sentences.slice(0, 2).join(" ").trim();
-        const isTruncated = sentences.length > 2;
-        const emailPreview = isTruncated ? preview + "..." : preview;
+        const sentences = message.match(/[^.!?]+[.!?]+/g);
+        let emailPreview;
+        let isTruncated;
+        if (sentences && sentences.length > 2) {
+          emailPreview = sentences.slice(0, 2).join(" ").trim() + "...";
+          isTruncated = true;
+        } else if (message.length > 200) {
+          emailPreview = message.substring(0, 200).trim() + "...";
+          isTruncated = true;
+        } else {
+          emailPreview = message;
+          isTruncated = false;
+        }
         await resendClient.emails.send({
           from: fromEmail,
           to: entrepreneurEmail,
