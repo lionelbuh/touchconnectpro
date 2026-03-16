@@ -3171,6 +3171,10 @@ export async function registerRoutes(
         if (resendData) {
           const { client: resend, fromEmail } = resendData;
           const FRONTEND_URL = process.env.FRONTEND_URL || (process.env.NODE_ENV === "development" ? "http://localhost:5000" : "https://touchconnectpro.com");
+          const sentences = message.match(/[^.!?]+[.!?]+/g) || [message];
+          const preview = sentences.slice(0, 2).join(" ").trim();
+          const isTruncated = sentences.length > 2;
+          const emailPreview = isTruncated ? preview + "..." : preview;
           await resend.emails.send({
             from: fromEmail,
             to: entrepreneurEmail,
@@ -3193,9 +3197,10 @@ export async function registerRoutes(
                     <p>Hi ${entrepreneurName || "there"},</p>
                     <p>You have a new message from the TouchConnectPro team:</p>
                     <div style="background: rgba(13,86,108,0.08); border-left: 4px solid #0D566C; padding: 16px; margin: 16px 0; border-radius: 8px;">
-                      <p style="margin: 0; white-space: pre-wrap;">${message}</p>
+                      <p style="margin: 0; white-space: pre-wrap;">${emailPreview}</p>
                     </div>
-                    <a href="${FRONTEND_URL}/login" style="display: inline-block; background-color: #FF6B5C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: 600;">View in Your Dashboard</a>
+                    ${isTruncated ? '<p style="color: #0D566C; font-weight: 600; font-size: 14px;">Log in to your dashboard to read the full message.</p>' : ''}
+                    <a href="${FRONTEND_URL}/login" style="display: inline-block; background-color: #FF6B5C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: 600; margin-top: 12px;">Read Full Message in Dashboard</a>
                     <p style="margin-top: 20px; color: #8A8A8A; font-size: 14px;">We're here to help you succeed.</p>
                   </div>
                   <div style="text-align: center; margin-top: 20px; color: #8A8A8A; font-size: 14px;">
