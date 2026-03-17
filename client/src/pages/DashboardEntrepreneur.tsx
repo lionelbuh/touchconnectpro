@@ -112,6 +112,13 @@ export default function DashboardEntrepreneur() {
   ninetyDayGoal: ""
  });
  const [savingSnapshot, setSavingSnapshot] = useState(false);
+ const [builderModeUnlocked, setBuilderModeUnlocked] = useState(false);
+ const [builderModeDraft, setBuilderModeDraft] = useState<any>(null);
+ const [showBuilderPrompt, setShowBuilderPrompt] = useState(false);
+ const [showBuilderMode, setShowBuilderMode] = useState(false);
+ const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
+ const [builderConfirmed, setBuilderConfirmed] = useState(false);
+ const [showUpgradeNudge, setShowUpgradeNudge] = useState(false);
  const [showAgreementGate, setShowAgreementGate] = useState(false);
  const [agreementChecked, setAgreementChecked] = useState(false);
  const [agreedToContract, setAgreedToContract] = useState(false);
@@ -846,6 +853,80 @@ export default function DashboardEntrepreneur() {
     .catch(err => console.error("Error marking questions as read:", err));
   }
  }, [activeTab, userEmail, unreadMentorAnswers]);
+
+ const hasIdeaSubmitted = !!(formData.ideaName || entrepreneurData?.data?.ideaName);
+
+ useEffect(() => {
+  if (!founderSnapshot || hasIdeaSubmitted) return;
+  const savedDraft = localStorage.getItem("tcp_builder_draft");
+  if (savedDraft) {
+   try { setBuilderModeDraft(JSON.parse(savedDraft)); } catch {}
+  }
+  const today = new Date().toDateString();
+  const lastVisit = localStorage.getItem("tcp_last_visit_date");
+  if (lastVisit && lastVisit !== today) {
+   setBuilderModeUnlocked(true);
+  }
+  localStorage.setItem("tcp_last_visit_date", today);
+  const coachViews = parseInt(localStorage.getItem("tcp_coach_views") || "0", 10);
+  if (coachViews >= 2) {
+   setBuilderModeUnlocked(true);
+  }
+  const dismissed = localStorage.getItem("tcp_builder_dismissed");
+  if (dismissed === today) {
+   setShowBuilderPrompt(false);
+  }
+ }, [founderSnapshot, hasIdeaSubmitted]);
+
+ useEffect(() => {
+  if (builderModeUnlocked && founderSnapshot && !hasIdeaSubmitted && !builderModeDraft && !showBuilderMode) {
+   const dismissed = localStorage.getItem("tcp_builder_dismissed");
+   const today = new Date().toDateString();
+   if (dismissed !== today) {
+    setShowBuilderPrompt(true);
+   }
+  }
+ }, [builderModeUnlocked, founderSnapshot, hasIdeaSubmitted, builderModeDraft, showBuilderMode]);
+
+ const trackCoachProfileView = () => {
+  const current = parseInt(localStorage.getItem("tcp_coach_views") || "0", 10);
+  const updated = current + 1;
+  localStorage.setItem("tcp_coach_views", String(updated));
+  if (updated >= 2) {
+   setBuilderModeUnlocked(true);
+  }
+ };
+
+ const dismissBuilderPrompt = () => {
+  setShowBuilderPrompt(false);
+  localStorage.setItem("tcp_builder_dismissed", new Date().toDateString());
+ };
+
+ const handleGenerateDraftPlan = async () => {
+  if (!founderSnapshot) return;
+  setIsGeneratingDraft(true);
+  try {
+   const response = await fetch(`${API_BASE_URL}/api/ai/generate-draft-plan`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ snapshot: founderSnapshot, snapshotSummary })
+   });
+   if (response.ok) {
+    const draft = await response.json();
+    setBuilderModeDraft(draft);
+    localStorage.setItem("tcp_builder_draft", JSON.stringify(draft));
+    setShowUpgradeNudge(true);
+    toast.success("Your draft business plan is ready!");
+   } else {
+    toast.error("Failed to generate draft plan. Please try again.");
+   }
+  } catch (err) {
+   console.error("Error generating draft plan:", err);
+   toast.error("Failed to generate draft plan. Please try again.");
+  } finally {
+   setIsGeneratingDraft(false);
+  }
+ };
 
  // Load message threads (threaded conversations with mentor)
  useEffect(() => {
@@ -2208,49 +2289,271 @@ export default function DashboardEntrepreneur() {
           </CardContent>
          </Card>
         )}
+        {/* Phase 1: Welcome Card — Pre-Snapshot (Coach-focused) */}
         {isPreApproved && !hasPaid && !ideaSubmitted && !founderSnapshot && (
-         <Card className="mb-6 border-[#E8E8E8] bg-[#F3F3F3]">
+         <Card className="mb-6 border-[#0D566C]/20 bg-white shadow-md" data-testid="card-welcome-pre-snapshot">
           <CardContent className="pt-6 pb-6">
            <div className="flex items-start gap-4">
-            <Rocket className="h-6 w-6 text-[#FF6B5C] flex-shrink-0 mt-0.5" />
+            <div className="flex-shrink-0 mt-0.5">
+             <GraduationCap className="h-8 w-8 text-[#0D566C]" />
+            </div>
             <div className="flex-1">
-             <h3 className="text-lg font-semibold text-[#0D566C] mb-1" data-testid="text-community-welcome">Welcome to the Community!</h3>
-             <p className="text-[#0D566C] mb-4">You're part of the TouchConnectPro Community Free plan. Take 4 minutes to complete your Founder Snapshot so we can understand your business idea, stage, and goals, and connect you with the right mentors and coaches.</p>
+             <p className="text-xs font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">Welcome to TouchConnectPro</p>
+             <h3 className="text-xl font-bold text-[#0D566C] mb-1" data-testid="text-community-welcome">Find your coach — it's free</h3>
+             <Badge className="bg-[#0D566C]/10 text-[#0D566C] border-none mb-3">Free plan</Badge>
+             <p className="text-[#4A4A4A] mb-4">Browse real coaches matched to your industry and stage. No commitment — just explore who's here. Some coaches offer free quick calls, so you can get a feel before deciding anything.</p>
              <Button 
-              className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white"
-              onClick={() => { setShowSnapshotForm(true); setTimeout(() => { const el = document.getElementById('snapshot-form-section'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100); }}
-              data-testid="link-submit-idea"
+              className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full mr-3"
+              onClick={() => setActiveTab("coaches")}
+              data-testid="button-browse-coaches"
              >
-              <Rocket className="mr-2 h-4 w-4" />
-              Start Your Founder Snapshot
+              <GraduationCap className="mr-2 h-4 w-4" />
+              Browse coaches
+             </Button>
+             <p className="text-sm text-[#8A8A8A] mt-4">Want better matches? <button className="text-[#0D566C] font-semibold underline cursor-pointer" onClick={() => { setShowSnapshotForm(true); setTimeout(() => { const el = document.getElementById('snapshot-form-section'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100); }} data-testid="link-submit-idea">Complete your Founder Snapshot</button> — takes 4 minutes and helps us show you the most relevant coaches.</p>
+             <div className="mt-4">
+              <div className="flex items-center gap-2 mb-1">
+               <span className="text-xs font-medium text-[#8A8A8A]">0% — Snapshot not started</span>
+              </div>
+              <Progress value={0} className="h-2" />
+             </div>
+             <p className="text-xs text-[#8A8A8A] mt-3 italic">Your community is already active — scroll down to see what other founders are working on.</p>
+            </div>
+           </div>
+          </CardContent>
+         </Card>
+        )}
+
+        {/* Phase 1: Snapshot Result Card — Post-Snapshot, Pre-Idea */}
+        {isPreApproved && !hasPaid && founderSnapshot && !ideaSubmitted && !showBuilderMode && (
+         <Card className="mb-6 border-[#0D566C]/20 bg-white shadow-md" data-testid="card-snapshot-result">
+          <CardContent className="pt-6 pb-6">
+           <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 mt-0.5">
+             <CheckCircle className="h-8 w-8 text-emerald-500" />
+            </div>
+            <div className="flex-1">
+             <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-2">
+               <span className="text-xs font-medium text-[#8A8A8A]">100%</span>
+              </div>
+              <Progress value={100} className="h-2 flex-1" />
+             </div>
+             <h3 className="text-xl font-bold text-[#0D566C] mb-3" data-testid="text-snapshot-complete">Your Founder Snapshot</h3>
+             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <div className="bg-[#0D566C]/5 rounded-lg p-3 text-center">
+               <p className="text-[10px] uppercase tracking-wider text-[#8A8A8A] mb-1">Stage</p>
+               <Badge className="bg-[#0D566C] text-white" data-testid="badge-snapshot-stage">
+                {snapshotSummary?.stage || founderSnapshot.stage || "—"}
+               </Badge>
+              </div>
+              <div className="bg-[#FF6B5C]/5 rounded-lg p-3 text-center">
+               <p className="text-[10px] uppercase tracking-wider text-[#8A8A8A] mb-1">Challenge</p>
+               <Badge className="bg-[#FF6B5C] text-white" data-testid="badge-snapshot-challenge">
+                {snapshotSummary?.mainChallenge || "—"}
+               </Badge>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-3 text-center">
+               <p className="text-[10px] uppercase tracking-wider text-[#8A8A8A] mb-1">90-Day Goal</p>
+               <p className="text-sm font-semibold text-purple-700" data-testid="text-snapshot-goal">
+                {snapshotSummary?.ninetyDayGoal || founderSnapshot.ninetyDayGoal || "—"}
+               </p>
+              </div>
+             </div>
+             <p className="text-sm text-[#4A4A4A] mb-3">Based on your Snapshot, here are your best coach matches:</p>
+             <Button 
+              className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full"
+              onClick={() => setActiveTab("coaches")}
+              data-testid="button-view-matched-coaches"
+             >
+              <GraduationCap className="mr-2 h-4 w-4" />
+              View matched coaches
              </Button>
             </div>
            </div>
           </CardContent>
          </Card>
         )}
-        {isPreApproved && !hasPaid && founderSnapshot && !ideaSubmitted && (
-         <Card className="mb-6 border-[#E8E8E8] bg-[#F3F3F3]">
+
+        {/* Phase 2: Builder Mode Prompt — shown when engagement trigger fires */}
+        {isPreApproved && !hasPaid && founderSnapshot && !ideaSubmitted && showBuilderPrompt && !showBuilderMode && !builderModeDraft && (
+         <Card className="mb-6 border-amber-300 bg-amber-50 shadow-md" data-testid="card-builder-prompt">
           <CardContent className="pt-6 pb-6">
            <div className="flex items-start gap-4">
-            <CheckCircle className="h-6 w-6 text-[#0D566C] flex-shrink-0 mt-0.5" />
+            <div className="flex-shrink-0 mt-0.5">
+             <Lightbulb className="h-8 w-8 text-amber-500" />
+            </div>
             <div className="flex-1">
-             <h3 className="text-lg font-semibold text-[#0D566C] mb-1">Snapshot Complete - Your Next Step</h3>
-             <p className="text-[#0D566C] mb-3">Great start! Your next free journey is to share your business idea in detail so mentors and coaches can guide you more precisely.</p>
-             <a 
-              href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}
-              data-testid="link-full-blueprint"
-             >
-              <Button className="bg-[#0D566C] hover:bg-[#0a4557] text-white rounded-full">
-               <Target className="mr-2 h-4 w-4" />
-               Complete Your Full Founder Blueprint
+             <h3 className="text-lg font-bold text-amber-900 mb-2">Ready to build your plan?</h3>
+             <p className="text-amber-800 mb-4">
+              You mentioned you're building <span className="font-semibold">{founderSnapshot.building || "your idea"}</span> — want us to draft a business plan around that? Takes 5 minutes, and our AI does the heavy lifting.
+             </p>
+             <div className="flex items-center gap-3">
+              <Button 
+               className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full"
+               onClick={() => { setShowBuilderMode(true); setShowBuilderPrompt(false); }}
+               data-testid="button-build-my-plan"
+              >
+               <Rocket className="mr-2 h-4 w-4" />
+               Build my plan
               </Button>
-             </a>
+              <Button 
+               variant="ghost"
+               className="text-amber-700 hover:text-amber-900"
+               onClick={dismissBuilderPrompt}
+               data-testid="button-dismiss-builder"
+              >
+               Maybe later
+              </Button>
+             </div>
             </div>
            </div>
           </CardContent>
          </Card>
         )}
+
+        {/* Phase 3: Builder Mode — AI drafts business plan */}
+        {isPreApproved && !hasPaid && founderSnapshot && !ideaSubmitted && showBuilderMode && !builderModeDraft && (
+         <Card className="mb-6 border-[#0D566C]/30 bg-white shadow-lg" data-testid="card-builder-mode">
+          <CardContent className="pt-6 pb-6">
+           <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 mt-0.5">
+             <FileText className="h-8 w-8 text-[#0D566C]" />
+            </div>
+            <div className="flex-1">
+             <h3 className="text-xl font-bold text-[#0D566C] mb-3">Let's draft your business plan</h3>
+             {!builderConfirmed ? (
+              <div>
+               <div className="bg-[#F3F3F3] rounded-lg p-4 mb-4">
+                <p className="text-[#4A4A4A]">
+                 Based on your Snapshot, it sounds like you're building <span className="font-semibold text-[#0D566C]">{founderSnapshot.building || "your idea"}</span> for <span className="font-semibold text-[#0D566C]">{founderSnapshot.targetCustomer || "your target customers"}</span>. Is that right? Let me draft a quick business summary you can refine.
+                </p>
+               </div>
+               <div className="flex items-center gap-3">
+                <Button 
+                 className="bg-[#0D566C] hover:bg-[#0a4557] text-white rounded-full"
+                 onClick={() => { setBuilderConfirmed(true); handleGenerateDraftPlan(); }}
+                 data-testid="button-confirm-builder"
+                >
+                 <Check className="mr-2 h-4 w-4" />
+                 Yes, draft my plan
+                </Button>
+                <Button 
+                 variant="ghost"
+                 className="text-[#8A8A8A]"
+                 onClick={() => { setShowBuilderMode(false); }}
+                 data-testid="button-cancel-builder"
+                >
+                 Go back
+                </Button>
+               </div>
+              </div>
+             ) : (
+              <div className="flex flex-col items-center justify-center py-8">
+               <Loader2 className="h-12 w-12 animate-spin text-[#FF6B5C] mb-4" />
+               <p className="text-[#0D566C] font-semibold">Our AI is drafting your business plan...</p>
+               <p className="text-sm text-[#8A8A8A] mt-1">This usually takes about 15–30 seconds.</p>
+              </div>
+             )}
+            </div>
+           </div>
+          </CardContent>
+         </Card>
+        )}
+
+        {/* Phase 3: Draft Plan Result */}
+        {isPreApproved && !hasPaid && founderSnapshot && !ideaSubmitted && builderModeDraft && (
+         <Card className="mb-6 border-emerald-300 bg-white shadow-md" data-testid="card-draft-plan">
+          <CardContent className="pt-6 pb-6">
+           <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 mt-0.5">
+             <FileText className="h-8 w-8 text-emerald-500" />
+            </div>
+            <div className="flex-1">
+             <h3 className="text-xl font-bold text-[#0D566C] mb-1">Your Draft Business Plan</h3>
+             <p className="text-sm text-[#8A8A8A] mb-4">Here's a quick plan based on your Snapshot. You can refine this later with a mentor.</p>
+             <div className="space-y-3">
+              {[
+               { key: "problem", label: "Problem", icon: "🔍" },
+               { key: "solution", label: "Solution", icon: "💡" },
+               { key: "targetCustomer", label: "Target Customer", icon: "🎯" },
+               { key: "uniqueValue", label: "Unique Value", icon: "⭐" },
+               { key: "ninetyDayGoal", label: "90-Day Goal", icon: "📅" },
+               { key: "keyRisks", label: "Key Risks", icon: "⚠️" }
+              ].map((section) => (
+               <div key={section.key} className="bg-[#FAF9F7] rounded-lg p-4 border border-[#E8E8E8]">
+                <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wider mb-1">{section.icon} {section.label}</p>
+                <p className="text-[#4A4A4A] text-sm whitespace-pre-wrap" data-testid={`text-draft-${section.key}`}>
+                 {builderModeDraft[section.key] || "—"}
+                </p>
+               </div>
+              ))}
+             </div>
+             <div className="mt-4 flex items-center gap-3">
+              <Button 
+               className="bg-[#0D566C] hover:bg-[#0a4557] text-white rounded-full"
+               onClick={() => setActiveTab("plan")}
+               data-testid="button-view-full-plan"
+              >
+               <Target className="mr-2 h-4 w-4" />
+               Go to full Business Plan
+              </Button>
+              <a 
+               href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}
+               data-testid="link-full-blueprint"
+              >
+               <Button variant="outline" className="rounded-full border-[#0D566C] text-[#0D566C]">
+                <Lightbulb className="mr-2 h-4 w-4" />
+                Complete Full Founder Blueprint
+               </Button>
+              </a>
+             </div>
+            </div>
+           </div>
+          </CardContent>
+         </Card>
+        )}
+
+        {/* Phase 3: Upgrade Nudge — only after draft plan is generated */}
+        {isPreApproved && !hasPaid && builderModeDraft && showUpgradeNudge && !ideaSubmitted && (
+         <Card className="mb-6 border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 shadow-md" data-testid="card-upgrade-nudge">
+          <CardContent className="pt-6 pb-6">
+           <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 mt-0.5">
+             <Star className="h-8 w-8 text-purple-500" />
+            </div>
+            <div className="flex-1">
+             <h3 className="text-lg font-bold text-purple-900 mb-2">Your plan is ready. Want a dedicated mentor to help you execute it?</h3>
+             <p className="text-purple-800 mb-4">
+              Get paired with a real mentor who specializes in your stage and challenge area — for just $9.99/month.
+             </p>
+             <div className="flex items-center gap-3">
+              <Button
+               type="button"
+               onClick={() => handleUpgradeClick()}
+               disabled={isSubscribing}
+               className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md rounded-full"
+               data-testid="button-upgrade-founders-circle-overview"
+              >
+               <Rocket className="mr-2 h-4 w-4" />
+               {isSubscribing ? "Redirecting to payment..." : "Get a Mentor — $9.99/mo"}
+              </Button>
+              <Button 
+               variant="ghost"
+               className="text-purple-600"
+               onClick={() => setShowUpgradeNudge(false)}
+               data-testid="button-dismiss-upgrade"
+              >
+               Not now
+              </Button>
+             </div>
+            </div>
+           </div>
+          </CardContent>
+         </Card>
+        )}
+
+        {/* Idea Submitted card (post full blueprint) */}
         {isPreApproved && !hasPaid && ideaSubmitted && (
          <Card className="mb-6 border-[#E8E8E8] bg-[#F3F3F3]">
           <CardContent className="pt-6 pb-6">
@@ -2258,19 +2561,7 @@ export default function DashboardEntrepreneur() {
             <CheckCircle className="h-6 w-6 text-[#FF6B5C] flex-shrink-0 mt-0.5" />
             <div className="flex-1">
              <h3 className="text-lg font-semibold text-[#0D566C] mb-1">Idea Submitted - Explore Your Dashboard</h3>
-             <p className="text-[#0D566C]">Your idea has been submitted! You can now explore coaches, refine your business plan, and connect with the community. Upgrade to a paid plan for dedicated mentor access.</p>
-             <div className="mt-3">
-              <Button
-               type="button"
-               onClick={() => handleUpgradeClick()}
-               disabled={isSubscribing}
-               className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md"
-               data-testid="button-upgrade-founders-circle-overview"
-              >
-               <Rocket className="mr-2 h-4 w-4" />
-               {isSubscribing ? "Redirecting to payment..." : "Upgrade to Founders Circle — $9.99/mo"}
-              </Button>
-             </div>
+             <p className="text-[#0D566C]">Your idea has been submitted! You can now explore coaches, refine your business plan, and connect with the community.</p>
             </div>
            </div>
           </CardContent>
@@ -2321,11 +2612,11 @@ export default function DashboardEntrepreneur() {
            <CardTitle className="text-sm font-medium text-[#8A8A8A]">Current Stage</CardTitle>
           </CardHeader>
           <CardContent>
-           <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "text-[#FF6B5C]" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "text-[#4B3F72]" : (isPreApproved && ideaSubmitted && !hasPaid) ? "text-[#FF6B5C]" : (isPreApproved && hasPaid) ? "text-emerald-600" : ""}`}>
-            {isAccountDisabled ? "Disabled Member" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Getting Started" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Snapshot Done" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Idea Submitted" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
+           <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "text-[#FF6B5C]" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "text-emerald-600" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "text-[#4B3F72]" : (isPreApproved && ideaSubmitted && !hasPaid) ? "text-[#FF6B5C]" : (isPreApproved && hasPaid) ? "text-emerald-600" : ""}`}>
+            {isAccountDisabled ? "Disabled Member" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Getting Started" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "Draft Plan Ready" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Snapshot Done" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Idea Submitted" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
            </div>
            <p className="text-xs text-[#8A8A8A] mt-1">
-            {isAccountDisabled ? "Contact Guidance Team to reactivate" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Complete snapshot to unlock features" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Exploring community features" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Community Free - explore coaches & build plans" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
+            {isAccountDisabled ? "Contact Guidance Team to reactivate" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Browse coaches and complete your Snapshot" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "AI draft plan ready — explore coaches" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Exploring coaches and community" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Community Free - explore coaches & build plans" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
            </p>
           </CardContent>
          </Card>
@@ -3132,7 +3423,7 @@ export default function DashboardEntrepreneur() {
                variant="outline"
                size="sm"
                className="hidden md:flex border-purple-300 text-purple-700 hover:bg-purple-50"
-               onClick={() => window.open(`/coach/${coach.id}`, '_blank')}
+               onClick={() => { trackCoachProfileView(); window.open(`/coach/${coach.id}`, '_blank'); }}
                data-testid={`button-view-profile-${coach.id}`}
               >
                <ExternalLink className="h-3 w-3 mr-1" />

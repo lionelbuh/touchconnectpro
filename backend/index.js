@@ -410,6 +410,36 @@ app.post("/api/ai/generate-plan", async (req, res) => {
   }
 });
 
+app.post("/api/ai/generate-draft-plan", async (req, res) => {
+  console.log("[AI DRAFT PLAN] Processing request...");
+  try {
+    const openai = getOpenAI();
+    if (!openai) {
+      return res.status(503).json({ error: "AI service not configured." });
+    }
+    const { snapshot, snapshotSummary } = req.body;
+    if (!snapshot || !snapshot.building) {
+      return res.status(400).json({ error: "Snapshot data required" });
+    }
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a supportive startup advisor helping a founder draft a concise business plan summary. Be conversational and encouraging. Based on the founder's Snapshot data, produce a structured draft plan. Keep each section to 2-3 sentences — clear, specific, and actionable. Do not use jargon or filler." },
+        { role: "user", content: `Here is the founder's Snapshot data:\n\nBuilding: ${snapshot.building}\nStage: ${snapshotSummary?.stage || snapshot.stage}\nTarget Customer: ${snapshot.targetCustomer}\nBiggest Challenge: ${snapshotSummary?.mainChallenge || snapshot.biggestBlocker}${snapshot.blockerOther ? ` (${snapshot.blockerOther})` : ""}\nCurrent Traction: ${snapshotSummary?.traction || snapshot.traction}\n90-Day Goal: ${snapshotSummary?.ninetyDayGoal || snapshot.ninetyDayGoal}\n\nGenerate a concise draft business plan as JSON with these exact keys:\n{"problem":"The problem (2-3 sentences)","solution":"How it solves (2-3 sentences)","targetCustomer":"Ideal customer (2-3 sentences)","uniqueValue":"What makes this different (2-3 sentences)","ninetyDayGoal":"90-day plan (2-3 sentences)","keyRisks":"Top risks and mitigation (2-3 sentences)"}\n\nReturn ONLY valid JSON.` }
+      ],
+      temperature: 0.7,
+      response_format: { type: "json_object" }
+    });
+    const content = response.choices[0]?.message?.content;
+    if (!content) throw new Error("No response from AI");
+    console.log("[AI DRAFT PLAN] Success");
+    return res.json(JSON.parse(content));
+  } catch (error) {
+    console.error("[AI DRAFT PLAN ERROR]:", error.message);
+    return res.status(500).json({ error: "Failed to generate draft plan" });
+  }
+});
+
 // AI: Generate meeting questions from business plan
 app.post("/api/ai/generate-questions", async (req, res) => {
   console.log("[AI GENERATE QUESTIONS] Processing request...");

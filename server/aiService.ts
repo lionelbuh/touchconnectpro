@@ -374,3 +374,77 @@ Return ONLY the draft response text, no additional formatting or explanations.`
 
   return { draft: content };
 }
+
+export interface DraftPlanInput {
+  snapshot: {
+    building: string;
+    stage: string;
+    targetCustomer: string;
+    biggestBlocker: string;
+    blockerOther?: string;
+    traction: string;
+    ninetyDayGoal: string;
+  };
+  snapshotSummary?: {
+    stage: string;
+    mainChallenge: string;
+    traction: string;
+    ninetyDayGoal: string;
+    focusSteps: string[];
+  };
+}
+
+export interface DraftPlanOutput {
+  problem: string;
+  solution: string;
+  targetCustomer: string;
+  uniqueValue: string;
+  ninetyDayGoal: string;
+  keyRisks: string;
+}
+
+export async function generateDraftPlan(input: DraftPlanInput): Promise<DraftPlanOutput> {
+  const { snapshot, snapshotSummary } = input;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content: `You are a supportive startup advisor helping a founder draft a concise business plan summary. Be conversational and encouraging. Based on the founder's Snapshot data, produce a structured draft plan. Keep each section to 2-3 sentences — clear, specific, and actionable. Do not use jargon or filler.`
+      },
+      {
+        role: "user",
+        content: `Here is the founder's Snapshot data:
+
+Building: ${snapshot.building}
+Stage: ${snapshotSummary?.stage || snapshot.stage}
+Target Customer: ${snapshot.targetCustomer}
+Biggest Challenge: ${snapshotSummary?.mainChallenge || snapshot.biggestBlocker}${snapshot.blockerOther ? ` (${snapshot.blockerOther})` : ""}
+Current Traction: ${snapshotSummary?.traction || snapshot.traction}
+90-Day Goal: ${snapshotSummary?.ninetyDayGoal || snapshot.ninetyDayGoal}
+
+Generate a concise draft business plan as JSON with these exact keys:
+{
+  "problem": "The problem this business solves (2-3 sentences)",
+  "solution": "How it solves the problem (2-3 sentences)",
+  "targetCustomer": "Who the ideal customer is (2-3 sentences)",
+  "uniqueValue": "What makes this different (2-3 sentences)",
+  "ninetyDayGoal": "Specific 90-day execution plan (2-3 sentences)",
+  "keyRisks": "Top 2-3 risks and how to mitigate them (2-3 sentences)"
+}
+
+Return ONLY valid JSON.`
+      }
+    ],
+    temperature: 0.7,
+    response_format: { type: "json_object" }
+  });
+
+  const content = response.choices[0]?.message?.content;
+  if (!content) {
+    throw new Error("No response from AI");
+  }
+
+  return JSON.parse(content) as DraftPlanOutput;
+}

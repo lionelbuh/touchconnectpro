@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import crypto from "crypto";
-import { rephraseAnswers, generateBusinessPlan, generateMeetingQuestions, generateMentorDraftResponse } from "./aiService";
+import { rephraseAnswers, generateBusinessPlan, generateMeetingQuestions, generateMentorDraftResponse, generateDraftPlan } from "./aiService";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
 
@@ -851,6 +851,22 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("[AI GENERATE PLAN ERROR]:", error.message);
       return res.status(500).json({ error: "Failed to generate business plan with AI" });
+    }
+  });
+
+  app.post("/api/ai/generate-draft-plan", async (req, res) => {
+    console.log("[AI DRAFT PLAN] Processing request...");
+    try {
+      const { snapshot, snapshotSummary } = req.body;
+      if (!snapshot || !snapshot.building) {
+        return res.status(400).json({ error: "Snapshot data required" });
+      }
+      const result = await generateDraftPlan({ snapshot, snapshotSummary });
+      console.log("[AI DRAFT PLAN] Success");
+      return res.json(result);
+    } catch (error: any) {
+      console.error("[AI DRAFT PLAN ERROR]:", error.message);
+      return res.status(500).json({ error: "Failed to generate draft plan" });
     }
   });
 
