@@ -173,30 +173,7 @@ export default function CoachProfile() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#FAF9F7" }}>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="flex items-center justify-between mb-6">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="rounded-xl"
-            style={{ color: "#4A4A4A" }}
-            data-testid="button-back-home"
-            onClick={() => {
-              const profileData = localStorage.getItem("tcp_profileData");
-              if (profileData) {
-                try {
-                  const profile = JSON.parse(profileData);
-                  if (profile.role === "entrepreneur") {
-                    navigate("/dashboard-entrepreneur?tab=coaches");
-                    return;
-                  }
-                } catch {}
-              }
-              navigate("/");
-            }}
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
+        <div className="flex items-center justify-end mb-6">
           <Button
             variant="outline"
             size="sm"
