@@ -224,11 +224,16 @@ export default function CoachProfile() {
           
           <div className="px-6 md:px-8 py-6">
             <div className="text-center mb-6">
-              <h1 className="text-2xl md:text-3xl font-display font-bold flex items-center justify-center gap-2" style={{ color: "#0D566C" }}>
+              <h1 className="text-2xl md:text-3xl font-display font-bold flex items-center justify-center gap-2 flex-wrap" style={{ color: "#0D566C" }}>
                 {coach.full_name}
                 {!canPurchase && (
                   <Badge variant="secondary" style={{ backgroundColor: "rgba(245,197,66,0.15)", color: "#b8860b", borderColor: "rgba(245,197,66,0.3)" }}>
                     Coming Soon
+                  </Badge>
+                )}
+                {rates && rates.introCallRate && (rates.introCallRate === "0" || rates.introCallRate === "0.00" || parseFloat(rates.introCallRate) === 0) && (
+                  <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-300 text-sm px-2 py-0.5" data-testid="badge-free-intro-profile">
+                    Free Intro Call
                   </Badge>
                 )}
               </h1>
