@@ -2680,7 +2680,24 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
             <CheckCircle className="h-6 w-6 text-[#FF6B5C] flex-shrink-0 mt-0.5" />
             <div className="flex-1">
              <h3 className="text-lg font-semibold text-[#0D566C] mb-1">Idea Submitted - Explore Your Dashboard</h3>
-             <p className="text-[#0D566C]">Your idea has been submitted! You can now explore coaches, refine your business plan, and connect with the community.</p>
+             <p className="text-[#0D566C] mb-4">Your idea has been submitted! You can now explore coaches, refine your business plan, and connect with the community.</p>
+             <div className="flex flex-wrap gap-3">
+              <Button 
+               className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full"
+               onClick={() => setActiveTab("coaches")}
+               data-testid="button-browse-coaches-idea-submitted"
+              >
+               <GraduationCap className="mr-2 h-4 w-4" />
+               Browse coaches
+              </Button>
+              <Button 
+               className="bg-green-600 hover:bg-green-700 text-white rounded-full"
+               onClick={() => { setFreeIntroCallFilter(true); setActiveTab("coaches"); }}
+               data-testid="button-free-intro-call-idea-submitted"
+              >
+               🎁 Free Intro Call
+              </Button>
+             </div>
             </div>
            </div>
           </CardContent>
