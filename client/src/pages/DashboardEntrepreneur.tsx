@@ -3284,7 +3284,7 @@ export default function DashboardEntrepreneur() {
         <p className="text-[#8A8A8A] mb-4">Browse our approved coaches who can help accelerate your startup journey with specialized expertise.</p>
 
         {/* Areas of Expertise Filter */}
-        {shuffledCoaches.length > 0 && !isAccountDisabled && !(isPreApproved && !ideaSubmitted && !founderSnapshot) && (() => {
+        {shuffledCoaches.length > 0 && !isAccountDisabled && (() => {
          const allExpertiseAreas = Array.from(new Set(shuffledCoaches.flatMap(c => {
           const areas = c.focus_areas || "";
           return areas.split(",").map((a: string) => a.trim()).filter((a: string) => a);
@@ -3337,22 +3337,6 @@ export default function DashboardEntrepreneur() {
            <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
            <h3 className="text-lg font-semibold text-red-800 mb-2">Access Restricted</h3>
            <p className="text-red-700">Your account is currently disabled. Please contact the Founder Guidance Team via the Messages tab to reactivate your membership and access the coaches list.</p>
-          </CardContent>
-         </Card>
-        ) : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? (
-         <Card className="border-[#E8E8E8] bg-[#F3F3F3]">
-          <CardContent className="pt-6 pb-6 text-center">
-           <Target className="h-12 w-12 text-[#4B3F72] mx-auto mb-4" />
-           <h3 className="text-lg font-semibold text-[#0D566C] mb-2">Complete Your Founder Snapshot to Unlock Coaches</h3>
-           <p className="text-[#0D566C] mb-4">Complete your Founder Snapshot to browse coaches, get feedback, and access community features.</p>
-           <Button 
-            className="bg-[#4B3F72] hover:bg-[#3d3360] text-white rounded-full" 
-            onClick={() => { setActiveTab("overview"); setShowSnapshotForm(true); }}
-            data-testid="button-submit-idea-coaches"
-           >
-            <Target className="mr-2 h-4 w-4" />
-            Start Founder Snapshot
-           </Button>
           </CardContent>
          </Card>
         ) : shuffledCoaches.length > 0 ? (
