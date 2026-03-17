@@ -379,6 +379,8 @@ export default function FounderFocusScore() {
     const handleSeeResults = async () => {
       if (contactName.trim() && contactEmail.trim()) {
         setIsAutoCreating(true);
+        const clientTempPassword = `TCP_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+        const normalizedEmail = contactEmail.trim().toLowerCase();
         try {
           const res = await fetch(`${API_BASE_URL}/api/community/auto-signup`, {
             method: "POST",
@@ -387,19 +389,22 @@ export default function FounderFocusScore() {
               email: contactEmail.trim(),
               name: contactName.trim(),
               quizResult: result,
+              clientPassword: clientTempPassword,
             }),
           });
 
           const data = await res.json();
-          console.log("[AUTO SIGNUP] Response status:", res.status, "data:", JSON.stringify(data));
-          if (res.ok && data.tempPassword && data.email) {
+          console.log("[AUTO SIGNUP] Response status:", res.status, "data keys:", Object.keys(data));
+          if (res.ok) {
             setAutoAccountCreated(true);
+            const loginPassword = data.tempPassword || clientTempPassword;
             try {
-              console.log("[AUTO LOGIN] Attempting sign-in for:", data.email);
+              console.log("[AUTO LOGIN] Attempting sign-in for:", normalizedEmail);
               const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                email: data.email,
-                password: data.tempPassword,
+                email: normalizedEmail,
+                password: loginPassword,
               });
+              console.log("[AUTO LOGIN] Result:", signInError ? signInError.message : "success", "session:", !!signInData?.session);
               if (!signInError && signInData?.session) {
                 console.log("[AUTO LOGIN] Success! Redirecting to dashboard...");
                 toast.success("Welcome! Taking you to your dashboard...");
@@ -407,14 +412,26 @@ export default function FounderFocusScore() {
                   window.location.href = "/dashboard-entrepreneur";
                 }, 500);
                 return;
-              } else {
-                console.error("[AUTO LOGIN] Sign-in error:", signInError?.message);
+              }
+              if (signInError) {
+                console.log("[AUTO LOGIN] Retrying with clientPassword...");
+                const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+                  email: normalizedEmail,
+                  password: clientTempPassword,
+                });
+                if (!retryError && retryData?.session) {
+                  console.log("[AUTO LOGIN] Retry success! Redirecting...");
+                  toast.success("Welcome! Taking you to your dashboard...");
+                  setTimeout(() => {
+                    window.location.href = "/dashboard-entrepreneur";
+                  }, 500);
+                  return;
+                }
+                console.error("[AUTO LOGIN] Retry also failed:", retryError?.message);
               }
             } catch (loginErr) {
               console.error("[AUTO LOGIN] Error:", loginErr);
             }
-          } else if (res.ok) {
-            setAutoAccountCreated(true);
           } else {
             if (data.error?.includes("already exists")) {
               setAutoAccountCreated(true);

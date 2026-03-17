@@ -9847,7 +9847,7 @@ app.post("/api/community/auto-signup", async (req, res) => {
       return res.status(500).json({ error: "Database not configured" });
     }
 
-    const { email, name, quizResult } = req.body;
+    const { email, name, quizResult, clientPassword } = req.body;
     if (!email || !name) {
       return res.status(400).json({ error: "Name and email are required" });
     }
@@ -9866,7 +9866,7 @@ app.post("/api/community/auto-signup", async (req, res) => {
       });
     }
 
-    const tempPassword = `TCP_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    const tempPassword = clientPassword || `TCP_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: normalizedEmail,

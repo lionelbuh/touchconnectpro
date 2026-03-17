@@ -9266,7 +9266,7 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
         return res.status(500).json({ error: "Database not configured" });
       }
 
-      const { email, name, quizResult } = req.body;
+      const { email, name, quizResult, clientPassword } = req.body;
       if (!email || !name) {
         return res.status(400).json({ error: "Name and email are required" });
       }
@@ -9285,7 +9285,7 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
         });
       }
 
-      const tempPassword = `TCP_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+      const tempPassword = clientPassword || `TCP_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
       const { data: authData, error: authError } = await (client.auth.admin.createUser({
         email: normalizedEmail,
