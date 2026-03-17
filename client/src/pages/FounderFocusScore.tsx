@@ -391,19 +391,24 @@ export default function FounderFocusScore() {
           });
 
           const data = await res.json();
+          console.log("[AUTO SIGNUP] Response status:", res.status, "data:", JSON.stringify(data));
           if (res.ok && data.tempPassword && data.email) {
             setAutoAccountCreated(true);
             try {
-              const { error: signInError } = await supabase.auth.signInWithPassword({
+              console.log("[AUTO LOGIN] Attempting sign-in for:", data.email);
+              const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                 email: data.email,
                 password: data.tempPassword,
               });
-              if (!signInError) {
+              if (!signInError && signInData?.session) {
+                console.log("[AUTO LOGIN] Success! Redirecting to dashboard...");
                 toast.success("Welcome! Taking you to your dashboard...");
-                navigate("/dashboard-entrepreneur");
+                setTimeout(() => {
+                  window.location.href = "/dashboard-entrepreneur";
+                }, 500);
                 return;
               } else {
-                console.error("[AUTO LOGIN] Sign-in error:", signInError);
+                console.error("[AUTO LOGIN] Sign-in error:", signInError?.message);
               }
             } catch (loginErr) {
               console.error("[AUTO LOGIN] Error:", loginErr);
@@ -413,6 +418,7 @@ export default function FounderFocusScore() {
           } else {
             if (data.error?.includes("already exists")) {
               setAutoAccountCreated(true);
+              toast.info("An account already exists for this email. Please log in to access your dashboard.");
             } else {
               console.error("[AUTO SIGNUP] Error:", data.error);
             }
