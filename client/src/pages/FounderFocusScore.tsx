@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, ArrowLeft, Target, Compass, DollarSign, Settings, Rocket, CheckCircle, Loader2, Zap, Clock, Users, Briefcase, Lightbulb, Check } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   SEGMENTATION_QUESTION,
   TRACK_QUESTIONS,
@@ -17,6 +17,7 @@ import {
 import { COMMUNITY_FREE_CONTRACT } from "@/lib/contracts";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
+import { supabase } from "@/lib/supabase";
 
 const categoryIcons: Record<Category, React.ReactNode> = {
   Strategy: <Compass className="h-6 w-6" />,
@@ -42,6 +43,7 @@ const segmentIcons = [
 type Phase = "landing" | "segmentation" | "quiz" | "contact" | "results" | "community-signup";
 
 export default function FounderFocusScore() {
+  const [, navigate] = useLocation();
   const [phase, setPhase] = useState<Phase>("landing");
   const [selectedTrack, setSelectedTrack] = useState<TrackType | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -377,6 +379,8 @@ export default function FounderFocusScore() {
     const handleSeeResults = async () => {
       if (contactName.trim() && contactEmail.trim()) {
         setIsAutoCreating(true);
+        const clientTempPassword = `TCP_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+        const normalizedEmail = contactEmail.trim().toLowerCase();
         try {
           const res = await fetch(`${API_BASE_URL}/api/community/auto-signup`, {
             method: "POST",
@@ -385,15 +389,53 @@ export default function FounderFocusScore() {
               email: contactEmail.trim(),
               name: contactName.trim(),
               quizResult: result,
+              clientPassword: clientTempPassword,
             }),
           });
 
           const data = await res.json();
+          console.log("[AUTO SIGNUP] Response status:", res.status, "data keys:", Object.keys(data));
           if (res.ok) {
             setAutoAccountCreated(true);
+            const loginPassword = data.tempPassword || clientTempPassword;
+            try {
+              console.log("[AUTO LOGIN] Attempting sign-in for:", normalizedEmail);
+              const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                email: normalizedEmail,
+                password: loginPassword,
+              });
+              console.log("[AUTO LOGIN] Result:", signInError ? signInError.message : "success", "session:", !!signInData?.session);
+              if (!signInError && signInData?.session) {
+                console.log("[AUTO LOGIN] Success! Redirecting to dashboard...");
+                toast.success("Welcome! Taking you to your dashboard...");
+                setTimeout(() => {
+                  window.location.href = "/dashboard-entrepreneur";
+                }, 500);
+                return;
+              }
+              if (signInError) {
+                console.log("[AUTO LOGIN] Retrying with clientPassword...");
+                const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+                  email: normalizedEmail,
+                  password: clientTempPassword,
+                });
+                if (!retryError && retryData?.session) {
+                  console.log("[AUTO LOGIN] Retry success! Redirecting...");
+                  toast.success("Welcome! Taking you to your dashboard...");
+                  setTimeout(() => {
+                    window.location.href = "/dashboard-entrepreneur";
+                  }, 500);
+                  return;
+                }
+                console.error("[AUTO LOGIN] Retry also failed:", retryError?.message);
+              }
+            } catch (loginErr) {
+              console.error("[AUTO LOGIN] Error:", loginErr);
+            }
           } else {
             if (data.error?.includes("already exists")) {
               setAutoAccountCreated(true);
+              toast.info("An account already exists for this email. Please log in to access your dashboard.");
             } else {
               console.error("[AUTO SIGNUP] Error:", data.error);
             }
