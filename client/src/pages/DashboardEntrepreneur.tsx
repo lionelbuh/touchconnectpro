@@ -4123,37 +4123,19 @@ export default function DashboardEntrepreneur() {
       )}
 
       {activeTab === "idea" && !(isPreApproved && !ideaSubmitted && !founderSnapshot) && (
-       <div>
-        <h1 className="text-3xl font-display font-bold text-[#0D566C] mb-2">Your Idea Submission</h1>
-        <p className="text-[#8A8A8A] mb-8">Here's a complete summary of your business idea that was submitted to our mentors.</p>
-
-        <div className="space-y-6">
-         {steps.map((sec, secIdx) => {
-          const ideaReview = entrepreneurData?.data?.ideaReview;
-          return (
-          <Card key={secIdx} className="border-[#E8E8E8]">
-           <CardHeader className="pb-3 bg-[#F3F3F3]">
-            <CardTitle className="text-lg flex items-center gap-2">
-             <sec.icon className="h-5 w-5 text-[#FF6B5C]" />
-             {sec.title}
-            </CardTitle>
-           </CardHeader>
-           <CardContent className="space-y-4 pt-6">
-            {sec.fields.map((field: any) => {
-             const aiValue = ideaReview?.[field.key];
-             const displayValue = aiValue || formData[field.key as keyof typeof formData] || "Not provided";
-             return (
-             <div key={field.key}>
-              <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-2">{field.label}</p>
-              <p className="text-[#0D566C] bg-[#FAF9F7] p-3 rounded-lg">{displayValue}</p>
-             </div>
-             );
-            })}
-           </CardContent>
-          </Card>
-          );
-         })}
-        </div>
+       <div className="text-center py-16">
+        <Lightbulb className="h-16 w-16 text-[#0D566C] mx-auto mb-4" />
+        <h2 className="text-2xl font-bold text-[#0D566C] mb-3">Describe Your Business Idea</h2>
+        <p className="text-[#8A8A8A] mb-6 max-w-md mx-auto">Ready to take the next step? Complete the full Founder Blueprint to share your idea with our mentors and unlock personalized guidance.</p>
+        <a
+         href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}
+         data-testid="link-describe-idea"
+        >
+         <Button className="bg-[#0D566C] hover:bg-[#0a4557] text-white rounded-full px-8 py-3 text-lg">
+          <Lightbulb className="mr-2 h-5 w-5" />
+          Start Describing Your Idea
+         </Button>
+        </a>
        </div>
       )}
 
