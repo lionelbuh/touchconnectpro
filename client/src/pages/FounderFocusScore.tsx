@@ -17,7 +17,7 @@ import {
 import { COMMUNITY_FREE_CONTRACT } from "@/lib/contracts";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 const categoryIcons: Record<Category, React.ReactNode> = {
   Strategy: <Compass className="h-6 w-6" />,
@@ -399,35 +399,40 @@ export default function FounderFocusScore() {
             setAutoAccountCreated(true);
             const loginPassword = data.tempPassword || clientTempPassword;
             try {
-              console.log("[AUTO LOGIN] Attempting sign-in for:", normalizedEmail);
-              const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                email: normalizedEmail,
-                password: loginPassword,
-              });
-              console.log("[AUTO LOGIN] Result:", signInError ? signInError.message : "success", "session:", !!signInData?.session);
-              if (!signInError && signInData?.session) {
-                console.log("[AUTO LOGIN] Success! Redirecting to dashboard...");
-                toast.success("Welcome! Taking you to your dashboard...");
-                setTimeout(() => {
-                  window.location.href = "/dashboard-entrepreneur";
-                }, 500);
-                return;
-              }
-              if (signInError) {
-                console.log("[AUTO LOGIN] Retrying with clientPassword...");
-                const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+              const supabaseClient = await getSupabase();
+              if (!supabaseClient) {
+                console.error("[AUTO LOGIN] Supabase client not available");
+              } else {
+                console.log("[AUTO LOGIN] Attempting sign-in for:", normalizedEmail);
+                const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({
                   email: normalizedEmail,
-                  password: clientTempPassword,
+                  password: loginPassword,
                 });
-                if (!retryError && retryData?.session) {
-                  console.log("[AUTO LOGIN] Retry success! Redirecting...");
+                console.log("[AUTO LOGIN] Result:", signInError ? signInError.message : "success", "session:", !!signInData?.session);
+                if (!signInError && signInData?.session) {
+                  console.log("[AUTO LOGIN] Success! Redirecting to dashboard...");
                   toast.success("Welcome! Taking you to your dashboard...");
                   setTimeout(() => {
                     window.location.href = "/dashboard-entrepreneur";
                   }, 500);
                   return;
                 }
-                console.error("[AUTO LOGIN] Retry also failed:", retryError?.message);
+                if (signInError) {
+                  console.log("[AUTO LOGIN] Retrying with clientPassword...");
+                  const { data: retryData, error: retryError } = await supabaseClient.auth.signInWithPassword({
+                    email: normalizedEmail,
+                    password: clientTempPassword,
+                  });
+                  if (!retryError && retryData?.session) {
+                    console.log("[AUTO LOGIN] Retry success! Redirecting...");
+                    toast.success("Welcome! Taking you to your dashboard...");
+                    setTimeout(() => {
+                      window.location.href = "/dashboard-entrepreneur";
+                    }, 500);
+                    return;
+                  }
+                  console.error("[AUTO LOGIN] Retry also failed:", retryError?.message);
+                }
               }
             } catch (loginErr) {
               console.error("[AUTO LOGIN] Error:", loginErr);
