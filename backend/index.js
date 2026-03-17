@@ -1695,7 +1695,7 @@ app.put("/api/entrepreneurs/intake/:email", async (req, res) => {
   try {
     const { email } = req.params;
     const decodedEmail = decodeURIComponent(email);
-    const { needsIntake, founderSnapshot, snapshotSummary } = req.body;
+    const { needsIntake, founderSnapshot, snapshotSummary, builderDraftPlan } = req.body;
 
     console.log("[PUT /api/entrepreneurs/intake/:email] Saving intake data for:", decodedEmail);
 
@@ -1714,7 +1714,8 @@ app.put("/api/entrepreneurs/intake/:email", async (req, res) => {
       ...currentData?.data,
       ...(needsIntake && { needsIntake }),
       ...(founderSnapshot && { founderSnapshot }),
-      ...(snapshotSummary && { snapshotSummary })
+      ...(snapshotSummary && { snapshotSummary }),
+      ...(builderDraftPlan && { builderDraftPlan })
     };
 
     const { data, error } = await supabase

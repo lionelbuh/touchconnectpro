@@ -539,6 +539,11 @@ export default function DashboardEntrepreneur() {
       if (data.data?.snapshotSummary) {
        setSnapshotSummary(data.data.snapshotSummary);
       }
+      // Load builder draft plan from server
+      if (data.data?.builderDraftPlan) {
+       setBuilderModeDraft(data.data.builderDraftPlan);
+       localStorage.setItem("tcp_builder_draft", JSON.stringify(data.data.builderDraftPlan));
+      }
 
       // Set mentor data if assigned
       if (data.mentorAssignment) {
@@ -922,6 +927,13 @@ export default function DashboardEntrepreneur() {
     localStorage.setItem("tcp_builder_draft", JSON.stringify(draft));
     setShowUpgradeNudge(true);
     toast.success("Your draft business plan is ready!");
+    if (profileData.email) {
+     fetch(`${API_BASE_URL}/api/entrepreneurs/intake/${encodeURIComponent(profileData.email)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ builderDraftPlan: draft })
+     }).catch(err => console.error("Error saving draft to server:", err));
+    }
    } else {
     toast.error("Failed to generate draft plan. Please try again.");
    }

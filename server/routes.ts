@@ -1423,7 +1423,7 @@ export async function registerRoutes(
 
       const { email } = req.params;
       const decodedEmail = decodeURIComponent(email);
-      const { needsIntake, founderSnapshot, snapshotSummary } = req.body;
+      const { needsIntake, founderSnapshot, snapshotSummary, builderDraftPlan } = req.body;
 
       console.log("[PUT /api/entrepreneurs/intake/:email] Saving intake data for:", decodedEmail);
 
@@ -1444,7 +1444,8 @@ export async function registerRoutes(
         ...currentData?.data,
         ...(needsIntake && { needsIntake }),
         ...(founderSnapshot && { founderSnapshot }),
-        ...(snapshotSummary && { snapshotSummary })
+        ...(snapshotSummary && { snapshotSummary }),
+        ...(builderDraftPlan && { builderDraftPlan })
       };
 
       // Update the ideas table with merged data
