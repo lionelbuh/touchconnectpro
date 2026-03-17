@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, ArrowLeft, Target, Compass, DollarSign, Settings, Rocket, CheckCircle, Loader2, Zap, Clock, Users, Briefcase, Lightbulb, Check } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   SEGMENTATION_QUESTION,
   TRACK_QUESTIONS,
@@ -17,6 +17,7 @@ import {
 import { COMMUNITY_FREE_CONTRACT } from "@/lib/contracts";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
+import { supabase } from "@/lib/supabase";
 
 const categoryIcons: Record<Category, React.ReactNode> = {
   Strategy: <Compass className="h-6 w-6" />,
@@ -42,6 +43,7 @@ const segmentIcons = [
 type Phase = "landing" | "segmentation" | "quiz" | "contact" | "results" | "community-signup";
 
 export default function FounderFocusScore() {
+  const [, navigate] = useLocation();
   const [phase, setPhase] = useState<Phase>("landing");
   const [selectedTrack, setSelectedTrack] = useState<TrackType | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -389,7 +391,24 @@ export default function FounderFocusScore() {
           });
 
           const data = await res.json();
-          if (res.ok) {
+          if (res.ok && data.tempPassword && data.email) {
+            setAutoAccountCreated(true);
+            try {
+              const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: data.email,
+                password: data.tempPassword,
+              });
+              if (!signInError) {
+                toast.success("Welcome! Taking you to your dashboard...");
+                navigate("/dashboard-entrepreneur");
+                return;
+              } else {
+                console.error("[AUTO LOGIN] Sign-in error:", signInError);
+              }
+            } catch (loginErr) {
+              console.error("[AUTO LOGIN] Error:", loginErr);
+            }
+          } else if (res.ok) {
             setAutoAccountCreated(true);
           } else {
             if (data.error?.includes("already exists")) {

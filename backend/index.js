@@ -10047,7 +10047,9 @@ app.post("/api/community/auto-signup", async (req, res) => {
     return res.json({ 
       success: true, 
       id: ideaData?.[0]?.id,
-      message: "Account created. Password setup email sent."
+      message: "Account created. Password setup email sent.",
+      tempPassword: tempPassword,
+      email: normalizedEmail
     });
   } catch (error) {
     console.error("[AUTO SIGNUP] Error:", error);
