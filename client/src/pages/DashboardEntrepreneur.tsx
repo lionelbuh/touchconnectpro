@@ -3436,6 +3436,16 @@ export default function DashboardEntrepreneur() {
                 <span className="text-xs text-[#8A8A8A]">No ratings yet</span>
                )}
               </button>
+              <Button
+               variant="outline"
+               size="sm"
+               className="mt-2 border-purple-300 text-purple-700 hover:bg-purple-50 w-full"
+               onClick={() => { trackCoachProfileView(); window.open(`/coach/${coach.id}`, '_blank'); }}
+               data-testid={`button-view-profile-left-${coach.id}`}
+              >
+               <ExternalLink className="h-3 w-3 mr-1" />
+               View Profile
+              </Button>
              </div>
              <div className="flex-1">
             <CardHeader className="pb-2">
