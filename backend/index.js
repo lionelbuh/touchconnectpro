@@ -9938,7 +9938,6 @@ app.post("/api/community/auto-signup", async (req, res) => {
                     <li>Coach marketplace browsing</li>
                     <li>Focus Score diagnostics</li>
                   </ul>
-                  <p>Ready to upgrade? Our Founders Circle ($9.99/month) and Capital Circle ($49/month) tiers unlock mentor access and investor connections.</p>
                 </div>
                 <div class="footer">
                   <p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p>
@@ -10115,7 +10114,6 @@ app.post("/api/community/signup", async (req, res) => {
                 <li>Coach marketplace browsing</li>
                 <li>Focus Score diagnostics</li>
               </ul>
-              <p>Ready to upgrade? Our Founders Circle ($9.99/month) and Capital Circle ($49/month) tiers unlock mentor access and investor connections.</p>
               <p><a href="https://touchconnectpro.com/login" class="button">Log In to Your Dashboard</a></p>
             </div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC. All rights reserved.<br><span style="font-size: 12px;">TouchConnectPro is a brand and online service operated by Touch Equity Partners LLC.</span></p></div></div></body></html>`
         });
