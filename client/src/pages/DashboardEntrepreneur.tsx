@@ -2276,6 +2276,66 @@ export default function DashboardEntrepreneur() {
 
     <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden">
      <div className="max-w-4xl w-full">
+
+      <div className="flex justify-between items-start mb-8">
+       <div className="flex items-center gap-4">
+        <div className="w-16 h-16 rounded-full bg-[#FF6B5C] flex items-center justify-center text-white text-xl font-bold overflow-hidden flex-shrink-0 shadow-lg">
+         {profileData.profileImage ? (
+          <img src={profileData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+         ) : (
+          profileData.fullName?.substring(0, 2).toUpperCase() || "EN"
+         )}
+        </div>
+        <div>
+         <h1 className="text-xl sm:text-3xl font-display font-bold text-[#0D566C] mb-2">Welcome, {profileData.fullName?.split(" ")[0] || "Entrepreneur"}!</h1>
+         <p className="text-[#8A8A8A]">Here's what's happening with <span className="font-semibold text-[#0D566C]">{formData.ideaName || entrepreneurData?.data?.ideaName || "Your Idea"}</span>.</p>
+        </div>
+       </div>
+       <Button 
+        variant="outline" 
+        className="text-red-600 border-red-200 hover:bg-red-50 md:hidden"
+        onClick={handleLogout}
+        data-testid="button-logout-mobile"
+       >
+        <LogOut className="h-4 w-4 mr-2" /> Sign Out
+       </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+       <Card className={`border-l-4 ${isAccountDisabled ? "border-l-red-500" : isPreApproved ? "border-l-[#FF6B5C]" : "border-l-[#FF6B5C]"} shadow-sm`}>
+        <CardHeader className="pb-2">
+         <CardTitle className="text-sm font-medium text-[#8A8A8A]">Current Stage</CardTitle>
+        </CardHeader>
+        <CardContent>
+         <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "text-[#FF6B5C]" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "text-emerald-600" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "text-[#4B3F72]" : (isPreApproved && ideaSubmitted && !hasPaid) ? "text-[#FF6B5C]" : (isPreApproved && hasPaid) ? "text-emerald-600" : ""}`}>
+          {isAccountDisabled ? "Disabled Member" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Getting Started" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "Draft Plan Ready" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Snapshot Done" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Idea Submitted" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
+         </div>
+         <p className="text-xs text-[#8A8A8A] mt-1">
+          {isAccountDisabled ? "Contact Guidance Team to reactivate" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Browse coaches and complete your Snapshot" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "AI draft plan ready — explore coaches" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Exploring coaches and community" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Community Free - explore coaches & build plans" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
+         </p>
+        </CardContent>
+       </Card>
+       
+       <Card className={`border-l-4 ${entrepreneurStatus === "approved" ? "border-l-emerald-500" : "border-l-amber-500"} shadow-sm`}>
+        <CardHeader className="pb-2">
+         <CardTitle className="text-sm font-medium text-[#8A8A8A]">Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+         <div className={`text-2xl font-bold ${statusColor}`}>{statusDisplay}</div>
+        </CardContent>
+       </Card>
+
+       <Card className="border-l-4 border-l-purple-500 shadow-sm">
+        <CardHeader className="pb-2">
+         <CardTitle className="text-sm font-medium text-[#8A8A8A]">Mentor Notes</CardTitle>
+        </CardHeader>
+        <CardContent>
+         <div className="text-2xl font-bold">{mentorNotes.length}</div>
+         <p className="text-xs text-[#8A8A8A] mt-1">{mentorNotes.length === 1 ? "recommendation" : "recommendations"} from your mentor</p>
+        </CardContent>
+       </Card>
+      </div>
+
       {/* Overview Tab */}
       {activeTab === "overview" && (
        <div>
@@ -2621,65 +2681,6 @@ export default function DashboardEntrepreneur() {
           </CardContent>
          </Card>
         )}
-
-        <div className="flex justify-between items-start mb-8">
-         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-[#FF6B5C] flex items-center justify-center text-white text-xl font-bold overflow-hidden flex-shrink-0 shadow-lg">
-           {profileData.profileImage ? (
-            <img src={profileData.profileImage} alt="Profile" className="w-full h-full object-cover" />
-           ) : (
-            profileData.fullName?.substring(0, 2).toUpperCase() || "EN"
-           )}
-          </div>
-          <div>
-           <h1 className="text-xl sm:text-3xl font-display font-bold text-[#0D566C] mb-2">Welcome, {profileData.fullName?.split(" ")[0] || "Entrepreneur"}!</h1>
-           <p className="text-[#8A8A8A]">Here's what's happening with <span className="font-semibold text-[#0D566C]">{formData.ideaName || entrepreneurData?.data?.ideaName || "Your Idea"}</span>.</p>
-          </div>
-         </div>
-         <Button 
-          variant="outline" 
-          className="text-red-600 border-red-200 hover:bg-red-50 md:hidden"
-          onClick={handleLogout}
-          data-testid="button-logout-mobile"
-         >
-          <LogOut className="h-4 w-4 mr-2" /> Sign Out
-         </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-         <Card className={`border-l-4 ${isAccountDisabled ? "border-l-red-500" : isPreApproved ? "border-l-[#FF6B5C]" : "border-l-[#FF6B5C]"} shadow-sm`}>
-          <CardHeader className="pb-2">
-           <CardTitle className="text-sm font-medium text-[#8A8A8A]">Current Stage</CardTitle>
-          </CardHeader>
-          <CardContent>
-           <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "text-[#FF6B5C]" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "text-emerald-600" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "text-[#4B3F72]" : (isPreApproved && ideaSubmitted && !hasPaid) ? "text-[#FF6B5C]" : (isPreApproved && hasPaid) ? "text-emerald-600" : ""}`}>
-            {isAccountDisabled ? "Disabled Member" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Getting Started" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "Draft Plan Ready" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Snapshot Done" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Idea Submitted" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
-           </div>
-           <p className="text-xs text-[#8A8A8A] mt-1">
-            {isAccountDisabled ? "Contact Guidance Team to reactivate" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Browse coaches and complete your Snapshot" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "AI draft plan ready — explore coaches" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Exploring coaches and community" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Community Free - explore coaches & build plans" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
-           </p>
-          </CardContent>
-         </Card>
-         
-         <Card className={`border-l-4 ${entrepreneurStatus === "approved" ? "border-l-emerald-500" : "border-l-amber-500"} shadow-sm`}>
-          <CardHeader className="pb-2">
-           <CardTitle className="text-sm font-medium text-[#8A8A8A]">Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-           <div className={`text-2xl font-bold ${statusColor}`}>{statusDisplay}</div>
-          </CardContent>
-         </Card>
-
-         <Card className="border-l-4 border-l-purple-500 shadow-sm">
-          <CardHeader className="pb-2">
-           <CardTitle className="text-sm font-medium text-[#8A8A8A]">Mentor Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-           <div className="text-2xl font-bold">{mentorNotes.length}</div>
-           <p className="text-xs text-[#8A8A8A] mt-1">{mentorNotes.length === 1 ? "recommendation" : "recommendations"} from your mentor</p>
-          </CardContent>
-         </Card>
-        </div>
 
         {needsIntakeData && (
          <Card className="mb-6 border-l-4 border-l-[#F5C542]" data-testid="card-needs-complete">
