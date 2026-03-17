@@ -2380,14 +2380,23 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
              <h3 className="text-xl font-bold text-[#0D566C] mb-1" data-testid="text-community-welcome">Find your coach — it's free</h3>
              <Badge className="bg-[#0D566C]/10 text-[#0D566C] border-none mb-3">Free plan</Badge>
              <p className="text-[#4A4A4A] mb-4">Browse real coaches matched to your industry and stage. No commitment — just explore who's here. Some coaches offer free quick calls, so you can get a feel before deciding anything.</p>
+             <div className="flex flex-wrap gap-3">
              <Button 
-              className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full mr-3"
+              className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full"
               onClick={() => setActiveTab("coaches")}
               data-testid="button-browse-coaches"
              >
               <GraduationCap className="mr-2 h-4 w-4" />
               Browse coaches
              </Button>
+             <Button 
+              className="bg-green-600 hover:bg-green-700 text-white rounded-full"
+              onClick={() => { setFreeIntroCallFilter(true); setActiveTab("coaches"); }}
+              data-testid="button-free-intro-call-overview"
+             >
+              🎁 Free Intro Call
+             </Button>
+             </div>
              <p className="text-sm text-[#8A8A8A] mt-4">Want better matches? <button className="text-[#0D566C] font-semibold underline cursor-pointer" onClick={() => { setShowSnapshotForm(true); setTimeout(() => { const el = document.getElementById('snapshot-form-section'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100); }} data-testid="link-submit-idea">Complete your Founder Snapshot</button> — takes 4 minutes and helps us show you the most relevant coaches.</p>
              <div className="mt-4">
               <div className="flex items-center gap-2 mb-1">
@@ -2470,6 +2479,7 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
               </div>
              )}
 
+             <div className="flex flex-wrap gap-3">
              <Button 
               className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full"
               onClick={() => setActiveTab("coaches")}
@@ -2478,6 +2488,14 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
               <GraduationCap className="mr-2 h-4 w-4" />
               Browse coaches
              </Button>
+             <Button 
+              className="bg-green-600 hover:bg-green-700 text-white rounded-full"
+              onClick={() => { setFreeIntroCallFilter(true); setActiveTab("coaches"); }}
+              data-testid="button-free-intro-call-post-snapshot"
+             >
+              🎁 Free Intro Call
+             </Button>
+             </div>
             </div>
            </div>
           </CardContent>
