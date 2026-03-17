@@ -119,6 +119,8 @@ export default function DashboardEntrepreneur() {
  const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
  const [builderConfirmed, setBuilderConfirmed] = useState(false);
  const [showUpgradeNudge, setShowUpgradeNudge] = useState(false);
+ const [coachViewCount, setCoachViewCount] = useState(0);
+ const [isDayTwoReturn, setIsDayTwoReturn] = useState(false);
  const [showAgreementGate, setShowAgreementGate] = useState(false);
  const [agreementChecked, setAgreementChecked] = useState(false);
  const [agreedToContract, setAgreedToContract] = useState(false);
@@ -866,9 +868,11 @@ export default function DashboardEntrepreneur() {
   const lastVisit = localStorage.getItem("tcp_last_visit_date");
   if (lastVisit && lastVisit !== today) {
    setBuilderModeUnlocked(true);
+   setIsDayTwoReturn(true);
   }
   localStorage.setItem("tcp_last_visit_date", today);
   const coachViews = parseInt(localStorage.getItem("tcp_coach_views") || "0", 10);
+  setCoachViewCount(coachViews);
   if (coachViews >= 2) {
    setBuilderModeUnlocked(true);
   }
@@ -892,6 +896,7 @@ export default function DashboardEntrepreneur() {
   const current = parseInt(localStorage.getItem("tcp_coach_views") || "0", 10);
   const updated = current + 1;
   localStorage.setItem("tcp_coach_views", String(updated));
+  setCoachViewCount(updated);
   if (updated >= 2) {
    setBuilderModeUnlocked(true);
   }
@@ -2333,13 +2338,11 @@ export default function DashboardEntrepreneur() {
              <CheckCircle className="h-8 w-8 text-emerald-500" />
             </div>
             <div className="flex-1">
-             <div className="flex items-center gap-2 mb-1">
-              <div className="flex items-center gap-2 mb-2">
-               <span className="text-xs font-medium text-[#8A8A8A]">100%</span>
-              </div>
-              <Progress value={100} className="h-2 flex-1" />
+             <p className="text-xs font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">Founder Snapshot</p>
+             <div className="flex items-center gap-2 mb-3">
+              <Badge className="bg-[#0D566C] text-white">{snapshotSummary?.stage || founderSnapshot.stage || "Stage 1"}</Badge>
+              <Badge variant="outline" className="border-emerald-500 text-emerald-600">Completed</Badge>
              </div>
-             <h3 className="text-xl font-bold text-[#0D566C] mb-3" data-testid="text-snapshot-complete">Your Founder Snapshot</h3>
              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
               <div className="bg-[#0D566C]/5 rounded-lg p-3 text-center">
                <p className="text-[10px] uppercase tracking-wider text-[#8A8A8A] mb-1">Stage</p>
@@ -2360,14 +2363,47 @@ export default function DashboardEntrepreneur() {
                </p>
               </div>
              </div>
-             <p className="text-sm text-[#4A4A4A] mb-3">Based on your Snapshot, here are your best coach matches:</p>
+
+             {!builderModeDraft && (
+              <div className="bg-[#FAF9F7] border border-[#E8E8E8] rounded-lg p-4 mb-4">
+               <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wider mb-2">What to do next</p>
+               <p className="text-sm text-[#4A4A4A] mb-3">Your next step: browse a few coach profiles — see who's working in your space. There's no commitment, and some offer free quick calls. The more you explore, the better your matches get.</p>
+               <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                 <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                 <span className="text-sm text-emerald-700 line-through">Complete your Founder Snapshot</span>
+                </div>
+                <div className="flex items-center gap-2">
+                 {coachViewCount >= 2 ? (
+                  <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                 ) : (
+                  <Circle className="h-4 w-4 text-[#C0C0C0] flex-shrink-0" />
+                 )}
+                 <span className={`text-sm ${coachViewCount >= 2 ? "text-emerald-700 line-through" : "text-[#4A4A4A]"}`}>
+                  Browse 2 coach profiles {coachViewCount > 0 && coachViewCount < 2 ? `(${coachViewCount}/2)` : ""}
+                 </span>
+                </div>
+                <div className="flex items-center gap-2">
+                 {isDayTwoReturn ? (
+                  <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                 ) : (
+                  <Circle className="h-4 w-4 text-[#C0C0C0] flex-shrink-0" />
+                 )}
+                 <span className={`text-sm ${isDayTwoReturn ? "text-emerald-700 line-through" : "text-[#4A4A4A]"}`}>
+                  Come back tomorrow to unlock your free business plan
+                 </span>
+                </div>
+               </div>
+              </div>
+             )}
+
              <Button 
               className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full"
               onClick={() => setActiveTab("coaches")}
               data-testid="button-view-matched-coaches"
              >
               <GraduationCap className="mr-2 h-4 w-4" />
-              View matched coaches
+              Browse coaches
              </Button>
             </div>
            </div>
