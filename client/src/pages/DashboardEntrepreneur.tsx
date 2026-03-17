@@ -2538,14 +2538,6 @@ export default function DashboardEntrepreneur() {
               ))}
              </div>
              <div className="mt-4 flex items-center gap-3">
-              <Button 
-               className="bg-[#0D566C] hover:bg-[#0a4557] text-white rounded-full"
-               onClick={() => setActiveTab("plan")}
-               data-testid="button-view-full-plan"
-              >
-               <Target className="mr-2 h-4 w-4" />
-               Go to full Business Plan
-              </Button>
               <a 
                href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}
                data-testid="link-full-blueprint"
