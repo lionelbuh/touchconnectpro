@@ -410,6 +410,36 @@ app.post("/api/ai/generate-plan", async (req, res) => {
   }
 });
 
+app.post("/api/ai/generate-draft-plan", async (req, res) => {
+  console.log("[AI DRAFT PLAN] Processing request...");
+  try {
+    const openai = getOpenAI();
+    if (!openai) {
+      return res.status(503).json({ error: "AI service not configured." });
+    }
+    const { snapshot, snapshotSummary } = req.body;
+    if (!snapshot || !snapshot.building) {
+      return res.status(400).json({ error: "Snapshot data required" });
+    }
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a supportive startup advisor helping a founder draft a concise business plan summary. Be conversational and encouraging. Based on the founder's Snapshot data, produce a structured draft plan. Keep each section to 2-3 sentences — clear, specific, and actionable. Do not use jargon or filler." },
+        { role: "user", content: `Here is the founder's Snapshot data:\n\nBuilding: ${snapshot.building}\nStage: ${snapshotSummary?.stage || snapshot.stage}\nTarget Customer: ${snapshot.targetCustomer}\nBiggest Challenge: ${snapshotSummary?.mainChallenge || snapshot.biggestBlocker}${snapshot.blockerOther ? ` (${snapshot.blockerOther})` : ""}\nCurrent Traction: ${snapshotSummary?.traction || snapshot.traction}\n90-Day Goal: ${snapshotSummary?.ninetyDayGoal || snapshot.ninetyDayGoal}\n\nGenerate a concise draft business plan as JSON with these exact keys:\n{"problem":"The problem (2-3 sentences)","solution":"How it solves (2-3 sentences)","targetCustomer":"Ideal customer (2-3 sentences)","uniqueValue":"What makes this different (2-3 sentences)","ninetyDayGoal":"90-day plan (2-3 sentences)","keyRisks":"Top risks and mitigation (2-3 sentences)"}\n\nReturn ONLY valid JSON.` }
+      ],
+      temperature: 0.7,
+      response_format: { type: "json_object" }
+    });
+    const content = response.choices[0]?.message?.content;
+    if (!content) throw new Error("No response from AI");
+    console.log("[AI DRAFT PLAN] Success");
+    return res.json(JSON.parse(content));
+  } catch (error) {
+    console.error("[AI DRAFT PLAN ERROR]:", error.message);
+    return res.status(500).json({ error: "Failed to generate draft plan" });
+  }
+});
+
 // AI: Generate meeting questions from business plan
 app.post("/api/ai/generate-questions", async (req, res) => {
   console.log("[AI GENERATE QUESTIONS] Processing request...");
@@ -1665,7 +1695,7 @@ app.put("/api/entrepreneurs/intake/:email", async (req, res) => {
   try {
     const { email } = req.params;
     const decodedEmail = decodeURIComponent(email);
-    const { needsIntake, founderSnapshot, snapshotSummary } = req.body;
+    const { needsIntake, founderSnapshot, snapshotSummary, builderDraftPlan } = req.body;
 
     console.log("[PUT /api/entrepreneurs/intake/:email] Saving intake data for:", decodedEmail);
 
@@ -1684,7 +1714,8 @@ app.put("/api/entrepreneurs/intake/:email", async (req, res) => {
       ...currentData?.data,
       ...(needsIntake && { needsIntake }),
       ...(founderSnapshot && { founderSnapshot }),
-      ...(snapshotSummary && { snapshotSummary })
+      ...(snapshotSummary && { snapshotSummary }),
+      ...(builderDraftPlan && { builderDraftPlan })
     };
 
     const { data, error } = await supabase
@@ -1738,6 +1769,20 @@ app.put("/api/entrepreneurs/intake/:email", async (req, res) => {
           console.log("[COMBINED EMAIL] Admin notification sent to:", ADMIN_EMAIL);
         } catch (emailErr) {
           console.error("[COMBINED EMAIL] Failed to send admin email:", emailErr.message);
+        }
+      }
+
+      if (builderDraftPlan) {
+        try {
+          await emailClient.emails.send({
+            from: fromEmail,
+            to: ADMIN_EMAIL,
+            subject: `[Free Business Plan] ${entrepreneurName} generated a draft plan`,
+            html: `<!DOCTYPE html><html><head><style>body{font-family:'Inter',Arial,sans-serif;line-height:1.6;color:#4A4A4A;margin:0;padding:0;background-color:#FAF9F7}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#059669,#047857);color:white;padding:30px;text-align:center;border-radius:16px 16px 0 0}.content{background:#FFFFFF;padding:30px;border-radius:0 0 16px 16px}.info-box{background:#F0FDF4;border-left:4px solid #059669;padding:15px;margin:15px 0;border-radius:8px}.section{background:#F9FAFB;border-radius:8px;padding:12px 16px;margin:10px 0}.section-title{font-weight:600;color:#059669;font-size:13px;text-transform:uppercase;margin:0 0 4px 0}.section-text{margin:0;color:#4A4A4A;font-size:14px}.footer{text-align:center;margin-top:20px;color:#8A8A8A;font-size:14px}</style></head><body style="background-color:#FAF9F7"><div class="container"><div class="header"><h1 style="margin:0;font-size:22px">Free Business Plan Generated</h1><p style="margin:8px 0 0 0;font-size:14px;opacity:0.9;">A community member has created their AI-powered draft plan.</p></div><div class="content"><div class="info-box"><p style="margin:0;"><strong>Entrepreneur:</strong> ${entrepreneurName}</p><p style="margin:5px 0 0 0;"><strong>Email:</strong> ${decodedEmail}</p></div><div class="section"><p class="section-title">1. Problem</p><p class="section-text">${builderDraftPlan.problem || 'N/A'}</p></div><div class="section"><p class="section-title">2. Solution</p><p class="section-text">${builderDraftPlan.solution || 'N/A'}</p></div><div class="section"><p class="section-title">3. Target Customer</p><p class="section-text">${builderDraftPlan.targetCustomer || 'N/A'}</p></div><div class="section"><p class="section-title">4. Unique Value</p><p class="section-text">${builderDraftPlan.uniqueValue || 'N/A'}</p></div><div class="section"><p class="section-title">5. 90-Day Goal</p><p class="section-text">${builderDraftPlan.ninetyDayGoal || 'N/A'}</p></div><div class="section"><p class="section-title">6. Key Risks</p><p class="section-text">${builderDraftPlan.keyRisks || 'N/A'}</p></div><p style="font-size:13px;color:#8A8A8A;margin-top:20px;">Generated at: ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })} PST</p></div><div class="footer"><p>&copy; ${new Date().getFullYear()} Touch Equity Partners LLC</p></div></div></body></html>`
+          });
+          console.log("[FREE PLAN EMAIL] Admin notification sent to:", ADMIN_EMAIL);
+        } catch (emailErr) {
+          console.error("[FREE PLAN EMAIL] Failed to send admin email:", emailErr.message);
         }
       }
     }

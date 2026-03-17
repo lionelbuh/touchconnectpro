@@ -2267,6 +2267,48 @@ export default function AdminDashboard() {
  )}
  </div>
 
+ {/* Free Business Plan (Builder Draft) Section */}
+ {app.builderDraftPlan && (
+ <div className="border-t border-[#E8E8E8] pt-4">
+ <Button
+  variant="ghost"
+  className="w-full justify-start text-emerald-600 hover:text-emerald-700 font-semibold"
+  onClick={() => setExpandedBusinessPlan(prev => ({ ...prev, [`draft-${app.id}`]: !prev[`draft-${app.id}`] }))}
+  data-testid={`button-toggle-free-plan-${actualIdx}`}
+ >
+  {expandedBusinessPlan[`draft-${app.id}`] ? "▼" : "▶"} Free Business Plan (6 Sections)
+ </Button>
+ {expandedBusinessPlan[`draft-${app.id}`] && (
+  <div className="mt-4 space-y-4 max-h-96 overflow-y-auto p-4 rounded bg-emerald-50/50">
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">1. Problem</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.problem || 'N/A'}</p>
+  </div>
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">2. Solution</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.solution || 'N/A'}</p>
+  </div>
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">3. Target Customer</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.targetCustomer || 'N/A'}</p>
+  </div>
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">4. Unique Value</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.uniqueValue || 'N/A'}</p>
+  </div>
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">5. 90-Day Goal</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.ninetyDayGoal || 'N/A'}</p>
+  </div>
+  <div className="text-sm">
+   <p className="font-semibold text-[#4A4A4A]">6. Key Risks</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.keyRisks || 'N/A'}</p>
+  </div>
+  </div>
+ )}
+ </div>
+ )}
+
  {/* AI Meeting Questions Section */}
  <div className="border-t border-[#E8E8E8] pt-4">
  <div className="flex items-center justify-between mb-2">
@@ -2394,6 +2436,11 @@ export default function AdminDashboard() {
  ) : (
  <Badge variant="outline" className="border-slate-300 text-slate-400" data-testid={`badge-snapshot-pending-${idx}`}>Founder Snapshot Pending</Badge>
  )}
+ {app.builderDraftPlan ? (
+ <Badge className="bg-emerald-600 text-white" data-testid={`badge-free-plan-done-${idx}`}>Free Plan Done</Badge>
+ ) : (
+ <Badge variant="outline" className="border-slate-300 text-slate-400" data-testid={`badge-free-plan-pending-${idx}`}>Free Plan Pending</Badge>
+ )}
  </div>
  </div>
  </CardHeader>
@@ -2416,6 +2463,48 @@ export default function AdminDashboard() {
  <p className=" text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
  </div>
  </div>
+ {/* Free Business Plan (Builder Draft) Section for Community Members */}
+ {app.builderDraftPlan && (
+ <div className="border-t border-[#E8E8E8] pt-4">
+ <Button
+  variant="ghost"
+  className="w-full justify-start text-emerald-600 hover:text-emerald-700 font-semibold"
+  onClick={() => setExpandedBusinessPlan(prev => ({ ...prev, [`draft-preapproved-${app.id}`]: !prev[`draft-preapproved-${app.id}`] }))}
+  data-testid={`button-toggle-free-plan-preapproved-${actualIdx}`}
+ >
+  {expandedBusinessPlan[`draft-preapproved-${app.id}`] ? "▼" : "▶"} Free Business Plan (6 Sections)
+ </Button>
+ {expandedBusinessPlan[`draft-preapproved-${app.id}`] && (
+  <div className="mt-4 space-y-4 max-h-96 overflow-y-auto p-4 rounded bg-emerald-50/50">
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">1. Problem</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.problem || 'N/A'}</p>
+  </div>
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">2. Solution</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.solution || 'N/A'}</p>
+  </div>
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">3. Target Customer</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.targetCustomer || 'N/A'}</p>
+  </div>
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">4. Unique Value</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.uniqueValue || 'N/A'}</p>
+  </div>
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">5. 90-Day Goal</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.ninetyDayGoal || 'N/A'}</p>
+  </div>
+  <div className="text-sm">
+   <p className="font-semibold text-[#4A4A4A]">6. Key Risks</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.keyRisks || 'N/A'}</p>
+  </div>
+  </div>
+ )}
+ </div>
+ )}
+
  {/* AI Meeting Questions Section for Community Members */}
  <div className="border-t border-[#E8E8E8] pt-4">
  <div className="flex items-center justify-between mb-2">
@@ -3301,6 +3390,9 @@ export default function AdminDashboard() {
  {app.status === "pre-approved" && app.founderSnapshot && (
  <Badge className="bg-[#4B3F72] text-white">Snapshot Done</Badge>
  )}
+ {app.builderDraftPlan && (
+ <Badge className="bg-emerald-600 text-white">Free Plan Done</Badge>
+ )}
  {app.is_disabled && (
  <Badge className="bg-red-600">Disabled</Badge>
  )}
@@ -3489,6 +3581,48 @@ export default function AdminDashboard() {
  </div>
  )}
  </div>
+
+ {/* Free Business Plan (Builder Draft) Section for Members Tab */}
+ {app.builderDraftPlan && (
+ <div className="border-t border-[#E8E8E8] pt-4">
+ <Button
+  variant="ghost"
+  className="w-full justify-start text-emerald-600 hover:text-emerald-700 font-semibold"
+  onClick={() => setExpandedBusinessPlan(prev => ({ ...prev, [`draft-member-${app.id}`]: !prev[`draft-member-${app.id}`] }))}
+  data-testid={`button-toggle-free-plan-member-${idx}`}
+ >
+  {expandedBusinessPlan[`draft-member-${app.id}`] ? "▼" : "▶"} Free Business Plan (6 Sections)
+ </Button>
+ {expandedBusinessPlan[`draft-member-${app.id}`] && (
+  <div className="mt-4 space-y-4 max-h-96 overflow-y-auto p-4 rounded bg-emerald-50/50">
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">1. Problem</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.problem || 'N/A'}</p>
+  </div>
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">2. Solution</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.solution || 'N/A'}</p>
+  </div>
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">3. Target Customer</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.targetCustomer || 'N/A'}</p>
+  </div>
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">4. Unique Value</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.uniqueValue || 'N/A'}</p>
+  </div>
+  <div className="text-sm border-b border-emerald-200 pb-3">
+   <p className="font-semibold text-[#4A4A4A]">5. 90-Day Goal</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.ninetyDayGoal || 'N/A'}</p>
+  </div>
+  <div className="text-sm">
+   <p className="font-semibold text-[#4A4A4A]">6. Key Risks</p>
+   <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.keyRisks || 'N/A'}</p>
+  </div>
+  </div>
+ )}
+ </div>
+ )}
 
  {/* AI Meeting Questions Section for Members Tab */}
  <div className="border-t border-[#E8E8E8] pt-4">
