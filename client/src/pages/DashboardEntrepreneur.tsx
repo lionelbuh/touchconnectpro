@@ -57,6 +57,7 @@ export default function DashboardEntrepreneur() {
  const [loadingPurchases, setLoadingPurchases] = useState(false);
  const [coachRatings, setCoachRatings] = useState<Record<string, { averageRating: number; totalRatings: number }>>({});
  const [selectedSpecializations, setSelectedSpecializations] = useState<string[]>([]);
+const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
  
  // Shuffle coaches when they are loaded to show different order each session
  useEffect(() => {
@@ -3324,6 +3325,24 @@ export default function DashboardEntrepreneur() {
         <h1 className="text-3xl font-display font-bold text-[#0D566C] mb-2">Available Coaches</h1>
         <p className="text-[#8A8A8A] mb-4">Browse our approved coaches who can help accelerate your startup journey with specialized expertise.</p>
 
+        {/* Free Intro Call Filter */}
+        {shuffledCoaches.length > 0 && !isAccountDisabled && (
+         <div className="mb-4">
+          <Badge
+           variant={freeIntroCallFilter ? "default" : "outline"}
+           className={`cursor-pointer transition-colors text-sm px-3 py-1.5 ${
+            freeIntroCallFilter
+             ? "bg-green-600 text-white hover:bg-green-700 border-green-600"
+             : "border-green-400 text-green-700 hover:bg-green-50"
+           }`}
+           onClick={() => setFreeIntroCallFilter(!freeIntroCallFilter)}
+           data-testid="filter-free-intro-call"
+          >
+           🎁 Free Intro Call
+          </Badge>
+         </div>
+        )}
+
         {/* Areas of Expertise Filter */}
         {shuffledCoaches.length > 0 && !isAccountDisabled && (() => {
          const allExpertiseAreas = Array.from(new Set(shuffledCoaches.flatMap(c => {
@@ -3356,15 +3375,15 @@ export default function DashboardEntrepreneur() {
               {area}
              </Badge>
             ))}
-            {selectedSpecializations.length > 0 && (
+            {(selectedSpecializations.length > 0 || freeIntroCallFilter) && (
              <Button
               variant="ghost"
               size="sm"
               className="text-xs h-6"
-              onClick={() => setSelectedSpecializations([])}
+              onClick={() => { setSelectedSpecializations([]); setFreeIntroCallFilter(false); }}
               data-testid="button-clear-filters"
              >
-              Clear filters
+              Clear all filters
              </Button>
             )}
            </div>
@@ -3384,6 +3403,12 @@ export default function DashboardEntrepreneur() {
          <div className="grid grid-cols-1 gap-6">
           {shuffledCoaches
            .filter((coach) => {
+            if (freeIntroCallFilter) {
+             try {
+              const r = JSON.parse(coach.hourly_rate);
+              if (!r.introCallRate || (r.introCallRate !== "0" && r.introCallRate !== "0.00" && parseFloat(r.introCallRate) !== 0)) return false;
+             } catch { return false; }
+            }
             if (selectedSpecializations.length === 0) return true;
             const coachAreas = (coach.focus_areas || "").split(",").map((a: string) => a.trim()).filter((a: string) => a);
             return selectedSpecializations.some(area => coachAreas.includes(area));
@@ -3444,13 +3469,26 @@ export default function DashboardEntrepreneur() {
             <CardHeader className="pb-2">
              <div className="flex items-start justify-between">
               <div>
-               <div className="flex items-center gap-2">
+               <div className="flex items-center gap-2 flex-wrap">
                 <CardTitle className="text-xl">{coach.full_name}</CardTitle>
                 {!coach.stripe_account_id && (
                  <Badge variant="secondary" className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5">
                   Coming Soon
                  </Badge>
                 )}
+                {(() => {
+                 try {
+                  const r = JSON.parse(coach.hourly_rate);
+                  if (r.introCallRate && (r.introCallRate === "0" || r.introCallRate === "0.00" || parseFloat(r.introCallRate) === 0)) {
+                   return (
+                    <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-300 text-xs px-2 py-0.5" data-testid={`badge-free-intro-${coach.id}`}>
+                     Free Intro Call
+                    </Badge>
+                   );
+                  }
+                 } catch {}
+                 return null;
+                })()}
                </div>
                <p className="text-sm text-[#8A8A8A] mt-1">{coach.expertise}</p>
               </div>
