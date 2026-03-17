@@ -2463,6 +2463,88 @@ export default function AdminDashboard() {
  <p className=" text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
  </div>
  </div>
+ {/* Idea Proposal Section for Community Members */}
+ <div className="border-t border-[#E8E8E8] pt-4">
+ <Button 
+ variant="ghost" 
+ className="w-full justify-start text-[#FF6B5C] hover:text-[#e55a4d] font-semibold"
+ onClick={() => setExpandedProposal(prev => ({ ...prev, [`preapproved-${app.id}`]: !prev[`preapproved-${app.id}`] }))}
+ data-testid={`button-toggle-proposal-preapproved-${actualIdx}`}
+ >
+ {expandedProposal[`preapproved-${app.id}`] ? "▼" : "▶"} Idea Proposal (42 Questions)
+ </Button>
+ {expandedProposal[`preapproved-${app.id}`] && app.ideaReview && (
+ <div className="mt-4 space-y-3 max-h-96 overflow-y-auto p-4 rounded">
+ {IDEA_PROPOSAL_QUESTIONS.map((q) => (
+  <div key={q.key} className="text-sm">
+  <p className="font-semibold text-[#4A4A4A]">{q.label}</p>
+  <p className="text-[#8A8A8A] mt-1">{String(app.ideaReview[q.key] || 'N/A')}</p>
+  </div>
+ ))}
+ </div>
+ )}
+ </div>
+
+ {/* Business Plan AI Draft Section for Community Members */}
+ <div className="border-t border-[#E8E8E8] pt-4">
+ <Button 
+ variant="ghost" 
+ className="w-full justify-start text-[#FF6B5C] hover:text-[#e55a4d] font-semibold"
+ onClick={() => setExpandedBusinessPlan(prev => ({ ...prev, [`preapproved-${app.id}`]: !prev[`preapproved-${app.id}`] }))}
+ data-testid={`button-toggle-businessplan-preapproved-${actualIdx}`}
+ >
+ {expandedBusinessPlan[`preapproved-${app.id}`] ? "▼" : "▶"} Business Plan AI Draft (11 Sections)
+ </Button>
+ {expandedBusinessPlan[`preapproved-${app.id}`] && app.businessPlan && (
+ <div className="mt-4 space-y-4 max-h-96 overflow-y-auto p-4 rounded">
+ <div className="text-sm border-b border-[#E8E8E8] pb-3">
+  <p className="font-semibold text-[#4A4A4A]">1. Executive Summary</p>
+  <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.businessPlan.executiveSummary || 'N/A'}</p>
+ </div>
+ <div className="text-sm border-b border-[#E8E8E8] pb-3">
+  <p className="font-semibold text-[#4A4A4A]">2. Problem Statement</p>
+  <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.businessPlan.problemStatement || 'N/A'}</p>
+ </div>
+ <div className="text-sm border-b border-[#E8E8E8] pb-3">
+  <p className="font-semibold text-[#4A4A4A]">3. Solution</p>
+  <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.businessPlan.solution || 'N/A'}</p>
+ </div>
+ <div className="text-sm border-b border-[#E8E8E8] pb-3">
+  <p className="font-semibold text-[#4A4A4A]">4. Target Market</p>
+  <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.businessPlan.targetMarket || 'N/A'}</p>
+ </div>
+ <div className="text-sm border-b border-[#E8E8E8] pb-3">
+  <p className="font-semibold text-[#4A4A4A]">5. Market Size</p>
+  <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.businessPlan.marketSize || 'N/A'}</p>
+ </div>
+ <div className="text-sm border-b border-[#E8E8E8] pb-3">
+  <p className="font-semibold text-[#4A4A4A]">6. Revenue Model</p>
+  <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.businessPlan.revenueModel || 'N/A'}</p>
+ </div>
+ <div className="text-sm border-b border-[#E8E8E8] pb-3">
+  <p className="font-semibold text-[#4A4A4A]">7. Competitive Advantage</p>
+  <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.businessPlan.competitiveAdvantage || 'N/A'}</p>
+ </div>
+ <div className="text-sm border-b border-[#E8E8E8] pb-3">
+  <p className="font-semibold text-[#4A4A4A]">8. Month Roadmap</p>
+  <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.businessPlan.roadmap12Month || 'N/A'}</p>
+ </div>
+ <div className="text-sm border-b border-[#E8E8E8] pb-3">
+  <p className="font-semibold text-[#4A4A4A]">9. Funding Requirements</p>
+  <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.businessPlan.fundingRequirements || 'N/A'}</p>
+ </div>
+ <div className="text-sm border-b border-[#E8E8E8] pb-3">
+  <p className="font-semibold text-[#4A4A4A]">10. Risks & Mitigation</p>
+  <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.businessPlan.risksAndMitigation || 'N/A'}</p>
+ </div>
+ <div className="text-sm">
+  <p className="font-semibold text-[#4A4A4A]">11. Success Metrics</p>
+  <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.businessPlan.successMetrics || 'N/A'}</p>
+ </div>
+ </div>
+ )}
+ </div>
+
  {/* Free Business Plan (Builder Draft) Section for Community Members */}
  {app.builderDraftPlan && (
  <div className="border-t border-[#E8E8E8] pt-4">
