@@ -1,5 +1,17 @@
 import { useState, useEffect } from "react";
-import { ChevronDown } from "lucide-react";
+
+const C = {
+  cream: "#FAF8F3",
+  ink: "#1A1814",
+  inkSoft: "#4A4740",
+  inkMuted: "#8C8880",
+  gold: "#C49A3C",
+  goldPale: "#FAF3E0",
+  teal: "#1D6A5A",
+  tealLight: "#E4F0ED",
+  border: "rgba(26,24,20,0.12)",
+  borderSoft: "rgba(26,24,20,0.07)",
+};
 
 const faqSections = [
   {
@@ -7,179 +19,181 @@ const faqSections = [
     items: [
       {
         question: "What is TouchConnectPro?",
-        answer: "TouchConnectPro is a mentorship platform that connects entrepreneurs with experienced founders and business coaches to provide practical, execution focused guidance at every stage of building a business."
+        answer: [
+          "TouchConnectPro is a platform that helps early-stage founders understand and fix the financial and operational gaps in their business. It starts with a free diagnostic called the Founder Focus Score, which gives you a clear picture of where you stand across three dimensions: business clarity, financial structure, and operational readiness.",
+          "From there, you get a personal dashboard with weekly action questions based on your results, and direct access to a specialist advisor who can help you address whatever gap is holding you back.",
+        ],
       },
       {
-        question: "How is TouchConnectPro different from accelerators or incubators?",
-        answer: "TouchConnectPro offers flexible, personalized mentorship without fixed cohorts, equity requirements, or rigid programs."
+        question: "Who is the specialist on the platform?",
+        answer: [
+          "The specialist on TouchConnectPro has hands-on experience in accounting systems, ERP selection and implementation, financial reporting, and fractional CFO work for early-stage businesses. This is not generic startup advice. It is specific, practical guidance from someone who has been inside the financial and operational mess that growing businesses face.",
+        ],
       },
       {
-        question: "How is AI used on TouchConnectPro?",
-        answer: "AI tools on TouchConnectPro help entrepreneurs clarify their ideas, improve wording, and create structured drafts such as basic business plans. Mentors then review, challenge, and guide entrepreneurs based on real world experience."
-      },
-    ],
-  },
-  {
-    title: "Getting Started",
-    items: [
-      {
-        question: "Who can join TouchConnectPro?",
-        answer: "Anyone with a business idea, product in progress, or startup vision can join. You don't need a pitch deck or business plan, our tools and mentors will help you shape and refine your thinking."
+        question: "How is this different from hiring an accountant or a CFO?",
+        answer: [
+          "A traditional accountant handles compliance: taxes, year-end filing, keeping your books clean. A full-time CFO manages your finances strategically but costs $150,000 or more per year. Neither is built for founders in the early stages who need practical guidance on setting up their financial foundation without a massive commitment.",
+          "TouchConnectPro sits in between. You get specialist-level thinking on your specific situation, scoped to what you actually need, without retaining a full-time hire or committing to a compliance-only relationship.",
+        ],
       },
       {
-        question: "What tools do I need to get started?",
-        answer: "Just your idea. We guide you with structured support, help shape your plan, and prepare you for investor-ready materials."
-      },
-      {
-        question: "Is TouchConnectPro global?",
-        answer: "Yes. Entrepreneurs and mentors can join from anywhere. Guidance is provided asynchronously, so time zones aren't a constraint. When working with specialist coaches, sessions are flexible and arranged directly, often with local experts."
+        question: "How is AI used on the platform?",
+        answer: [
+          "AI is used to generate your weekly focus questions based on your Founder Focus Score results. These questions are personalized to your specific gaps and refreshed as your situation evolves. They are designed to prompt reflection and action, not to replace human judgment.",
+          "All advisory conversations are with a human specialist. AI does not respond to your messages or make recommendations on your behalf.",
+        ],
       },
     ],
   },
   {
-    title: "Mentors & Approval",
+    title: "Getting started",
     items: [
       {
-        question: "How does the approval process work?",
-        answer: "After completing onboarding, your profile is shared with relevant mentors. If a mentor accepts your project, you'll be approved to join their portfolio. That's when billing begins. Until then, there's no charge."
+        question: "Who is TouchConnectPro for?",
+        answer: [
+          "TouchConnectPro is built for early-stage founders who are dealing with financial and operational gaps in their business. This includes first-time founders who have never set up proper accounting, founders who have recently raised money and now need real financial reporting, and bootstrapped founders whose systems are not keeping up with their growth.",
+          "You do not need a business plan or a pitch deck to get started. You just need to be honest about where you are right now.",
+        ],
       },
       {
-        question: "What happens if no mentor accepts my project?",
-        answer: "You pay nothing. We may provide suggestions to strengthen your idea and you can resubmit when you're ready."
+        question: "What is the Founder Focus Score?",
+        answer: [
+          "The Founder Focus Score is a free 8-question diagnostic that gives you a clear picture of where your startup actually stands. It scores you across three dimensions: business clarity, financial structure, and operational readiness.",
+          "The results are instant, plain-language, and specific to your answers. You also get one concrete next step to take this week based on your biggest gap. No signup is required to take it.",
+        ],
       },
       {
-        question: "Do I get matched with only one mentor?",
-        answer: "Initially, yes. You're assigned to the mentor who best fits your startup. You may later request additional mentors for growth, pivots, or specific challenges."
+        question: "Do I need to sign up to take the diagnostic?",
+        answer: [
+          "No. You can take the Founder Focus Score and see your results without creating an account. If you want to save your results, track your progress over time, and access your weekly focus questions, you can create a free account after completing the diagnostic. No credit card required.",
+        ],
       },
       {
-        question: "Can I switch mentors later?",
-        answer: "Yes. If your business evolves or you feel you'd benefit from a fresh perspective, you can discuss it with your current mentor to determine the right time for a transition. They'll help guide you and recommend the next mentor who best fits your goals."
-      },
-      {
-        question: "Will I have the same mentor from the beginning to the end?",
-        answer: "Most mentor relationships continue over time, but things can change. Your business may evolve or a mentor may become unavailable. If a change is needed, TouchConnectPro will help match you with a new mentor who fits your current goals and stage."
+        question: "Is TouchConnectPro available globally?",
+        answer: [
+          "Yes. The diagnostic, dashboard, and messaging features are available to founders anywhere. Advisory conversations happen online and are asynchronous, so time zones are not a constraint for most interactions.",
+        ],
       },
     ],
   },
   {
-    title: "Mentor Response Guidelines",
+    title: "The diagnostic and dashboard",
     items: [
       {
-        question: "How often can I ask my mentor questions?",
-        answer: "You can ask as many questions as you like, but mentors respond thoughtfully only when guidance is truly needed. This ensures you get high-quality, actionable feedback on the most important issues."
+        question: "How is my Focus Score calculated?",
+        answer: [
+          "Each of the 8 questions contributes points across the three dimensions of your score: business clarity, financial structure, and operational readiness. Your total score is an average across all three. The diagnostic is designed so that honest answers produce a useful result, not a flattering one.",
+          "You can retake the score at any time. Your dashboard tracks changes over time so you can see whether your foundation is improving.",
+        ],
       },
       {
-        question: "Is there a schedule for mentor responses?",
-        answer: "Yes. To keep things structured, send all your questions by Sunday evening. Your mentor will review and respond by Friday, providing focused guidance for the week."
+        question: "What are the weekly focus questions?",
+        answer: [
+          "Each week, your dashboard surfaces questions built from your Focus Score results. They are designed to move you forward on your biggest gap without overwhelming you. Each question is tagged by topic so you know exactly what area it is addressing.",
+          "The questions are generated by AI based on your diagnostic answers and refresh periodically as your situation changes. They are starting points for reflection and action, not a checklist to complete.",
+        ],
       },
       {
-        question: "Why don't mentors respond immediately to every question?",
-        answer: "Rapid-fire responses can dilute focus and overwhelm both founders and mentors. By batching questions, your mentor can provide high-value, thoughtful guidance and ensure your progress stays on track."
+        question: "Is my diagnostic data kept private?",
+        answer: [
+          "Yes. Your quiz answers and score are stored securely and are not shared with third parties. A specialist can view your score to provide relevant guidance, but your data is never used for advertising or sold to anyone.",
+        ],
       },
       {
-        question: "Can I get help on urgent issues outside the schedule?",
-        answer: "For critical blockers or decisions that could stall your project, your mentor will prioritize guidance. Routine or clarifying questions should be included in the weekly batch."
+        question: "Is my data sold or shared with third parties?",
+        answer: [
+          "No. We do not sell personal data and we do not use it for advertising. Data is shared only with the trusted service providers that help us run the platform, such as our hosting and authentication providers, and only to the extent necessary. Full details are in our Privacy Policy.",
+        ],
       },
       {
-        question: "What if I miss the Sunday deadline?",
-        answer: "Your mentor will review questions in the next cycle. To make the most of mentor feedback, try to stick to the weekly schedule, it keeps your project moving efficiently."
+        question: "Can I delete my account?",
+        answer: [
+          "Yes. You can request account deletion at any time by emailing hello@touchconnectpro.com. We will remove your personal data within a reasonable period in line with our Privacy Policy.",
+        ],
       },
     ],
   },
   {
-    title: "Trust & Privacy",
+    title: "Mentors, coaches & pricing",
     items: [
       {
-        question: "Are my ideas and data protected?",
-        answer: "Yes. TouchConnectPro takes confidentiality seriously and provides a secure platform for sharing project information with mentors."
+        question: "How does the mentor and coach approval process work?",
+        answer: [
+          "After completing onboarding, your profile is shared with relevant mentors. If a mentor accepts your project, you will be approved to join their portfolio. That is when billing begins. Until then, there is no charge.",
+        ],
       },
       {
-        question: "Who owns my intellectual property?",
-        answer: "You retain full ownership of your ideas and intellectual property at all times."
-      },
-    ],
-  },
-  {
-    title: "Pricing & Billing",
-    items: [
-      {
-        question: "When does billing start?",
-        answer: "Community \u2013 Free: No billing. Get started immediately and explore the community and coaching sessions at your own pace.\n\nFounders Circle \u2013 $9.99/month: Billing starts immediately upon signup. Gain full access to personalized mentorship, structured feedback, and expert coaching support.\n\nCapital Circle \u2013 $49/month: Billing begins only after your application is reviewed and approved by a mentor. This ensures your project is ready for focused guidance and investor access."
-      },
-      {
-        question: "Are the coaching sessions included in the membership fee?",
-        answer: "Membership includes full access to the platform, community, and mentor onboarding. Specialist coaching sessions are paid separately, with each expert setting their own price based on experience and expertise."
-      },
-      {
-        question: "What if I need specialized help (Legal, Tech)?",
-        answer: "TouchConnectPro facilitates connections with specialized mentors (Finance, Marketing, Engineering, Legal) who offer paid sessions. The coaches set their own price, you pay it in full, and we keep a 20% fee to support and sustain the platform."
+        question: "Are coaching sessions included in the membership fee?",
+        answer: [
+          "Membership includes full access to the platform, community, and mentor onboarding. Specialist coaching sessions are paid separately, with each expert setting their own price based on experience and expertise.",
+        ],
       },
       {
         question: "Can I cancel my membership anytime?",
-        answer: "Yes. You can cancel with one click inside your dashboard. Billing stops at the end of the current cycle."
+        answer: [
+          "Yes. You can cancel with one click inside your dashboard. Billing stops at the end of the current billing cycle.",
+        ],
       },
-    ],
-  },
-  {
-    title: "Funding & Growth",
-    items: [
+      {
+        question: "What if I need specialized help — legal, tech, or finance?",
+        answer: [
+          "TouchConnectPro connects you with specialist coaches across finance, marketing, engineering, and legal. Coaches set their own session rates. You pay the coach directly through the platform, and we keep a 20% fee to sustain the platform.",
+        ],
+      },
       {
         question: "Does TouchConnectPro support funding or investment?",
-        answer: "We don't fund startups directly, but we connect you with mentors and investors who may be open to funding once your idea reaches the right level of clarity and readiness."
-      },
-      {
-        question: "Can TouchConnectPro help me find funding for my startup?",
-        answer: "TouchConnectPro connects entrepreneurs with resources and guidance to become investment-ready. We don't influence investor decisions or guarantee funding, but we help you prepare a strong pitch, refine your business story, and present your project to angel investors we're in contact with. You are also free to use the pitch you create on TouchConnectPro to approach any investors you find independently."
+        answer: [
+          "We do not fund startups directly, but we connect you with mentors and investors who may be open to funding once your idea reaches the right level of clarity and readiness. We also help you prepare a strong pitch and refine your business story.",
+        ],
       },
     ],
   },
 ];
 
 function generateFAQSchema() {
-  const allItems = faqSections.flatMap((section) => section.items);
+  const allItems = faqSections.flatMap(s => s.items);
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: allItems.map((item) => ({
+    mainEntity: allItems.map(item => ({
       "@type": "Question",
       name: item.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: item.answer,
-      },
+      acceptedAnswer: { "@type": "Answer", text: item.answer.join(" ") },
     })),
   };
 }
 
-function FAQItem({ question, answer, testId }: { question: string; answer: string; testId: string }) {
+function FAQItem({ question, answer, testId }: { question: string; answer: string[]; testId: string }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div
-      className="bg-white rounded-xl overflow-hidden transition-all duration-200"
-      style={{ boxShadow: "0 2px 10px rgba(224,224,224,0.4)" }}
-    >
+    <div style={{ borderBottom: `1px solid ${C.borderSoft}` }}>
       <button
-        className="w-full text-left p-5 md:p-6 flex items-center justify-between gap-4 group"
         onClick={() => setOpen(!open)}
+        style={{ width: "100%", textAlign: "left", background: "none", border: "none", padding: "20px 0", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, cursor: "pointer", fontFamily: "inherit" }}
         data-testid={`button-faq-${testId}`}
       >
-        <span className="text-base font-semibold leading-snug" style={{ color: "#0D566C" }}>{question}</span>
-        <ChevronDown
-          className="h-5 w-5 shrink-0 transition-transform duration-300"
-          style={{ color: "#FF6B5C", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
-        />
+        <span
+          style={{ fontSize: 15, fontWeight: 500, color: open ? C.teal : C.ink, lineHeight: 1.4, textAlign: "left", transition: "color 0.15s" }}
+          className="q-text"
+        >
+          {question}
+        </span>
+        <span style={{ width: 20, height: 20, borderRadius: "50%", border: `1px solid ${open ? C.teal : C.border}`, background: open ? C.teal : "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.2s, border-color 0.2s" }}>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={open ? "white" : C.inkMuted} strokeWidth="2" style={{ transform: open ? "rotate(45deg)" : "rotate(0deg)", transition: "transform 0.25s" }}>
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </span>
       </button>
-      <div
-        className="overflow-hidden transition-all duration-300"
-        style={{ maxHeight: open ? "600px" : "0px", opacity: open ? 1 : 0 }}
-      >
-        <div className="px-5 md:px-6 pb-5 md:pb-6">
-          <div className="pt-0 border-t" style={{ borderColor: "#F3F3F3" }}>
-            <p className="pt-4 leading-relaxed text-[15px] whitespace-pre-line" style={{ color: "#4A4A4A" }} data-testid={`text-faq-answer-${testId}`}>
-              {answer}
+      <div style={{ maxHeight: open ? 600 : 0, overflow: "hidden", transition: "max-height 0.35s ease" }}>
+        <div style={{ paddingBottom: 22 }}>
+          {answer.map((para, i) => (
+            <p key={i} style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.8, marginBottom: i < answer.length - 1 ? 10 : 0 }} data-testid={i === 0 ? `text-faq-answer-${testId}` : undefined}>
+              {para}
             </p>
-          </div>
+          ))}
         </div>
       </div>
     </div>
@@ -193,68 +207,70 @@ export default function QA() {
     script.id = "faq-schema";
     script.textContent = JSON.stringify(generateFAQSchema());
     document.head.appendChild(script);
-    return () => {
-      const existing = document.getElementById("faq-schema");
-      if (existing) existing.remove();
-    };
+    return () => { document.getElementById("faq-schema")?.remove(); };
   }, []);
 
-  let itemCounter = 0;
+  let counter = 0;
 
   return (
-    <div className="flex flex-col">
-      {/* Hero */}
-      <section className="pt-20 pb-12 md:pt-24 md:pb-16" style={{ backgroundColor: "#FAF9F7" }}>
-        <div className="container px-4 mx-auto max-w-3xl text-center">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-snug tracking-tight mb-5" style={{ color: "#0D566C" }} data-testid="text-faq-title">
-            Frequently Asked Questions
-          </h1>
-          <p className="text-lg md:text-xl max-w-2xl mx-auto leading-relaxed" style={{ color: "#4A4A4A" }} data-testid="text-faq-subtitle">
-            Everything you need to know about TouchConnectPro.
-          </p>
-        </div>
-      </section>
+    <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
 
-      {/* FAQ Sections */}
-      {faqSections.map((section, sectionIndex) => {
-        const bg = sectionIndex % 2 === 0 ? "#F3F3F3" : "#FAF9F7";
-        return (
-          <section
-            key={sectionIndex}
-            className="py-14 md:py-20"
-            style={{ backgroundColor: bg }}
-            aria-labelledby={`faq-section-${sectionIndex}`}
+      {/* Page header */}
+      <div style={{ maxWidth: 700, margin: "0 auto", padding: "80px 2rem 64px", textAlign: "center" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: C.teal, background: C.tealLight, padding: "6px 14px", borderRadius: 100, marginBottom: 24 }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.teal, display: "inline-block" }} />
+          FAQ
+        </div>
+        <h1 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(32px,5vw,48px)", fontWeight: 300, lineHeight: 1.1, letterSpacing: "-0.02em", color: C.ink, marginBottom: 16 }} data-testid="text-faq-title">
+          Questions founders <em style={{ fontStyle: "italic", color: C.gold }}>actually ask</em>
+        </h1>
+        <p style={{ fontSize: 16, color: C.inkSoft, lineHeight: 1.7, maxWidth: 480, margin: "0 auto" }} data-testid="text-faq-subtitle">
+          Everything you need to know about the platform, the diagnostic, and what working with a specialist looks like.
+        </p>
+      </div>
+
+      {/* FAQ body */}
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 2rem 100px" }}>
+        {faqSections.map((section, si) => (
+          <div key={si} style={{ marginBottom: 56 }}>
+            <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: C.inkMuted, marginBottom: 20, paddingBottom: 14, borderBottom: `1px solid ${C.borderSoft}`, display: "block" }} data-testid={`text-faq-section-${si}`}>
+              {section.title}
+            </span>
+            {section.items.map((item, ii) => {
+              counter++;
+              return (
+                <FAQItem
+                  key={ii}
+                  question={item.question}
+                  answer={item.answer}
+                  testId={`item-${counter}`}
+                />
+              );
+            })}
+          </div>
+        ))}
+
+        {/* Still have questions */}
+        <div style={{ background: C.ink, borderRadius: 10, padding: "48px 40px", textAlign: "center", marginTop: 24 }}>
+          <h2 style={{ fontFamily: "Georgia, serif", fontSize: 26, fontWeight: 300, color: C.cream, marginBottom: 12, lineHeight: 1.3 }}>
+            Still have a <em style={{ fontStyle: "italic", color: C.gold }}>question?</em>
+          </h2>
+          <p style={{ fontSize: 15, color: "rgba(250,248,243,0.55)", lineHeight: 1.7, marginBottom: 28, maxWidth: 400, marginLeft: "auto", marginRight: "auto" }}>
+            If something is not covered here, reach out directly. We respond to every message.
+          </p>
+          <a
+            href="mailto:hello@touchconnectpro.com"
+            style={{ display: "inline-block", background: C.cream, color: C.ink, fontSize: 14, fontWeight: 500, padding: "13px 28px", borderRadius: 4, textDecoration: "none", transition: "background 0.15s, transform 0.1s", marginBottom: 12 }}
+            onMouseEnter={e => { e.currentTarget.style.background = C.goldPale; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = C.cream; e.currentTarget.style.transform = "translateY(0)"; }}
           >
-            <div className="container px-4 mx-auto max-w-3xl">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="w-1 h-8 rounded-full" style={{ backgroundColor: "#F5C542" }} />
-                <h2
-                  id={`faq-section-${sectionIndex}`}
-                  className="text-xl md:text-2xl font-display font-bold"
-                  style={{ color: "#0D566C" }}
-                  data-testid={`text-faq-section-${sectionIndex}`}
-                >
-                  {section.title}
-                </h2>
-              </div>
-              <div className="space-y-4">
-                {section.items.map((item, itemIndex) => {
-                  itemCounter++;
-                  const testId = `item-${itemCounter}`;
-                  return (
-                    <FAQItem
-                      key={itemIndex}
-                      question={item.question}
-                      answer={item.answer}
-                      testId={testId}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-        );
-      })}
+            hello@touchconnectpro.com
+          </a>
+          <span style={{ display: "block", fontSize: 12, color: "rgba(250,248,243,0.3)", marginTop: 4 }}>
+            Or take the free score and ask your question in the dashboard.
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
