@@ -88,7 +88,7 @@ export default function Home() {
 
       {/* HERO */}
       <section style={{ backgroundColor: "#FAF8F3" }}>
-        <div className="mx-auto px-6 py-24 md:py-32 max-w-6xl grid md:grid-cols-2 gap-16 md:gap-20 items-center">
+        <div className="mx-auto px-6 pt-12 pb-24 md:pt-12 md:pb-32 max-w-6xl grid md:grid-cols-2 gap-16 md:gap-20 items-center">
           {/* Left */}
           <div>
             <div
