@@ -139,16 +139,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Community</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/founder-focus" data-testid="link-footer-entrepreneur">Entrepreneur: Submit your Idea</Link></li>
-              <li><Link href="/become-mentor" data-testid="link-footer-mentor">Become a Mentor</Link></li>
-              <li><Link href="/become-coach" data-testid="link-footer-coach">Become a Coach</Link></li>
-              <li><Link href="/investors" data-testid="link-footer-investors">For Investors</Link></li>
-            </ul>
-          </div>
-
-          <div>
             <h4 className="font-semibold mb-4">Legal</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/privacy-policy" className="hover:text-foreground transition-colors" data-testid="link-footer-privacy">Privacy Policy</Link></li>
