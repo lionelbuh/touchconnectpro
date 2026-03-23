@@ -10,7 +10,6 @@ import Home from "@/pages/Home";
 import IdeaSubmit from "@/pages/IdeaSubmit";
 import Dashboard from "@/pages/Dashboard";
 import MentorDirectory from "@/pages/MentorDirectory";
-import Pricing from "@/pages/Pricing";
 import QA from "@/pages/QA";
 import HowItWorks from "@/pages/HowItWorks";
 import ComingSoon from "@/pages/ComingSoon";
@@ -22,6 +21,7 @@ import BecomeaEntrepreneur from "@/pages/BecomeaEntrepreneur";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import CookiePolicy from "@/pages/CookiePolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import MemberAgreement from "@/pages/MemberAgreement";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import Login from "@/pages/Login";
 import AdminLogin from "@/pages/AdminLogin";
@@ -65,7 +65,6 @@ function Router() {
         <Route path="/coming-soon" component={ComingSoon} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/mentors" component={MentorDirectory} />
-        <Route path="/pricing" component={Pricing} />
         <Route path="/qa" component={QA} />
         <Route path="/how-it-works" component={HowItWorks} />
         <Route path="/become-entrepreneur" component={BecomeaEntrepreneur} />
@@ -76,6 +75,7 @@ function Router() {
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/cookie-policy" component={CookiePolicy} />
         <Route path="/terms-of-service" component={TermsOfService} />
+        <Route path="/member-agreement" component={MemberAgreement} />
         <Route path="/login" component={Login} />
         <Route path="/admin-login" component={AdminLogin} />
         <Route path="/set-password" component={SetPassword} />

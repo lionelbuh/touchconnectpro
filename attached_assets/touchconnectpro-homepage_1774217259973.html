@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TouchConnectPro: Financial Clarity for Early-Stage Founders</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #FAF8F3;
+    --ink: #1A1814;
+    --ink-soft: #4A4740;
+    --ink-muted: #8C8880;
+    --gold: #C49A3C;
+    --gold-light: #F0E4C4;
+    --gold-pale: #FAF3E0;
+    --teal: #1D6A5A;
+    --teal-light: #E4F0ED;
+    --border: rgba(26,24,20,0.12);
+    --border-soft: rgba(26,24,20,0.07);
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --radius: 4px;
+    --radius-lg: 10px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; align-items: center; gap: 2rem; }
+  .nav-links a {
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .btn-nav {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cream) !important;
+    background: var(--ink);
+    padding: 8px 18px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .btn-nav:hover { background: var(--teal) !important; }
+
+  /* HERO */
+  .hero {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 100px 2rem 80px;
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 80px;
+    align-items: center;
+  }
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: var(--teal-light);
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 28px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+    display: inline-block;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(38px, 5vw, 58px);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 24px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .hero-sub {
+    font-size: 17px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    max-width: 460px;
+    margin-bottom: 36px;
+  }
+  .hero-cta-group { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 14px 28px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { background: var(--teal); transform: translateY(-1px); }
+  .btn-ghost {
+    display: inline-block;
+    color: var(--ink-soft);
+    font-size: 13px;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1px;
+    transition: color 0.2s;
+  }
+  .btn-ghost:hover { color: var(--ink); }
+  .hero-note {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+
+  /* HERO CARD */
+  .hero-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    box-shadow: 0 4px 32px rgba(26,24,20,0.06);
+  }
+  .score-header {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .score-meter {
+    margin-bottom: 24px;
+  }
+  .score-label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--ink-muted);
+    margin-bottom: 8px;
+  }
+  .score-label strong { font-weight: 500; color: var(--ink-soft); font-size: 13px; }
+  .score-bar-wrap {
+    height: 6px;
+    background: var(--border-soft);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .score-bar {
+    height: 100%;
+    border-radius: 100px;
+    background: var(--gold);
+    transition: width 1.2s ease;
+  }
+  .score-bar.teal { background: var(--teal); }
+  .score-bar.low { background: #C97B5A; }
+  .score-total {
+    display: flex; align-items: baseline; gap: 8px;
+    margin: 24px 0 20px;
+  }
+  .score-num {
+    font-family: var(--serif);
+    font-size: 52px;
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .score-outof {
+    font-size: 18px;
+    color: var(--ink-muted);
+    font-weight: 300;
+  }
+  .score-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: var(--teal-light);
+    padding: 4px 10px;
+    border-radius: 100px;
+    margin-bottom: 16px;
+  }
+  .score-message {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    padding: 14px 16px;
+    background: var(--gold-pale);
+    border-radius: var(--radius);
+    border-left: 3px solid var(--gold);
+  }
+
+  /* PROBLEMS */
+  .section-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 16px;
+    display: block;
+  }
+  .problems {
+    background: var(--ink);
+    padding: 80px 2rem;
+    text-align: center;
+  }
+  .problems-inner { max-width: 900px; margin: 0 auto; }
+  .problems h2 {
+    font-family: var(--serif);
+    font-size: clamp(26px, 4vw, 40px);
+    font-weight: 300;
+    color: var(--cream);
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .problems h2 em { font-style: italic; color: var(--gold); }
+  .problems-sub {
+    font-size: 16px;
+    color: rgba(250,248,243,0.55);
+    max-width: 500px;
+    margin: 0 auto 56px;
+    line-height: 1.7;
+  }
+  .pain-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    text-align: left;
+  }
+  .pain-item {
+    padding: 32px 28px;
+    background: var(--ink);
+  }
+  .pain-icon {
+    width: 36px; height: 36px;
+    border-radius: var(--radius);
+    background: rgba(196,154,60,0.15);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .pain-icon svg { width: 18px; height: 18px; stroke: var(--gold); fill: none; stroke-width: 1.5; }
+  .pain-item h3 {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--cream);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .pain-item p {
+    font-size: 13px;
+    color: rgba(250,248,243,0.5);
+    line-height: 1.65;
+  }
+
+  /* HOW IT WORKS */
+  .how {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 100px 2rem;
+  }
+  .how-header { text-align: center; margin-bottom: 64px; }
+  .how-header h2 {
+    font-family: var(--serif);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 14px;
+  }
+  .how-header h2 em { font-style: italic; color: var(--gold); }
+  .how-header p { font-size: 16px; color: var(--ink-soft); max-width: 420px; margin: 0 auto; }
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 24px;
+    padding: 32px 0;
+    border-bottom: 1px solid var(--border-soft);
+    align-items: start;
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--ink-muted);
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .step-content h3 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .step-content p { font-size: 15px; color: var(--ink-soft); line-height: 1.7; }
+  .step-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 10px;
+  }
+
+  /* SCORE SECTION */
+  .score-section {
+    background: var(--gold-pale);
+    border-top: 1px solid rgba(196,154,60,0.2);
+    border-bottom: 1px solid rgba(196,154,60,0.2);
+    padding: 80px 2rem;
+    text-align: center;
+  }
+  .score-section-inner { max-width: 700px; margin: 0 auto; }
+  .score-section h2 {
+    font-family: var(--serif);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .score-section h2 em { font-style: italic; }
+  .score-section p { font-size: 16px; color: var(--ink-soft); margin-bottom: 36px; line-height: 1.7; }
+  .score-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 36px;
+  }
+  .pill {
+    font-size: 13px;
+    color: var(--ink-soft);
+    background: white;
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 100px;
+  }
+
+  /* TESTIMONIALS */
+  .testimonials {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 100px 2rem;
+  }
+  .testi-header { text-align: center; margin-bottom: 56px; }
+  .testi-header h2 {
+    font-family: var(--serif);
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .testi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .testi-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+  }
+  .testi-quote {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--ink);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .testi-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .testi-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--teal-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--teal);
+    flex-shrink: 0;
+  }
+  .testi-name { font-size: 14px; font-weight: 500; color: var(--ink); }
+  .testi-role { font-size: 12px; color: var(--ink-muted); }
+
+  /* WHO IS THIS FOR */
+  .who {
+    background: var(--ink);
+    padding: 80px 2rem;
+  }
+  .who-inner { max-width: 900px; margin: 0 auto; }
+  .who h2 {
+    font-family: var(--serif);
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 300;
+    color: var(--cream);
+    margin-bottom: 48px;
+    line-height: 1.2;
+  }
+  .who h2 em { font-style: italic; color: var(--gold); }
+  .who-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .who-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius-lg);
+    padding: 28px 24px;
+  }
+  .who-card h3 {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--cream);
+    margin-bottom: 10px;
+  }
+  .who-card p { font-size: 13px; color: rgba(250,248,243,0.5); line-height: 1.65; }
+
+  /* MENTOR STRIP */
+  .mentor-strip {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 100px 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .mentor-strip h2 {
+    font-family: var(--serif);
+    font-size: clamp(26px, 3.5vw, 36px);
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 1.25;
+    margin-bottom: 20px;
+  }
+  .mentor-strip h2 em { font-style: italic; color: var(--gold); }
+  .mentor-strip p { font-size: 15px; color: var(--ink-soft); line-height: 1.75; margin-bottom: 14px; }
+  .mentor-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+  }
+  .mentor-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--teal-light);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--teal);
+    margin-bottom: 16px;
+  }
+  .mentor-name { font-size: 15px; font-weight: 500; color: var(--ink); margin-bottom: 2px; }
+  .mentor-title { font-size: 12px; color: var(--ink-muted); margin-bottom: 16px; }
+  .mentor-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .mentor-tag {
+    font-size: 11px;
+    color: var(--teal);
+    background: var(--teal-light);
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-weight: 500;
+  }
+  .mentor-bio { font-size: 13px; color: var(--ink-soft); line-height: 1.65; }
+
+  /* FINAL CTA */
+  .final-cta {
+    background: var(--teal);
+    padding: 100px 2rem;
+    text-align: center;
+  }
+  .final-cta-inner { max-width: 640px; margin: 0 auto; }
+  .final-cta h2 {
+    font-family: var(--serif);
+    font-size: clamp(30px, 4.5vw, 48px);
+    font-weight: 300;
+    color: var(--cream);
+    line-height: 1.15;
+    margin-bottom: 20px;
+  }
+  .final-cta h2 em { font-style: italic; }
+  .final-cta p { font-size: 16px; color: rgba(250,248,243,0.7); margin-bottom: 40px; line-height: 1.7; }
+  .btn-cream {
+    display: inline-block;
+    background: var(--cream);
+    color: var(--teal);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 16px 36px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-cream:hover { background: white; transform: translateY(-1px); }
+  .final-note { margin-top: 20px; font-size: 12px; color: rgba(250,248,243,0.45); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border-soft);
+    padding: 40px 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .footer-logo {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--ink-muted);
+  }
+  .footer-logo span { color: var(--gold); }
+  footer p { font-size: 12px; color: var(--ink-muted); }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .hero { grid-template-columns: 1fr; gap: 48px; padding: 60px 1.5rem 48px; }
+    .pain-grid { grid-template-columns: 1fr; }
+    .testi-grid { grid-template-columns: 1fr; }
+    .who-grid { grid-template-columns: 1fr; }
+    .mentor-strip { grid-template-columns: 1fr; gap: 48px; padding: 60px 1.5rem; }
+    .nav-links { display: none; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Touch<span>Connect</span>Pro</a>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#score">Focus Score</a>
+    <a href="#mentors">Mentors</a>
+    <a href="#score" class="btn-nav">Take the free score</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section>
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">For early-stage founders</div>
+      <h1>Your business idea needs <em>a financial foundation,</em> not just a dream</h1>
+      <p class="hero-sub">
+        Most founders build fast and figure out the money side later. That's where things quietly fall apart. TouchConnectPro connects you with advisors who fix the financial and operational gaps before they become expensive problems.
+      </p>
+      <div class="hero-cta-group">
+        <a href="#score" class="btn-primary">Take your free Founder Focus Score</a>
+        <a href="#how" class="btn-ghost">See how it works</a>
+      </div>
+      <p class="hero-note">Free. 5 minutes. No sign-up required to start.</p>
+    </div>
+
+    <div class="hero-card">
+      <p class="score-header">Your Founder Focus Score</p>
+
+      <div class="score-total">
+        <span class="score-num">64</span>
+        <span class="score-outof">/ 100</span>
+      </div>
+      <span class="score-tag">Financial systems gap detected</span>
+
+      <div class="score-meter">
+        <div class="score-label">
+          <strong>Business clarity</strong>
+          <span>78%</span>
+        </div>
+        <div class="score-bar-wrap"><div class="score-bar teal" style="width:78%"></div></div>
+
+        <div class="score-label" style="margin-top:12px">
+          <strong>Financial structure</strong>
+          <span>41%</span>
+        </div>
+        <div class="score-bar-wrap"><div class="score-bar low" style="width:41%"></div></div>
+
+        <div class="score-label" style="margin-top:12px">
+          <strong>Operational readiness</strong>
+          <span>73%</span>
+        </div>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:73%"></div></div>
+      </div>
+
+      <p class="score-message">
+        Your idea is clear and your operations are moving, but your financial systems aren't keeping up. This is the gap that stalls growth. A specialist can fix this in weeks, not months.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMS -->
+<section class="problems">
+  <div class="problems-inner">
+    <span class="section-eyebrow" style="color:rgba(250,248,243,0.4)">Sound familiar?</span>
+    <h2>You're building fast. Your <em>financial foundation</em> isn't keeping up.</h2>
+    <p class="problems-sub">These aren't small problems. Left unaddressed, they quietly kill startups that had real potential.</p>
+    <div class="pain-grid">
+      <div class="pain-item">
+        <div class="pain-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 3h18v4H3zM3 10h18M7 14h10M9 18h6"/></svg>
+        </div>
+        <h3>No real accounting system</h3>
+        <p>You're running on spreadsheets and instinct. It works until it doesn't, usually right when an investor or partner asks for numbers.</p>
+      </div>
+      <div class="pain-item">
+        <div class="pain-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3>Wrong software for your stage</h3>
+        <p>QuickBooks? Xero? NetSuite? Odoo? Most founders pick something random and outgrow it, or overpay for tools they don't need yet.</p>
+      </div>
+      <div class="pain-item">
+        <div class="pain-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <h3>No CFO, no financial clarity</h3>
+        <p>You raised money or you're scaling. Now investors want proper reporting. You can't afford a full-time CFO but you need CFO-level thinking.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="how-header">
+    <span class="section-eyebrow">How it works</span>
+    <h2>Three steps to <em>financial clarity</em></h2>
+    <p>No vague advice. A clear starting point, matched guidance, and measurable progress.</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Take your Founder Focus Score</h3>
+        <p>Answer 8 honest questions about where your startup actually stands: clarity, financial structure, and operational readiness. You'll get an instant breakdown of exactly what's holding you back, not what you think is.</p>
+        <span class="step-tag">Free · 5 minutes · No sign-up to start</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Get matched with a specialist advisor</h3>
+        <p>Based on your score, you're matched with an advisor who has solved exactly your problem before: accounting setup, ERP selection, financial reporting, fractional CFO guidance. Real expertise, not generic mentorship.</p>
+        <span class="step-tag">Matched to your specific gap</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Build the foundation, then grow on top of it</h3>
+        <p>Structured sessions, clear next steps, and a financial backbone that holds up as you scale. Every session is purposeful and built around where you are right now, not a generic 12-week program.</p>
+        <span class="step-tag">Structured · Specific · Measurable</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCORE SECTION -->
+<section class="score-section" id="score">
+  <div class="score-section-inner">
+    <span class="section-eyebrow">The Founder Focus Score</span>
+    <h2>Find out where you <em>actually</em> stand</h2>
+    <p>A free diagnostic for early-stage founders. 8 honest questions. An instant breakdown of your clarity, financial readiness, and what to tackle first.</p>
+    <div class="score-pills">
+      <span class="pill">First-time founders</span>
+      <span class="pill">Side-hustlers ready to commit</span>
+      <span class="pill">Founders post-raise</span>
+      <span class="pill">Bootstrapped and scaling</span>
+    </div>
+    <a href="#" class="btn-primary" style="font-size:15px; padding:16px 36px;">Take the Founder Focus Score</a>
+    <p style="margin-top:16px; font-size:12px; color:var(--ink-muted);">No credit card. No sign-up to start. Results are yours to keep.</p>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="testi-header">
+    <span class="section-eyebrow">What founders say</span>
+    <h2>The score tells you what months of confusion couldn't</h2>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <p class="testi-quote">"I had the idea for months but no clue where to start. The Focus Score gave me a clear picture in five minutes, and the advisor I was matched with fixed our accounting setup in two sessions."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">JM</div>
+        <div>
+          <p class="testi-name">Jason M.</p>
+          <p class="testi-role">First-time founder</p>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <p class="testi-quote">"I thought I was further along than I was. The diagnostic showed me exactly what I was missing before I wasted more time. Turns out our financial structure was the problem, not our product."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">PK</div>
+        <div>
+          <p class="testi-name">Priya K.</p>
+          <p class="testi-role">Side-hustle to startup</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IS THIS FOR -->
+<section class="who">
+  <div class="who-inner">
+    <h2>Built for founders who are <em>tired of figuring it out alone</em></h2>
+    <div class="who-grid">
+      <div class="who-card">
+        <h3>First-time founders</h3>
+        <p>You have the idea and the drive. You need someone who has set up the financial foundation before so you don't have to figure it out by trial and error.</p>
+      </div>
+      <div class="who-card">
+        <h3>Post-raise founders</h3>
+        <p>You just raised money. Now investors want real reporting, proper accounting, and financial visibility. You need CFO-level thinking without the full-time hire.</p>
+      </div>
+      <div class="who-card">
+        <h3>Bootstrapped and scaling</h3>
+        <p>Your spreadsheets are breaking down. You're growing fast but your financial systems aren't keeping up. Time to fix the foundation before it costs you more.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MENTOR STRIP -->
+<section class="mentor-strip" id="mentors">
+  <div>
+    <span class="section-eyebrow">Real advisors, real expertise</span>
+    <h2>Not generic advice. <em>Specialists</em> who have solved your exact problem.</h2>
+    <p>Every advisor on TouchConnectPro has hands-on experience in accounting systems, ERP implementation, financial operations, or fractional CFO work for early-stage businesses.</p>
+    <p>AI can organize your thinking. But it takes a human who has been inside the financial chaos of a growing startup to tell you exactly what to do next.</p>
+  </div>
+  <div class="mentor-card">
+    <div class="mentor-avatar">L</div>
+    <p class="mentor-name">Lionel D.</p>
+    <p class="mentor-title">Accounting & ERP Specialist · Fractional CFO</p>
+    <div class="mentor-tags">
+      <span class="mentor-tag">QuickBooks</span>
+      <span class="mentor-tag">NetSuite</span>
+      <span class="mentor-tag">Odoo</span>
+      <span class="mentor-tag">Financial modeling</span>
+      <span class="mentor-tag">Fractional CFO</span>
+    </div>
+    <p class="mentor-bio">Helps early-stage founders build accounting systems that don't fall apart when they start scaling. Specializes in ERP selection, financial reporting setup, and CFO-level advisory for startups that aren't ready for a full-time hire.</p>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="final-cta-inner">
+    <h2>Stop overthinking. <em>Start with your score.</em></h2>
+    <p>Five minutes to find out where you stand, what's missing in your financial foundation, and what to fix first. It's free and the results are yours to keep.</p>
+    <a href="#score" class="btn-cream">Take the Founder Focus Score</a>
+    <p class="final-note">No credit card. No sign-up to start. Just answers.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">Touch<span>Connect</span>Pro</span>
+  <p>© 2026 TouchConnectPro. Built for founders who mean business.</p>
+</footer>
+
+</body>
+</html>

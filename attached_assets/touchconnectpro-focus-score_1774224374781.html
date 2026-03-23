@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Founder Focus Score - TouchConnectPro</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #FAF8F3;
+    --ink: #1A1814;
+    --ink-soft: #4A4740;
+    --ink-muted: #8C8880;
+    --gold: #C49A3C;
+    --gold-pale: #FAF3E0;
+    --teal: #1D6A5A;
+    --teal-light: #E4F0ED;
+    --border: rgba(26,24,20,0.12);
+    --border-soft: rgba(26,24,20,0.07);
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --radius: 4px;
+    --radius-lg: 10px;
+  }
+  body {
+    font-family: var(--sans);
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    padding: 0 2rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-back {
+    font-size: 13px;
+    color: var(--ink-muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s;
+  }
+  .nav-back:hover { color: var(--ink); }
+
+  /* QUIZ SHELL */
+  .quiz-shell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 20px 80px;
+  }
+
+  /* PROGRESS */
+  .progress-wrap {
+    width: 100%;
+    max-width: 620px;
+    margin-bottom: 48px;
+  }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .progress-label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .progress-count {
+    font-family: var(--serif);
+    font-size: 13px;
+    color: var(--ink-muted);
+  }
+  .progress-track {
+    height: 3px;
+    background: var(--border-soft);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--teal);
+    border-radius: 100px;
+    transition: width 0.5s ease;
+  }
+
+  /* QUESTION CARD */
+  .question-card {
+    width: 100%;
+    max-width: 620px;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 16px;
+    display: block;
+  }
+  .q-text {
+    font-family: var(--serif);
+    font-size: clamp(22px, 4vw, 30px);
+    font-weight: 300;
+    line-height: 1.25;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+  .q-text em { font-style: italic; color: var(--gold); }
+  .q-sub {
+    font-size: 14px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+
+  /* OPTIONS */
+  .options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .option-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 20px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--sans);
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    width: 100%;
+  }
+  .option-btn:hover {
+    border-color: rgba(26,24,20,0.3);
+    transform: translateY(-1px);
+  }
+  .option-btn.selected {
+    border-color: var(--teal);
+    background: var(--teal-light);
+  }
+  .option-letter {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.15s;
+    background: var(--cream);
+  }
+  .option-btn.selected .option-letter {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: white;
+  }
+  .option-content { flex: 1; }
+  .option-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 2px;
+    line-height: 1.4;
+  }
+  .option-sub {
+    font-size: 13px;
+    color: var(--ink-muted);
+    line-height: 1.5;
+  }
+
+  /* NAV BUTTONS */
+  .q-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .btn-prev {
+    font-size: 13px;
+    color: var(--ink-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--sans);
+    padding: 10px 0;
+    transition: color 0.15s;
+  }
+  .btn-prev:hover { color: var(--ink); }
+  .btn-prev:disabled { opacity: 0; pointer-events: none; }
+  .btn-next {
+    background: var(--ink);
+    color: var(--cream);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 13px 32px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: background 0.15s, transform 0.1s, opacity 0.15s;
+  }
+  .btn-next:hover:not(:disabled) { background: var(--teal); transform: translateY(-1px); }
+  .btn-next:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* INTRO SCREEN */
+  .intro-screen {
+    width: 100%;
+    max-width: 580px;
+    text-align: center;
+    animation: slideIn 0.4s ease;
+  }
+  .intro-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: var(--teal-light);
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 28px;
+  }
+  .intro-eyebrow::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+    display: inline-block;
+  }
+  .intro-screen h1 {
+    font-family: var(--serif);
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+  .intro-screen h1 em { font-style: italic; color: var(--gold); }
+  .intro-screen p {
+    font-size: 16px;
+    color: var(--ink-soft);
+    line-height: 1.75;
+    margin-bottom: 40px;
+    max-width: 460px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .intro-pills {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+  }
+  .intro-pill {
+    font-size: 12px;
+    color: var(--ink-soft);
+    background: white;
+    border: 1px solid var(--border);
+    padding: 7px 16px;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pill-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--teal);
+  }
+  .btn-start {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--cream);
+    font-size: 15px;
+    font-weight: 500;
+    padding: 16px 40px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-start:hover { background: var(--teal); transform: translateY(-1px); }
+  .intro-note { margin-top: 16px; font-size: 12px; color: var(--ink-muted); }
+
+  /* LOADING */
+  .loading-screen {
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+    padding: 60px 0;
+    animation: slideIn 0.3s ease;
+  }
+  .loading-dots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+  .loading-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--teal);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse {
+    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+  .loading-screen h2 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .loading-screen p { font-size: 14px; color: var(--ink-muted); line-height: 1.6; }
+
+  /* RESULTS */
+  .results-screen {
+    width: 100%;
+    max-width: 660px;
+    animation: slideIn 0.4s ease;
+  }
+  .results-header { text-align: center; margin-bottom: 40px; }
+  .results-eyebrow {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: var(--teal-light);
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+  .results-header h2 {
+    font-family: var(--serif);
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .results-header h2 em { font-style: italic; color: var(--gold); }
+
+  .score-display {
+    background: var(--ink);
+    border-radius: var(--radius-lg);
+    padding: 36px 40px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+  .score-big-num {
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    padding-right: 40px;
+  }
+  .score-big-num .num {
+    font-family: var(--serif);
+    font-size: 64px;
+    font-weight: 300;
+    color: var(--cream);
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .score-big-num .denom { font-size: 20px; color: rgba(250,248,243,0.35); }
+  .score-big-num .tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(196,154,60,0.15);
+    padding: 3px 10px;
+    border-radius: 100px;
+    margin-top: 10px;
+  }
+  .score-bars-dark { display: flex; flex-direction: column; gap: 12px; }
+  .bar-dark-row { }
+  .bar-dark-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: rgba(250,248,243,0.5);
+    margin-bottom: 5px;
+  }
+  .bar-dark-meta span:last-child { color: rgba(250,248,243,0.8); font-weight: 500; }
+  .bar-dark-track {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .bar-dark-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 1s ease 0.3s;
+  }
+  .fill-good { background: var(--teal); }
+  .fill-mid { background: var(--gold); }
+  .fill-low { background: #C97B5A; }
+
+  .diagnosis-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+  .diagnosis-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .diagnosis-text {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.75;
+  }
+
+  .next-step-card {
+    background: var(--gold-pale);
+    border: 1px solid rgba(196,154,60,0.25);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    border-left: 4px solid var(--gold);
+  }
+  .next-step-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .next-step-text {
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.7;
+    font-weight: 500;
+  }
+
+  .results-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+    padding-top: 8px;
+  }
+  .btn-primary-lg {
+    background: var(--ink);
+    color: var(--cream);
+    font-size: 15px;
+    font-weight: 500;
+    padding: 15px 36px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: background 0.15s, transform 0.1s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-primary-lg:hover { background: var(--teal); transform: translateY(-1px); }
+  .results-note { font-size: 12px; color: var(--ink-muted); }
+  .btn-restart {
+    font-size: 12px;
+    color: var(--ink-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--sans);
+    text-decoration: underline;
+    transition: color 0.15s;
+  }
+  .btn-restart:hover { color: var(--ink); }
+
+  @media (max-width: 600px) {
+    .score-display { grid-template-columns: 1fr; gap: 24px; }
+    .score-big-num { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); padding-right: 0; padding-bottom: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Touch<span>Connect</span>Pro</a>
+  <a href="index.html" class="nav-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back to home
+  </a>
+</nav>
+
+<div class="quiz-shell" id="quizShell">
+  <!-- content injected by JS -->
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    id: 'stage',
+    eyebrow: 'Your situation',
+    text: 'Where are you right now with your business?',
+    sub: 'Be honest. There is no wrong answer and your score depends on accuracy.',
+    options: [
+      { letter: 'A', label: 'I have an idea but have not started yet', sub: 'Still in the concept or validation phase', value: 'idea', scores: { clarity: 20, finance: 10, ops: 10 } },
+      { letter: 'B', label: 'I have started but have no revenue yet', sub: 'Building the product or service, early traction', value: 'pre-revenue', scores: { clarity: 50, finance: 20, ops: 30 } },
+      { letter: 'C', label: 'I have some revenue but things feel chaotic', sub: 'Customers exist but systems are not keeping up', value: 'early-revenue', scores: { clarity: 65, finance: 35, ops: 45 } },
+      { letter: 'D', label: 'I am generating consistent revenue and scaling', sub: 'Operations are running but financial visibility is limited', value: 'scaling', scores: { clarity: 80, finance: 50, ops: 65 } }
+    ]
+  },
+  {
+    id: 'accounting',
+    eyebrow: 'Financial structure',
+    text: 'How would you describe your current accounting setup?',
+    sub: 'This is one of the most common growth blockers for early-stage founders.',
+    options: [
+      { letter: 'A', label: 'I have no real system, just bank transactions', sub: 'No accounting software in use', value: 'none', scores: { finance: 0 } },
+      { letter: 'B', label: 'I use a spreadsheet to track income and expenses', sub: 'Manual tracking, no dedicated software', value: 'spreadsheet', scores: { finance: 15 } },
+      { letter: 'C', label: 'I use basic accounting software like QuickBooks or Xero', sub: 'Set up but possibly not fully configured', value: 'basic', scores: { finance: 35 } },
+      { letter: 'D', label: 'I have a proper system with monthly reconciliation', sub: 'Clean books, someone reviews them regularly', value: 'proper', scores: { finance: 60 } }
+    ]
+  },
+  {
+    id: 'cashflow',
+    eyebrow: 'Cash visibility',
+    text: 'Can you tell right now how much cash your business will have in 60 days?',
+    sub: 'Not an estimate. An actual number based on what you know.',
+    options: [
+      { letter: 'A', label: 'No idea, I check my bank account when I need to', sub: 'No forward visibility', value: 'no-visibility', scores: { finance: 0 } },
+      { letter: 'B', label: 'Roughly, but it is more of a feeling than a calculation', sub: 'No formal cash flow forecast', value: 'rough', scores: { finance: 15 } },
+      { letter: 'C', label: 'I have a basic projection in a spreadsheet', sub: 'Manual, updated occasionally', value: 'basic-projection', scores: { finance: 35 } },
+      { letter: 'D', label: 'Yes, I have a live cash flow forecast I update regularly', sub: 'Clear 60 to 90 day visibility', value: 'clear', scores: { finance: 55 } }
+    ]
+  },
+  {
+    id: 'software',
+    eyebrow: 'Tools and systems',
+    text: 'Which best describes the software running your business finances?',
+    sub: 'The right tool depends on your stage. Most founders are either under or over-equipped.',
+    options: [
+      { letter: 'A', label: 'Nothing formal, I manage it manually', sub: 'No dedicated finance software', value: 'none', scores: { ops: 0 } },
+      { letter: 'B', label: 'QuickBooks or Xero, basic setup', sub: 'Useful but possibly not configured for my stage', value: 'basic', scores: { ops: 25 } },
+      { letter: 'C', label: 'I am considering or evaluating an ERP system', sub: 'NetSuite, Odoo, or similar', value: 'erp-considering', scores: { ops: 40 } },
+      { letter: 'D', label: 'I have an ERP system in place and it works for us', sub: 'Integrated with operations and finance', value: 'erp-live', scores: { ops: 65 } }
+    ]
+  },
+  {
+    id: 'reporting',
+    eyebrow: 'Financial reporting',
+    text: 'If an investor or partner asked for your financials today, what would you send?',
+    sub: 'This question reveals how investor-ready your financial foundation really is.',
+    options: [
+      { letter: 'A', label: 'Nothing, I do not have anything ready', sub: 'No financial reports exist', value: 'nothing', scores: { finance: 0, clarity: 0 } },
+      { letter: 'B', label: 'A spreadsheet with some numbers', sub: 'Informal, not structured as proper reports', value: 'spreadsheet', scores: { finance: 10, clarity: 10 } },
+      { letter: 'C', label: 'A basic P&L from my accounting software', sub: 'Exists but may not be clean or accurate', value: 'basic-pl', scores: { finance: 25, clarity: 20 } },
+      { letter: 'D', label: 'A proper P&L, balance sheet, and cash flow statement', sub: 'Clean, reconciled, ready to share', value: 'full-reports', scores: { finance: 50, clarity: 35 } }
+    ]
+  },
+  {
+    id: 'guidance',
+    eyebrow: 'Outside support',
+    text: 'Do you currently have any financial or operational guidance from someone outside your business?',
+    sub: 'A mentor, advisor, accountant, or fractional CFO who knows your numbers.',
+    options: [
+      { letter: 'A', label: 'No, I am figuring everything out on my own', sub: 'Solo, no external financial perspective', value: 'solo', scores: { clarity: 0, ops: 0 } },
+      { letter: 'B', label: 'I have an accountant but only for taxes', sub: 'Compliance only, no strategic input', value: 'tax-only', scores: { clarity: 15, ops: 15 } },
+      { letter: 'C', label: 'I have a mentor or advisor I talk to occasionally', sub: 'Helpful but not deeply involved in my numbers', value: 'occasional', scores: { clarity: 30, ops: 25 } },
+      { letter: 'D', label: 'I have someone actively involved in my financial decisions', sub: 'Regular involvement, knows my business well', value: 'active', scores: { clarity: 50, ops: 45 } }
+    ]
+  },
+  {
+    id: 'blocker',
+    eyebrow: 'Your biggest blocker',
+    text: 'What feels like the biggest thing holding your business back right now?',
+    sub: 'Pick the one that creates the most friction week to week.',
+    options: [
+      { letter: 'A', label: 'I am not sure where to focus or what to prioritize', sub: 'Lack of clarity on next steps', value: 'clarity', scores: { clarity: -10 } },
+      { letter: 'B', label: 'My financial systems are a mess or do not exist', sub: 'Accounting, reporting, or cash visibility', value: 'finance', scores: { finance: -15 } },
+      { letter: 'C', label: 'My operations are not ready for where I want to go', sub: 'Processes, tools, or team structure', value: 'ops', scores: { ops: -15 } },
+      { letter: 'D', label: 'I am moving but not fast enough and I do not know why', sub: 'Execution gap, unclear bottleneck', value: 'speed', scores: { clarity: -5, ops: -5 } }
+    ]
+  },
+  {
+    id: 'goal',
+    eyebrow: 'Your next milestone',
+    text: 'What is the most important thing you want to accomplish in the next 90 days?',
+    sub: 'This shapes the concrete next step in your results.',
+    options: [
+      { letter: 'A', label: 'Validate my idea and get my first paying customer', sub: 'Pre-revenue, proving the concept', value: 'validate', scores: { clarity: 10 } },
+      { letter: 'B', label: 'Set up proper accounting and get my finances in order', sub: 'Build the financial foundation', value: 'accounting-setup', scores: { finance: 10 } },
+      { letter: 'C', label: 'Understand my numbers and build a real financial forecast', sub: 'Gain financial visibility and control', value: 'forecast', scores: { finance: 10 } },
+      { letter: 'D', label: 'Prepare my business to raise funding or bring on investors', sub: 'Investor readiness and financial reporting', value: 'fundraise', scores: { clarity: 10, finance: 10 } }
+    ]
+  }
+];
+
+const TOTAL_QUESTIONS = QUESTIONS.length;
+let currentQ = -1; // -1 = intro
+let answers = {};
+let scores = { clarity: 0, finance: 0, ops: 0 };
+
+function getEl(id) { return document.getElementById(id); }
+const shell = document.getElementById('quizShell');
+
+function renderIntro() {
+  shell.innerHTML = `
+    <div class="intro-screen">
+      <div class="intro-eyebrow">Founder Focus Score</div>
+      <h1>Discover your biggest <em>growth blocker</em> in under five minutes</h1>
+      <p>Answer 8 personalized questions and get a clear diagnosis of what is holding you back, plus one concrete step to move forward this week.</p>
+      <div class="intro-pills">
+        <span class="intro-pill"><span class="pill-dot"></span>5 minutes</span>
+        <span class="intro-pill"><span class="pill-dot"></span>Personalized to your answers</span>
+        <span class="intro-pill"><span class="pill-dot"></span>No signup required</span>
+      </div>
+      <button class="btn-start" onclick="startQuiz()">Start the diagnostic</button>
+      <p class="intro-note">Free. Your results are yours to keep.</p>
+    </div>
+  `;
+}
+
+function startQuiz() {
+  currentQ = 0;
+  answers = {};
+  scores = { clarity: 0, finance: 0, ops: 0 };
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  const progress = ((currentQ + 1) / TOTAL_QUESTIONS) * 100;
+  const letters = ['A','B','C','D'];
+
+  shell.innerHTML = `
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span class="progress-label">Founder Focus Score</span>
+        <span class="progress-count">${currentQ + 1} of ${TOTAL_QUESTIONS}</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${progress}%"></div>
+      </div>
+    </div>
+    <div class="question-card">
+      <span class="q-eyebrow">${q.eyebrow}</span>
+      <h2 class="q-text">${q.text}</h2>
+      <p class="q-sub">${q.sub}</p>
+      <div class="options-list">
+        ${q.options.map((opt, i) => `
+          <button class="option-btn ${answers[q.id] === opt.value ? 'selected' : ''}"
+            onclick="selectAnswer('${q.id}', '${opt.value}', ${i})">
+            <div class="option-letter">${letters[i]}</div>
+            <div class="option-content">
+              <span class="option-label">${opt.label}</span>
+              <span class="option-sub">${opt.sub}</span>
+            </div>
+          </button>
+        `).join('')}
+      </div>
+      <div class="q-nav">
+        <button class="btn-prev" onclick="prevQuestion()" ${currentQ === 0 ? 'disabled' : ''}>
+          &larr; Back
+        </button>
+        <button class="btn-next" id="nextBtn" onclick="nextQuestion()"
+          ${answers[q.id] ? '' : 'disabled'}>
+          ${currentQ === TOTAL_QUESTIONS - 1 ? 'See my results' : 'Next question'}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function selectAnswer(qId, value, idx) {
+  const q = QUESTIONS[currentQ];
+  const opt = q.options[idx];
+  answers[qId] = value;
+
+  // apply scores
+  for (const [dim, delta] of Object.entries(opt.scores || {})) {
+    scores[dim] = (scores[dim] || 0) + delta;
+  }
+
+  // re-render to update selected state and enable next
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (!answers[QUESTIONS[currentQ].id]) return;
+  if (currentQ < TOTAL_QUESTIONS - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showLoading();
+  }
+}
+
+function prevQuestion() {
+  if (currentQ > 0) {
+    // un-apply scores for current question before going back
+    const q = QUESTIONS[currentQ];
+    if (answers[q.id]) {
+      const opt = q.options.find(o => o.value === answers[q.id]);
+      if (opt) {
+        for (const [dim, delta] of Object.entries(opt.scores || {})) {
+          scores[dim] = (scores[dim] || 0) - delta;
+        }
+      }
+      delete answers[q.id];
+    }
+    currentQ--;
+    renderQuestion();
+  }
+}
+
+function showLoading() {
+  shell.innerHTML = `
+    <div class="loading-screen">
+      <div class="loading-dots">
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+      </div>
+      <h2>Analysing your answers...</h2>
+      <p>Building your personalized diagnosis based on what you shared.</p>
+    </div>
+  `;
+  setTimeout(showResults, 2200);
+}
+
+function computeResults() {
+  // normalize scores to 0-100
+  const maxScores = { clarity: 100, finance: 200, ops: 150 };
+  const raw = {
+    clarity: Math.max(0, Math.min(100, Math.round((scores.clarity / maxScores.clarity) * 100))),
+    finance: Math.max(0, Math.min(100, Math.round((scores.finance / maxScores.finance) * 100))),
+    ops:     Math.max(0, Math.min(100, Math.round((scores.ops     / maxScores.ops)     * 100)))
+  };
+
+  // base boost so scores feel realistic
+  raw.clarity = Math.min(100, raw.clarity + 30);
+  raw.finance = Math.min(100, raw.finance + 15);
+  raw.ops     = Math.min(100, raw.ops     + 25);
+
+  const total = Math.round((raw.clarity + raw.finance + raw.ops) / 3);
+
+  // determine primary gap
+  const minDim = Object.entries(raw).sort((a,b) => a[1]-b[1])[0][0];
+
+  // diagnosis text based on primary gap + stage
+  const stage = answers.stage || 'pre-revenue';
+  const goal  = answers.goal  || 'accounting-setup';
+
+  const diagnoses = {
+    finance: {
+      label: 'Financial structure gap',
+      text: `Your business clarity and operations are moving in the right direction. The gap is your financial foundation. Without clean books, a real cash flow picture, and the right accounting setup for your stage, you are flying without instruments. This is the most common blocker at your stage and the one that quietly causes the most damage over time.`
+    },
+    clarity: {
+      label: 'Direction and focus gap',
+      text: `You have some pieces in place but your direction is not yet clear enough to move fast. This shows up as scattered priorities, difficulty explaining your business concisely, and uncertainty about what to do next. Getting clarity on your positioning and next milestone will unlock everything else.`
+    },
+    ops: {
+      label: 'Operational readiness gap',
+      text: `Your idea is clear and you understand your finances better than most founders at your stage. The gap is your operations. The systems, processes, and tools that need to be in place before you can scale are either missing or not working together. Growth right now would mean scaling problems, not results.`
+    }
+  };
+
+  const nextSteps = {
+    validate:         'Before anything else, have three honest conversations with people who would pay for your product. Not friends. Real potential customers. One insight from those conversations is worth more than a month of building.',
+    'accounting-setup': 'Open a dedicated business bank account this week if you do not have one. Then connect it to a basic accounting tool. QuickBooks or Xero for early stage, Odoo if you are already managing inventory or multiple entities. This is the single highest-leverage hour you can spend on your business right now.',
+    forecast:         'Build a 13-week cash flow forecast in a spreadsheet. Three columns: expected inflows, expected outflows, running balance. Update it every Monday. This single habit will change how you make decisions.',
+    fundraise:        'Before you talk to investors, make sure you can share a clean P&L, a 12-month forecast, and a one-page summary of your unit economics. These three documents will determine how seriously you are taken in the first meeting.'
+  };
+
+  return { raw, total, minDim, diagnosis: diagnoses[minDim], nextStep: nextSteps[goal] };
+}
+
+function getBarClass(val) {
+  if (val >= 65) return 'fill-good';
+  if (val >= 40) return 'fill-mid';
+  return 'fill-low';
+}
+
+function showResults() {
+  const { raw, total, minDim, diagnosis, nextStep } = computeResults();
+
+  shell.innerHTML = `
+    <div class="results-screen">
+      <div class="results-header">
+        <span class="results-eyebrow">Your results</span>
+        <h2>Here is what your answers <em>actually reveal</em></h2>
+      </div>
+
+      <div class="score-display">
+        <div class="score-big-num">
+          <div class="num">${total}<span class="denom">/100</span></div>
+          <span class="tag">${diagnosis.label}</span>
+        </div>
+        <div class="score-bars-dark">
+          <div class="bar-dark-row">
+            <div class="bar-dark-meta"><span>Business clarity</span><span>${raw.clarity}%</span></div>
+            <div class="bar-dark-track"><div class="bar-dark-fill ${getBarClass(raw.clarity)}" style="width:${raw.clarity}%"></div></div>
+          </div>
+          <div class="bar-dark-row">
+            <div class="bar-dark-meta"><span>Financial structure</span><span>${raw.finance}%</span></div>
+            <div class="bar-dark-track"><div class="bar-dark-fill ${getBarClass(raw.finance)}" style="width:${raw.finance}%"></div></div>
+          </div>
+          <div class="bar-dark-row">
+            <div class="bar-dark-meta"><span>Operational readiness</span><span>${raw.ops}%</span></div>
+            <div class="bar-dark-track"><div class="bar-dark-fill ${getBarClass(raw.ops)}" style="width:${raw.ops}%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="diagnosis-card">
+        <span class="diagnosis-label">Your diagnosis</span>
+        <p class="diagnosis-text">${diagnosis.text}</p>
+      </div>
+
+      <div class="next-step-card">
+        <span class="next-step-label">Your concrete next step this week</span>
+        <p class="next-step-text">${nextStep}</p>
+      </div>
+
+      <div class="results-cta">
+        <a href="dashboard.html" class="btn-primary-lg">Save your results and create a free account</a>
+        <p class="results-note">No credit card. Takes 60 seconds. Your score will be waiting in your dashboard.</p>
+        <button class="btn-restart" onclick="restartQuiz()">Retake the quiz</button>
+      </div>
+    </div>
+  `;
+}
+
+function restartQuiz() {
+  currentQ = -1;
+  renderIntro();
+}
+
+// init
+renderIntro();
+</script>
+</body>
+</html>

@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>How It Works - TouchConnectPro</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #FAF8F3;
+    --ink: #1A1814;
+    --ink-soft: #4A4740;
+    --ink-muted: #8C8880;
+    --gold: #C49A3C;
+    --gold-light: #F0E4C4;
+    --gold-pale: #FAF3E0;
+    --teal: #1D6A5A;
+    --teal-light: #E4F0ED;
+    --border: rgba(26,24,20,0.12);
+    --border-soft: rgba(26,24,20,0.07);
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --radius: 4px;
+    --radius-lg: 10px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; align-items: center; gap: 2rem; }
+  .nav-links a {
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .btn-nav {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cream) !important;
+    background: var(--ink);
+    padding: 8px 18px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .btn-nav:hover { background: var(--teal) !important; }
+
+  /* PAGE HEADER */
+  .page-header {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 80px 2rem 64px;
+    text-align: center;
+  }
+  .page-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: var(--teal-light);
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 24px;
+  }
+  .page-eyebrow::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+    display: inline-block;
+  }
+  .page-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(34px, 5vw, 52px);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+  .page-header h1 em { font-style: italic; color: var(--gold); }
+  .page-header p {
+    font-size: 17px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* STEPS */
+  .steps-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 2rem 100px;
+  }
+
+  .step-block {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 0;
+    border-top: 1px solid var(--border-soft);
+    padding: 56px 0;
+    position: relative;
+  }
+  .step-block:last-of-type { border-bottom: 1px solid var(--border-soft); }
+
+  .step-left {
+    padding-right: 48px;
+    padding-top: 4px;
+  }
+  .step-number {
+    font-family: var(--serif);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .step-phase {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  .step-phase em { font-style: italic; color: var(--gold); }
+
+  .step-right { padding-left: 48px; border-left: 1px solid var(--border-soft); }
+
+  .step-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+  .tag-free { color: var(--teal); background: var(--teal-light); }
+  .tag-call { color: #7A5C1E; background: var(--gold-pale); border: 1px solid rgba(196,154,60,0.25); }
+
+  .step-right h2 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .step-right p {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.75;
+    margin-bottom: 24px;
+  }
+
+  .step-points { list-style: none; margin-bottom: 28px; display: flex; flex-direction: column; gap: 10px; }
+  .step-points li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .step-points li::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+    margin-top: 7px;
+  }
+
+  .step-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-top: 8px;
+  }
+  .step-card-icon {
+    width: 36px; height: 36px;
+    border-radius: var(--radius);
+    background: var(--teal-light);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-card-icon svg { width: 16px; height: 16px; stroke: var(--teal); fill: none; stroke-width: 1.5; }
+  .step-card-text p { font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
+  .step-card-text strong { font-size: 13px; font-weight: 500; color: var(--ink); display: block; margin-bottom: 2px; }
+
+  /* WHAT HAPPENS AFTER */
+  .after-section {
+    background: var(--ink);
+    padding: 80px 2rem;
+  }
+  .after-inner {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .after-inner h2 {
+    font-family: var(--serif);
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 300;
+    color: var(--cream);
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .after-inner h2 em { font-style: italic; color: var(--gold); }
+  .after-inner > p {
+    font-size: 15px;
+    color: rgba(250,248,243,0.5);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+  }
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .service-item {
+    padding: 32px 28px;
+    background: var(--ink);
+  }
+  .service-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+    display: block;
+  }
+  .service-item h3 {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--cream);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .service-item p {
+    font-size: 13px;
+    color: rgba(250,248,243,0.5);
+    line-height: 1.65;
+    margin-bottom: 16px;
+  }
+  .service-price {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 300;
+    color: rgba(250,248,243,0.35);
+    font-style: italic;
+  }
+
+  /* FINAL CTA */
+  .final-cta {
+    background: var(--gold-pale);
+    border-top: 1px solid rgba(196,154,60,0.2);
+    padding: 80px 2rem;
+    text-align: center;
+  }
+  .final-cta-inner { max-width: 580px; margin: 0 auto; }
+  .final-cta h2 {
+    font-family: var(--serif);
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .final-cta h2 em { font-style: italic; }
+  .final-cta p {
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin-bottom: 36px;
+    line-height: 1.7;
+  }
+  .btn-primary {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 14px 32px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { background: var(--teal); transform: translateY(-1px); }
+  .final-note { margin-top: 16px; font-size: 12px; color: var(--ink-muted); }
+
+  /* FOOTER */
+  .footer-wrap {
+    border-top: 1px solid var(--border-soft);
+    padding: 40px 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .footer-logo {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--ink-muted);
+  }
+  .footer-logo span { color: var(--gold); }
+  .footer-wrap p { font-size: 12px; color: var(--ink-muted); }
+
+  @media (max-width: 700px) {
+    .step-block { grid-template-columns: 1fr; gap: 20px; }
+    .step-left { padding-right: 0; }
+    .step-right { padding-left: 0; border-left: none; border-top: 1px solid var(--border-soft); padding-top: 28px; }
+    .service-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .footer-wrap { flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Touch<span>Connect</span>Pro</a>
+  <div class="nav-links">
+    <a href="how-it-works.html">How it works</a>
+    <a href="#score">Focus Score</a>
+    <a href="#mentors">Advisors</a>
+    <a href="#score" class="btn-nav">Take the free score</a>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-eyebrow">How it works</div>
+  <h1>From first question to <em>real financial clarity</em></h1>
+  <p>Three steps. No membership required to start. You only go further if it makes sense for your situation.</p>
+</div>
+
+<!-- STEPS -->
+<div class="steps-wrap">
+
+  <!-- STEP 1 -->
+  <div class="step-block">
+    <div class="step-left">
+      <span class="step-number">Step 01</span>
+      <div class="step-phase">Take your <em>free</em> score</div>
+    </div>
+    <div class="step-right">
+      <span class="step-tag tag-free">Free, no sign-up needed</span>
+      <h2>Find out exactly where your financial foundation stands</h2>
+      <p>Answer 8 honest questions about your startup. You get an instant breakdown across three dimensions: business clarity, financial structure, and operational readiness. No vague results. A plain-language picture of what is working and what is not.</p>
+      <ul class="step-points">
+        <li>See your blind spots before they cost you</li>
+        <li>Understand which financial gap to fix first</li>
+        <li>Get a personalized snapshot of your startup's real state</li>
+      </ul>
+      <div class="step-card">
+        <div class="step-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </div>
+        <div class="step-card-text">
+          <strong>Takes 5 minutes</strong>
+          <p>Results are instant and yours to keep. No email required to see your score.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-block">
+    <div class="step-left">
+      <span class="step-number">Step 02</span>
+      <div class="step-phase">See your <em>dashboard</em></div>
+    </div>
+    <div class="step-right">
+      <span class="step-tag tag-free">Free account</span>
+      <h2>Your score becomes a personal action plan</h2>
+      <p>Once you create a free account, your dashboard tracks your Focus Score over time, shows you the specific gaps to address, and surfaces the right resources based on where you actually are. Not a generic checklist. A starting point built around your answers.</p>
+      <ul class="step-points">
+        <li>Score breakdown across clarity, financial structure, and operations</li>
+        <li>Plain-language interpretation of what each gap means for your growth</li>
+        <li>A clear first step to take, matched to your situation</li>
+      </ul>
+      <div class="step-card">
+        <div class="step-card-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 17h7M17 14v7"/></svg>
+        </div>
+        <div class="step-card-text">
+          <strong>Your dashboard is free, always</strong>
+          <p>Track your progress and revisit your score as your startup evolves. No expiry.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step-block">
+    <div class="step-left">
+      <span class="step-number">Step 03</span>
+      <div class="step-phase">Chat with a <em>specialist</em></div>
+    </div>
+    <div class="step-right">
+      <span class="step-tag tag-call">Online, at your own pace</span>
+      <h2>Get real answers to your specific situation</h2>
+      <p>When your dashboard surfaces a gap you want to address, you can reach out directly to a specialist online. Ask your questions, share your context, and get guidance that is specific to your business. No generic advice, no waiting rooms.</p>
+      <p>It is a real conversation with someone who has dealt with exactly your type of problem before. Accounting setup, ERP selection, financial reporting, ongoing advisory. The discussion starts wherever you are.</p>
+      <ul class="step-points">
+        <li>Ask anything about your financial or operational situation</li>
+        <li>Get practical, specific guidance based on your actual gaps</li>
+        <li>No pressure to commit to anything until it feels right</li>
+      </ul>
+      <div class="step-card">
+        <div class="step-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <div class="step-card-text">
+          <strong>Human, not automated</strong>
+          <p>You are talking to a specialist who has read your score and understands your context before you say a word.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- WHAT HAPPENS AFTER THE CALL -->
+<section class="after-section">
+  <div class="after-inner">
+    <h2>What working together <em>actually looks like</em></h2>
+    <p>Every engagement is scoped to your situation. No fixed packages, no upsells. Three types of work, priced by what you need.</p>
+    <div class="service-grid">
+      <div class="service-item">
+        <span class="service-label">One-time</span>
+        <h3>Advisory session</h3>
+        <p>One focused call with a clear output. A diagnosis, a decision framework, or a specific action plan for your most pressing financial question.</p>
+
+      </div>
+      <div class="service-item">
+        <span class="service-label">Project-based</span>
+        <h3>Build your foundation</h3>
+        <p>Accounting system setup, ERP selection and implementation, financial reporting structure. Scoped to your situation, delivered in weeks.</p>
+
+      </div>
+      <div class="service-item">
+        <span class="service-label">Ongoing</span>
+        <h3>Fractional CFO</h3>
+        <p>A specialist in your corner every month. Financial oversight, reporting, and strategic guidance without the full-time hire.</p>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="final-cta-inner">
+    <h2>Start with your score. <em>Everything else follows.</em></h2>
+    <p>Five minutes to find out where your financial foundation actually stands. Free, no sign-up required to start.</p>
+    <a href="#" class="btn-primary">Take the Founder Focus Score</a>
+    <p class="final-note">No credit card. No sign-up to start. Just answers.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-wrap">
+    <span class="footer-logo">Touch<span>Connect</span>Pro</span>
+    <p>© 2026 TouchConnectPro. Built for founders who mean business.</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FAQ - TouchConnectPro</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #FAF8F3;
+    --ink: #1A1814;
+    --ink-soft: #4A4740;
+    --ink-muted: #8C8880;
+    --gold: #C49A3C;
+    --gold-pale: #FAF3E0;
+    --teal: #1D6A5A;
+    --teal-light: #E4F0ED;
+    --border: rgba(26,24,20,0.12);
+    --border-soft: rgba(26,24,20,0.07);
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --radius: 4px;
+    --radius-lg: 10px;
+  }
+  body {
+    font-family: var(--sans);
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; align-items: center; gap: 2rem; }
+  .nav-links a {
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .btn-nav {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cream) !important;
+    background: var(--ink);
+    padding: 8px 18px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .btn-nav:hover { background: var(--teal) !important; }
+
+  /* PAGE HEADER */
+  .page-header {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 80px 2rem 64px;
+    text-align: center;
+  }
+  .page-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: var(--teal-light);
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 24px;
+  }
+  .page-eyebrow::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+    display: inline-block;
+  }
+  .page-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+  .page-header h1 em { font-style: italic; color: var(--gold); }
+  .page-header p {
+    font-size: 16px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* FAQ LAYOUT */
+  .faq-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 2rem 100px;
+  }
+
+  /* CATEGORY */
+  .faq-category {
+    margin-bottom: 56px;
+  }
+  .category-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-soft);
+    display: block;
+  }
+
+  /* ACCORDION ITEMS */
+  .faq-item {
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .faq-question {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: color 0.15s;
+  }
+  .faq-question:hover .q-text { color: var(--teal); }
+  .q-text {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.4;
+    text-align: left;
+    transition: color 0.15s;
+  }
+  .q-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s, border-color 0.2s, transform 0.25s;
+    background: white;
+  }
+  .q-icon svg {
+    width: 10px; height: 10px;
+    stroke: var(--ink-muted);
+    fill: none;
+    stroke-width: 2;
+    transition: transform 0.25s;
+  }
+  .faq-item.open .q-icon {
+    background: var(--teal);
+    border-color: var(--teal);
+  }
+  .faq-item.open .q-icon svg { stroke: white; transform: rotate(45deg); }
+  .faq-item.open .q-text { color: var(--teal); }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.25s ease;
+  }
+  .faq-item.open .faq-answer {
+    max-height: 600px;
+  }
+  .faq-answer-inner {
+    padding-bottom: 22px;
+  }
+  .faq-answer-inner p {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.8;
+    margin-bottom: 10px;
+  }
+  .faq-answer-inner p:last-child { margin-bottom: 0; }
+  .faq-answer-inner a {
+    color: var(--teal);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(29,106,90,0.3);
+    transition: border-color 0.15s;
+  }
+  .faq-answer-inner a:hover { border-color: var(--teal); }
+
+  /* STILL HAVE QUESTIONS */
+  .still-questions {
+    background: var(--ink);
+    border-radius: var(--radius-lg);
+    padding: 48px 40px;
+    text-align: center;
+    margin-top: 24px;
+  }
+  .still-questions h2 {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 300;
+    color: var(--cream);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .still-questions h2 em { font-style: italic; color: var(--gold); }
+  .still-questions p {
+    font-size: 15px;
+    color: rgba(250,248,243,0.55);
+    line-height: 1.7;
+    margin-bottom: 28px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .btn-cream {
+    display: inline-block;
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 13px 28px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background 0.15s, transform 0.1s;
+    margin-bottom: 12px;
+  }
+  .btn-cream:hover { background: var(--gold-pale); transform: translateY(-1px); }
+  .still-note {
+    font-size: 12px;
+    color: rgba(250,248,243,0.3);
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* FOOTER */
+  .footer-wrap {
+    border-top: 1px solid var(--border-soft);
+    padding: 40px 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .footer-logo { font-family: var(--serif); font-size: 15px; color: var(--ink-muted); }
+  .footer-logo span { color: var(--gold); }
+  .footer-wrap p { font-size: 12px; color: var(--ink-muted); }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .still-questions { padding: 36px 24px; }
+    .footer-wrap { flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Touch<span>Connect</span>Pro</a>
+  <div class="nav-links">
+    <a href="how-it-works.html">How it works</a>
+    <a href="insights.html">Insights</a>
+    <a href="focus-score.html" class="btn-nav">Take the free score</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="page-eyebrow">FAQ</div>
+  <h1>Questions founders <em>actually ask</em></h1>
+  <p>Everything you need to know about the platform, the diagnostic, and what working with a specialist looks like.</p>
+</div>
+
+<div class="faq-wrap">
+
+  <!-- ABOUT -->
+  <div class="faq-category">
+    <span class="category-label">About TouchConnectPro</span>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">What is TouchConnectPro?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>TouchConnectPro is a platform that helps early-stage founders understand and fix the financial and operational gaps in their business. It starts with a free diagnostic called the Founder Focus Score, which gives you a clear picture of where you stand across three dimensions: business clarity, financial structure, and operational readiness.</p>
+        <p>From there, you get a personal dashboard with weekly action questions based on your results, and direct access to a specialist advisor who can help you address whatever gap is holding you back.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">Who is the specialist on the platform?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>The specialist on TouchConnectPro has hands-on experience in accounting systems, ERP selection and implementation, financial reporting, and fractional CFO work for early-stage businesses. This is not generic startup advice. It is specific, practical guidance from someone who has been inside the financial and operational mess that growing businesses face.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">How is this different from hiring an accountant or a CFO?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>A traditional accountant handles compliance: taxes, year-end filing, keeping your books clean. A full-time CFO manages your finances strategically but costs $150,000 or more per year. Neither is built for founders in the early stages who need practical guidance on setting up their financial foundation without a massive commitment.</p>
+        <p>TouchConnectPro sits in between. You get specialist-level thinking on your specific situation, scoped to what you actually need, without retaining a full-time hire or committing to a compliance-only relationship.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">How is AI used on the platform?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>AI is used to generate your weekly focus questions based on your Founder Focus Score results. These questions are personalized to your specific gaps and refreshed as your situation evolves. They are designed to prompt reflection and action, not to replace human judgment.</p>
+        <p>All advisory conversations are with a human specialist. AI does not respond to your messages or make recommendations on your behalf.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- GETTING STARTED -->
+  <div class="faq-category">
+    <span class="category-label">Getting started</span>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">Who is TouchConnectPro for?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>TouchConnectPro is built for early-stage founders who are dealing with financial and operational gaps in their business. This includes first-time founders who have never set up proper accounting, founders who have recently raised money and now need real financial reporting, and bootstrapped founders whose systems are not keeping up with their growth.</p>
+        <p>You do not need a business plan or a pitch deck to get started. You just need to be honest about where you are right now.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">What is the Founder Focus Score?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>The Founder Focus Score is a free 8-question diagnostic that gives you a clear picture of where your startup actually stands. It scores you across three dimensions: business clarity, financial structure, and operational readiness.</p>
+        <p>The results are instant, plain-language, and specific to your answers. You also get one concrete next step to take this week based on your biggest gap. No signup is required to take it.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">Do I need to sign up to take the diagnostic?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>No. You can take the Founder Focus Score and see your results without creating an account. If you want to save your results, track your progress over time, and access your weekly focus questions, you can create a free account after completing the diagnostic. No credit card required.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">Is TouchConnectPro available globally?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>Yes. The diagnostic, dashboard, and messaging features are available to founders anywhere. Advisory conversations happen online and are asynchronous, so time zones are not a constraint for most interactions.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- THE DIAGNOSTIC AND DASHBOARD -->
+  <div class="faq-category">
+    <span class="category-label">The diagnostic and dashboard</span>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">How is my Focus Score calculated?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>Each of the 8 questions contributes points across the three dimensions of your score: business clarity, financial structure, and operational readiness. Your total score is an average across all three. The diagnostic is designed so that honest answers produce a useful result, not a flattering one.</p>
+        <p>You can retake the score at any time. Your dashboard tracks changes over time so you can see whether your foundation is improving.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">What are the weekly focus questions?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>Each week, your dashboard surfaces three questions built from your Focus Score results. They are designed to move you forward on your biggest gap without overwhelming you. Each question is tagged by topic so you know exactly what area it is addressing.</p>
+        <p>The questions are generated by AI based on your diagnostic answers and refresh periodically as your situation changes. They are starting points for reflection and action, not a checklist to complete.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">Is my diagnostic data kept private?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>Yes. Your quiz responses, score, and dashboard data are private to your account. They are shared with the specialist only when you initiate a conversation, so they can understand your context before responding. We do not share this data with third parties. Full details are in our <a href="privacy.html">Privacy Policy</a>.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- WORKING WITH A SPECIALIST -->
+  <div class="faq-category">
+    <span class="category-label">Working with a specialist</span>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">What can I ask the specialist about?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>You can ask about anything related to the financial and operational side of your business. Common topics include which accounting software to use at your stage, how to set up a basic financial reporting structure, whether you are ready for an ERP system, how to build a cash flow forecast, and what CFO-level thinking looks like for a business your size.</p>
+        <p>Messaging is free. You do not need to commit to a paid engagement to ask a question or describe your situation.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">How quickly does the specialist respond?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>Responses are typically within one to two business days. The specialist reads your Focus Score results before responding, so the guidance you receive is specific to your situation rather than generic. If your question requires a longer or more detailed response, it may take a little longer.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">What does a paid engagement look like?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>If you decide to work together beyond the free messaging, the scope, deliverables, and fee are agreed directly before anything starts. There are three typical types of engagement:</p>
+        <p>A one-time advisory session for a specific question or decision. A project-based engagement such as setting up your accounting system, selecting and implementing an ERP, or building a financial reporting structure. An ongoing fractional CFO arrangement for founders who need regular financial oversight without a full-time hire.</p>
+        <p>You will always know exactly what you are paying for before any payment is made.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">Is the specialist's advice regulated financial or legal advice?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>No. Guidance provided through TouchConnectPro is practical advisory support based on real-world experience. It does not constitute regulated financial advice, legal counsel, tax advice, or any other licensed professional service. You are responsible for verifying the suitability of any guidance for your specific situation and for all decisions you make as a result.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="faq-category">
+    <span class="category-label">Pricing and payments</span>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">What is free and what is paid?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>The Founder Focus Score, your personal dashboard, weekly focus questions, and direct messaging with the specialist are all free. No credit card is required to access any of these.</p>
+        <p>Paid engagements are advisory work scoped to your specific situation: a one-time session, a project-based engagement, or an ongoing fractional CFO arrangement. These are agreed and priced through direct conversation before any payment is requested.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">How are payments handled?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>Payments for advisory engagements are processed securely through Stripe. You will receive a clear summary of the scope and fee before any payment is requested. There are no hidden charges or recurring fees unless you have explicitly agreed to an ongoing arrangement.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">What is the refund policy?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>Because engagements are scoped and agreed in advance, refunds are handled on a case-by-case basis. If you are unsatisfied with a service, contact us within 7 days and we will work to find a fair resolution. Refunds are not issued for work that has already been delivered and accepted. Full details are in our <a href="terms.html">Terms of Service</a>.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- PRIVACY -->
+  <div class="faq-category">
+    <span class="category-label">Privacy and data</span>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">Who owns my data and ideas?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>You retain full ownership of your ideas, business information, and intellectual property at all times. TouchConnectPro does not claim any rights over content you share or create through the platform.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">Is my data sold or shared with third parties?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>No. We do not sell personal data and we do not use it for advertising. Data is shared only with the trusted service providers that help us run the platform, such as our hosting and authentication providers, and only to the extent necessary. Full details are in our <a href="privacy.html">Privacy Policy</a>.</p>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">
+        <span class="q-text">Can I delete my account?</span>
+        <span class="q-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">
+        <p>Yes. You can request account deletion at any time by emailing <a href="mailto:hello@touchconnectpro.com">hello@touchconnectpro.com</a>. We will remove your personal data within a reasonable period in line with our Privacy Policy.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- STILL HAVE QUESTIONS -->
+  <div class="still-questions">
+    <h2>Still have a <em>question?</em></h2>
+    <p>If something is not covered here, reach out directly. We respond to every message.</p>
+    <a href="mailto:hello@touchconnectpro.com" class="btn-cream">hello@touchconnectpro.com</a>
+    <span class="still-note">Or take the free score and ask your question in the dashboard.</span>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-wrap">
+    <span class="footer-logo">Touch<span>Connect</span>Pro</span>
+    <p>© 2026 TouchConnectPro. Built for founders who mean business.</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+</script>
+
+</body>
+</html>

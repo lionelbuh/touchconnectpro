@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Insights for Early-Stage Founders - TouchConnectPro</title>
+<meta name="description" content="Practical guidance on accounting systems, ERP selection, financial structure, and operational clarity for early-stage founders and first-time entrepreneurs." />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #FAF8F3;
+    --ink: #1A1814;
+    --ink-soft: #4A4740;
+    --ink-muted: #8C8880;
+    --gold: #C49A3C;
+    --gold-light: #F0E4C4;
+    --gold-pale: #FAF3E0;
+    --teal: #1D6A5A;
+    --teal-light: #E4F0ED;
+    --border: rgba(26,24,20,0.12);
+    --border-soft: rgba(26,24,20,0.07);
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --radius: 4px;
+    --radius-lg: 10px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; align-items: center; gap: 2rem; }
+  .nav-links a {
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .btn-nav {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cream) !important;
+    background: var(--ink);
+    padding: 8px 18px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .btn-nav:hover { background: var(--teal) !important; }
+
+  /* PAGE HEADER */
+  .page-header {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 80px 2rem 56px;
+  }
+  .page-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: var(--teal-light);
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 24px;
+  }
+  .page-eyebrow::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+    display: inline-block;
+  }
+  .page-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(34px, 5vw, 52px);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+  .page-header h1 em { font-style: italic; color: var(--gold); }
+  .page-header p {
+    font-size: 17px;
+    color: var(--ink-soft);
+    line-height: 1.75;
+    max-width: 580px;
+  }
+
+  /* TOPIC FILTER */
+  .filter-wrap {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 0 2rem 48px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    padding: 7px 16px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--sans);
+  }
+  .filter-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .filter-btn.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+
+  /* FEATURED ARTICLE */
+  .featured-wrap {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 0 2rem 56px;
+  }
+  .featured-card {
+    background: var(--ink);
+    border-radius: var(--radius-lg);
+    padding: 52px 56px;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 64px;
+    align-items: center;
+  }
+  .featured-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(196,154,60,0.15);
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+  .featured-card h2 {
+    font-family: var(--serif);
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 300;
+    color: var(--cream);
+    line-height: 1.25;
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+  .featured-card h2 em { font-style: italic; color: var(--gold); }
+  .featured-card p {
+    font-size: 15px;
+    color: rgba(250,248,243,0.55);
+    line-height: 1.75;
+    margin-bottom: 28px;
+  }
+  .btn-cream {
+    display: inline-block;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 22px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .btn-cream:hover { background: var(--gold-pale); }
+  .featured-meta {
+    border-left: 1px solid rgba(255,255,255,0.1);
+    padding-left: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .meta-item { }
+  .meta-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(250,248,243,0.3);
+    margin-bottom: 4px;
+    display: block;
+  }
+  .meta-value {
+    font-size: 13px;
+    color: rgba(250,248,243,0.65);
+    line-height: 1.5;
+  }
+
+  /* ARTICLES GRID */
+  .articles-wrap {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 0 2rem 100px;
+  }
+  .articles-section-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-soft);
+    display: block;
+  }
+  .articles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 64px;
+  }
+  .article-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px 24px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .article-card:hover { border-color: rgba(26,24,20,0.28); transform: translateY(-2px); }
+  .article-topic {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 100px;
+    margin-bottom: 16px;
+    align-self: flex-start;
+  }
+  .topic-accounting { color: var(--teal); background: var(--teal-light); }
+  .topic-erp { color: #7A5C1E; background: var(--gold-pale); border: 1px solid rgba(196,154,60,0.2); }
+  .topic-cfo { color: #3D2F6E; background: #EEEDFE; }
+  .topic-ops { color: #5A3E2B; background: #F5EDE4; }
+  .topic-founder { color: var(--ink-soft); background: #F1EFE8; }
+
+  .article-card h3 {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.35;
+    margin-bottom: 12px;
+    flex: 1;
+  }
+  .article-card p {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    margin-bottom: 20px;
+  }
+  .article-read {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--teal);
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: auto;
+  }
+  .article-read::after {
+    content: '';
+    width: 14px; height: 1px;
+    background: var(--teal);
+    display: inline-block;
+    transition: width 0.2s;
+  }
+  .article-card:hover .article-read::after { width: 22px; }
+
+  /* SCORE STRIP */
+  .score-strip {
+    background: var(--gold-pale);
+    border-top: 1px solid rgba(196,154,60,0.2);
+    border-bottom: 1px solid rgba(196,154,60,0.2);
+    padding: 64px 2rem;
+    text-align: center;
+  }
+  .score-strip-inner { max-width: 600px; margin: 0 auto; }
+  .score-strip h2 {
+    font-family: var(--serif);
+    font-size: clamp(24px, 3.5vw, 36px);
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 14px;
+    line-height: 1.25;
+  }
+  .score-strip h2 em { font-style: italic; }
+  .score-strip p {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+  .btn-primary {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 13px 28px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { background: var(--teal); transform: translateY(-1px); }
+
+  /* FOOTER */
+  .footer-wrap {
+    border-top: 1px solid var(--border-soft);
+    padding: 40px 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .footer-logo {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--ink-muted);
+  }
+  .footer-logo span { color: var(--gold); }
+  .footer-wrap p { font-size: 12px; color: var(--ink-muted); }
+
+  @media (max-width: 900px) {
+    .featured-card { grid-template-columns: 1fr; gap: 32px; padding: 36px 28px; }
+    .featured-meta { border-left: none; padding-left: 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 28px; flex-direction: row; flex-wrap: wrap; gap: 20px; }
+    .articles-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .articles-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .footer-wrap { flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Touch<span>Connect</span>Pro</a>
+  <div class="nav-links">
+    <a href="how-it-works.html">How it works</a>
+    <a href="insights.html" style="color:var(--ink); font-weight:500;">Insights</a>
+    <a href="#score" class="btn-nav">Take the free score</a>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-eyebrow">Insights</div>
+  <h1>The financial questions <em>every founder</em> eventually faces</h1>
+  <p>Practical guidance on accounting systems, ERP selection, financial structure, and operational clarity. Written for founders who are building for the first time and need answers that are specific, not generic.</p>
+</div>
+
+<!-- TOPIC FILTER -->
+<div class="filter-wrap">
+  <button class="filter-btn active">All topics</button>
+  <button class="filter-btn">Accounting basics</button>
+  <button class="filter-btn">ERP and software</button>
+  <button class="filter-btn">Financial structure</button>
+  <button class="filter-btn">Fractional CFO</button>
+  <button class="filter-btn">Operational readiness</button>
+</div>
+
+<!-- FEATURED ARTICLE -->
+<div class="featured-wrap">
+  <div class="featured-card">
+    <div>
+      <span class="featured-tag">Featured</span>
+      <h2>What accounting system does your startup <em>actually need</em> right now?</h2>
+      <p>Most founders set up accounting software by Googling "best accounting tool for startups" and picking whatever comes up first. That decision quietly causes problems six months later. Here is how to choose based on your actual stage and what you will need next.</p>
+      <a href="#" class="btn-cream">Read the guide</a>
+    </div>
+    <div class="featured-meta">
+      <div class="meta-item">
+        <span class="meta-label">Topic</span>
+        <span class="meta-value">Accounting basics</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Best for</span>
+        <span class="meta-value">Founders in their first 12 months, post-revenue</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Read time</span>
+        <span class="meta-value">7 minutes</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Key question answered</span>
+        <span class="meta-value">QuickBooks vs Xero vs Odoo: which one fits where you are?</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ARTICLES -->
+<div class="articles-wrap">
+
+  <span class="articles-section-label">Accounting basics</span>
+  <div class="articles-grid">
+    <a href="#" class="article-card">
+      <span class="article-topic topic-accounting">Accounting basics</span>
+      <h3>Why your startup's books are a mess and what to do about it</h3>
+      <p>Running on spreadsheets works until it suddenly does not. Here is the minimum accounting structure every early-stage startup needs before it becomes an emergency.</p>
+      <span class="article-read">Read article</span>
+    </a>
+    <a href="#" class="article-card">
+      <span class="article-topic topic-accounting">Accounting basics</span>
+      <h3>Cash basis vs accrual accounting: which one is right for your stage?</h3>
+      <p>This is one of the first real accounting decisions founders face. Getting it wrong does not break your business, but it does create unnecessary work later.</p>
+      <span class="article-read">Read article</span>
+    </a>
+    <a href="#" class="article-card">
+      <span class="article-topic topic-accounting">Accounting basics</span>
+      <h3>What investors actually want to see in your financial reporting</h3>
+      <p>When a seed investor asks for your financials, they are not looking for perfection. They are looking for three specific things most first-time founders overlook.</p>
+      <span class="article-read">Read article</span>
+    </a>
+  </div>
+
+  <span class="articles-section-label">ERP and software selection</span>
+  <div class="articles-grid">
+    <a href="#" class="article-card">
+      <span class="article-topic topic-erp">ERP and software</span>
+      <h3>QuickBooks, Xero, NetSuite, Odoo: an honest comparison for early-stage founders</h3>
+      <p>Not a feature list. A plain-language breakdown of which tool fits which stage, what each one costs you in time, and when to switch.</p>
+      <span class="article-read">Read article</span>
+    </a>
+    <a href="#" class="article-card">
+      <span class="article-topic topic-erp">ERP and software</span>
+      <h3>When does a startup actually need an ERP system?</h3>
+      <p>Most founders implement an ERP too late or too early. The signs that tell you it is time are more specific than you think.</p>
+      <span class="article-read">Read article</span>
+    </a>
+    <a href="#" class="article-card">
+      <span class="article-topic topic-erp">ERP and software</span>
+      <h3>How to migrate your accounting data without losing three months of your life</h3>
+      <p>Switching financial software is painful by default. It does not have to be. A clear sequence that reduces the risk of getting it wrong.</p>
+      <span class="article-read">Read article</span>
+    </a>
+  </div>
+
+  <span class="articles-section-label">Financial structure and CFO thinking</span>
+  <div class="articles-grid">
+    <a href="#" class="article-card">
+      <span class="article-topic topic-cfo">Fractional CFO</span>
+      <h3>What a fractional CFO actually does, and whether you need one yet</h3>
+      <p>The term gets used loosely. Here is what fractional CFO work really involves, at what stage it makes sense, and what to look for when you are ready.</p>
+      <span class="article-read">Read article</span>
+    </a>
+    <a href="#" class="article-card">
+      <span class="article-topic topic-cfo">Financial structure</span>
+      <h3>How to build a financial model that your business will actually use</h3>
+      <p>Most startup financial models are built once for a pitch deck and never opened again. A model that works for a real business looks different.</p>
+      <span class="article-read">Read article</span>
+    </a>
+    <a href="#" class="article-card">
+      <span class="article-topic topic-cfo">Financial structure</span>
+      <h3>Unit economics for non-finance founders: what to track and why it matters</h3>
+      <p>You do not need an accounting degree to understand your unit economics. You do need to understand three numbers before you think about scaling.</p>
+      <span class="article-read">Read article</span>
+    </a>
+  </div>
+
+  <span class="articles-section-label">Operational readiness</span>
+  <div class="articles-grid">
+    <a href="#" class="article-card">
+      <span class="article-topic topic-ops">Operational readiness</span>
+      <h3>The financial foundation checklist before you hire your first employee</h3>
+      <p>Hiring before your financial systems are ready creates expensive problems. Here is what needs to be in place first, and what order to tackle it.</p>
+      <span class="article-read">Read article</span>
+    </a>
+    <a href="#" class="article-card">
+      <span class="article-topic topic-ops">Operational readiness</span>
+      <h3>How to know if your operations are ready for growth before you start pushing</h3>
+      <p>Scaling a broken system just breaks it faster. Three honest questions to ask before you accelerate, and what to fix if the answers are not reassuring.</p>
+      <span class="article-read">Read article</span>
+    </a>
+    <a href="#" class="article-card">
+      <span class="article-topic topic-founder">First-time founder</span>
+      <h3>The financial mistakes first-time founders make in year one, and how to avoid them</h3>
+      <p>Not about spending too much or raising too little. The quieter structural mistakes that create problems you do not notice until month eighteen.</p>
+      <span class="article-read">Read article</span>
+    </a>
+  </div>
+
+</div>
+
+<!-- SCORE STRIP -->
+<section class="score-strip">
+  <div class="score-strip-inner">
+    <h2>Not sure which of these applies to <em>your situation?</em></h2>
+    <p>Take the Founder Focus Score. Five minutes to find out exactly which financial or operational gap is holding your startup back right now.</p>
+    <a href="#" class="btn-primary">Take the free Founder Focus Score</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-wrap">
+    <span class="footer-logo">Touch<span>Connect</span>Pro</span>
+    <p>© 2026 TouchConnectPro. Built for founders who mean business.</p>
+  </div>
+</footer>
+
+</body>
+</html>
