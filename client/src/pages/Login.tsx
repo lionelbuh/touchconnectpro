@@ -1,167 +1,68 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Lightbulb, Star, Briefcase, TrendingUp, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { getSupabase, clearSupabaseSession } from "@/lib/supabase";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
-const COUNTRIES = [
-  "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", 
-  "India", "Japan", "Brazil", "Mexico", "Singapore", "Netherlands", "Switzerland",
-  "Sweden", "Ireland", "Israel", "South Korea", "New Zealand", "Spain", "Italy",
-  "Portugal", "China", "Argentina", "Colombia", "Chile", "Peru", "Thailand", "Philippines",
-  "Vietnam", "Indonesia", "Malaysia", "Hong Kong", "Pakistan", "Bangladesh"
-];
-
-const US_STATES = [
-  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
-  "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
-  "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
-  "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
-  "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
-  "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
-  "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
-  "Wisconsin", "Wyoming", "District of Columbia"
-];
-
-const validatePassword = (password: string): { valid: boolean; errors: string[] } => {
-  const errors: string[] = [];
-  if (password.length < 10) {
-    errors.push("At least 10 characters");
-  }
-  if (!/[A-Z]/.test(password)) {
-    errors.push("At least one capital letter");
-  }
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    errors.push("At least one special character (!@#$%^&*...)");
-  }
-  return { valid: errors.length === 0, errors };
+const C = {
+  cream: "#FAF8F3",
+  ink: "#1A1814",
+  inkSoft: "#4A4740",
+  inkMuted: "#8C8880",
+  gold: "#C49A3C",
+  goldPale: "#FAF3E0",
+  teal: "#1D6A5A",
+  tealLight: "#E4F0ED",
+  border: "rgba(26,24,20,0.12)",
+  borderSoft: "rgba(26,24,20,0.07)",
 };
-
-const cardStyle: React.CSSProperties = {
-  boxShadow: "0 4px 24px rgba(224,224,224,0.5)",
-};
-
-const inputStyle: React.CSSProperties = {
-  backgroundColor: "#FFFFFF",
-  borderColor: "#E0E0E0",
-  color: "#4A4A4A",
-};
-
-const inputFocusClass = "focus:border-[#FF6B5C] focus:ring-[#FF6B5C]/20";
 
 export default function Login() {
   const [, navigate] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
   const [isRecovery, setIsRecovery] = useState(false);
-  const [showRoles, setShowRoles] = useState(false);
-  const [country, setCountry] = useState("");
-  const [state, setState] = useState("");
   const [loading, setLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<string>("entrepreneur");
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-  const [signupFullName, setSignupFullName] = useState("");
-  const [signupEmail, setSignupEmail] = useState("");
-  const [signupPassword, setSignupPassword] = useState("");
   const [recoveryEmail, setRecoveryEmail] = useState("");
 
   useEffect(() => {
     const checkUser = async () => {
       try {
         const supabase = await getSupabase();
-        if (!supabase) {
-          setCheckingAuth(false);
-          return;
-        }
-        
+        if (!supabase) { setCheckingAuth(false); return; }
         const { data: { session } } = await supabase.auth.getSession();
         let user = session?.user;
-        
         if (!user) {
           const { data: userData } = await supabase.auth.getUser();
           user = userData.user;
         }
-        
         if (user && user.email) {
           const email = user.email.toLowerCase();
           setUserEmail(email);
-          
           let role: string | null = null;
-          
-          const { data: entrepreneurApp } = await supabase
-            .from("ideas")
-            .select("status")
-            .ilike("entrepreneur_email", email)
-            .in("status", ["approved", "pre-approved"])
-            .limit(1);
-          
-          if (entrepreneurApp && entrepreneurApp.length > 0) {
-            role = "entrepreneur";
-          }
-          
+          const { data: entrepreneurApp } = await supabase.from("ideas").select("status").ilike("entrepreneur_email", email).in("status", ["approved", "pre-approved"]).limit(1);
+          if (entrepreneurApp && entrepreneurApp.length > 0) role = "entrepreneur";
           if (!role) {
-            const { data: mentorApp } = await supabase
-              .from("mentor_applications")
-              .select("status")
-              .ilike("email", email)
-              .eq("status", "approved")
-              .limit(1);
-            
-            if (mentorApp && mentorApp.length > 0) {
-              role = "mentor";
-            }
+            const { data: mentorApp } = await supabase.from("mentor_applications").select("status").ilike("email", email).eq("status", "approved").limit(1);
+            if (mentorApp && mentorApp.length > 0) role = "mentor";
           }
-          
           if (!role) {
-            const { data: coachApp } = await supabase
-              .from("coach_applications")
-              .select("status")
-              .ilike("email", email)
-              .eq("status", "approved")
-              .limit(1);
-            
-            if (coachApp && coachApp.length > 0) {
-              role = "coach";
-            }
+            const { data: coachApp } = await supabase.from("coach_applications").select("status").ilike("email", email).eq("status", "approved").limit(1);
+            if (coachApp && coachApp.length > 0) role = "coach";
           }
-          
           if (!role) {
-            const { data: investorApp } = await supabase
-              .from("investor_applications")
-              .select("status")
-              .ilike("email", email)
-              .eq("status", "approved")
-              .limit(1);
-            
-            if (investorApp && investorApp.length > 0) {
-              role = "investor";
-            }
+            const { data: investorApp } = await supabase.from("investor_applications").select("status").ilike("email", email).eq("status", "approved").limit(1);
+            if (investorApp && investorApp.length > 0) role = "investor";
           }
-
           if (!role) {
-            const { data: trialUser } = await supabase
-              .from("trial_users")
-              .select("status")
-              .ilike("email", email)
-              .in("status", ["trial_active", "trial_expired"])
-              .limit(1);
-            
-            if (trialUser && trialUser.length > 0) {
-              role = "trial_entrepreneur";
-            }
+            const { data: trialUser } = await supabase.from("trial_users").select("status").ilike("email", email).in("status", ["trial_active", "trial_expired"]).limit(1);
+            if (trialUser && trialUser.length > 0) role = "trial_entrepreneur";
           }
-          
-          if (role) {
-            setUserRole(role);
-          }
+          if (role) setUserRole(role);
         }
       } catch (error) {
         console.error("Error checking auth:", error);
@@ -169,7 +70,6 @@ export default function Login() {
         setCheckingAuth(false);
       }
     };
-    
     checkUser();
   }, []);
 
@@ -182,149 +82,50 @@ export default function Login() {
   };
 
   const handleLogin = async () => {
-    if (!loginEmail || !loginPassword) {
-      toast.error("Please fill in email and password");
-      return;
-    }
+    if (!loginEmail || !loginPassword) { toast.error("Please fill in email and password"); return; }
     setLoading(true);
     try {
       const supabase = await getSupabase();
-      if (!supabase) {
-        throw new Error("Supabase client not initialized. Check environment variables.");
-      }
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password: loginPassword,
-      });
-      
+      if (!supabase) throw new Error("Supabase client not initialized. Check environment variables.");
+      const { data, error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword });
       if (error) throw error;
-      
       if (data.session) {
-        console.log("[LOGIN] Session received, access_token length:", data.session.access_token?.length);
-        console.log("[LOGIN] Session received, refresh_token length:", data.session.refresh_token?.length);
-        
-        await supabase.auth.setSession({
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token,
-        });
-        
-        const authKeys = Object.keys(localStorage).filter(k => k.includes('sb-') || k.includes('supabase') || k.includes('tcp-'));
-        console.log("[LOGIN] Auth keys in localStorage after setSession:", authKeys);
-        authKeys.forEach(key => {
-          const value = localStorage.getItem(key);
-          console.log(`[LOGIN] Key ${key}: length=${value?.length}, preview=${value?.substring(0, 50)}...`);
-        });
-        
-        console.log("[LOGIN] Session explicitly persisted to localStorage");
-      } else {
-        console.log("[LOGIN] WARNING: No session received from signInWithPassword!");
+        await supabase.auth.setSession({ access_token: data.session.access_token, refresh_token: data.session.refresh_token });
       }
-      
       if (data.user) {
         const userEmail = data.user.email?.toLowerCase();
-        console.log("[LOGIN] User email:", userEmail);
-        
         let applicationRole: string | null = null;
-        
         if (userEmail) {
-          console.log("[LOGIN] Checking application tables for email:", userEmail);
-          
-          const { data: entrepreneurApp } = await supabase
-            .from("ideas")
-            .select("status, entrepreneur_email")
-            .ilike("entrepreneur_email", userEmail)
-            .in("status", ["approved", "pre-approved"])
-            .limit(1);
-          
-          if (entrepreneurApp && entrepreneurApp.length > 0) {
-            applicationRole = "entrepreneur";
-            console.log("[LOGIN] Found approved/pre-approved entrepreneur application, status:", entrepreneurApp[0].status);
-          }
-          
+          const { data: entrepreneurApp } = await supabase.from("ideas").select("status").ilike("entrepreneur_email", userEmail).in("status", ["approved", "pre-approved"]).limit(1);
+          if (entrepreneurApp && entrepreneurApp.length > 0) applicationRole = "entrepreneur";
           if (!applicationRole) {
-            const { data: mentorApp } = await supabase
-              .from("mentor_applications")
-              .select("status, email")
-              .ilike("email", userEmail)
-              .eq("status", "approved")
-              .limit(1);
-            
-            if (mentorApp && mentorApp.length > 0) {
-              applicationRole = "mentor";
-              console.log("[LOGIN] Found approved mentor application");
-            }
+            const { data: mentorApp } = await supabase.from("mentor_applications").select("status").ilike("email", userEmail).eq("status", "approved").limit(1);
+            if (mentorApp && mentorApp.length > 0) applicationRole = "mentor";
           }
-          
           if (!applicationRole) {
-            const { data: coachApp } = await supabase
-              .from("coach_applications")
-              .select("status, email")
-              .ilike("email", userEmail)
-              .eq("status", "approved")
-              .limit(1);
-            
-            if (coachApp && coachApp.length > 0) {
-              applicationRole = "coach";
-              console.log("[LOGIN] Found approved coach application");
-            }
+            const { data: coachApp } = await supabase.from("coach_applications").select("status").ilike("email", userEmail).eq("status", "approved").limit(1);
+            if (coachApp && coachApp.length > 0) applicationRole = "coach";
           }
-          
           if (!applicationRole) {
-            const { data: investorApp } = await supabase
-              .from("investor_applications")
-              .select("status, email")
-              .ilike("email", userEmail)
-              .eq("status", "approved")
-              .limit(1);
-            
-            if (investorApp && investorApp.length > 0) {
-              applicationRole = "investor";
-              console.log("[LOGIN] Found approved investor application");
-            }
+            const { data: investorApp } = await supabase.from("investor_applications").select("status").ilike("email", userEmail).eq("status", "approved").limit(1);
+            if (investorApp && investorApp.length > 0) applicationRole = "investor";
           }
-
           if (!applicationRole) {
-            const { data: trialUser } = await supabase
-              .from("trial_users")
-              .select("status, email")
-              .ilike("email", userEmail)
-              .in("status", ["trial_active", "trial_expired"])
-              .limit(1);
-            
-            if (trialUser && trialUser.length > 0) {
-              applicationRole = "trial_entrepreneur";
-              console.log("[LOGIN] Found trial user, status:", trialUser[0].status);
-            }
+            const { data: trialUser } = await supabase.from("trial_users").select("status").ilike("email", userEmail).in("status", ["trial_active", "trial_expired"]).limit(1);
+            if (trialUser && trialUser.length > 0) applicationRole = "trial_entrepreneur";
           }
         }
-        
-        let userRole = applicationRole;
-        
-        if (!userRole) {
-          const { data: profile } = await supabase
-            .from("users")
-            .select("role")
-            .eq("id", data.user.id);
-          
-          userRole = profile?.[0]?.role;
-          console.log("[LOGIN] Role from users table:", userRole);
+        let finalRole = applicationRole;
+        if (!finalRole) {
+          const { data: profile } = await supabase.from("users").select("role").eq("id", data.user.id);
+          finalRole = profile?.[0]?.role;
         }
-        
-        if (!userRole) {
-          userRole = data.user.user_metadata?.user_type || "entrepreneur";
-          console.log("[LOGIN] Using fallback role from metadata:", userRole);
-        }
-        
-        console.log("[LOGIN] Final role:", userRole);
-        
+        if (!finalRole) finalRole = data.user.user_metadata?.user_type || "entrepreneur";
         let dashboardPath = "/dashboard-entrepreneur";
-        
-        if (userRole === "trial_entrepreneur") dashboardPath = "/trial-dashboard";
-        else if (userRole === "mentor") dashboardPath = "/dashboard-mentor";
-        else if (userRole === "coach") dashboardPath = "/dashboard-coach";
-        else if (userRole === "investor") dashboardPath = "/dashboard-investor";
-        
+        if (finalRole === "trial_entrepreneur") dashboardPath = "/trial-dashboard";
+        else if (finalRole === "mentor") dashboardPath = "/dashboard-mentor";
+        else if (finalRole === "coach") dashboardPath = "/dashboard-coach";
+        else if (finalRole === "investor") dashboardPath = "/dashboard-investor";
         const currentParams = new URLSearchParams(window.location.search);
         const paymentStatus = currentParams.get("payment");
         const sessionId = currentParams.get("session_id");
@@ -334,31 +135,16 @@ export default function Login() {
           if (sessionId) params.set("session_id", sessionId);
           dashboardPath = `${dashboardPath}?${params.toString()}`;
         }
-        
         try {
           const apiBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "" : "https://touchconnectprowebswervice.onrender.com");
-          fetch(`${apiBase}/api/track-login`, {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${data.session?.access_token || ""}`
-            },
-            body: JSON.stringify({ email: userEmail, role: userRole }),
-          }).catch(() => {});
+          fetch(`${apiBase}/api/track-login`, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${data.session?.access_token || ""}` }, body: JSON.stringify({ email: userEmail, role: finalRole }) }).catch(() => {});
         } catch {}
-        
         toast.success("Logged in successfully!");
         navigate(dashboardPath);
       }
     } catch (error: any) {
-      console.log("[LOGIN ERROR]", error.message, error);
       const errorMsg = (error.message || "").toLowerCase();
-      if (errorMsg.includes("invalid") || 
-          errorMsg.includes("credentials") ||
-          errorMsg.includes("password") ||
-          errorMsg.includes("wrong") ||
-          errorMsg.includes("incorrect") ||
-          errorMsg.includes("login")) {
+      if (errorMsg.includes("invalid") || errorMsg.includes("credentials") || errorMsg.includes("password") || errorMsg.includes("wrong") || errorMsg.includes("incorrect") || errorMsg.includes("login")) {
         toast.error("Wrong password. Please try again.");
       } else {
         toast.error(error.message || "Login failed. Please try again.");
@@ -368,123 +154,60 @@ export default function Login() {
     }
   };
 
-  const handleSignup = async () => {
-    if (!signupFullName || !signupEmail || !signupPassword || !country) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-    if (country === "United States" && !state) {
-      toast.error("Please select your state");
-      return;
-    }
-    const passwordValidation = validatePassword(signupPassword);
-    if (!passwordValidation.valid) {
-      toast.error("Password requirements not met: " + passwordValidation.errors.join(", "));
-      return;
-    }
-    setLoading(true);
-    try {
-      const supabase = await getSupabase();
-      if (!supabase) {
-        throw new Error("Supabase client not initialized");
-      }
-      
-      const { data, error } = await supabase.auth.signUp({
-        email: signupEmail,
-        password: signupPassword,
-      });
-      if (error) throw error;
-      
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from("users")
-          .insert({
-            id: data.user.id,
-            email: signupEmail,
-            full_name: signupFullName,
-            country,
-            state: state || null,
-            role: selectedRole,
-          });
-        if (profileError) throw profileError;
-      }
-      
-      toast.success("Account created! Redirecting to application form...");
-      if (selectedRole === "entrepreneur") navigate("/founder-focus");
-      else if (selectedRole === "mentor") navigate("/become-mentor");
-      else if (selectedRole === "coach") navigate("/become-coach");
-      else if (selectedRole === "investor") navigate("/investors");
-    } catch (error: any) {
-      toast.error(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRoleSelection = (role: string) => {
-    setSelectedRole(role);
-    if (role === "entrepreneur") navigate("/founder-focus");
-    else if (role === "mentor") navigate("/become-mentor");
-    else if (role === "coach") navigate("/become-coach");
-    else if (role === "investor") navigate("/investors");
-  };
-
   if (checkingAuth) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#FAF9F7" }}>
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto" style={{ color: "#FF6B5C" }} />
-          <p className="mt-4" style={{ color: "#8A8A8A" }}>Loading...</p>
-        </div>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: C.cream }}>
+        <Loader2 style={{ width: 28, height: 28, color: C.teal, animation: "spin 1s linear infinite" }} />
       </div>
     );
   }
 
   if (userRole) {
     return (
-      <div className="min-h-screen flex" style={{ backgroundColor: "#FAF9F7" }}>
-        <div className="hidden md:flex md:w-1/2 items-center justify-center p-12" style={{ backgroundColor: "#0D566C" }}>
-          <div className="max-w-sm text-center">
-            <h2 className="text-3xl font-display font-bold text-white mb-4">Welcome back to TouchConnectPro</h2>
-            <p style={{ color: "rgba(255,255,255,0.75)" }}>Your dashboard is ready. Pick up where you left off.</p>
-          </div>
-        </div>
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-md bg-white rounded-2xl p-8 md:p-10" style={cardStyle}>
-            <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Welcome Back!</h2>
-            <p className="mb-8 text-sm" style={{ color: "#8A8A8A" }}>You're already signed in as {userEmail}</p>
-            <div className="space-y-3">
-              <Button
-                onClick={handleGoToDashboard}
-                className="w-full h-12 font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-                style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
-                data-testid="button-go-to-dashboard"
-              >
-                Go to My Dashboard
-              </Button>
-              <Button
-                onClick={async () => {
-                  const supabase = await getSupabase();
-                  if (supabase) {
-                    await supabase.auth.signOut();
-                  }
-                  setUserRole(null);
-                  setUserEmail(null);
-                  toast.success("Logged out successfully");
-                }}
-                variant="outline"
-                className="w-full h-12 rounded-full font-semibold"
-                style={{ borderColor: "#E0E0E0", color: "#4A4A4A" }}
-                data-testid="button-logout-login"
-              >
-                Sign Out
-              </Button>
-              <Link href="/" className="block">
-                <Button variant="ghost" className="w-full font-medium" style={{ color: "#8A8A8A" }}>
-                  Back to Home
-                </Button>
-              </Link>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: "100vh" }}>
+        <LeftPanel />
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "48px 40px", backgroundColor: C.cream }}>
+          <div style={{ width: "100%", maxWidth: 380 }}>
+            <div style={{ marginBottom: 32 }}>
+              <h2 style={{ fontFamily: "Georgia, serif", fontSize: 26, fontWeight: 300, color: C.ink, letterSpacing: "-0.01em", marginBottom: 6 }}>
+                Welcome back
+              </h2>
+              <p style={{ fontSize: 14, color: C.inkMuted, lineHeight: 1.6 }}>
+                You're signed in as {userEmail}
+              </p>
             </div>
+            <button
+              onClick={handleGoToDashboard}
+              style={{ width: "100%", height: 46, background: C.ink, color: C.cream, fontSize: 14, fontWeight: 500, border: "none", borderRadius: 4, cursor: "pointer", marginBottom: 12, transition: "background 0.15s" }}
+              onMouseEnter={e => (e.currentTarget.style.background = C.teal)}
+              onMouseLeave={e => (e.currentTarget.style.background = C.ink)}
+              data-testid="button-go-to-dashboard"
+            >
+              Go to my dashboard
+            </button>
+            <button
+              onClick={async () => {
+                const supabase = await getSupabase();
+                if (supabase) await supabase.auth.signOut();
+                setUserRole(null); setUserEmail(null);
+                toast.success("Signed out successfully");
+              }}
+              style={{ width: "100%", height: 46, background: "transparent", color: C.inkMuted, fontSize: 14, fontWeight: 500, border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer", transition: "color 0.15s, border-color 0.15s" }}
+              onMouseEnter={e => { (e.currentTarget.style.color = C.ink); (e.currentTarget.style.borderColor = C.ink); }}
+              onMouseLeave={e => { (e.currentTarget.style.color = C.inkMuted); (e.currentTarget.style.borderColor = C.border); }}
+              data-testid="button-logout-login"
+            >
+              Sign out
+            </button>
+            <Link href="/" data-testid="link-back-home">
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 12, color: C.inkMuted, marginTop: 24, cursor: "pointer", transition: "color 0.15s" }}
+                onMouseEnter={e => (e.currentTarget.style.color = C.ink)}
+                onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}
+              >
+                <svg viewBox="0 0 24 24" style={{ width: 13, height: 13, stroke: "currentColor", fill: "none", strokeWidth: 1.5 }}><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+                Back to home
+              </div>
+            </Link>
           </div>
         </div>
       </div>
@@ -492,451 +215,291 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: "#FAF9F7" }}>
-      {/* Left Brand Panel - Desktop only */}
-      <div className="hidden md:flex md:w-1/2 items-center justify-center p-12" style={{ backgroundColor: "#0D566C" }}>
-        <div className="max-w-sm text-center">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: "rgba(245,197,66,0.2)" }}>
-            <Lightbulb className="h-7 w-7" style={{ color: "#F5C542" }} />
-          </div>
-          <h2 className="text-3xl font-display font-bold text-white mb-4">
-            Where ideas become real businesses
-          </h2>
-          <p className="leading-relaxed" style={{ color: "rgba(255,255,255,0.75)" }}>
-            AI helps organize your thoughts. Mentors help you make them real. Sign in to continue your journey.
-          </p>
-        </div>
-      </div>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: "100vh" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .login-grid { grid-template-columns: 1fr !important; }
+          .login-left-panel { display: none !important; }
+          .login-right-panel { padding: 40px 24px !important; }
+        }
+        input:focus { outline: none; border-color: ${C.teal} !important; box-shadow: 0 0 0 3px rgba(29,106,90,0.08) !important; }
+      `}</style>
 
-      {/* Right Form Panel */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
+      <LeftPanel />
 
-          {/* Login Card */}
-          {!isRecovery && isLogin && (
-            <div className="bg-white rounded-2xl p-8 md:p-10" style={cardStyle}>
-              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Welcome Back</h2>
-              <p className="mb-8" style={{ color: "#8A8A8A" }}>Sign in to your TouchConnectPro account</p>
-              <div className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="font-medium" style={{ color: "#0D566C" }}>Email Address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-5 w-5" style={{ color: "#8A8A8A" }} />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      className={`pl-10 h-12 rounded-xl placeholder:text-[#C0C0C0] ${inputFocusClass}`}
-                      style={inputStyle}
-                      data-testid="input-email"
-                    />
-                  </div>
-                </div>
+      {/* Right Panel */}
+      <div className="login-right-panel" style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "48px 40px", backgroundColor: C.cream }}>
+        <div style={{ width: "100%", maxWidth: 380 }}>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="font-medium" style={{ color: "#0D566C" }}>Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-5 w-5" style={{ color: "#8A8A8A" }} />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      className={`pl-10 pr-10 h-12 rounded-xl placeholder:text-[#C0C0C0] ${inputFocusClass}`}
-                      style={inputStyle}
-                      data-testid="input-password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 transition-colors"
-                      style={{ color: "#8A8A8A" }}
-                      data-testid="button-toggle-password"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                </div>
+          {isRecovery ? (
+            <>
+              <div style={{ marginBottom: 36 }}>
+                <h2 style={{ fontFamily: "Georgia, serif", fontSize: 26, fontWeight: 300, color: C.ink, letterSpacing: "-0.01em", marginBottom: 6, lineHeight: 1.2 }}>
+                  Reset your password
+                </h2>
+                <p style={{ fontSize: 14, color: C.inkMuted, lineHeight: 1.6 }}>
+                  Enter your email and we'll send you a reset link.
+                </p>
+              </div>
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.inkSoft, marginBottom: 7, letterSpacing: "0.02em" }}>
+                  Email address
+                </label>
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={recoveryEmail}
+                  onChange={e => setRecoveryEmail(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleRecovery()}
+                  style={{ width: "100%", height: 44, padding: "0 14px", background: "white", border: `1px solid ${C.border}`, borderRadius: 4, fontFamily: "inherit", fontSize: 15, color: C.ink, transition: "border-color 0.15s, box-shadow 0.15s" }}
+                  data-testid="input-recovery-email"
+                />
+              </div>
+              <button
+                onClick={handleRecovery}
+                disabled={loading}
+                style={{ width: "100%", height: 46, background: loading ? C.inkMuted : C.ink, color: C.cream, fontSize: 14, fontWeight: 500, border: "none", borderRadius: 4, cursor: loading ? "not-allowed" : "pointer", marginTop: 8, transition: "background 0.15s" }}
+                onMouseEnter={e => { if (!loading) e.currentTarget.style.background = C.teal; }}
+                onMouseLeave={e => { if (!loading) e.currentTarget.style.background = C.ink; }}
+                data-testid="button-send-reset"
+              >
+                {loading ? "Sending..." : "Send reset link"}
+              </button>
+              <button
+                onClick={() => setIsRecovery(false)}
+                style={{ width: "100%", marginTop: 16, fontSize: 13, color: C.inkMuted, background: "none", border: "none", cursor: "pointer", transition: "color 0.15s" }}
+                onMouseEnter={e => (e.currentTarget.style.color = C.ink)}
+                onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}
+                data-testid="button-back-to-login"
+              >
+                ← Back to sign in
+              </button>
+            </>
+          ) : (
+            <>
+              <div style={{ marginBottom: 36 }}>
+                <h2 style={{ fontFamily: "Georgia, serif", fontSize: 26, fontWeight: 300, color: C.ink, letterSpacing: "-0.01em", marginBottom: 6, lineHeight: 1.2 }}>
+                  Welcome back
+                </h2>
+                <p style={{ fontSize: 14, color: C.inkMuted, lineHeight: 1.6 }}>
+                  Sign in to your TouchConnectPro account to access your dashboard and score.
+                </p>
+              </div>
 
-                <div className="flex justify-end">
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.inkSoft, marginBottom: 7, letterSpacing: "0.02em" }}>
+                  Email address
+                </label>
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  value={loginEmail}
+                  onChange={e => setLoginEmail(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleLogin()}
+                  style={{ width: "100%", height: 44, padding: "0 14px", background: "white", border: `1px solid ${C.border}`, borderRadius: 4, fontFamily: "inherit", fontSize: 15, color: C.ink, transition: "border-color 0.15s, box-shadow 0.15s" }}
+                  data-testid="input-email"
+                />
+              </div>
+
+              <div style={{ marginBottom: 18 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
+                  <label style={{ fontSize: 12, fontWeight: 500, color: C.inkSoft, letterSpacing: "0.02em" }}>
+                    Password
+                  </label>
                   <button
                     onClick={() => setIsRecovery(true)}
-                    className="text-sm font-medium transition-colors"
-                    style={{ color: "#FF6B5C" }}
+                    style={{ fontSize: 12, color: C.inkMuted, background: "none", border: "none", cursor: "pointer", transition: "color 0.15s", padding: 0 }}
+                    onMouseEnter={e => (e.currentTarget.style.color = C.teal)}
+                    onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}
                     data-testid="button-forgot-password"
                   >
                     Forgot password?
                   </button>
                 </div>
-
-                <Button
-                  type="button"
-                  onClick={handleLogin}
-                  disabled={loading}
-                  className="w-full h-12 font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 cursor-pointer relative z-10"
-                  style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
-                  data-testid="button-login"
-                >
-                  {loading ? "Signing in..." : <>Sign In <ArrowRight className="ml-2 h-4 w-4" /></>}
-                </Button>
-
-                <div className="text-center pt-2">
-                  <p style={{ color: "#8A8A8A" }}>
-                    Don't have an account?{" "}
-                    <button
-                      onClick={() => {
-                        setIsLogin(false);
-                        setShowRoles(true);
-                        window.scrollTo(0, 0);
-                      }}
-                      className="font-semibold transition-colors"
-                      style={{ color: "#FF6B5C" }}
-                      data-testid="button-signup-link"
-                    >
-                      Create one now
-                    </button>
-                  </p>
-                </div>
-
-                <div className="text-center">
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Your password"
+                    autoComplete="current-password"
+                    value={loginPassword}
+                    onChange={e => setLoginPassword(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleLogin()}
+                    style={{ width: "100%", height: 44, padding: "0 40px 0 14px", background: "white", border: `1px solid ${C.border}`, borderRadius: 4, fontFamily: "inherit", fontSize: 15, color: C.ink, transition: "border-color 0.15s, box-shadow 0.15s" }}
+                    data-testid="input-password"
+                  />
                   <button
-                    onClick={() => {
-                      clearSupabaseSession();
-                      toast.success("Session cleared. Please log in again.");
-                      window.location.reload();
-                    }}
-                    className="text-xs underline transition-colors"
-                    style={{ color: "#C0C0C0" }}
-                    data-testid="button-clear-session"
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: C.inkMuted, lineHeight: 1 }}
+                    data-testid="button-toggle-password"
                   >
-                    Having trouble logging in? Clear session
+                    {showPassword ? (
+                      <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, stroke: "currentColor", fill: "none", strokeWidth: 1.5 }}><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, stroke: "currentColor", fill: "none", strokeWidth: 1.5 }}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    )}
                   </button>
                 </div>
-
-                <Link href="/" className="block">
-                  <Button variant="ghost" className="w-full font-medium" style={{ color: "#8A8A8A" }}>
-                    Back to Home
-                  </Button>
-                </Link>
-              </div>
-
-              <div className="mt-6 pt-6" style={{ borderTop: "1px solid #F3F3F3" }}>
-                <p className="text-center text-sm" style={{ color: "#8A8A8A" }}>
-                  New here?{" "}
-                  <Link href="/founder-focus">
-                    <span className="font-semibold cursor-pointer transition-colors" style={{ color: "#0D566C" }}>
-                      Join the Community for free.
-                    </span>
-                  </Link>
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Role Selection Card */}
-          {!isRecovery && !isLogin && showRoles && (
-            <div className="bg-white rounded-2xl p-8 md:p-10" style={cardStyle}>
-              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Join TouchConnectPro</h2>
-              <p className="mb-8" style={{ color: "#8A8A8A" }}>Select your role to get started</p>
-              <div className="space-y-3 mb-6">
-                {[
-                  { role: "entrepreneur", icon: Lightbulb, color: "#F5C542", label: "I'm an Entrepreneur", desc: "Submit your idea and get guidance", testId: "button-role-entrepreneur" },
-                  { role: "mentor", icon: Star, color: "#4B3F72", label: "I'm a Mentor", desc: "Guide and support entrepreneurs", testId: "button-role-mentor" },
-                  { role: "coach", icon: Briefcase, color: "#0D566C", label: "I'm a Coach", desc: "Offer coaching services hourly", testId: "button-role-coach" },
-                  { role: "investor", icon: TrendingUp, color: "#FF6B5C", label: "I'm an Investor", desc: "Invest in startups and founders", testId: "button-role-investor" },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.role}
-                      onClick={() => handleRoleSelection(item.role)}
-                      className="w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                      style={{ borderColor: "#E8E8E8", backgroundColor: "#FFFFFF" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#FF6B5C"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E8E8E8"; }}
-                      data-testid={item.testId}
-                    >
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${item.color}15` }}>
-                        <Icon className="h-5 w-5" style={{ color: item.color }} />
-                      </div>
-                      <div>
-                        <p className="font-semibold" style={{ color: "#0D566C" }}>{item.label}</p>
-                        <p className="text-sm" style={{ color: "#8A8A8A" }}>{item.desc}</p>
-                      </div>
-                    </button>
-                  );
-                })}
               </div>
 
               <button
-                onClick={() => {
-                  setShowRoles(false);
-                  setIsLogin(true);
-                }}
-                className="w-full text-center py-3 font-medium transition-colors"
-                style={{ color: "#8A8A8A" }}
-                data-testid="button-back-to-login-roles"
+                onClick={handleLogin}
+                disabled={loading}
+                style={{ width: "100%", height: 46, background: loading ? C.inkMuted : C.ink, color: C.cream, fontSize: 14, fontWeight: 500, border: "none", borderRadius: 4, cursor: loading ? "not-allowed" : "pointer", marginTop: 8, letterSpacing: "0.01em", transition: "background 0.15s, transform 0.1s" }}
+                onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = C.teal; e.currentTarget.style.transform = "translateY(-1px)"; } }}
+                onMouseLeave={e => { if (!loading) { e.currentTarget.style.background = C.ink; e.currentTarget.style.transform = "translateY(0)"; } }}
+                data-testid="button-login"
               >
-                Back to Sign In
+                {loading ? "Signing in..." : "Sign in"}
               </button>
 
-              <Link href="/" className="block mt-2">
-                <Button variant="ghost" className="w-full font-medium" style={{ color: "#8A8A8A" }}>
-                  Back to Home
-                </Button>
-              </Link>
-            </div>
-          )}
-
-          {/* Signup Card */}
-          {!isRecovery && !isLogin && !showRoles && (
-            <div className="bg-white rounded-2xl p-8 md:p-10" style={cardStyle}>
-              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Get Started</h2>
-              <p className="mb-8" style={{ color: "#8A8A8A" }}>Create your TouchConnectPro account</p>
-              <div className="space-y-5">
-                <div className="space-y-1">
-                  <p className="font-medium" style={{ color: "#4B3F72" }}>You are an Entrepreneur with an idea</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="fullname" className="font-medium" style={{ color: "#0D566C" }}>Full Name</Label>
-                  <Input
-                    id="fullname"
-                    type="text"
-                    placeholder="John Doe"
-                    value={signupFullName}
-                    onChange={(e) => setSignupFullName(e.target.value)}
-                    className={`h-12 rounded-xl placeholder:text-[#C0C0C0] ${inputFocusClass}`}
-                    style={inputStyle}
-                    data-testid="input-fullname"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email" className="font-medium" style={{ color: "#0D566C" }}>Email Address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-5 w-5" style={{ color: "#8A8A8A" }} />
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={signupEmail}
-                      onChange={(e) => setSignupEmail(e.target.value)}
-                      className={`pl-10 h-12 rounded-xl placeholder:text-[#C0C0C0] ${inputFocusClass}`}
-                      style={inputStyle}
-                      data-testid="input-signup-email"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password" className="font-medium" style={{ color: "#0D566C" }}>Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-5 w-5" style={{ color: "#8A8A8A" }} />
-                    <Input
-                      id="signup-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={signupPassword}
-                      onChange={(e) => setSignupPassword(e.target.value)}
-                      className={`pl-10 pr-10 h-12 rounded-xl placeholder:text-[#C0C0C0] ${inputFocusClass}`}
-                      style={inputStyle}
-                      data-testid="input-signup-password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 transition-colors"
-                      style={{ color: "#8A8A8A" }}
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  <div className="mt-2 space-y-1">
-                    <p className={`text-xs flex items-center gap-1 ${signupPassword.length >= 10 ? 'text-green-500' : ''}`} style={signupPassword.length >= 10 ? {} : { color: "#C0C0C0" }}>
-                      {signupPassword.length >= 10 ? '✓' : '○'} At least 10 characters
-                    </p>
-                    <p className={`text-xs flex items-center gap-1 ${/[A-Z]/.test(signupPassword) ? 'text-green-500' : ''}`} style={/[A-Z]/.test(signupPassword) ? {} : { color: "#C0C0C0" }}>
-                      {/[A-Z]/.test(signupPassword) ? '✓' : '○'} At least one capital letter
-                    </p>
-                    <p className={`text-xs flex items-center gap-1 ${/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(signupPassword) ? 'text-green-500' : ''}`} style={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(signupPassword) ? {} : { color: "#C0C0C0" }}>
-                      {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(signupPassword) ? '✓' : '○'} At least one special character
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="country" className="font-medium" style={{ color: "#0D566C" }}>Country</Label>
-                  <select
-                    id="country"
-                    value={country}
-                    onChange={(e) => {
-                      setCountry(e.target.value);
-                      setState("");
-                    }}
-                    className={`w-full h-12 px-3 rounded-xl border ${inputFocusClass}`}
-                    style={{ ...inputStyle, appearance: "auto" as any }}
-                    data-testid="select-country"
-                  >
-                    {COUNTRIES.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {country === "United States" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="state" className="font-medium" style={{ color: "#0D566C" }}>State *</Label>
-                    <select
-                      id="state"
-                      value={state}
-                      onChange={(e) => setState(e.target.value)}
-                      className={`w-full h-12 px-3 rounded-xl border ${inputFocusClass}`}
-                      style={{ ...inputStyle, appearance: "auto" as any }}
-                      data-testid="select-state"
-                    >
-                      <option value="">Select your state</option>
-                      {US_STATES.map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                <p className="text-xs" style={{ color: "#8A8A8A" }}>
-                  By signing up, you agree to our{" "}
-                  <Link href="/terms-of-service" className="underline" style={{ color: "#FF6B5C" }}>
-                    Terms of Service
-                  </Link>{" "}
-                  and{" "}
-                  <Link href="/privacy-policy" className="underline" style={{ color: "#FF6B5C" }}>
-                    Privacy Policy
-                  </Link>
-                </p>
-
-                <Button
-                  onClick={handleSignup}
-                  disabled={loading}
-                  className="w-full h-12 font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-                  style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
-                  data-testid="button-signup"
-                >
-                  {loading ? "Creating account..." : <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>}
-                </Button>
-
-                <div className="relative py-2">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full" style={{ borderTop: "1px solid #F3F3F3" }}></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-3" style={{ backgroundColor: "#FFFFFF", color: "#C0C0C0" }}>or</span>
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <p style={{ color: "#8A8A8A" }}>
-                    Already have an account?{" "}
-                    <button
-                      onClick={() => {
-                        setIsLogin(true);
-                        window.scrollTo(0, 0);
-                      }}
-                      className="font-semibold transition-colors"
-                      style={{ color: "#FF6B5C" }}
-                      data-testid="button-login-link"
-                    >
-                      Sign in
-                    </button>
-                  </p>
-                </div>
-
-                <Link href="/" className="block">
-                  <Button variant="ghost" className="w-full font-medium" style={{ color: "#8A8A8A" }}>
-                    Back to Home
-                  </Button>
-                </Link>
+              {/* Divider */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "24px 0" }}>
+                <div style={{ flex: 1, height: 1, background: C.borderSoft }} />
+                <span style={{ fontSize: 11, color: C.inkMuted, letterSpacing: "0.04em", textTransform: "uppercase" }}>or</span>
+                <div style={{ flex: 1, height: 1, background: C.borderSoft }} />
               </div>
-            </div>
-          )}
 
-          {/* Password Recovery Card */}
-          {isRecovery && (
-            <div className="bg-white rounded-2xl p-8 md:p-10" style={cardStyle}>
-              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Recover Password</h2>
-              <p className="mb-8" style={{ color: "#8A8A8A" }}>Enter your email to reset your password</p>
-              <div className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="recovery-email" className="font-medium" style={{ color: "#0D566C" }}>Email Address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-5 w-5" style={{ color: "#8A8A8A" }} />
-                    <Input
-                      id="recovery-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={recoveryEmail}
-                      onChange={(e) => setRecoveryEmail(e.target.value)}
-                      className={`pl-10 h-12 rounded-xl placeholder:text-[#C0C0C0] ${inputFocusClass}`}
-                      style={inputStyle}
-                      data-testid="input-recovery-email"
-                    />
-                  </div>
-                </div>
-
-                <p className="text-sm p-4 rounded-xl" style={{ backgroundColor: "rgba(245,197,66,0.1)", color: "#4A4A4A", border: "1px solid rgba(245,197,66,0.3)" }}>
-                  We'll send you a link to reset your password. Check your email for instructions.
-                </p>
-
-                <Button
-                  onClick={async () => {
-                    if (!recoveryEmail) {
-                      toast.error("Please enter your email");
-                      return;
-                    }
-                    setLoading(true);
-                    try {
-                      const supabase = await getSupabase();
-                      if (!supabase) throw new Error("Unable to connect");
-                      await supabase.auth.resetPasswordForEmail(recoveryEmail, {
-                        redirectTo: `${window.location.origin}/reset-password`
-                      });
-                      toast.success("Recovery email sent! Check your inbox.");
-                      setRecoveryEmail("");
-                    } catch (error: any) {
-                      toast.error(error.message);
-                    } finally {
-                      setLoading(false);
-                    }
-                  }}
-                  disabled={loading}
-                  className="w-full h-12 font-semibold rounded-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-                  style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
-                  data-testid="button-send-recovery"
-                >
-                  {loading ? "Sending..." : <>Send Recovery Link <ArrowRight className="ml-2 h-4 w-4" /></>}
-                </Button>
-
+              {/* Clear session link */}
+              <div style={{ textAlign: "center", marginBottom: 0 }}>
                 <button
-                  onClick={() => setIsRecovery(false)}
-                  className="w-full text-center py-3 font-medium transition-colors"
-                  style={{ color: "#8A8A8A" }}
-                  data-testid="button-back-to-login"
+                  onClick={() => { clearSupabaseSession(); toast.success("Session cleared. Please log in again."); window.location.reload(); }}
+                  style={{ fontSize: 13, color: C.inkMuted, background: "none", border: "none", cursor: "pointer", transition: "color 0.15s", lineHeight: 1.5 }}
+                  onMouseEnter={e => (e.currentTarget.style.color = C.ink)}
+                  onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}
+                  data-testid="button-clear-session"
                 >
-                  Back to Sign In
+                  Having trouble signing in? <strong style={{ color: C.teal, fontWeight: 500 }}>Clear your session</strong>
                 </button>
+              </div>
 
-                <Link href="/" className="block">
-                  <Button variant="ghost" className="w-full font-medium" style={{ color: "#8A8A8A" }}>
-                    Back to Home
-                  </Button>
+              {/* Signup strip */}
+              <div style={{ marginTop: 32, padding: "18px 20px", background: C.goldPale, border: "1px solid rgba(196,154,60,0.2)", borderRadius: 10, textAlign: "center" }}>
+                <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.6, marginBottom: 12 }}>
+                  No account yet? The Founder Focus Score and your dashboard are free. No credit card required.
+                </p>
+                <Link href="/founder-focus" data-testid="link-create-account">
+                  <span
+                    style={{ display: "inline-block", background: C.ink, color: C.cream, fontSize: 13, fontWeight: 500, padding: "10px 24px", borderRadius: 4, cursor: "pointer", transition: "background 0.15s" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = C.teal)}
+                    onMouseLeave={e => (e.currentTarget.style.background = C.ink)}
+                  >
+                    Create a free account
+                  </span>
                 </Link>
               </div>
-            </div>
+            </>
           )}
 
+          {/* Back to home */}
+          <Link href="/" data-testid="link-back-home">
+            <div
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 12, color: C.inkMuted, marginTop: 28, cursor: "pointer", transition: "color 0.15s" }}
+              onMouseEnter={e => (e.currentTarget.style.color = C.ink)}
+              onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}
+            >
+              <svg viewBox="0 0 24 24" style={{ width: 13, height: 13, stroke: "currentColor", fill: "none", strokeWidth: 1.5 }}><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+              Back to home
+            </div>
+          </Link>
         </div>
+      </div>
+    </div>
+  );
+
+  function handleRecovery() {
+    (async () => {
+      if (!recoveryEmail) { toast.error("Please enter your email address"); return; }
+      setLoading(true);
+      try {
+        const supabase = await getSupabase();
+        if (!supabase) throw new Error("Supabase not initialized");
+        const { error } = await supabase.auth.resetPasswordForEmail(recoveryEmail, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("Password reset email sent! Check your inbox.");
+        setIsRecovery(false);
+      } catch (error: any) {
+        toast.error(error.message || "Failed to send reset email");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }
+}
+
+function LeftPanel() {
+  return (
+    <div
+      className="login-left-panel"
+      style={{
+        background: "#1A1814",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        padding: "40px 48px 48px",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Decorative circles */}
+      <div style={{ position: "absolute", top: -120, right: -120, width: 400, height: 400, borderRadius: "50%", border: "1px solid rgba(196,154,60,0.1)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: -80, left: -80, width: 280, height: 280, borderRadius: "50%", border: "1px solid rgba(196,154,60,0.07)", pointerEvents: "none" }} />
+
+      {/* Logo */}
+      <Link href="/">
+        <span style={{ fontFamily: "Georgia, serif", fontSize: 17, fontWeight: 600, color: "#FAF8F3", letterSpacing: "-0.01em", cursor: "pointer" }}>
+          Touch<span style={{ color: "#C49A3C" }}>Connect</span>Pro
+        </span>
+      </Link>
+
+      {/* Body */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px 0" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", color: "#1D6A5A", marginBottom: 20 }}>
+          <span style={{ width: 20, height: 1, background: "#1D6A5A", display: "inline-block" }} />
+          Your dashboard is waiting
+        </div>
+        <h1 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(28px,3.5vw,42px)", fontWeight: 300, color: "#FAF8F3", lineHeight: 1.15, letterSpacing: "-0.02em", marginBottom: 20 }}>
+          Know exactly where your <em style={{ fontStyle: "italic", color: "#C49A3C" }}>financial foundation</em> stands
+        </h1>
+        <p style={{ fontSize: 15, color: "rgba(250,248,243,0.5)", lineHeight: 1.75, maxWidth: 360, marginBottom: 40 }}>
+          Your Focus Score, weekly action questions, and direct access to a specialist. All in one place.
+        </p>
+
+        {/* Score preview */}
+        <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "22px 24px", maxWidth: 340 }}>
+          <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(250,248,243,0.3)", marginBottom: 12, display: "block" }}>
+            Your Founder Focus Score
+          </span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              { label: "Business clarity", value: 78, color: "#1D6A5A" },
+              { label: "Financial structure", value: 41, color: "#C97B5A" },
+              { label: "Operational readiness", value: 73, color: "#C49A3C" },
+            ].map(bar => (
+              <div key={bar.label}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(250,248,243,0.4)", marginBottom: 4 }}>
+                  <span>{bar.label}</span>
+                  <span style={{ color: "rgba(250,248,243,0.7)" }}>{bar.value}%</span>
+                </div>
+                <div style={{ height: 3, background: "rgba(255,255,255,0.07)", borderRadius: 100, overflow: "hidden" }}>
+                  <div style={{ width: `${bar.value}%`, height: "100%", background: bar.color, borderRadius: 100 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ fontSize: 12, color: "rgba(250,248,243,0.2)", lineHeight: 1.6 }}>
+        <Link href="/privacy-policy"><span style={{ color: "rgba(250,248,243,0.3)", cursor: "pointer" }}>Privacy Policy</span></Link>
+        {" · "}
+        <Link href="/terms-of-service"><span style={{ color: "rgba(250,248,243,0.3)", cursor: "pointer" }}>Terms of Service</span></Link>
+        {" · "}
+        <Link href="/cookie-policy"><span style={{ color: "rgba(250,248,243,0.3)", cursor: "pointer" }}>Cookies</span></Link>
       </div>
     </div>
   );
