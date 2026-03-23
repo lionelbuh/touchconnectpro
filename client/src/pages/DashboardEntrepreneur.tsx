@@ -2152,15 +2152,21 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
     ? "bg-[#FF6B5C]"
     : (entrepreneurStatus === "approved" ? "bg-emerald-500" : "bg-amber-500");
 
+  // Lifted to component scope so Overview can also use them
+  const _adminEmailsScope = ["admin@touchconnectpro.com", "buhler.lionel+admin@gmail.com"];
+  const _isAdminEmailScope = (email: string) => _adminEmailsScope.some(ae => ae.toLowerCase() === email?.toLowerCase());
+  const _hasNoMentor = !mentorData?.mentor?.email;
+  const adminMsgs = messages.filter((m: any) =>
+   _isAdminEmailScope(m.from_email) ||
+   _isAdminEmailScope(m.to_email) ||
+   (_hasNoMentor && m.from_email === "system@touchconnectpro.com")
+  );
+  const adminUnread = adminMsgs.filter((m: any) => m.to_email === userEmail && !m.is_read).length;
+
   const entrepreneurNavTabs: NavTab[] = [
    { id: "overview", label: "Overview", icon: <LayoutDashboard className="h-4 w-4" /> },
-   { id: "idea", label: "My Idea", icon: <Lightbulb className="h-4 w-4" /> },
-   { id: "plan", label: "Business Plan", icon: <Target className="h-4 w-4" /> },
    { id: "coaches", label: "Available Coaches", icon: <GraduationCap className="h-4 w-4" /> },
    { id: "purchases", label: "My Purchases", icon: <ShoppingCart className="h-4 w-4" />, badge: coachPurchases.length > 0 ? <span className="bg-green-100 text-green-600 text-xs px-2 py-0.5 rounded-full">{coachPurchases.length}</span> : undefined },
-   { id: "notes", label: "Mentor Notes", icon: <ClipboardList className="h-4 w-4" />, badge: mentorNotes.length > 0 ? <span className="bg-[#F3F3F3] text-[#FF6B5C] text-xs px-2 py-0.5 rounded-full">{mentorNotes.length}</span> : undefined },
-   { id: "messages", label: "Messages", icon: <MessageSquare className="h-4 w-4" />, badge: unreadMessageCount > 0 ? <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{unreadMessageCount}</span> : undefined },
-   ...((ideaSubmitted || mentorQuestions.length > 0) ? [{ id: "ask-mentor", label: "Ask a Mentor", icon: <HelpCircle className="h-4 w-4" />, badge: mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length > 0 ? <span className="bg-emerald-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length}</span> : undefined }] : []),
    { id: "profile", label: "Profile", icon: <Settings className="h-4 w-4" /> },
   ];
 
@@ -2200,13 +2206,8 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
       <nav style={{ padding: "4px 0" }}>
        {([
         { id: "overview", label: "Overview", icon: <LayoutDashboard size={15} />, testId: "button-overview-tab", badge: null as React.ReactNode },
-        { id: "idea", label: "My Idea", icon: <Lightbulb size={15} />, testId: "button-idea-tab", badge: null as React.ReactNode },
-        { id: "plan", label: "Business Plan", icon: <Target size={15} />, testId: "button-plan-tab", badge: null as React.ReactNode },
         { id: "coaches", label: "Specialists", icon: <GraduationCap size={15} />, testId: "button-coaches-tab", badge: null as React.ReactNode },
         { id: "purchases", label: "My Purchases", icon: <ShoppingCart size={15} />, testId: "button-purchases-tab", badge: coachPurchases.length > 0 ? coachPurchases.length : null as any },
-        { id: "notes", label: "Mentor Notes", icon: <ClipboardList size={15} />, testId: "button-notes-tab", badge: mentorNotes.length > 0 ? mentorNotes.length : null as any },
-        { id: "messages", label: "Messages", icon: <MessageSquare size={15} />, testId: "button-messages-tab", badge: unreadMessageCount > 0 ? unreadMessageCount : null as any },
-        ...((ideaSubmitted || mentorQuestions.length > 0) ? [{ id: "ask-mentor", label: "Ask a Mentor", icon: <HelpCircle size={15} />, testId: "button-ask-mentor-tab", badge: (mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length || null) as any }] : []),
         { id: "profile", label: "Profile", icon: <User size={15} />, testId: "button-profile-tab", badge: null as React.ReactNode },
        ] as { id: string; label: string; icon: React.ReactNode; testId: string; badge: React.ReactNode }[]).map((item) => {
         const isActive = activeTab === item.id;
@@ -2276,29 +2277,6 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 16, marginBottom: 24 }}>
-       <div style={{ background: "white", border: "1px solid rgba(26,24,20,0.10)", borderRadius: 12, padding: 22 }}>
-        <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#8C8880", marginBottom: 10 }}>Current Stage</p>
-        <div style={{ fontSize: 20, fontWeight: 500, color: isAccountDisabled ? "#C97B5A" : "#1D6A5A", marginBottom: 4, fontFamily: "'Fraunces', Georgia, serif" }}>
-         {isAccountDisabled ? "Disabled" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Getting Started" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "Draft Plan Ready" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Snapshot Done" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Idea Submitted" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Plan Complete")}
-        </div>
-        <p style={{ fontSize: 12, color: "#8C8880" }}>
-         {isAccountDisabled ? "Contact support to reactivate" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Browse specialists & complete Snapshot" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "AI draft ready — explore specialists" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Exploring specialists & community" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Community Free — build & explore" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting approval")}
-        </p>
-       </div>
-
-       <div style={{ background: "white", border: "1px solid rgba(26,24,20,0.10)", borderRadius: 12, padding: 22 }}>
-        <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#8C8880", marginBottom: 10 }}>Membership</p>
-        <div style={{ fontSize: 20, fontWeight: 500, fontFamily: "'Fraunces', Georgia, serif", color: isAccountDisabled ? "#C97B5A" : hasPaid ? "#1D6A5A" : "#C49A3C", marginBottom: 4 }}>{statusDisplay}</div>
-        <p style={{ fontSize: 12, color: "#8C8880" }}>Your current platform access level</p>
-       </div>
-
-       <div style={{ background: "white", border: "1px solid rgba(26,24,20,0.10)", borderRadius: 12, padding: 22 }}>
-        <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#8C8880", marginBottom: 10 }}>Mentor Notes</p>
-        <div style={{ fontSize: 20, fontWeight: 500, fontFamily: "'Fraunces', Georgia, serif", color: "#1A1814", marginBottom: 4 }}>{mentorNotes.length}</div>
-        <p style={{ fontSize: 12, color: "#8C8880" }}>{mentorNotes.length === 1 ? "recommendation" : "recommendations"} from your mentor</p>
-       </div>
-      </div>
 
       {/* Overview Tab */}
       {activeTab === "overview" && (
@@ -3126,128 +3104,109 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
          );
         })()}
 
-        {/* My Mentor Section */}
-        <Card className="mb-6 border-l-4 border-l-[#FF6B5C]">
-         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-           <Users className="h-5 w-5 text-[#FF6B5C]" />
-           My Mentor
-          </CardTitle>
-         </CardHeader>
-         <CardContent>
-          {hasActiveMentor ? (
-           <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex items-center gap-4">
-             <Avatar className="h-20 w-20 border-2 border-[#E8E8E8]">
-              {mentorData.mentor?.photo_url ? (
-               <AvatarImage src={mentorData.mentor.photo_url} alt={mentorData.mentor?.full_name || "Mentor"} />
-              ) : null}
-              <AvatarFallback className="bg-[#FF6B5C] text-white text-xl">
-               {mentorData.mentor?.full_name?.substring(0, 2).toUpperCase() || "MT"}
-              </AvatarFallback>
-             </Avatar>
-             <div>
-              <h3 className="font-bold text-lg text-[#0D566C]">{mentorData.mentor?.full_name || "Your Mentor"}</h3>
-              <p className="text-sm text-[#8A8A8A]">{mentorData.mentor?.expertise || "Business & Strategy"}</p>
-              {mentorData.mentor?.experience && (
-               <p className="text-sm text-[#8A8A8A] mt-1">{mentorData.mentor.experience} years of experience</p>
-              )}
-             </div>
-            </div>
-            <div className="flex-1 space-y-3">
-             {mentorData.meeting_link && (
-              <a href={mentorData.meeting_link} target="_blank" rel="noopener noreferrer" className="block">
-               <Button className="w-full bg-[#FF6B5C] hover:bg-[#e55a4d]" data-testid="button-join-meeting">
-                <Calendar className="mr-2 h-4 w-4" /> Join Monthly Meeting
-               </Button>
-              </a>
-             )}
-             <Button 
-              variant="outline" 
-              className="w-full border-[#E8E8E8] text-[#FF6B5C] hover:bg-[#F3F3F3]"
-              onClick={() => setActiveTab("notes")}
-              data-testid="button-view-notes"
-             >
-              <ClipboardList className="mr-2 h-4 w-4" /> View Mentor Notes ({mentorNotes.length})
-             </Button>
-             {/* Hidden for now - keep for future use
-             <Button 
-              variant="outline" 
-              className="w-full border-blue-200 text-blue-600 hover:bg-blue-50"
-              onClick={() => setActiveTab("meetings")}
-              data-testid="button-view-meetings"
-             >
-              <Calendar className="mr-2 h-4 w-4" /> View Meetings with my Mentor ({meetings.length})
-             </Button>
-             */}
-            </div>
-           </div>
-          ) : (
-           <div className="text-center py-8">
-            <div className="h-16 w-16 rounded-full bg-[#F3F3F3] flex items-center justify-center mx-auto mb-4">
-             <Users className="h-8 w-8 text-[#FF6B5C]" />
-            </div>
-            <p className="text-[#8A8A8A] mb-2">Once you upgrade to the Founders Circle plan and your project is reviewed, a dedicated mentor will be assigned to you.</p>
-            <div className="mt-3 mb-4">
-             <Button
-              type="button"
-              onClick={() => handleUpgradeClick()}
-              disabled={isSubscribing}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md"
-              data-testid="button-upgrade-founders-circle-mentor"
-             >
-              <Rocket className="mr-2 h-4 w-4" />
-              {isSubscribing ? "Redirecting to payment..." : "Upgrade to Founders Circle — $9.99/mo"}
-             </Button>
-            </div>
-            {ideaSubmitted && !hasPaid && (
-             <Button
-              variant="outline"
-              className="border-purple-300 text-purple-600 hover:bg-purple-50"
-              onClick={() => setActiveTab("ask-mentor")}
-              data-testid="button-ask-mentor-from-overview"
-             >
-              <HelpCircle className="mr-2 h-4 w-4" /> Ask a Mentor a Question
-              {mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length > 0 && (
-               <Badge className="ml-2 bg-emerald-500 text-white">{mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length} new</Badge>
-              )}
-             </Button>
+        {/* Founder Guidance Team — Messaging Box */}
+        <Card className="mb-6 border-[#E8E8E8]" style={{ borderRadius: 12, overflow: "hidden" }}>
+         <CardHeader className="cursor-pointer" style={{ background: "#1A1814" }} onClick={() => {
+          const el = document.getElementById('overview-admin-messages-section');
+          if (el) el.classList.toggle('hidden');
+         }}>
+          <CardTitle className="text-lg flex items-center justify-between" style={{ color: "#FAF8F3" }}>
+           <div className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5" style={{ color: "#C49A3C" }} />
+            <span>Founder Guidance Team</span>
+            {adminUnread > 0 && (
+             <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" data-testid="badge-overview-admin-unread">
+              {adminUnread} new
+             </span>
             )}
+           </div>
+           <ChevronDown className="h-5 w-5" style={{ color: "rgba(250,248,243,0.4)" }} />
+          </CardTitle>
+          <p className="text-sm" style={{ color: "rgba(250,248,243,0.5)", marginTop: 2 }}>Send a message to our team — we're here to help</p>
+         </CardHeader>
+         <CardContent id="overview-admin-messages-section" className="space-y-4 pt-4">
+          <textarea
+           value={adminMessageText}
+           onChange={(e) => setAdminMessageText(e.target.value)}
+           placeholder="Type your message to the Founder Guidance Team..."
+           className="w-full min-h-20 p-3 rounded-lg border text-sm focus:outline-none focus:ring-2"
+           style={{ borderColor: "#E8E8E8", background: "white", color: "#4A4740", focusRingColor: "#C49A3C" } as any}
+           data-testid="textarea-overview-admin-message"
+          />
+          <Button
+           onClick={async () => {
+            if (adminMessageText.trim() && userEmail) {
+             try {
+              const response = await fetch(`${API_BASE_URL}/api/messages`, {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({
+                fromName: profileData.fullName,
+                fromEmail: userEmail,
+                toName: "Admin",
+                toEmail: "admin@touchconnectpro.com",
+                message: adminMessageText
+               })
+              });
+              if (response.ok) {
+               const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
+               if (loadResponse.ok) {
+                const data = await loadResponse.json();
+                setMessages(data.messages || []);
+               }
+               setAdminMessageText("");
+               toast.success("Message sent to the Founder Guidance Team!");
+              } else {
+               toast.error("Failed to send message");
+              }
+             } catch (error) {
+              toast.error("Error sending message");
+             }
+            }
+           }}
+           disabled={!adminMessageText.trim()}
+           size="sm"
+           style={{ background: "#1D6A5A", color: "white", border: "none" }}
+           data-testid="button-send-overview-admin-message"
+          >
+           <Send className="mr-2 h-4 w-4" /> Send Message
+          </Button>
+          {adminMsgs.length > 0 && (
+           <div className="border-t pt-4 mt-4" style={{ borderColor: "#E8E8E8" }}>
+            <p className="text-sm font-semibold mb-3" style={{ color: "#8C8880" }}>Conversation History</p>
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+             {[...adminMsgs].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((msg: any) => {
+              const isFromMe = msg.from_email === userEmail;
+              return (
+               <div key={msg.id} className={`p-3 rounded-lg ${!isFromMe && !msg.is_read ? 'cursor-pointer opacity-70 hover:opacity-100' : ''}`}
+                style={{ background: isFromMe ? "#F5F2EC" : "rgba(29,106,90,0.06)", borderLeft: isFromMe ? "3px solid #E8E4DC" : "3px solid #1D6A5A" }}
+                onClick={async () => {
+                 if (!isFromMe && !msg.is_read) {
+                  try {
+                   await fetch(`${API_BASE_URL}/api/messages/${msg.id}/read`, { method: "PATCH" });
+                   const loadResponse = await fetch(`${API_BASE_URL}/api/messages/${encodeURIComponent(userEmail)}`);
+                   if (loadResponse.ok) {
+                    const data = await loadResponse.json();
+                    setMessages(data.messages || []);
+                   }
+                  } catch (e) { console.error("Error marking as read:", e); }
+                 }
+                }}>
+                <div className="flex justify-between items-start mb-1">
+                 <span className="text-sm font-semibold" style={{ color: isFromMe ? "#4A4740" : "#1D6A5A" }}>
+                  {isFromMe ? "You" : "Founder Guidance Team"}
+                 </span>
+                 <span className="text-xs" style={{ color: "#8C8880" }}>{formatToPST(msg.created_at)}</span>
+                </div>
+                <p className="text-sm whitespace-pre-wrap" style={{ color: "#4A4740" }}>{msg.message}</p>
+               </div>
+              );
+             })}
+            </div>
            </div>
           )}
          </CardContent>
         </Card>
-
-        {/* Messages with Mentor Section (only show if mentor assigned and account not disabled) */}
-        {hasActiveMentor && mentorData && mentorData.mentor && !isAccountDisabled && (
-         <Card className="mb-6 border-l-4 border-l-emerald-500 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setActiveTab("messages")}>
-          <CardHeader>
-           <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-emerald-600" />
-            Messages with {mentorData.mentor?.full_name || "Your Mentor"}
-           </CardTitle>
-           <CardDescription>Start or continue conversations with your mentor</CardDescription>
-          </CardHeader>
-          <CardContent>
-           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-             <span className="text-2xl font-bold text-emerald-600">
-              {messageThreads.filter(t => t.mentor_email?.toLowerCase() === mentorData.mentor?.email?.toLowerCase()).length}
-             </span>
-             <span className="text-sm text-[#8A8A8A]">conversation{messageThreads.filter(t => t.mentor_email?.toLowerCase() === mentorData.mentor?.email?.toLowerCase()).length !== 1 ? 's' : ''}</span>
-            </div>
-            <Button 
-             variant="outline" 
-             className="border-emerald-200 text-emerald-600 hover:bg-emerald-50" 
-             onClick={(e) => { e.stopPropagation(); setActiveTab("messages"); }}
-             data-testid="button-go-to-messages"
-            >
-             Open Messages <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-           </div>
-          </CardContent>
-         </Card>
-        )}
 
         {/* Meetings Section */}
         {hasActiveMentor && meetings.length > 0 && (
@@ -3281,39 +3240,22 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
         )}
 
         {/* Quick Links */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-         <Card className="border-l-4 border-l-purple-500 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setActiveTab("coaches")}>
-          <CardHeader>
-           <CardTitle className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5 text-purple-600" />
-            Available Coaches
-           </CardTitle>
-           <CardDescription className="text-xs leading-relaxed">Coach specializations are suggested by your mentor based on your project stage, but you are free to choose any coach. All are freelance professionals ready to help.</CardDescription>
-          </CardHeader>
-          <CardContent>
-           <div className="flex items-center justify-end">
-            <Button variant="outline" className="border-purple-200 text-purple-600" data-testid="button-view-coaches">
-             See some Coaches Profiles <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-           </div>
-          </CardContent>
-         </Card>
-
-         <Card className="border-l-4 border-l-amber-500 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setActiveTab("idea")}>
-          <CardHeader>
-           <CardTitle className="flex items-center gap-2">
-            <Lightbulb className="h-5 w-5 text-amber-600" />
-            My Idea & Business Plan
-           </CardTitle>
-           <CardDescription>Review your submitted idea and business plan</CardDescription>
-          </CardHeader>
-          <CardContent>
-           <Button variant="outline" className="w-full border-amber-200 text-amber-600" data-testid="button-view-idea">
-            View Submission <ChevronRight className="ml-1 h-4 w-4" />
+        <Card className="border-l-4 border-l-[#1D6A5A] cursor-pointer hover:shadow-md transition-shadow" onClick={() => setActiveTab("coaches")}>
+         <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+           <GraduationCap className="h-5 w-5" style={{ color: "#1D6A5A" }} />
+           Browse Available Specialists
+          </CardTitle>
+          <CardDescription className="text-xs leading-relaxed">Explore our community of specialists ready to help you with strategy, marketing, fundraising, and more.</CardDescription>
+         </CardHeader>
+         <CardContent>
+          <div className="flex items-center justify-end">
+           <Button variant="outline" style={{ borderColor: "#1D6A5A", color: "#1D6A5A" }} data-testid="button-view-coaches">
+            See Specialist Profiles <ChevronRight className="ml-1 h-4 w-4" />
            </Button>
-          </CardContent>
-         </Card>
-        </div>
+          </div>
+         </CardContent>
+        </Card>
        </div>
       )}
 
