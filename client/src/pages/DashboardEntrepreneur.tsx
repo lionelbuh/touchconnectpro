@@ -1994,10 +1994,10 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
  // Show loading screen while fetching data
  if (isLoadingData) {
   return (
-   <div className="flex min-h-[calc(100vh-4rem)] bg-[#FAF9F7] items-center justify-center">
-    <div className="text-center">
-     <div className="h-16 w-16 border-4 border-[#FF6B5C] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-     <p className="text-[#8A8A8A]">Loading your dashboard...</p>
+   <div style={{ display: "flex", minHeight: "calc(100vh - 4rem)", background: "#F0EDE6", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ textAlign: "center" }}>
+     <div className="h-16 w-16 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: "#C49A3C", borderTopColor: "transparent" }}></div>
+     <p style={{ color: "#8C8880", fontFamily: "'DM Sans', sans-serif" }}>Loading your dashboard...</p>
     </div>
    </div>
   );
@@ -2165,7 +2165,7 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
   ];
 
   return (
-   <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-[#FAF9F7] overflow-x-hidden">
+   <div className="flex flex-col overflow-x-hidden" style={{ minHeight: "calc(100vh - 4rem)", background: "#F0EDE6", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
     <DashboardMobileNav
      tabs={entrepreneurNavTabs}
      activeTab={activeTab}
@@ -2176,200 +2176,128 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
      onLogout={handleLogout}
     />
     <div className="flex flex-1 overflow-hidden">
-    <aside className="w-64 border-r border-[#E8E8E8] bg-white hidden md:flex flex-col justify-between">
-     <div className="p-6">
-      <div className="flex items-center gap-3 mb-6">
-       <Avatar className={`h-10 w-10 border border-[#E8E8E8] ${avatarColor}`}>
-        <AvatarFallback className="text-white">{profileData.fullName?.substring(0, 2).toUpperCase() || "EN"}</AvatarFallback>
-       </Avatar>
-       <div>
-        <div className="font-bold text-sm">{profileData.fullName || "Entrepreneur"}</div>
-        <div className={`text-xs font-semibold ${statusColor}`}>{statusDisplay}</div>
+    <aside className="hidden md:flex flex-col flex-shrink-0" style={{ width: 220, background: "#1A1814", justifyContent: "space-between" }}>
+     <div>
+      {/* Logo */}
+      <div style={{ padding: "22px 20px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+       <span style={{ fontFamily: "Georgia, serif", fontSize: 15, fontWeight: 600, color: "#FAF8F3", letterSpacing: "-0.01em" }}>
+        Touch<span style={{ color: "#C49A3C" }}>Connect</span>Pro
+       </span>
+      </div>
+      {/* User avatar */}
+      <div style={{ padding: "18px 20px 14px" }}>
+       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#C49A3C", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500, color: "#1A1814", flexShrink: 0, overflow: "hidden" }}>
+         {profileData.profileImage ? <img src={profileData.profileImage} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : profileData.fullName?.substring(0, 2).toUpperCase() || "EN"}
+        </div>
+        <div style={{ minWidth: 0 }}>
+         <div style={{ fontSize: 13, fontWeight: 500, color: "#FAF8F3", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{profileData.fullName || "Entrepreneur"}</div>
+         <div style={{ fontSize: 11, color: "rgba(250,248,243,0.4)", marginTop: 1 }}>{statusDisplay}</div>
+        </div>
        </div>
       </div>
-      <nav className="space-y-1">
-       <Button 
-        variant="ghost"
-        className="w-full justify-start font-medium"
-        style={activeTab === "overview" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#8A8A8A" }}
-        onClick={() => setActiveTab("overview")}
-        data-testid="button-overview-tab"
-       >
-        <LayoutDashboard className="mr-2 h-4 w-4" /> Overview
-       </Button>
-       <Button 
-        variant="ghost"
-        className="w-full justify-start font-medium"
-        style={activeTab === "idea" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#8A8A8A" }}
-        onClick={() => setActiveTab("idea")}
-        data-testid="button-idea-tab"
-       >
-        <Lightbulb className="mr-2 h-4 w-4" /> My Idea
-       </Button>
-       <Button 
-        variant="ghost"
-        className="w-full justify-start font-medium"
-        style={activeTab === "plan" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#8A8A8A" }}
-        onClick={() => setActiveTab("plan")}
-        data-testid="button-plan-tab"
-       >
-        <Target className="mr-2 h-4 w-4" /> Business Plan
-       </Button>
-       <Button 
-        variant="ghost"
-        className="w-full justify-start font-medium"
-        style={activeTab === "coaches" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#8A8A8A" }}
-        onClick={() => setActiveTab("coaches")}
-        data-testid="button-coaches-tab"
-       >
-        <GraduationCap className="mr-2 h-4 w-4" /> Available Coaches
-       </Button>
-       <Button 
-        variant="ghost"
-        className="w-full justify-start font-medium"
-        style={activeTab === "purchases" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#8A8A8A" }}
-        onClick={() => setActiveTab("purchases")}
-        data-testid="button-purchases-tab"
-       >
-        <ShoppingCart className="mr-2 h-4 w-4" /> My Purchases
-        {coachPurchases.length > 0 && (
-         <span className="ml-auto bg-green-100 text-green-600 text-xs px-2 py-0.5 rounded-full">{coachPurchases.length}</span>
-        )}
-       </Button>
-       <Button 
-        variant="ghost"
-        className="w-full justify-start font-medium"
-        style={activeTab === "notes" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#8A8A8A" }}
-        onClick={() => setActiveTab("notes")}
-        data-testid="button-notes-tab"
-       >
-        <ClipboardList className="mr-2 h-4 w-4" /> Mentor Notes
-        {mentorNotes.length > 0 && (
-         <span className="ml-auto bg-[#F3F3F3] text-[#FF6B5C] text-xs px-2 py-0.5 rounded-full">{mentorNotes.length}</span>
-        )}
-       </Button>
-       <Button 
-        variant="ghost"
-        className="w-full justify-start font-medium relative"
-        style={activeTab === "messages" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#8A8A8A" }}
-        onClick={() => setActiveTab("messages")}
-        data-testid="button-messages-tab"
-       >
-        <MessageSquare className="mr-2 h-4 w-4" /> Messages
-        {unreadMessageCount > 0 && (
-         <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{unreadMessageCount}</span>
-        )}
-       </Button>
-       {ideaSubmitted && (
-        <Button 
-         variant="ghost"
-         className="w-full justify-start font-medium text-[#8A8A8A] relative"
-         onClick={() => setActiveTab("ask-mentor")}
-         data-testid="button-ask-mentor-tab"
-        >
-         <HelpCircle className="mr-2 h-4 w-4" /> Ask a Mentor
-         {mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length > 0 && (
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-emerald-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length}</span>
-         )}
-        </Button>
-       )}
-       {/* Hidden for now - keep for future use
-       <Button 
-        variant="ghost"
-        className="w-full justify-start font-medium"
-        style={activeTab === "meetings" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#8A8A8A" }}
-        onClick={() => setActiveTab("meetings")}
-        data-testid="button-meetings-tab"
-       >
-        <Calendar className="mr-2 h-4 w-4" /> Meetings
-        {meetings.length > 0 && (
-         <span className="ml-auto bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full">{meetings.length}</span>
-        )}
-       </Button>
-       */}
-       <Button 
-        variant="ghost"
-        className="w-full justify-start font-medium"
-        style={activeTab === "profile" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#8A8A8A" }}
-        onClick={() => setActiveTab("profile")}
-        data-testid="button-profile-tab"
-       >
-        <User className="mr-2 h-4 w-4" /> Profile
-       </Button>
+      {/* Nav items */}
+      <nav style={{ padding: "4px 0" }}>
+       {([
+        { id: "overview", label: "Overview", icon: <LayoutDashboard size={15} />, testId: "button-overview-tab", badge: null as React.ReactNode },
+        { id: "idea", label: "My Idea", icon: <Lightbulb size={15} />, testId: "button-idea-tab", badge: null as React.ReactNode },
+        { id: "plan", label: "Business Plan", icon: <Target size={15} />, testId: "button-plan-tab", badge: null as React.ReactNode },
+        { id: "coaches", label: "Specialists", icon: <GraduationCap size={15} />, testId: "button-coaches-tab", badge: null as React.ReactNode },
+        { id: "purchases", label: "My Purchases", icon: <ShoppingCart size={15} />, testId: "button-purchases-tab", badge: coachPurchases.length > 0 ? coachPurchases.length : null as any },
+        { id: "notes", label: "Mentor Notes", icon: <ClipboardList size={15} />, testId: "button-notes-tab", badge: mentorNotes.length > 0 ? mentorNotes.length : null as any },
+        { id: "messages", label: "Messages", icon: <MessageSquare size={15} />, testId: "button-messages-tab", badge: unreadMessageCount > 0 ? unreadMessageCount : null as any },
+        ...((ideaSubmitted || mentorQuestions.length > 0) ? [{ id: "ask-mentor", label: "Ask a Mentor", icon: <HelpCircle size={15} />, testId: "button-ask-mentor-tab", badge: (mentorQuestions.filter((q: any) => q.status === "answered" && !q.is_read_by_entrepreneur).length || null) as any }] : []),
+        { id: "profile", label: "Profile", icon: <User size={15} />, testId: "button-profile-tab", badge: null as React.ReactNode },
+       ] as { id: string; label: string; icon: React.ReactNode; testId: string; badge: React.ReactNode }[]).map((item) => {
+        const isActive = activeTab === item.id;
+        return (
+         <button
+          key={item.id}
+          onClick={() => setActiveTab(item.id as any)}
+          data-testid={item.testId}
+          style={{
+           width: "100%", display: "flex", alignItems: "center", gap: 10,
+           padding: "10px 20px", fontSize: 13, fontWeight: 400,
+           color: isActive ? "#FAF8F3" : "rgba(250,248,243,0.45)",
+           background: "none", border: "none",
+           borderLeft: isActive ? "2px solid #C49A3C" : "2px solid transparent",
+           cursor: "pointer", textAlign: "left" as const,
+           transition: "color 0.15s, border-color 0.15s",
+           position: "relative" as const, fontFamily: "inherit",
+          }}
+          onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = "rgba(250,248,243,0.85)"; }}
+          onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = "rgba(250,248,243,0.45)"; }}
+         >
+          <span style={{ opacity: isActive ? 1 : 0.7, display: "flex", alignItems: "center" }}>{item.icon}</span>
+          <span style={{ flex: 1 }}>{item.label}</span>
+          {item.badge != null && (
+           <span style={{ background: "rgba(196,154,60,0.2)", color: "#C49A3C", fontSize: 10, fontWeight: 600, borderRadius: 100, padding: "1px 7px", minWidth: 18, textAlign: "center" }}>{item.badge}</span>
+          )}
+         </button>
+        );
+       })}
       </nav>
      </div>
-     <div className="p-6 border-t border-[#E8E8E8]">
-      <Button 
-       variant="destructive"
-       className="w-full justify-start font-medium bg-red-600 hover:bg-red-700 text-white"
+     {/* Sign out */}
+     <div style={{ padding: "14px 12px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <button
        onClick={handleLogout}
        data-testid="button-logout"
+       style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 8px", fontSize: 13, color: "rgba(250,248,243,0.35)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", transition: "color 0.15s" }}
+       onMouseEnter={e => { e.currentTarget.style.color = "rgba(250,248,243,0.8)"; }}
+       onMouseLeave={e => { e.currentTarget.style.color = "rgba(250,248,243,0.35)"; }}
       >
-       <LogOut className="mr-2 h-4 w-4" /> Sign Out
-      </Button>
+       <LogOut size={15} />
+       <span>Sign out</span>
+      </button>
      </div>
     </aside>
 
-    <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden">
-     <div className="max-w-4xl w-full">
+    <main className="flex-1 overflow-y-auto overflow-x-hidden" style={{ background: "#F0EDE6", padding: 36 }}>
+     <div style={{ maxWidth: 900, width: "100%" }}>
 
-      <div className="flex justify-between items-start mb-8">
-       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-[#FF6B5C] flex items-center justify-center text-white text-xl font-bold overflow-hidden flex-shrink-0 shadow-lg">
-         {profileData.profileImage ? (
-          <img src={profileData.profileImage} alt="Profile" className="w-full h-full object-cover" />
-         ) : (
-          profileData.fullName?.substring(0, 2).toUpperCase() || "EN"
-         )}
-        </div>
-        <div>
-         <h1 className="text-xl sm:text-3xl font-display font-bold text-[#0D566C] mb-2">Welcome, {profileData.fullName?.split(" ")[0] || "Entrepreneur"}!</h1>
-         <p className="text-[#8A8A8A]">Here's what's happening with <span className="font-semibold text-[#0D566C]">{formData.ideaName || entrepreneurData?.data?.ideaName || "Your Idea"}</span>.</p>
-        </div>
-       </div>
-       <Button 
-        variant="outline" 
-        className="text-red-600 border-red-200 hover:bg-red-50 md:hidden"
+      <div style={{ marginBottom: 32 }}>
+       <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#8C8880", marginBottom: 6 }}>
+        {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+       </p>
+       <h1 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 26, fontWeight: 300, color: "#1A1814", lineHeight: 1.2, marginBottom: 6 }}>
+        Welcome back, <em style={{ fontStyle: "italic", color: "#C49A3C" }}>{profileData.fullName?.split(" ")[0] || "Entrepreneur"}</em>
+       </h1>
+       <p style={{ fontSize: 14, color: "#8C8880" }}>
+        Here's what's happening with <span style={{ color: "#1A1814", fontWeight: 500 }}>{formData.ideaName || entrepreneurData?.data?.ideaName || "Your Idea"}</span>.
+       </p>
+       <button
+        className="md:hidden"
         onClick={handleLogout}
         data-testid="button-logout-mobile"
+        style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "#8C8880", background: "none", border: "1px solid rgba(26,24,20,0.12)", borderRadius: 4, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit" }}
        >
-        <LogOut className="h-4 w-4 mr-2" /> Sign Out
-       </Button>
+        <LogOut size={14} /> Sign Out
+       </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-       <Card className={`border-l-4 ${isAccountDisabled ? "border-l-red-500" : isPreApproved ? "border-l-[#FF6B5C]" : "border-l-[#FF6B5C]"} shadow-sm`}>
-        <CardHeader className="pb-2">
-         <CardTitle className="text-sm font-medium text-[#8A8A8A]">Current Stage</CardTitle>
-        </CardHeader>
-        <CardContent>
-         <div className={`text-2xl font-bold ${isAccountDisabled ? "text-red-600" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "text-[#FF6B5C]" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "text-emerald-600" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "text-[#4B3F72]" : (isPreApproved && ideaSubmitted && !hasPaid) ? "text-[#FF6B5C]" : (isPreApproved && hasPaid) ? "text-emerald-600" : ""}`}>
-          {isAccountDisabled ? "Disabled Member" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Getting Started" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "Draft Plan Ready" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Snapshot Done" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Idea Submitted" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Business Plan Complete")}
-         </div>
-         <p className="text-xs text-[#8A8A8A] mt-1">
-          {isAccountDisabled ? "Contact Guidance Team to reactivate" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Browse coaches and complete your Snapshot" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "AI draft plan ready — explore coaches" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Exploring coaches and community" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Community Free - explore coaches & build plans" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting mentor approval")}
-         </p>
-        </CardContent>
-       </Card>
-       
-       <Card className={`border-l-4 ${entrepreneurStatus === "approved" ? "border-l-emerald-500" : "border-l-amber-500"} shadow-sm`}>
-        <CardHeader className="pb-2">
-         <CardTitle className="text-sm font-medium text-[#8A8A8A]">Status</CardTitle>
-        </CardHeader>
-        <CardContent>
-         <div className={`text-2xl font-bold ${statusColor}`}>{statusDisplay}</div>
-        </CardContent>
-       </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 16, marginBottom: 24 }}>
+       <div style={{ background: "white", border: "1px solid rgba(26,24,20,0.10)", borderRadius: 12, padding: 22 }}>
+        <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#8C8880", marginBottom: 10 }}>Current Stage</p>
+        <div style={{ fontSize: 20, fontWeight: 500, color: isAccountDisabled ? "#C97B5A" : "#1D6A5A", marginBottom: 4, fontFamily: "'Fraunces', Georgia, serif" }}>
+         {isAccountDisabled ? "Disabled" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Getting Started" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "Draft Plan Ready" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Snapshot Done" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Idea Submitted" : (isPreApproved && hasPaid) ? "Payment Received" : (entrepreneurStatus === "approved" ? "Active Member" : "Plan Complete")}
+        </div>
+        <p style={{ fontSize: 12, color: "#8C8880" }}>
+         {isAccountDisabled ? "Contact support to reactivate" : (isPreApproved && !ideaSubmitted && !founderSnapshot) ? "Browse specialists & complete Snapshot" : (isPreApproved && founderSnapshot && !ideaSubmitted && builderModeDraft) ? "AI draft ready — explore specialists" : (isPreApproved && founderSnapshot && !ideaSubmitted) ? "Exploring specialists & community" : (isPreApproved && ideaSubmitted && !hasPaid) ? "Community Free — build & explore" : (isPreApproved && hasPaid) ? "Awaiting mentor assignment" : (entrepreneurStatus === "approved" ? "Working with mentor" : "Awaiting approval")}
+        </p>
+       </div>
 
-       <Card className="border-l-4 border-l-purple-500 shadow-sm">
-        <CardHeader className="pb-2">
-         <CardTitle className="text-sm font-medium text-[#8A8A8A]">Mentor Notes</CardTitle>
-        </CardHeader>
-        <CardContent>
-         <div className="text-2xl font-bold">{mentorNotes.length}</div>
-         <p className="text-xs text-[#8A8A8A] mt-1">{mentorNotes.length === 1 ? "recommendation" : "recommendations"} from your mentor</p>
-        </CardContent>
-       </Card>
+       <div style={{ background: "white", border: "1px solid rgba(26,24,20,0.10)", borderRadius: 12, padding: 22 }}>
+        <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#8C8880", marginBottom: 10 }}>Membership</p>
+        <div style={{ fontSize: 20, fontWeight: 500, fontFamily: "'Fraunces', Georgia, serif", color: isAccountDisabled ? "#C97B5A" : hasPaid ? "#1D6A5A" : "#C49A3C", marginBottom: 4 }}>{statusDisplay}</div>
+        <p style={{ fontSize: 12, color: "#8C8880" }}>Your current platform access level</p>
+       </div>
+
+       <div style={{ background: "white", border: "1px solid rgba(26,24,20,0.10)", borderRadius: 12, padding: 22 }}>
+        <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#8C8880", marginBottom: 10 }}>Mentor Notes</p>
+        <div style={{ fontSize: 20, fontWeight: 500, fontFamily: "'Fraunces', Georgia, serif", color: "#1A1814", marginBottom: 4 }}>{mentorNotes.length}</div>
+        <p style={{ fontSize: 12, color: "#8C8880" }}>{mentorNotes.length === 1 ? "recommendation" : "recommendations"} from your mentor</p>
+       </div>
       </div>
 
       {/* Overview Tab */}

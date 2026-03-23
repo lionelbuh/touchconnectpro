@@ -1,0 +1,37 @@
+TouchConnectPro Dashboard - Design Brief
+Overall feel
+Clean, professional, and warm. Not a startup SaaS dashboard. More like a well-designed financial advisory tool. Think structured and trustworthy, not playful.
+Color palette
+Background page: #F0EDE6 (warm off-white, slightly darker than cream)
+Sidebar: #1A1814 (near black, ink)
+Cards and panels: #FFFFFF (pure white, lifts off the background)
+Primary accent: #C49A3C (gold, used for highlights, active states, score bars)
+Secondary accent: #1D6A5A (teal, used for tags, badges, positive states)
+Body text: #1A1814
+Muted text: #8C8880
+Borders: rgba(26,24,20,0.10) very subtle
+Card background (secondary): #FAF8F3 (cream, used inside cards for nested elements)
+Typography
+Headings and display text: Fraunces (Google Fonts), weight 300, italic for emphasis words
+Body and UI text: DM Sans (Google Fonts), weight 400 and 500 only, never 600 or 700
+Page greeting: 26px Fraunces light
+Card labels: 11px DM Sans, uppercase, letter-spacing 0.1em, color muted
+Body copy inside cards: 13 to 15px DM Sans
+Layout
+Two-column layout. Left sidebar fixed at 220px wide, dark background. Right side is the scrollable main content area with 36px padding on all sides.
+Sidebar contains: logo at top, user avatar and name below, navigation items, sign out at bottom. Navigation items are 13px, spaced 10px padding top and bottom, with a 2px gold left border on the active item.
+Main content max-width 900px. Cards stack vertically with 16px gap between them. Each card has white background, 1px subtle border, 12px border radius, and internal padding of 22px.
+Card structure
+Every card follows the same pattern. A header row at the top with a small uppercase label on the left (11px, muted, letter-spacing) and an optional action link on the right (12px, teal, "Retake" or "View all"). Then the card body below with 16px padding top.
+Score card specifically
+Two-column grid inside the card. Left side shows the large score number in Fraunces 52px light, with "/100" in smaller muted text below it, and a teal pill tag underneath saying the gap type. Right side shows three horizontal bar rows. Each bar has a 12px label row above showing the dimension name on the left and percentage on the right, then a 4px tall bar below. Bar colors: teal for good scores above 65%, gold for mid scores 40 to 65%, terracotta #C97B5A for low scores below 40%. Below the two columns, a full-width insight strip with gold left border and pale gold background.
+Weekly focus card specifically
+Intro line in small muted text. Then a vertical list of selectable items. Each item is a rounded card with cream background, 1px border, and contains a circular checkbox on the left, the question text in 14px, and a topic tag below in 10px uppercase muted. When selected, border turns teal, background turns teal-light, checkbox fills teal with white checkmark. Maximum 3 selectable. Counter and confirm button at the bottom of the list.
+Messages card specifically
+Chat thread at the top, max-height 260px with scroll. Specialist messages align left with a teal avatar. User messages align right with dark avatar. Bubbles have 14px border radius. Below the thread, a textarea input with a circular send button. Specialist name shows with a small "Specialist" label next to it.
+Quiz answers card specifically
+2-column grid of small answer tiles. Each tile has cream background, subtle border, 12px border radius. Topic label in 10px uppercase muted at top, answer in 13px medium weight below. Tiles that represent identified gaps have a left border in terracotta color.
+Sidebar navigation icons
+Use simple 15x15px stroke icons (stroke-width 1.5, no fill). Dashboard icon is a 2x2 grid of squares. Focus Score is a circle with clock hands. Messages is a speech bubble. Profile is a person silhouette. Each item is 45% opacity when inactive, 100% when active or hovered.
+Responsive
+On screens below 720px, hide the sidebar entirely. Main content takes full width with 20px horizontal padding.
