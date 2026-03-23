@@ -51,7 +51,7 @@ const WarningBox = ({ children }: { children: React.ReactNode }) => (
 export default function MemberAgreement() {
   return (
     <div style={{ backgroundColor: C.cream, minHeight: "100vh" }} data-testid="page-member-agreement">
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "72px 2rem 100px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 2rem 100px" }}>
 
         {/* Header */}
         <div style={{ marginBottom: 56, paddingBottom: 40, borderBottom: `1px solid ${C.borderSoft}` }}>

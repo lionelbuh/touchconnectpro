@@ -58,7 +58,7 @@ const cookieCards = [
 export default function CookiePolicy() {
   return (
     <div style={{ backgroundColor: C.cream, minHeight: "100vh" }} data-testid="page-cookie-policy">
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "72px 2rem 100px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 2rem 100px" }}>
 
         <div style={{ marginBottom: 56, paddingBottom: 40, borderBottom: `1px solid ${C.borderSoft}` }}>
           <span style={{ display: "inline-block", fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", color: C.teal, background: C.tealLight, padding: "5px 14px", borderRadius: 100, marginBottom: 20 }}>Legal</span>

@@ -69,7 +69,7 @@ export default function HowItWorks() {
     <div style={{ backgroundColor: C.cream }} data-testid="page-how-it-works">
 
       {/* Page Header */}
-      <div style={{ maxWidth: 700, margin: "0 auto", padding: "80px 2rem 64px", textAlign: "center" }}>
+      <div style={{ maxWidth: 700, margin: "0 auto", padding: "48px 2rem 52px", textAlign: "center" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", color: C.teal, background: C.tealLight, padding: "6px 14px", borderRadius: 100, marginBottom: 24 }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.teal, display: "inline-block" }} />
           How it works

@@ -48,7 +48,7 @@ const DocList = ({ items }: { items: string[] }) => (
 export default function PrivacyPolicy() {
   return (
     <div style={{ backgroundColor: C.cream, minHeight: "100vh" }} data-testid="page-privacy-policy">
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "72px 2rem 100px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 2rem 100px" }}>
 
         {/* Header */}
         <div style={{ marginBottom: 56, paddingBottom: 40, borderBottom: `1px solid ${C.borderSoft}` }}>

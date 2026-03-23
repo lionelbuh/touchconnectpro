@@ -216,7 +216,7 @@ export default function QA() {
     <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
 
       {/* Page header */}
-      <div style={{ maxWidth: 700, margin: "0 auto", padding: "80px 2rem 64px", textAlign: "center" }}>
+      <div style={{ maxWidth: 700, margin: "0 auto", padding: "48px 2rem 52px", textAlign: "center" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: C.teal, background: C.tealLight, padding: "6px 14px", borderRadius: 100, marginBottom: 24 }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.teal, display: "inline-block" }} />
           FAQ
