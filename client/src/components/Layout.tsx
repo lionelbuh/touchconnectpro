@@ -135,6 +135,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <li><Link href="/insights" data-testid="link-footer-insights">Startup Radar</Link></li>
               <li><Link href="/founder-focus" data-testid="link-footer-founder-focus">Focus Score</Link></li>
               <li><Link href="/qa" data-testid="link-footer-qa">Q&A</Link></li>
+              <li><Link href="/become-coach" className="hover:text-foreground transition-colors" data-testid="link-footer-become-specialist">Become a Specialist</Link></li>
             </ul>
           </div>
 

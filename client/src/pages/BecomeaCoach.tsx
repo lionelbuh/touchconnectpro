@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Check, Star, TrendingUp, Mail, ArrowRight, CheckCircle, X, FileText } from "lucide-react";
+import { Check, Star, ArrowRight, CheckCircle, FileText } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -205,28 +203,48 @@ export default function BecomeaCoach() {
     setContractAgreed(false);
   };
 
+  const inputStyle = {
+    background: "#FAF9F6",
+    border: "1px solid rgba(26,24,20,0.15)",
+    borderRadius: 8,
+    color: "#1A1814",
+    padding: "10px 12px",
+    fontSize: 14,
+    width: "100%",
+    outline: "none",
+    fontFamily: "inherit",
+  };
+
+  const labelStyle = {
+    display: "block",
+    fontSize: 13,
+    fontWeight: 500,
+    color: "#4A4740",
+    marginBottom: 6,
+  };
+
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
+    <div style={{ background: "#FAF8F3", minHeight: "100vh" }}>
       {/* Thank You Modal */}
       <Dialog open={submitted} onOpenChange={handleCloseModal}>
-        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+        <DialogContent style={{ background: "white", border: "1px solid rgba(26,24,20,0.12)" }}>
           <DialogHeader>
-            <DialogTitle className="text-center text-2xl font-display font-bold text-slate-900 dark:text-white flex items-center justify-center gap-3">
-              <CheckCircle className="h-8 w-8 text-green-500" />
-              Thank You!
+            <DialogTitle style={{ textAlign: "center", fontFamily: "Georgia, serif", fontWeight: 300, fontSize: 22, color: "#1A1814", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+              <CheckCircle style={{ color: "#1D6A5A", width: 28, height: 28 }} />
+              Application Received
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-6">
-            <p className="text-center text-lg text-slate-700 dark:text-slate-300">
-              Your coach application has been received.
+          <div style={{ padding: "16px 0", display: "flex", flexDirection: "column", gap: 12 }}>
+            <p style={{ textAlign: "center", fontSize: 15, color: "#4A4740" }}>
+              Your specialist application has been received.
             </p>
-            <p className="text-center text-base text-slate-600 dark:text-slate-400">
-              Our team will review your application and get back to you within <strong>24-48 hours</strong>. We look forward to having you join the TouchConnectPro coaching team!
+            <p style={{ textAlign: "center", fontSize: 14, color: "#8C8880" }}>
+              Our team will review your application and get back to you within <strong style={{ color: "#1A1814" }}>24–48 hours</strong>. We look forward to having you join the TouchConnectPro specialist network.
             </p>
           </div>
           <Button
             onClick={handleCloseModal}
-            className="w-full bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-semibold"
+            style={{ background: "#1D6A5A", color: "white", border: "none" }}
             data-testid="button-thank-you-ok-coach"
           >
             I Understand
@@ -234,45 +252,41 @@ export default function BecomeaCoach() {
         </DialogContent>
       </Dialog>
 
-      {/* Hero Section */}
-      <section className="py-16 bg-gradient-to-b from-cyan-900/30 to-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto">
-            <Badge variant="secondary" className="mb-6 px-6 py-3 text-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 border-cyan-500/30">
-              <Star className="inline-block mr-2 h-4 w-4" /> Join Our Coach Network
-            </Badge>
-            <h1 className="text-4xl md:text-5xl font-display font-bold mb-6 text-slate-900 dark:text-white">
-              Become a Coach on TouchConnectPro
-            </h1>
-            <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed">
-              Share your expertise. Teach what you know. Earn by helping founders grow.
-            </p>
+      {/* Hero */}
+      <section style={{ padding: "72px 24px 64px", borderBottom: "1px solid rgba(26,24,20,0.08)" }}>
+        <div style={{ maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#E4F0ED", color: "#1D6A5A", fontSize: 12, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase", padding: "6px 14px", borderRadius: 100, marginBottom: 24 }}>
+            <Star style={{ width: 13, height: 13 }} /> Join Our Specialist Network
           </div>
+          <h1 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 44, fontWeight: 300, color: "#1A1814", lineHeight: 1.15, marginBottom: 18 }}>
+            Become a Specialist on<br />
+            <em style={{ fontStyle: "italic", color: "#C49A3C" }}>TouchConnectPro</em>
+          </h1>
+          <p style={{ fontSize: 18, color: "#4A4740", lineHeight: 1.6 }}>
+            Share your expertise. Advise founders. Earn by helping businesses grow.
+          </p>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="py-0">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <section style={{ padding: "60px 24px" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto" }}>
+
           {/* Introduction */}
-          <Card className="mb-12 -mt-8 border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
-            <CardContent className="p-10">
-              <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
-                TouchConnectPro is building a network of experienced professionals offering specialized courses to entrepreneurs who need practical, real-world guidance. Mentors support founders through their journey — and coaches provide the paid skills training they need to move faster and wiser.
-              </p>
-              <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed mt-2">
-                As a coach, you turn your experience into structured knowledge entrepreneurs can learn from today.
-              </p>
-            </CardContent>
-          </Card>
+          <div style={{ background: "#E4F0ED", border: "1px solid rgba(29,106,90,0.15)", borderRadius: 12, padding: "36px 40px", marginBottom: 56 }}>
+            <p style={{ fontSize: 17, color: "#1A1814", lineHeight: 1.7, marginBottom: 12 }}>
+              TouchConnectPro is building a network of specialist advisors — accountants, legal professionals, marketers, product experts, and pitch coaches — matched to founders based on their diagnostic results.
+            </p>
+            <p style={{ fontSize: 17, color: "#4A4740", lineHeight: 1.7 }}>
+              As a specialist, you bring targeted expertise to founders who already know what gap they need to fill. No cold pitching. No guesswork. Just focused, valuable work.
+            </p>
+          </div>
 
           {/* Who We're Looking For */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">Who We're Looking For</h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400 mb-8">
-              We invite coaches with strong backgrounds in fields such as:
-            </p>
-            <div className="grid md:grid-cols-2 gap-6">
+          <div style={{ marginBottom: 56 }}>
+            <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 28, fontWeight: 300, color: "#1A1814", marginBottom: 8 }}>Who We're Looking For</h2>
+            <p style={{ fontSize: 15, color: "#8C8880", marginBottom: 28 }}>We invite specialists with strong backgrounds in fields such as:</p>
+            <div className="grid md:grid-cols-2" style={{ gap: 12 }}>
               {[
                 "Startup experience, product development, or growth strategy",
                 "Corporate expertise, scaling, operations, or management",
@@ -280,418 +294,295 @@ export default function BecomeaCoach() {
                 "UX, branding, storytelling, design, or development",
                 "Any skill that helps entrepreneurs overcome real business challenges"
               ].map((item, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <Check className="h-6 w-6 text-cyan-500 shrink-0 mt-1" />
-                  <p className="text-slate-700 dark:text-slate-300">{item}</p>
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "white", border: "1px solid rgba(26,24,20,0.08)", borderRadius: 10, padding: "14px 16px" }}>
+                  <Check style={{ width: 18, height: 18, color: "#1D6A5A", flexShrink: 0, marginTop: 2 }} />
+                  <p style={{ fontSize: 14, color: "#4A4740", lineHeight: 1.5 }}>{item}</p>
                 </div>
               ))}
             </div>
-            <Card className="mt-8 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-              <CardContent className="p-6">
-                <p className="text-slate-700 dark:text-slate-300 text-lg">
-                  <span className="font-semibold">If you've built, launched, failed, learned, or succeeded</span> — you have something valuable to teach.
-                </p>
-              </CardContent>
-            </Card>
+            <div style={{ background: "#FAF3E0", border: "1px solid rgba(196,154,60,0.2)", borderRadius: 10, padding: "20px 24px", marginTop: 20 }}>
+              <p style={{ fontSize: 15, color: "#1A1814" }}>
+                <strong>If you've built, launched, failed, learned, or succeeded</strong> — you have something valuable to teach.
+              </p>
+            </div>
           </div>
 
           {/* What You'll Do */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">What You'll Do as a Coach</h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400 mb-8">
-              As a TouchConnectPro Coach, you will:
-            </p>
-            <div className="space-y-4">
+          <div style={{ marginBottom: 56 }}>
+            <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 28, fontWeight: 300, color: "#1A1814", marginBottom: 8 }}>What You'll Do as a Specialist</h2>
+            <p style={{ fontSize: 15, color: "#8C8880", marginBottom: 24 }}>As a TouchConnectPro Specialist, you will:</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[
-                { icon: "💼", title: "Offer paid lessons, workshops, or structured courses" },
+                { icon: "💼", title: "Offer paid advisory sessions, workshops, or structured engagements" },
                 { icon: "📈", title: "Set your own pricing and availability" },
-                { icon: "📝", title: "Receive a public coaching profile so entrepreneurs can book you" },
-                { icon: "🤝", title: "Benefit from mentor referrals who guide founders internally" },
-                { icon: "📅", title: "Decide how many sessions you want to run — total flexibility" }
+                { icon: "📝", title: "Receive a public specialist profile so founders can reach you directly" },
+                { icon: "🤝", title: "Receive matched introductions based on founder diagnostic results" },
+                { icon: "📅", title: "Decide how many engagements you take on — total flexibility" }
               ].map((item, i) => (
-                <div key={i} className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800">
-                  <span className="text-2xl">{item.icon}</span>
-                  <p className="text-slate-700 dark:text-slate-300 text-lg">{item.title}</p>
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, background: "white", border: "1px solid rgba(26,24,20,0.08)", borderRadius: 10, padding: "14px 18px" }}>
+                  <span style={{ fontSize: 22, flexShrink: 0 }}>{item.icon}</span>
+                  <p style={{ fontSize: 14, color: "#4A4740", lineHeight: 1.5 }}>{item.title}</p>
                 </div>
               ))}
             </div>
-            <Card className="mt-8 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-              <CardContent className="p-6">
-                <p className="text-slate-700 dark:text-slate-300 text-lg">
-                  Entrepreneurs browse the coach catalog, compare expertise, and book you directly based on need and mentor recommendation.
-                </p>
-                <p className="text-slate-700 dark:text-slate-300 text-lg font-semibold mt-3">
-                  You teach — we bring you students.
-                </p>
-              </CardContent>
-            </Card>
+            <div style={{ background: "white", border: "1px solid rgba(26,24,20,0.08)", borderRadius: 10, padding: "20px 24px", marginTop: 16 }}>
+              <p style={{ fontSize: 15, color: "#4A4740", lineHeight: 1.6, marginBottom: 8 }}>
+                Founders browse specialist profiles, compare expertise, and reach out based on their diagnostic gap — pre-qualified before they ever contact you.
+              </p>
+              <p style={{ fontSize: 15, color: "#1A1814", fontWeight: 500 }}>
+                You advise — we bring you the right founders.
+              </p>
+            </div>
           </div>
 
           {/* Earnings */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">Earnings & Revenue Structure</h2>
-            <Card className="border-emerald-200 dark:border-emerald-900/30 bg-emerald-50 dark:bg-emerald-950/20">
-              <CardContent className="p-10 space-y-6">
-                <div>
-                  <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
-                    <strong>You choose your price.</strong> Entrepreneurs pay your full session rate.
-                  </p>
-                </div>
-                <div>
-                  <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
-                    <strong>TouchConnectPro retains 20% commission to operate the platform —</strong> you keep 80%.
-                  </p>
-                </div>
-                <div className="border-t border-emerald-200 dark:border-emerald-900/50 pt-6">
-                  <p className="text-slate-700 dark:text-slate-300 text-lg">
+          <div style={{ marginBottom: 56 }}>
+            <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 28, fontWeight: 300, color: "#1A1814", marginBottom: 24 }}>Earnings & Revenue Structure</h2>
+            <div style={{ background: "#E4F0ED", border: "1px solid rgba(29,106,90,0.15)", borderRadius: 12, padding: "36px 40px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                <p style={{ fontSize: 16, color: "#1A1814", lineHeight: 1.6 }}>
+                  <strong>You choose your price.</strong> Entrepreneurs pay your full session rate.
+                </p>
+                <p style={{ fontSize: 16, color: "#1A1814", lineHeight: 1.6 }}>
+                  <strong>TouchConnectPro retains 20% commission to operate the platform —</strong> you keep 80%.
+                </p>
+                <div style={{ borderTop: "1px solid rgba(29,106,90,0.15)", paddingTop: 20 }}>
+                  <p style={{ fontSize: 16, color: "#4A4740", lineHeight: 1.6 }}>
                     <strong>No subscription. No pay-to-be-listed.</strong> We only earn when you do.
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
-          {/* Why Coach */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">Why Coach With TouchConnectPro?</h2>
-            <div className="grid md:grid-cols-2 gap-6">
+          {/* Why Partner */}
+          <div style={{ marginBottom: 56 }}>
+            <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 28, fontWeight: 300, color: "#1A1814", marginBottom: 28 }}>Why Partner With TouchConnectPro?</h2>
+            <div className="grid md:grid-cols-2" style={{ gap: 12 }}>
               {[
-                "Earn money while sharing valuable skills",
-                "No client chasing — founders come to you",
-                "Build your reputation as a trusted expert",
-                "Teach real entrepreneurs building real businesses",
-                "Experience personal and professional growth through impact"
+                "Earn revenue from your expertise with no upfront cost",
+                "No cold outreach — founders are matched to you by gap",
+                "Build your reputation as a trusted specialist",
+                "Work with pre-qualified founders who know what they need",
+                "Flexible engagements — take on as much or as little as you want"
               ].map((item, i) => (
-                <div key={i} className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800">
-                  <Check className="h-6 w-6 text-cyan-500 shrink-0 mt-1" />
-                  <p className="text-slate-700 dark:text-slate-300">{item}</p>
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "white", border: "1px solid rgba(26,24,20,0.08)", borderRadius: 10, padding: "14px 16px" }}>
+                  <Check style={{ width: 18, height: 18, color: "#1D6A5A", flexShrink: 0, marginTop: 2 }} />
+                  <p style={{ fontSize: 14, color: "#4A4740", lineHeight: 1.5 }}>{item}</p>
                 </div>
               ))}
             </div>
-            <Card className="mt-8 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-              <CardContent className="p-6">
-                <p className="text-slate-700 dark:text-slate-300 text-lg">
-                  For many coaches, <strong>revenue is great — but the real reward is watching founders level up through your knowledge.</strong>
-                </p>
-              </CardContent>
-            </Card>
+            <div style={{ background: "#FAF3E0", border: "1px solid rgba(196,154,60,0.2)", borderRadius: 10, padding: "20px 24px", marginTop: 16 }}>
+              <p style={{ fontSize: 15, color: "#1A1814", lineHeight: 1.6 }}>
+                For many specialists, <strong>revenue is great — but the real reward is watching founders level up through your knowledge.</strong>
+              </p>
+            </div>
           </div>
 
           {/* Quality Standards */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">Our Quality Standards</h2>
-            <Card className="border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20">
-              <CardContent className="p-10">
-                <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
-                  TouchConnectPro values a positive and reliable coaching experience for all users. If a coach's rating drops below 3 stars out of 5, we may pause or deactivate the account until quality standards are met again.
-                </p>
-              </CardContent>
-            </Card>
+          <div style={{ marginBottom: 56 }}>
+            <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 28, fontWeight: 300, color: "#1A1814", marginBottom: 20 }}>Our Quality Standards</h2>
+            <div style={{ background: "#FAF3E0", border: "1px solid rgba(196,154,60,0.2)", borderRadius: 12, padding: "28px 36px" }}>
+              <p style={{ fontSize: 15, color: "#4A4740", lineHeight: 1.7 }}>
+                TouchConnectPro values a positive and reliable coaching experience for all users. If a specialist's rating drops below 3 stars out of 5, we may pause or deactivate the account until quality standards are met again.
+              </p>
+            </div>
           </div>
 
-          {/* CTA Section */}
+          {/* CTA / Form */}
           {!showForm ? (
-            <div className="bg-gradient-to-r from-cyan-900/50 to-slate-900/50 rounded-2xl p-12 text-center border border-cyan-500/30">
-              <h2 className="text-3xl font-display font-bold mb-6 text-white">Ready to Become a Coach?</h2>
-              <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
-                If you want to teach what you know, support entrepreneurs, and get paid on your terms, we'd love to learn more about you.
+            <div style={{ background: "#1A1814", borderRadius: 16, padding: "56px 48px", textAlign: "center" }}>
+              <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 32, fontWeight: 300, color: "#FAF8F3", marginBottom: 16 }}>
+                Ready to Become a Specialist?
+              </h2>
+              <p style={{ fontSize: 16, color: "rgba(250,248,243,0.65)", marginBottom: 12, maxWidth: 520, margin: "0 auto 12px" }}>
+                If you have deep expertise in any area founders need — accounting, legal, marketing, product, pitch — we'd love to learn more about you.
               </p>
-              <p className="text-slate-600 dark:text-slate-500 mb-8">
-                We will review your profile and notify you when your expertise matches coaching needs within the platform.
+              <p style={{ fontSize: 13, color: "rgba(250,248,243,0.35)", marginBottom: 32 }}>
+                We review every application. You'll hear back within a week.
               </p>
-              <Button size="lg" className="h-14 px-10 text-lg rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold" onClick={() => setShowForm(true)} data-testid="button-apply-coach">
-                Apply to Become a Coach <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <button
+                onClick={() => setShowForm(true)}
+                data-testid="button-apply-coach"
+                style={{ background: "#C49A3C", color: "#1A1814", border: "none", borderRadius: 100, padding: "14px 36px", fontSize: 15, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "inherit", transition: "opacity 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.opacity = "0.88"; }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
+              >
+                Apply to Join as a Specialist <ArrowRight style={{ width: 18, height: 18 }} />
+              </button>
             </div>
           ) : (
-            <Card className="border-cyan-200 dark:border-cyan-900/30 bg-white dark:bg-slate-900">
-              <CardContent className="p-12">
-                <h2 className="text-3xl font-display font-bold mb-2 text-slate-900 dark:text-white">Complete Your Coach Profile</h2>
-                <p className="text-muted-foreground mb-8">Tell us about your expertise. Our team will review and contact you within 48 hours.</p>
+            <div style={{ background: "white", border: "1px solid rgba(26,24,20,0.10)", borderRadius: 16, padding: "48px 44px" }}>
+              <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 28, fontWeight: 300, color: "#1A1814", marginBottom: 6 }}>Complete Your Specialist Profile</h2>
+              <p style={{ fontSize: 14, color: "#8C8880", marginBottom: 36 }}>Tell us about your expertise. Our team will review and contact you within 48 hours.</p>
 
-                {submitted ? (
-                  <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-lg p-6 text-center">
-                    <p className="text-emerald-700 dark:text-emerald-300 font-semibold mb-2">Application Submitted!</p>
-                    <p className="text-emerald-600 dark:text-emerald-400">We'll review your profile and get back to you soon.</p>
+              {submitted ? (
+                <div style={{ background: "#E4F0ED", border: "1px solid rgba(29,106,90,0.2)", borderRadius: 10, padding: 24, textAlign: "center" }}>
+                  <p style={{ color: "#1D6A5A", fontWeight: 500, marginBottom: 6 }}>Application Submitted!</p>
+                  <p style={{ fontSize: 14, color: "#4A4740" }}>We'll review your profile and get back to you soon.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+                  <div>
+                    <label style={labelStyle}>Full Name *</label>
+                    <Input name="fullName" value={formData.fullName} onChange={handleInputChange} placeholder="Your full name" className="bg-[#FAF9F6] border-[rgba(26,24,20,0.15)]" data-testid="input-coach-fullname" />
                   </div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Full Name *</label>
-                      <Input
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleInputChange}
-                        placeholder="Your full name"
-                        className="bg-slate-50 dark:bg-slate-800/50"
-                        data-testid="input-coach-fullname"
-                      />
-                    </div>
 
-                    <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Email Address *</label>
-                      <Input
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="your@email.com"
-                        className="bg-slate-50 dark:bg-slate-800/50"
-                        data-testid="input-coach-email"
-                      />
-                    </div>
+                  <div>
+                    <label style={labelStyle}>Email Address *</label>
+                    <Input name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="your@email.com" className="bg-[#FAF9F6] border-[rgba(26,24,20,0.15)]" data-testid="input-coach-email" />
+                  </div>
 
-                    <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">LinkedIn Profile</label>
-                      <Input
-                        name="linkedin"
-                        value={formData.linkedin}
-                        onChange={handleInputChange}
-                        placeholder="linkedin.com/in/xxx (optional)"
-                        className="bg-slate-50 dark:bg-slate-800/50"
-                        data-testid="input-coach-linkedin"
-                      />
-                    </div>
+                  <div>
+                    <label style={labelStyle}>LinkedIn Profile <span style={{ color: "#8C8880", fontWeight: 400 }}>(optional)</span></label>
+                    <Input name="linkedin" value={formData.linkedin} onChange={handleInputChange} placeholder="linkedin.com/in/xxx" className="bg-[#FAF9F6] border-[rgba(26,24,20,0.15)]" data-testid="input-coach-linkedin" />
+                  </div>
 
-                    <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Bio - Introduce Yourself *</label>
-                      <Textarea
-                        name="bio"
-                        value={formData.bio}
-                        onChange={handleInputChange}
-                        placeholder="Tell entrepreneurs about yourself, your background, and what makes you a great coach. This will be displayed on your public profile."
-                        className="bg-slate-50 dark:bg-slate-800/50 min-h-[120px]"
-                        data-testid="input-coach-bio"
-                      />
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">This bio will be visible to entrepreneurs browsing coaches</p>
-                    </div>
+                  <div>
+                    <label style={labelStyle}>Bio — Introduce Yourself *</label>
+                    <Textarea name="bio" value={formData.bio} onChange={handleInputChange} placeholder="Tell entrepreneurs about yourself, your background, and what makes you a great specialist. This will be displayed on your public profile." className="bg-[#FAF9F6] border-[rgba(26,24,20,0.15)] min-h-[120px]" data-testid="input-coach-bio" />
+                    <p style={{ fontSize: 12, color: "#8C8880", marginTop: 6 }}>This bio will be visible to entrepreneurs browsing specialists</p>
+                  </div>
 
-                    <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Areas of Expertise * (Select one or more)</label>
-                      <select
-                        multiple
-                        value={formData.expertise}
-                        onChange={(e) => handleExpertiseChange(e.target.selectedOptions)}
-                        className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                        data-testid="select-coach-expertise"
-                        style={{ minHeight: "120px" }}
-                      >
-                        {EXPERTISE_OPTIONS.map(option => (
-                          <option key={option} value={option}>{option}</option>
-                        ))}
-                      </select>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Hold Ctrl/Cmd to select multiple options</p>
-                    </div>
+                  <div>
+                    <label style={labelStyle}>Areas of Expertise * <span style={{ color: "#8C8880", fontWeight: 400 }}>(select one or more)</span></label>
+                    <select
+                      multiple
+                      value={formData.expertise}
+                      onChange={(e) => handleExpertiseChange(e.target.selectedOptions)}
+                      style={{ ...inputStyle, minHeight: 120 }}
+                      data-testid="select-coach-expertise"
+                    >
+                      {EXPERTISE_OPTIONS.map(option => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                    <p style={{ fontSize: 12, color: "#8C8880", marginTop: 6 }}>Hold Ctrl/Cmd to select multiple options</p>
+                  </div>
 
-                    <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Focus Areas / Specialization *</label>
-                      <select
-                        name="focusAreas"
-                        value={formData.focusAreas}
-                        onChange={handleInputChange}
-                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                        data-testid="select-coach-focusareas"
-                      >
-                        <option value="">Select your focus area</option>
-                        {FOCUS_AREAS_OPTIONS.map((area) => (
-                          <option key={area} value={area}>{area}</option>
-                        ))}
-                      </select>
-                    </div>
+                  <div>
+                    <label style={labelStyle}>Focus Areas / Specialization *</label>
+                    <select name="focusAreas" value={formData.focusAreas} onChange={handleInputChange} style={inputStyle} data-testid="select-coach-focusareas">
+                      <option value="">Select your focus area</option>
+                      {FOCUS_AREAS_OPTIONS.map((area) => (
+                        <option key={area} value={area}>{area}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                    <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-3 block">Your Rates for Your Services *</label>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">15 Minutes Introductory Call *</label>
-                          <Input
-                            name="introCallRate"
-                            type="number"
-                            value={formData.introCallRate}
-                            onChange={handleInputChange}
-                            placeholder="e.g., $25"
-                            className="bg-slate-50 dark:bg-slate-800/50"
-                            data-testid="input-coach-introcallrate"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Per Session *</label>
-                          <Input
-                            name="sessionRate"
-                            type="number"
-                            value={formData.sessionRate}
-                            onChange={handleInputChange}
-                            placeholder="e.g., $150"
-                            className="bg-slate-50 dark:bg-slate-800/50"
-                            data-testid="input-coach-sessionrate"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Monthly Coaching Retainer (Monthly fee for ongoing coaching across multiple sessions.) *</label>
-                          <Input
-                            name="monthlyRate"
-                            type="number"
-                            value={formData.monthlyRate}
-                            onChange={handleInputChange}
-                            placeholder="e.g., $500"
-                            className="bg-slate-50 dark:bg-slate-800/50"
-                            data-testid="input-coach-monthlyrate"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Monthly Retainer Description (Optional)</label>
-                          <Textarea
-                            name="monthlyRetainerDescription"
-                            value={formData.monthlyRetainerDescription}
-                            onChange={handleInputChange}
-                            placeholder="Describe what's included in your monthly coaching retainer (e.g., number of sessions, email support, resources provided...)"
-                            className="bg-slate-50 dark:bg-slate-800/50 min-h-[80px]"
-                            data-testid="input-coach-monthly-retainer-description"
-                          />
-                        </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">TouchConnectPro retains 20% commission — you keep 80% of your earnings</p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">Country *</label>
-                      <select
-                        name="country"
-                        value={formData.country}
-                        onChange={(e) => {
-                          handleInputChange(e as any);
-                          if (e.target.value !== "United States") {
-                            setFormData(prev => ({ ...prev, state: "" }));
-                          }
-                        }}
-                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                        data-testid="select-coach-country"
-                      >
-                        <option value="">Select a country</option>
-                        {COUNTRIES.map((c) => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {formData.country === "United States" && (
+                  <div>
+                    <label style={labelStyle}>Your Rates *</label>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                       <div>
-                        <label className="text-sm font-semibold text-slate-900 dark:text-white mb-2 block">State *</label>
-                        <select
-                          name="state"
-                          value={formData.state}
-                          onChange={handleInputChange}
-                          className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                          data-testid="select-coach-state"
-                        >
-                          <option value="">Select your state</option>
-                          {US_STATES.map((s) => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </select>
+                        <label style={{ ...labelStyle, fontSize: 12, color: "#8C8880" }}>15-Minute Introductory Call *</label>
+                        <Input name="introCallRate" type="number" value={formData.introCallRate} onChange={handleInputChange} placeholder="e.g., 25" className="bg-[#FAF9F6] border-[rgba(26,24,20,0.15)]" data-testid="input-coach-introcallrate" />
                       </div>
-                    )}
+                      <div>
+                        <label style={{ ...labelStyle, fontSize: 12, color: "#8C8880" }}>Per Session *</label>
+                        <Input name="sessionRate" type="number" value={formData.sessionRate} onChange={handleInputChange} placeholder="e.g., 150" className="bg-[#FAF9F6] border-[rgba(26,24,20,0.15)]" data-testid="input-coach-sessionrate" />
+                      </div>
+                      <div>
+                        <label style={{ ...labelStyle, fontSize: 12, color: "#8C8880" }}>Monthly Coaching Retainer *</label>
+                        <Input name="monthlyRate" type="number" value={formData.monthlyRate} onChange={handleInputChange} placeholder="e.g., 500" className="bg-[#FAF9F6] border-[rgba(26,24,20,0.15)]" data-testid="input-coach-monthlyrate" />
+                      </div>
+                      <div>
+                        <label style={{ ...labelStyle, fontSize: 12, color: "#8C8880" }}>Monthly Retainer Description <span style={{ fontWeight: 400, color: "#8C8880" }}>(optional)</span></label>
+                        <Textarea name="monthlyRetainerDescription" value={formData.monthlyRetainerDescription} onChange={handleInputChange} placeholder="Describe what's included (e.g., number of sessions, email support, resources...)" className="bg-[#FAF9F6] border-[rgba(26,24,20,0.15)] min-h-[80px]" data-testid="input-coach-monthly-retainer-description" />
+                      </div>
+                      <p style={{ fontSize: 12, color: "#8C8880" }}>TouchConnectPro retains 20% commission — you keep 80% of your earnings</p>
+                    </div>
+                  </div>
 
-                    <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Star className="h-5 w-5 text-amber-500" />
-                        <label className="text-sm font-semibold text-slate-900 dark:text-white">External Reputation / Ratings <span className="text-slate-400 font-normal">(Optional)</span></label>
+                  <div>
+                    <label style={labelStyle}>Country *</label>
+                    <select
+                      name="country"
+                      value={formData.country}
+                      onChange={(e) => {
+                        handleInputChange(e as any);
+                        if (e.target.value !== "United States") setFormData(prev => ({ ...prev, state: "" }));
+                      }}
+                      style={inputStyle}
+                      data-testid="select-coach-country"
+                    >
+                      <option value="">Select a country</option>
+                      {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+
+                  {formData.country === "United States" && (
+                    <div>
+                      <label style={labelStyle}>State *</label>
+                      <select name="state" value={formData.state} onChange={handleInputChange} style={inputStyle} data-testid="select-coach-state">
+                        <option value="">Select your state</option>
+                        {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* External Reputation */}
+                  <div style={{ paddingTop: 20, borderTop: "1px solid rgba(26,24,20,0.08)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                      <Star style={{ width: 16, height: 16, color: "#C49A3C" }} />
+                      <label style={{ ...labelStyle, marginBottom: 0 }}>External Reputation / Ratings <span style={{ fontWeight: 400, color: "#8C8880" }}>(optional)</span></label>
+                    </div>
+                    <p style={{ fontSize: 13, color: "#8C8880", marginBottom: 16, lineHeight: 1.5 }}>
+                      If you have ratings on another platform (e.g., MentorCruise), share them here for verification. If you fill any field, all fields become required. These links will never be shown publicly.
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                      <div>
+                        <label style={{ ...labelStyle, fontSize: 12, color: "#8C8880" }}>Platform Name</label>
+                        <Input name="externalPlatform" value={formData.externalPlatform} onChange={handleInputChange} placeholder="e.g., MentorCruise, Clarity.fm, GrowthMentor" className="bg-[#FAF9F6] border-[rgba(26,24,20,0.15)]" data-testid="input-coach-external-platform" />
                       </div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-                        If you have ratings on another platform (e.g., MentorCruise), share them here for verification. If you fill any field, all fields become required. These links will never be shown publicly.
-                      </p>
-                      <div className="space-y-4">
+                      <div className="grid grid-cols-2" style={{ gap: 12 }}>
                         <div>
-                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Platform Name</label>
-                          <Input
-                            name="externalPlatform"
-                            value={formData.externalPlatform}
-                            onChange={handleInputChange}
-                            placeholder="e.g., MentorCruise, Clarity.fm, GrowthMentor"
-                            className="bg-slate-50 dark:bg-slate-800/50"
-                            data-testid="input-coach-external-platform"
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Average Rating</label>
-                            <Input
-                              name="externalRating"
-                              type="number"
-                              step="0.1"
-                              min="1"
-                              max="5"
-                              value={formData.externalRating}
-                              onChange={handleInputChange}
-                              placeholder="e.g., 4.9"
-                              className="bg-slate-50 dark:bg-slate-800/50"
-                              data-testid="input-coach-external-rating"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">Number of Reviews</label>
-                            <Input
-                              name="externalReviewCount"
-                              type="number"
-                              min="1"
-                              value={formData.externalReviewCount}
-                              onChange={handleInputChange}
-                              placeholder="e.g., 37"
-                              className="bg-slate-50 dark:bg-slate-800/50"
-                              data-testid="input-coach-external-review-count"
-                            />
-                          </div>
+                          <label style={{ ...labelStyle, fontSize: 12, color: "#8C8880" }}>Average Rating</label>
+                          <Input name="externalRating" type="number" step="0.1" min="1" max="5" value={formData.externalRating} onChange={handleInputChange} placeholder="e.g., 4.9" className="bg-[#FAF9F6] border-[rgba(26,24,20,0.15)]" data-testid="input-coach-external-rating" />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">External Profile URL (for verification only)</label>
-                          <Input
-                            name="externalProfileUrl"
-                            type="url"
-                            value={formData.externalProfileUrl}
-                            onChange={handleInputChange}
-                            placeholder="https://mentorcruise.com/mentor/yourname"
-                            className="bg-slate-50 dark:bg-slate-800/50"
-                            data-testid="input-coach-external-url"
-                          />
-                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">This link will never be shown to entrepreneurs - it's only for our team to verify your ratings.</p>
+                          <label style={{ ...labelStyle, fontSize: 12, color: "#8C8880" }}>Number of Reviews</label>
+                          <Input name="externalReviewCount" type="number" min="1" value={formData.externalReviewCount} onChange={handleInputChange} placeholder="e.g., 37" className="bg-[#FAF9F6] border-[rgba(26,24,20,0.15)]" data-testid="input-coach-external-review-count" />
                         </div>
                       </div>
-                    </div>
-
-                    <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
-                      <div className="flex items-center gap-2 mb-4">
-                        <FileText className="h-5 w-5 text-cyan-600" />
-                        <label className="text-sm font-semibold text-slate-900 dark:text-white">Coach Platform Agreement *</label>
-                      </div>
-                      <ScrollArea className="h-64 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
-                        <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans leading-relaxed">
-                          {COACH_CONTRACT}
-                        </pre>
-                      </ScrollArea>
-                      <div className="flex items-start gap-3 mt-4">
-                        <Checkbox
-                          id="contract-agreement"
-                          checked={contractAgreed}
-                          onCheckedChange={(checked) => setContractAgreed(checked === true)}
-                          data-testid="checkbox-coach-contract"
-                        />
-                        <label
-                          htmlFor="contract-agreement"
-                          className="text-sm text-slate-700 dark:text-slate-300 cursor-pointer leading-relaxed"
-                        >
-                          I have read and agree to the <span className="font-semibold text-cyan-600 dark:text-cyan-400">Coach Platform Agreement</span>
-                        </label>
+                      <div>
+                        <label style={{ ...labelStyle, fontSize: 12, color: "#8C8880" }}>External Profile URL <span style={{ fontWeight: 400 }}>(for verification only)</span></label>
+                        <Input name="externalProfileUrl" type="url" value={formData.externalProfileUrl} onChange={handleInputChange} placeholder="https://mentorcruise.com/mentor/yourname" className="bg-[#FAF9F6] border-[rgba(26,24,20,0.15)]" data-testid="input-coach-external-url" />
+                        <p style={{ fontSize: 12, color: "#C49A3C", marginTop: 4 }}>This link will never be shown to entrepreneurs — it's only for our team to verify your ratings.</p>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="flex gap-3 pt-6">
-                      <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)} data-testid="button-cancel-coach-form">Cancel</Button>
-                      <Button type="submit" className="flex-1 bg-cyan-600 hover:bg-cyan-700" disabled={!contractAgreed} data-testid="button-submit-coach-form">Submit Application</Button>
+                  {/* Contract */}
+                  <div style={{ paddingTop: 20, borderTop: "1px solid rgba(26,24,20,0.08)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                      <FileText style={{ width: 16, height: 16, color: "#1D6A5A" }} />
+                      <label style={{ ...labelStyle, marginBottom: 0 }}>Specialist Platform Agreement *</label>
                     </div>
-                  </form>
-                )}
-              </CardContent>
-            </Card>
+                    <ScrollArea className="h-64 rounded-lg border p-4" style={{ background: "#FAF9F6", borderColor: "rgba(26,24,20,0.12)" }}>
+                      <pre className="whitespace-pre-wrap text-sm font-sans leading-relaxed" style={{ color: "#4A4740" }}>
+                        {COACH_CONTRACT}
+                      </pre>
+                    </ScrollArea>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginTop: 14 }}>
+                      <Checkbox
+                        id="contract-agreement"
+                        checked={contractAgreed}
+                        onCheckedChange={(checked) => setContractAgreed(checked === true)}
+                        data-testid="checkbox-coach-contract"
+                      />
+                      <label htmlFor="contract-agreement" style={{ fontSize: 13, color: "#4A4740", cursor: "pointer", lineHeight: 1.5 }}>
+                        I have read and agree to the <span style={{ fontWeight: 500, color: "#1D6A5A" }}>Specialist Platform Agreement</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: 12, paddingTop: 8 }}>
+                    <Button variant="outline" style={{ flex: 1, borderColor: "rgba(26,24,20,0.15)", color: "#4A4740" }} onClick={() => setShowForm(false)} data-testid="button-cancel-coach-form">Cancel</Button>
+                    <Button type="submit" style={{ flex: 1, background: "#1D6A5A", color: "white", border: "none", opacity: contractAgreed ? 1 : 0.5 }} disabled={!contractAgreed} data-testid="button-submit-coach-form">Submit Application</Button>
+                  </div>
+                </form>
+              )}
+            </div>
           )}
         </div>
       </section>

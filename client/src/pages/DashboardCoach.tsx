@@ -710,8 +710,11 @@ export default function DashboardCoach() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center" style={{ backgroundColor: "#FAF9F7" }}>
-        <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#FF6B5C" }} />
+      <div style={{ display: "flex", minHeight: "calc(100vh - 4rem)", background: "#F0EDE6", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <div className="h-16 w-16 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: "#C49A3C", borderTopColor: "transparent" }}></div>
+          <p style={{ color: "#8C8880", fontFamily: "'DM Sans', sans-serif" }}>Loading your dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -725,7 +728,7 @@ export default function DashboardCoach() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ backgroundColor: "#FAF9F7" }}>
+    <div className="flex flex-col min-h-screen" style={{ background: "#F0EDE6", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <DashboardMobileNav
         tabs={coachNavTabs}
         activeTab={activeTab}
@@ -736,89 +739,82 @@ export default function DashboardCoach() {
         onLogout={handleLogout}
       />
       <div className="flex flex-1">
-      <aside className="w-64 hidden md:flex flex-col" style={{ backgroundColor: "#FFFFFF", borderRight: "1px solid #E8E8E8" }}>
-        <div className="p-6 flex flex-col h-full">
-          <div className="flex items-center gap-3 mb-6">
-            <Avatar className="h-10 w-10" style={{ backgroundColor: profile?.is_disabled ? undefined : "#FF6B5C", borderColor: "#E8E8E8", borderWidth: "1px" }}>
-              <AvatarFallback className={`text-white ${profile?.is_disabled ? "bg-red-500" : ""}`} style={!profile?.is_disabled ? { backgroundColor: "#FF6B5C" } : undefined}>
-                {profile?.full_name ? getInitials(profile.full_name) : "CO"}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="font-bold text-sm" style={{ color: "#0D566C" }}>{profile?.full_name || "Coach"}</div>
-              <div className="text-xs" style={{ color: profile?.is_disabled ? "#dc2626" : "#8A8A8A" }}>
-                {profile?.is_disabled ? "Disabled" : sessionRate ? `$${sessionRate}/session` : "Set your rates"}
+      <aside className="hidden md:flex flex-col flex-shrink-0" style={{ width: 220, background: "#1A1814", justifyContent: "space-between" }}>
+        <div>
+          {/* Logo */}
+          <div style={{ padding: "22px 20px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+            <span style={{ fontFamily: "Georgia, serif", fontSize: 15, fontWeight: 600, color: "#FAF8F3", letterSpacing: "-0.01em" }}>
+              Touch<span style={{ color: "#C49A3C" }}>Connect</span>Pro
+            </span>
+          </div>
+          {/* User avatar */}
+          <div style={{ padding: "18px 20px 14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 34, height: 34, borderRadius: "50%", background: profile?.is_disabled ? "#8C8880" : "#C49A3C", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500, color: "#1A1814", flexShrink: 0, overflow: "hidden" }}>
+                {profile?.profile_image ? <img src={profile.profile_image} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (profile?.full_name ? getInitials(profile.full_name) : "CO")}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: "#FAF8F3", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{profile?.full_name || "Coach"}</div>
+                <div style={{ fontSize: 11, color: profile?.is_disabled ? "#C97B5A" : "rgba(250,248,243,0.4)", marginTop: 1 }}>
+                  {profile?.is_disabled ? "Account disabled" : sessionRate ? `$${sessionRate}/session` : "Set your rates"}
+                </div>
               </div>
             </div>
           </div>
-          <nav className="space-y-1 flex-1">
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start font-medium rounded-xl"
-              style={activeTab === "overview" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#4A4A4A" }}
-              onClick={() => setActiveTab("overview")}
-              data-testid="button-overview-tab"
-            >
-              <LayoutDashboard className="mr-2 h-4 w-4" /> Overview
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start font-medium rounded-xl"
-              style={activeTab === "entrepreneurs" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#4A4A4A" }}
-              onClick={() => setActiveTab("entrepreneurs")}
-              data-testid="button-entrepreneurs-tab"
-            >
-              <Users className="mr-2 h-4 w-4" /> Entrepreneurs
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start font-medium rounded-xl relative"
-              style={activeTab === "messages" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#4A4A4A" }}
-              onClick={() => setActiveTab("messages")}
-              data-testid="button-messages-tab"
-            >
-              <MessageSquare className="mr-2 h-4 w-4" /> Messages
-              {unreadMessageCount > 0 && (
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                  {unreadMessageCount}
-                </span>
-              )}
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start font-medium rounded-xl"
-              style={activeTab === "earnings" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#4A4A4A" }}
-              onClick={() => setActiveTab("earnings")}
-              data-testid="button-earnings-tab"
-            >
-              <DollarSign className="mr-2 h-4 w-4" /> Earnings
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start font-medium rounded-xl"
-              style={activeTab === "agreements" ? { backgroundColor: "rgba(255,107,92,0.1)", color: "#FF6B5C" } : { color: "#4A4A4A" }}
-              onClick={() => setActiveTab("agreements")}
-              data-testid="button-agreements-tab"
-            >
-              <ClipboardCheck className="mr-2 h-4 w-4" /> My Agreements
-            </Button>
+          {/* Nav items */}
+          <nav style={{ padding: "4px 0" }}>
+            {([
+              { id: "overview", label: "Overview", icon: <LayoutDashboard size={15} />, testId: "button-overview-tab", badge: null as React.ReactNode },
+              { id: "entrepreneurs", label: "Entrepreneurs", icon: <Users size={15} />, testId: "button-entrepreneurs-tab", badge: null as React.ReactNode },
+              { id: "messages", label: "Messages", icon: <MessageSquare size={15} />, testId: "button-messages-tab", badge: unreadMessageCount > 0 ? unreadMessageCount : null as any },
+              { id: "earnings", label: "Earnings", icon: <DollarSign size={15} />, testId: "button-earnings-tab", badge: null as React.ReactNode },
+              { id: "agreements", label: "My Agreements", icon: <ClipboardCheck size={15} />, testId: "button-agreements-tab", badge: null as React.ReactNode },
+            ] as { id: string; label: string; icon: React.ReactNode; testId: string; badge: React.ReactNode }[]).map((item) => {
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id as any)}
+                  data-testid={item.testId}
+                  style={{
+                    width: "100%", display: "flex", alignItems: "center", gap: 10,
+                    padding: "10px 20px", fontSize: 13, fontWeight: 400,
+                    color: isActive ? "#FAF8F3" : "rgba(250,248,243,0.45)",
+                    background: "none", border: "none",
+                    borderLeft: isActive ? "2px solid #C49A3C" : "2px solid transparent",
+                    cursor: "pointer", textAlign: "left" as const,
+                    transition: "color 0.15s", position: "relative" as const, fontFamily: "inherit",
+                  }}
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = "rgba(250,248,243,0.85)"; }}
+                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = "rgba(250,248,243,0.45)"; }}
+                >
+                  <span style={{ opacity: isActive ? 1 : 0.7, display: "flex", alignItems: "center" }}>{item.icon}</span>
+                  <span style={{ flex: 1 }}>{item.label}</span>
+                  {item.badge != null && (
+                    <span style={{ background: "rgba(196,154,60,0.2)", color: "#C49A3C", fontSize: 10, fontWeight: 600, borderRadius: 100, padding: "1px 7px", minWidth: 18, textAlign: "center" }}>{item.badge}</span>
+                  )}
+                </button>
+              );
+            })}
           </nav>
-          <div className="pt-6" style={{ borderTop: "1px solid #E8E8E8" }}>
-            <Button 
-              variant="ghost"
-              className="w-full justify-start font-medium hover:text-red-600 hover:bg-red-50 rounded-xl"
-              style={{ color: "#4A4A4A" }}
-              onClick={handleLogout}
-              data-testid="button-logout"
-            >
-              <LogOut className="mr-2 h-4 w-4" /> Logout
-            </Button>
-          </div>
+        </div>
+        {/* Sign out */}
+        <div style={{ padding: "14px 12px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <button
+            onClick={handleLogout}
+            data-testid="button-logout"
+            style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 8px", fontSize: 13, color: "rgba(250,248,243,0.35)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", transition: "color 0.15s" }}
+            onMouseEnter={e => { e.currentTarget.style.color = "rgba(250,248,243,0.8)"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "rgba(250,248,243,0.35)"; }}
+          >
+            <LogOut size={15} />
+            <span>Sign out</span>
+          </button>
         </div>
       </aside>
 
-      <main className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-6xl mx-auto">
+      <main className="flex-1 overflow-y-auto" style={{ background: "#F0EDE6", padding: 36 }}>
+        <div style={{ maxWidth: 960, margin: "0 auto" }}>
           {/* Overview Tab */}
           {activeTab === "overview" && (
             <>
@@ -898,7 +894,7 @@ export default function DashboardCoach() {
                                 }
                               }}
                               className="rounded-xl"
-                              style={{ backgroundColor: "#0D566C", color: "#FFFFFF", border: "none" }}
+                              style={{ backgroundColor: "#1D6A5A", color: "#FFFFFF", border: "none" }}
                               data-testid="button-stripe-dashboard"
                             >
                               <ExternalLink className="mr-2 h-4 w-4" />
@@ -923,7 +919,7 @@ export default function DashboardCoach() {
                                 }
                               }}
                               className="rounded-xl"
-                              style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
+                              style={{ borderColor: "#E8E8E8", color: "#4A4740" }}
                               data-testid="button-reset-stripe"
                             >
                               <RefreshCw className="mr-2 h-4 w-4" />
@@ -942,7 +938,7 @@ export default function DashboardCoach() {
                               <select
                                 value={stripeCountry}
                                 onChange={(e) => setStripeCountry(e.target.value)}
-                                className="w-full max-w-xs p-2 border border-amber-300 rounded-lg bg-white text-[#0D566C] text-sm focus:outline-none focus:ring-2 focus:ring-[#0D566C]/30"
+                                className="w-full max-w-xs p-2 border border-amber-300 rounded-lg bg-white text-[#1A1814] text-sm focus:outline-none focus:ring-2 focus:ring-[#1D6A5A]/30"
                                 data-testid="select-stripe-country"
                               >
                                 <option value="US">United States</option>
@@ -968,7 +964,7 @@ export default function DashboardCoach() {
                             onClick={handleStripeOnboarding}
                             disabled={loadingStripe}
                             className="rounded-full"
-                            style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                            style={{ backgroundColor: "#1D6A5A", color: "#FFFFFF", border: "none" }}
                             data-testid="button-stripe-onboarding"
                           >
                             {loadingStripe ? (
@@ -988,10 +984,10 @@ export default function DashboardCoach() {
 
             <header className="mb-8 flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-display font-bold" style={{ color: "#0D566C" }}>
+              <h1 style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontWeight: 600, fontSize: 28, color: "#C49A3C", margin: 0 }}>
                 Welcome, {profile?.full_name?.split(" ")[0] || "Coach"}!
               </h1>
-              <p className="mt-2" style={{ color: "#8A8A8A" }}>
+              <p className="mt-2" style={{ color: "#8C8880", fontFamily: "'DM Sans', sans-serif", fontSize: 14 }}>
                 {profile?.is_disabled 
                   ? "Your profile is currently in view-only mode."
                   : isEditingProfile 
@@ -1006,7 +1002,7 @@ export default function DashboardCoach() {
                     <Button 
                       variant="outline"
                       className="rounded-xl"
-                      style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
+                      style={{ borderColor: "#E8E8E8", color: "#4A4740" }}
                       onClick={cancelEditMode}
                       disabled={saving}
                       data-testid="button-cancel-edit"
@@ -1017,7 +1013,7 @@ export default function DashboardCoach() {
                       onClick={handleSaveAndExitEdit} 
                       disabled={saving}
                       className="rounded-full"
-                      style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                      style={{ backgroundColor: "#1D6A5A", color: "#FFFFFF", border: "none" }}
                       data-testid="button-save-profile"
                     >
                       {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
@@ -1029,7 +1025,7 @@ export default function DashboardCoach() {
                     <Button 
                       variant="outline"
                       className="rounded-xl"
-                      style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
+                      style={{ borderColor: "#E8E8E8", color: "#4A4740" }}
                       onClick={() => {
                         const url = `${window.location.origin}/coach/${profile?.id}`;
                         navigator.clipboard.writeText(url);
@@ -1044,7 +1040,7 @@ export default function DashboardCoach() {
                     <Button 
                       onClick={enterEditMode}
                       className="rounded-full"
-                      style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                      style={{ backgroundColor: "#1D6A5A", color: "#FFFFFF", border: "none" }}
                       data-testid="button-edit-profile"
                     >
                       <Edit className="mr-2 h-4 w-4" />
@@ -1059,22 +1055,22 @@ export default function DashboardCoach() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
-                  <Star className="h-5 w-5" style={{ color: "#FF6B5C" }} />
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#1A1814" }}>
+                  <Star className="h-5 w-5" style={{ color: "#1D6A5A" }} />
                   Your Expertise
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm" style={{ color: "#8A8A8A" }}>What do you specialize in?</p>
+                <p className="text-sm" style={{ color: "#8C8880" }}>What do you specialize in?</p>
                 {expertise.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     {expertise.map(item => (
-                      <Badge key={item} variant="secondary" className="flex items-center gap-2 pr-1" style={{ backgroundColor: "rgba(13,86,108,0.1)", color: "#0D566C", borderColor: "rgba(13,86,108,0.3)" }}>
+                      <Badge key={item} variant="secondary" className="flex items-center gap-2 pr-1" style={{ backgroundColor: "rgba(13,86,108,0.1)", color: "#1A1814", borderColor: "rgba(13,86,108,0.3)" }}>
                         {item}
                         {isEditingProfile && !profile?.is_disabled && (
                           <button
                             onClick={() => removeExpertise(item)}
-                            style={{ color: "#0D566C" }}
+                            style={{ color: "#1A1814" }}
                             data-testid={`button-remove-expertise-${item}`}
                           >
                             <X className="h-3 w-3" />
@@ -1092,84 +1088,84 @@ export default function DashboardCoach() {
                       onChange={(e) => handleExpertiseChange(e.target.selectedOptions)}
                       className="w-full px-3 py-2 rounded-xl focus:ring-2"
                       data-testid="select-coach-expertise"
-                      style={{ minHeight: "120px", backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                      style={{ minHeight: "120px", backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                     >
                       {EXPERTISE_OPTIONS.map(option => (
                         <option key={option} value={option}>{option}</option>
                       ))}
                     </select>
-                    <p className="text-xs" style={{ color: "#8A8A8A" }}>Hold Ctrl/Cmd to select multiple options</p>
+                    <p className="text-xs" style={{ color: "#8C8880" }}>Hold Ctrl/Cmd to select multiple options</p>
                   </>
                 ) : (
-                  expertise.length === 0 && <p className="italic" style={{ color: "#8A8A8A" }}>No expertise selected</p>
+                  expertise.length === 0 && <p className="italic" style={{ color: "#8C8880" }}>No expertise selected</p>
                 )}
               </CardContent>
             </Card>
 
             <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
-                  <DollarSign className="h-5 w-5" style={{ color: "#FF6B5C" }} />
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#1A1814" }}>
+                  <DollarSign className="h-5 w-5" style={{ color: "#1D6A5A" }} />
                   Your Rates for Your Services
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm" style={{ color: "#8A8A8A" }}>You keep 80%, we keep 20%</p>
+                <p className="text-sm" style={{ color: "#8C8880" }}>You keep 80%, we keep 20%</p>
                 {isEditingProfile && !profile?.is_disabled ? (
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>15 Minutes Introductory Call</label>
+                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8C8880" }}>15 Minutes Introductory Call</label>
                       <div className="flex gap-2">
-                        <span className="flex items-center" style={{ color: "#8A8A8A" }}>$</span>
+                        <span className="flex items-center" style={{ color: "#8C8880" }}>$</span>
                         <input 
                           type="number" 
                           value={introCallRate}
                           onChange={(e) => setIntroCallRate(e.target.value)}
                           placeholder="25"
                           className="flex-1 px-3 py-2 rounded-xl h-11"
-                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                           data-testid="input-coach-introcall-rate"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>Per Session</label>
+                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8C8880" }}>Per Session</label>
                       <div className="flex gap-2">
-                        <span className="flex items-center" style={{ color: "#8A8A8A" }}>$</span>
+                        <span className="flex items-center" style={{ color: "#8C8880" }}>$</span>
                         <input 
                           type="number" 
                           value={sessionRate}
                           onChange={(e) => setSessionRate(e.target.value)}
                           placeholder="150"
                           className="flex-1 px-3 py-2 rounded-xl h-11"
-                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                           data-testid="input-coach-session-rate"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>Monthly Coaching Retainer</label>
+                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8C8880" }}>Monthly Coaching Retainer</label>
                       <div className="flex gap-2">
-                        <span className="flex items-center" style={{ color: "#8A8A8A" }}>$</span>
+                        <span className="flex items-center" style={{ color: "#8C8880" }}>$</span>
                         <input 
                           type="number" 
                           value={monthlyRate}
                           onChange={(e) => setMonthlyRate(e.target.value)}
                           placeholder="500"
                           className="flex-1 px-3 py-2 rounded-xl h-11"
-                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                           data-testid="input-coach-monthly-rate"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>Monthly Retainer Description (Optional)</label>
+                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8C8880" }}>Monthly Retainer Description (Optional)</label>
                       <textarea 
                         value={monthlyRetainerDescription}
                         onChange={(e) => setMonthlyRetainerDescription(e.target.value)}
                         placeholder="Describe what's included in your monthly coaching retainer..."
                         className="w-full px-3 py-2 rounded-xl min-h-[60px]"
-                        style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                        style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                         data-testid="input-coach-monthly-description"
                       />
                     </div>
@@ -1177,21 +1173,21 @@ export default function DashboardCoach() {
                 ) : (
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-sm" style={{ color: "#8A8A8A" }}>15 Min Intro Call:</span>
-                      <span className="font-medium" style={{ color: "#4A4A4A" }}>{introCallRate ? `$${introCallRate}` : "Not set"}</span>
+                      <span className="text-sm" style={{ color: "#8C8880" }}>15 Min Intro Call:</span>
+                      <span className="font-medium" style={{ color: "#4A4740" }}>{introCallRate ? `$${introCallRate}` : "Not set"}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm" style={{ color: "#8A8A8A" }}>Per Session:</span>
-                      <span className="font-medium" style={{ color: "#4A4A4A" }}>{sessionRate ? `$${sessionRate}` : "Not set"}</span>
+                      <span className="text-sm" style={{ color: "#8C8880" }}>Per Session:</span>
+                      <span className="font-medium" style={{ color: "#4A4740" }}>{sessionRate ? `$${sessionRate}` : "Not set"}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm" style={{ color: "#8A8A8A" }}>Monthly Retainer:</span>
-                      <span className="font-medium" style={{ color: "#4A4A4A" }}>{monthlyRate ? `$${monthlyRate}` : "Not set"}</span>
+                      <span className="text-sm" style={{ color: "#8C8880" }}>Monthly Retainer:</span>
+                      <span className="font-medium" style={{ color: "#4A4740" }}>{monthlyRate ? `$${monthlyRate}` : "Not set"}</span>
                     </div>
                     {monthlyRetainerDescription && (
                       <div className="pt-2" style={{ borderTop: "1px solid #E8E8E8" }}>
-                        <span className="text-xs block mb-1" style={{ color: "#8A8A8A" }}>What's included:</span>
-                        <p className="text-sm" style={{ color: "#4A4A4A" }}>{monthlyRetainerDescription}</p>
+                        <span className="text-xs block mb-1" style={{ color: "#8C8880" }}>What's included:</span>
+                        <p className="text-sm" style={{ color: "#4A4740" }}>{monthlyRetainerDescription}</p>
                       </div>
                     )}
                   </div>
@@ -1201,13 +1197,13 @@ export default function DashboardCoach() {
 
             <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
-                  <LinkIcon className="h-5 w-5" style={{ color: "#FF6B5C" }} />
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#1A1814" }}>
+                  <LinkIcon className="h-5 w-5" style={{ color: "#1D6A5A" }} />
                   LinkedIn Profile
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm" style={{ color: "#8A8A8A" }}>Your LinkedIn profile URL</p>
+                <p className="text-sm" style={{ color: "#8C8880" }}>Your LinkedIn profile URL</p>
                 {isEditingProfile && !profile?.is_disabled ? (
                   <input
                     type="url"
@@ -1215,14 +1211,14 @@ export default function DashboardCoach() {
                     onChange={(e) => setLinkedin(e.target.value)}
                     placeholder="https://linkedin.com/in/..."
                     className="w-full px-3 py-2 rounded-xl h-11"
-                    style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                    style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                     data-testid="input-linkedin"
                   />
                 ) : (
                   linkedin ? (
-                    <a href={linkedin} target="_blank" rel="noopener noreferrer" className="hover:underline break-all" style={{ color: "#0D566C" }}>{linkedin}</a>
+                    <a href={linkedin} target="_blank" rel="noopener noreferrer" className="hover:underline break-all" style={{ color: "#1A1814" }}>{linkedin}</a>
                   ) : (
-                    <p className="italic" style={{ color: "#8A8A8A" }}>No LinkedIn profile set</p>
+                    <p className="italic" style={{ color: "#8C8880" }}>No LinkedIn profile set</p>
                   )
                 )}
               </CardContent>
@@ -1230,19 +1226,19 @@ export default function DashboardCoach() {
 
             <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
-                  <Target className="h-5 w-5" style={{ color: "#FF6B5C" }} />
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#1A1814" }}>
+                  <Target className="h-5 w-5" style={{ color: "#1D6A5A" }} />
                   Focus Areas
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm" style={{ color: "#8A8A8A" }}>Topics you help entrepreneurs with</p>
+                <p className="text-sm" style={{ color: "#8C8880" }}>Topics you help entrepreneurs with</p>
                 {isEditingProfile && !profile?.is_disabled ? (
                   <select 
                     value={focusAreas}
                     onChange={(e) => setFocusAreas(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl h-11"
-                    style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                    style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                     data-testid="select-focus-areas"
                   >
                     <option value="">Select a focus area...</option>
@@ -1252,9 +1248,9 @@ export default function DashboardCoach() {
                   </select>
                 ) : (
                   focusAreas ? (
-                    <Badge variant="secondary" style={{ backgroundColor: "rgba(13,86,108,0.1)", color: "#0D566C", borderColor: "rgba(13,86,108,0.3)" }}>{focusAreas}</Badge>
+                    <Badge variant="secondary" style={{ backgroundColor: "rgba(13,86,108,0.1)", color: "#1A1814", borderColor: "rgba(13,86,108,0.3)" }}>{focusAreas}</Badge>
                   ) : (
-                    <p className="italic" style={{ color: "#8A8A8A" }}>No focus area selected</p>
+                    <p className="italic" style={{ color: "#8C8880" }}>No focus area selected</p>
                   )
                 )}
               </CardContent>
@@ -1262,38 +1258,38 @@ export default function DashboardCoach() {
 
             <Card className="rounded-2xl md:col-span-2" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#1A1814" }}>
                   <Star className="h-5 w-5" style={{ color: "#F5C542" }} />
                   External Reputation
                   {externalVerified && (
                     <Badge className="ml-2" style={{ backgroundColor: "#16a34a", color: "#FFFFFF" }}>Verified</Badge>
                   )}
                   {!externalVerified && externalPlatform && (
-                    <Badge className="ml-2" style={{ backgroundColor: "#8A8A8A", color: "#FFFFFF" }}>Pending Verification</Badge>
+                    <Badge className="ml-2" style={{ backgroundColor: "#8C8880", color: "#FFFFFF" }}>Pending Verification</Badge>
                   )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm" style={{ color: "#8A8A8A" }}>
+                <p className="text-sm" style={{ color: "#8C8880" }}>
                   Display your ratings from other coaching platforms. Updates reset verification status.
                 </p>
                 {isEditingReputation ? (
                   <div className="space-y-4">
                     <div>
-                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>Platform Name *</label>
+                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8C8880" }}>Platform Name *</label>
                       <input
                         type="text"
                         value={externalPlatform}
                         onChange={(e) => setExternalPlatform(e.target.value)}
                         placeholder="e.g., MentorCruise, Clarity.fm"
                         className="w-full px-3 py-2 rounded-xl h-11"
-                        style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                        style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                         data-testid="input-external-platform"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>Average Rating *</label>
+                        <label className="text-xs font-medium mb-1 block" style={{ color: "#8C8880" }}>Average Rating *</label>
                         <input
                           type="number"
                           step="0.1"
@@ -1303,12 +1299,12 @@ export default function DashboardCoach() {
                           onChange={(e) => setExternalRating(e.target.value)}
                           placeholder="e.g., 4.9"
                           className="w-full px-3 py-2 rounded-xl h-11"
-                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                           data-testid="input-external-rating"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>Number of Reviews *</label>
+                        <label className="text-xs font-medium mb-1 block" style={{ color: "#8C8880" }}>Number of Reviews *</label>
                         <input
                           type="number"
                           min="1"
@@ -1316,20 +1312,20 @@ export default function DashboardCoach() {
                           onChange={(e) => setExternalReviewCount(e.target.value)}
                           placeholder="e.g., 37"
                           className="w-full px-3 py-2 rounded-xl h-11"
-                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                           data-testid="input-external-review-count"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8A8A8A" }}>External Profile URL * (for verification only)</label>
+                      <label className="text-xs font-medium mb-1 block" style={{ color: "#8C8880" }}>External Profile URL * (for verification only)</label>
                       <input
                         type="url"
                         value={externalProfileUrl}
                         onChange={(e) => setExternalProfileUrl(e.target.value)}
                         placeholder="https://mentorcruise.com/mentor/yourname"
                         className="w-full px-3 py-2 rounded-xl h-11"
-                        style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                        style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                         data-testid="input-external-url"
                       />
                       <p className="text-xs mt-1" style={{ color: "#F5C542" }}>This link is only used for verification and will never be shown publicly.</p>
@@ -1338,7 +1334,7 @@ export default function DashboardCoach() {
                       <Button
                         variant="outline"
                         className="rounded-xl"
-                        style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
+                        style={{ borderColor: "#E8E8E8", color: "#4A4740" }}
                         onClick={() => setIsEditingReputation(false)}
                         disabled={savingReputation}
                         data-testid="button-cancel-reputation"
@@ -1349,7 +1345,7 @@ export default function DashboardCoach() {
                         onClick={handleSaveReputation}
                         disabled={savingReputation}
                         className="rounded-full"
-                        style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                        style={{ backgroundColor: "#1D6A5A", color: "#FFFFFF", border: "none" }}
                         data-testid="button-save-reputation"
                       >
                         {savingReputation ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
@@ -1375,10 +1371,10 @@ export default function DashboardCoach() {
                                 />
                               ))}
                             </div>
-                            <span className="font-bold text-lg" style={{ color: "#4A4A4A" }}>{externalRating}</span>
-                            <span style={{ color: "#8A8A8A" }}>({externalReviewCount} reviews)</span>
+                            <span className="font-bold text-lg" style={{ color: "#4A4740" }}>{externalRating}</span>
+                            <span style={{ color: "#8C8880" }}>({externalReviewCount} reviews)</span>
                           </div>
-                          <p className="text-sm" style={{ color: "#8A8A8A" }}>
+                          <p className="text-sm" style={{ color: "#8C8880" }}>
                             Based on ratings from {externalPlatform}
                           </p>
                           {externalVerified && externalVerifiedAt && (
@@ -1397,7 +1393,7 @@ export default function DashboardCoach() {
                           <Button
                             variant="outline"
                             className="rounded-xl"
-                            style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
+                            style={{ borderColor: "#E8E8E8", color: "#4A4740" }}
                             onClick={() => setIsEditingReputation(true)}
                             data-testid="button-edit-reputation"
                           >
@@ -1408,12 +1404,12 @@ export default function DashboardCoach() {
                       </>
                     ) : (
                       <div className="text-center py-4">
-                        <p className="italic mb-4" style={{ color: "#8A8A8A" }}>No external reputation added yet</p>
+                        <p className="italic mb-4" style={{ color: "#8C8880" }}>No external reputation added yet</p>
                         {!profile?.is_disabled && (
                           <Button
                             onClick={() => setIsEditingReputation(true)}
                             className="rounded-full"
-                            style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                            style={{ backgroundColor: "#1D6A5A", color: "#FFFFFF", border: "none" }}
                             data-testid="button-add-reputation"
                           >
                             <Star className="mr-2 h-4 w-4" />
@@ -1429,13 +1425,13 @@ export default function DashboardCoach() {
 
             <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
-                  <FileText className="h-5 w-5" style={{ color: "#FF6B5C" }} />
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#1A1814" }}>
+                  <FileText className="h-5 w-5" style={{ color: "#1D6A5A" }} />
                   Your Bio
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm" style={{ color: "#8A8A8A" }}>Tell entrepreneurs about yourself</p>
+                <p className="text-sm" style={{ color: "#8C8880" }}>Tell entrepreneurs about yourself</p>
                 {isEditingProfile && !profile?.is_disabled ? (
                   <textarea 
                     value={bio}
@@ -1443,14 +1439,14 @@ export default function DashboardCoach() {
                     placeholder="Share your background, experience, and what makes you a great coach..."
                     rows={4}
                     className="w-full px-3 py-2 rounded-xl"
-                    style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                    style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                     data-testid="textarea-bio"
                   />
                 ) : (
                   bio ? (
-                    <p className="whitespace-pre-wrap" style={{ color: "#4A4A4A" }}>{bio}</p>
+                    <p className="whitespace-pre-wrap" style={{ color: "#4A4740" }}>{bio}</p>
                   ) : (
-                    <p className="italic" style={{ color: "#8A8A8A" }}>No bio added yet</p>
+                    <p className="italic" style={{ color: "#8C8880" }}>No bio added yet</p>
                   )
                 )}
               </CardContent>
@@ -1458,19 +1454,19 @@ export default function DashboardCoach() {
 
             <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
-                  <User className="h-5 w-5" style={{ color: "#FF6B5C" }} />
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#1A1814" }}>
+                  <User className="h-5 w-5" style={{ color: "#1D6A5A" }} />
                   Profile Picture
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm" style={{ color: "#8A8A8A" }}>{isEditingProfile ? "Upload a professional photo" : "Your profile photo"}</p>
+                <p className="text-sm" style={{ color: "#8C8880" }}>{isEditingProfile ? "Upload a professional photo" : "Your profile photo"}</p>
                 <div className="flex items-center gap-4">
                   <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl overflow-hidden" style={{ backgroundColor: "#F3F3F3", border: "2px solid #E8E8E8" }}>
                     {profileImage ? (
                       <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
-                      <User className="h-10 w-10" style={{ color: "#0D566C" }} />
+                      <User className="h-10 w-10" style={{ color: "#1A1814" }} />
                     )}
                   </div>
                   {isEditingProfile && !profile?.is_disabled && (
@@ -1486,7 +1482,7 @@ export default function DashboardCoach() {
                       <Button
                         variant="outline"
                         className="text-sm rounded-xl"
-                        style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
+                        style={{ borderColor: "#E8E8E8", color: "#4A4740" }}
                         onClick={() => document.getElementById("coach-profile-upload")?.click()}
                         disabled={uploadingImage}
                         data-testid="button-upload-photo"
@@ -1498,7 +1494,7 @@ export default function DashboardCoach() {
                         )}
                         {uploadingImage ? "Uploading..." : "Upload Photo"}
                       </Button>
-                      <p className="text-xs" style={{ color: "#8A8A8A" }}>Max 5MB. JPG, PNG, GIF, WebP</p>
+                      <p className="text-xs" style={{ color: "#8C8880" }}>Max 5MB. JPG, PNG, GIF, WebP</p>
                     </div>
                   )}
                 </div>
@@ -1507,8 +1503,8 @@ export default function DashboardCoach() {
           </div>
 
           <div className="mt-8 p-6 rounded-2xl" style={{ backgroundColor: "rgba(13,86,108,0.05)", border: "1px solid rgba(13,86,108,0.15)" }}>
-            <h3 className="font-semibold mb-2" style={{ color: "#0D566C" }}>Revenue Share Model</h3>
-            <p className="text-sm" style={{ color: "#4A4A4A" }}>You set your hourly rate. We handle payments and take 20%. You keep 80% of every session.</p>
+            <h3 className="font-semibold mb-2" style={{ color: "#1A1814" }}>Revenue Share Model</h3>
+            <p className="text-sm" style={{ color: "#4A4740" }}>You set your hourly rate. We handle payments and take 20%. You keep 80% of every session.</p>
           </div>
           </>
           )}
@@ -1516,13 +1512,13 @@ export default function DashboardCoach() {
           {/* Messages Tab */}
           {activeTab === "messages" && (
             <div>
-              <h1 className="text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Messages</h1>
-              <p className="mb-8" style={{ color: "#8A8A8A" }}>Communicate with the TouchConnectPro admin team.</p>
+              <h1 style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontWeight: 600, fontSize: 26, color: "#1A1814", marginBottom: 6 }}>Messages</h1>
+              <p className="mb-8" style={{ color: "#8C8880" }}>Communicate with the TouchConnectPro admin team.</p>
 
               <Card className="mb-6 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
-                    <MessageSquare className="h-5 w-5" style={{ color: "#FF6B5C" }} />
+                  <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#1A1814" }}>
+                    <MessageSquare className="h-5 w-5" style={{ color: "#1D6A5A" }} />
                     Send a Message to Admin
                   </CardTitle>
                 </CardHeader>
@@ -1532,7 +1528,7 @@ export default function DashboardCoach() {
                     onChange={(e) => setAdminMessage(e.target.value)}
                     placeholder="Type your message to the admin team..."
                     className="w-full min-h-24 p-4 rounded-xl focus:outline-none focus:ring-2"
-                    style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                    style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                     data-testid="textarea-admin-message"
                   />
                   <Button 
@@ -1568,7 +1564,7 @@ export default function DashboardCoach() {
                     }}
                     disabled={!adminMessage.trim()}
                     className="rounded-full"
-                    style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                    style={{ backgroundColor: "#1D6A5A", color: "#FFFFFF", border: "none" }}
                     data-testid="button-send-admin-message"
                   >
                     <MessageSquare className="mr-2 h-4 w-4" /> Send Message
@@ -1578,8 +1574,8 @@ export default function DashboardCoach() {
 
               <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
-                    <MessageSquare className="h-5 w-5" style={{ color: "#FF6B5C" }} />
+                  <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#1A1814" }}>
+                    <MessageSquare className="h-5 w-5" style={{ color: "#1D6A5A" }} />
                     Message History
                   </CardTitle>
                 </CardHeader>
@@ -1591,23 +1587,23 @@ export default function DashboardCoach() {
                             key={msg.id} 
                             className="p-4 rounded-lg border-l-4"
                             style={isAdminEmail(msg.from_email) 
-                              ? { backgroundColor: "rgba(255,107,92,0.05)", borderLeftColor: "#FF6B5C" } 
-                              : { backgroundColor: "#F3F3F3", borderLeftColor: "#E8E8E8" }}
+                              ? { backgroundColor: "rgba(29,106,90,0.06)", borderLeftColor: "#1D6A5A" } 
+                              : { backgroundColor: "#F5F2EC", borderLeftColor: "#E8E4DC" }}
                           >
                             <div className="flex justify-between items-start mb-2">
-                              <span className="font-semibold" style={{ color: isAdminEmail(msg.from_email) ? "#FF6B5C" : "#4A4A4A" }}>
+                              <span className="font-semibold" style={{ color: isAdminEmail(msg.from_email) ? "#1D6A5A" : "#4A4740" }}>
                                 {isAdminEmail(msg.from_email) ? "From Admin" : "You"}
                               </span>
-                              <span className="text-xs" style={{ color: "#8A8A8A" }}>{formatToPST(msg.created_at)}</span>
+                              <span className="text-xs" style={{ color: "#8C8880" }}>{formatToPST(msg.created_at)}</span>
                             </div>
-                            <p className="whitespace-pre-wrap" style={{ color: "#4A4A4A" }}>{msg.message}</p>
+                            <p className="whitespace-pre-wrap" style={{ color: "#4A4740" }}>{msg.message}</p>
                           </div>
                         ))}
                     </div>
                   ) : (
                     <div className="text-center py-8">
                       <MessageSquare className="h-12 w-12 mx-auto mb-4" style={{ color: "#E8E8E8" }} />
-                      <p style={{ color: "#8A8A8A" }}>No messages yet. Send a message to get started!</p>
+                      <p style={{ color: "#8C8880" }}>No messages yet. Send a message to get started!</p>
                     </div>
                   )}
                 </CardContent>
@@ -1620,35 +1616,35 @@ export default function DashboardCoach() {
             <div className="space-y-8">
               {/* Contact Requests Section */}
               <div>
-                <h1 className="text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Contact Requests</h1>
-                <p className="mb-4" style={{ color: "#8A8A8A" }}>One-time messages from entrepreneurs interested in your coaching.</p>
+                <h1 style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontWeight: 600, fontSize: 26, color: "#1A1814", marginBottom: 6 }}>Contact Requests</h1>
+                <p className="mb-4" style={{ color: "#8C8880" }}>One-time messages from entrepreneurs interested in your coaching.</p>
                 
                 {loadingContactRequests ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#FF6B5C" }} />
+                    <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#1D6A5A" }} />
                   </div>
                 ) : contactRequests.length > 0 ? (
                   <div className="space-y-4">
                     {contactRequests.map((request: any) => (
-                      <Card key={request.id} className={`border-l-4 rounded-2xl ${request.status === 'closed' ? 'border-l-green-500' : ''}`} style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)", ...(request.status !== 'closed' ? { borderLeftColor: "#FF6B5C" } : {}) }} data-testid={`card-contact-request-${request.id}`}>
+                      <Card key={request.id} className={`border-l-4 rounded-2xl ${request.status === 'closed' ? 'border-l-green-500' : ''}`} style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)", ...(request.status !== 'closed' ? { borderLeftColor: "#1D6A5A" } : {}) }} data-testid={`card-contact-request-${request.id}`}>
                         <CardContent className="pt-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10" style={{ backgroundColor: "#FF6B5C" }}>
-                                <AvatarFallback className="text-white" style={{ backgroundColor: "#FF6B5C" }}>
+                              <Avatar className="h-10 w-10" style={{ backgroundColor: "#1D6A5A" }}>
+                                <AvatarFallback className="text-white" style={{ backgroundColor: "#1D6A5A" }}>
                                   {(request.entrepreneur_name || 'E').substring(0, 2).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="font-semibold" style={{ color: "#0D566C" }}>{request.entrepreneur_name}</p>
-                                <p className="text-sm" style={{ color: "#8A8A8A" }}>Entrepreneur</p>
+                                <p className="font-semibold" style={{ color: "#1A1814" }}>{request.entrepreneur_name}</p>
+                                <p className="text-sm" style={{ color: "#8C8880" }}>Entrepreneur</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Badge style={request.status === 'closed' ? { backgroundColor: "#16a34a", color: "#FFFFFF" } : request.status === 'pending' ? { backgroundColor: "#F5C542", color: "#FFFFFF" } : { backgroundColor: "#8A8A8A", color: "#FFFFFF" }}>
+                              <Badge style={request.status === 'closed' ? { backgroundColor: "#16a34a", color: "#FFFFFF" } : request.status === 'pending' ? { backgroundColor: "#F5C542", color: "#FFFFFF" } : { backgroundColor: "#8C8880", color: "#FFFFFF" }}>
                                 {request.status === 'closed' ? 'Replied' : request.status === 'pending' ? 'Awaiting Reply' : request.status}
                               </Badge>
-                              <span className="text-xs" style={{ color: "#8A8A8A" }}>
+                              <span className="text-xs" style={{ color: "#8C8880" }}>
                                 {new Date(request.created_at).toLocaleDateString()}
                               </span>
                             </div>
@@ -1656,8 +1652,8 @@ export default function DashboardCoach() {
                           
                           {/* Original Message */}
                           <div className="p-3 rounded-lg mb-3" style={{ backgroundColor: "#F3F3F3" }}>
-                            <p className="text-xs font-semibold uppercase mb-1" style={{ color: "#8A8A8A" }}>Message</p>
-                            <p className="text-sm whitespace-pre-wrap" style={{ color: "#4A4A4A" }}>{request.message}</p>
+                            <p className="text-xs font-semibold uppercase mb-1" style={{ color: "#8C8880" }}>Message</p>
+                            <p className="text-sm whitespace-pre-wrap" style={{ color: "#4A4740" }}>{request.message}</p>
                           </div>
                           
                           {/* Reply Section */}
@@ -1666,7 +1662,7 @@ export default function DashboardCoach() {
                               <p className="text-xs font-semibold uppercase mb-1 flex items-center gap-1" style={{ color: "#16a34a" }}>
                                 <Check className="h-3 w-3" /> Your Reply
                               </p>
-                              <p className="text-sm whitespace-pre-wrap" style={{ color: "#4A4A4A" }}>{request.reply}</p>
+                              <p className="text-sm whitespace-pre-wrap" style={{ color: "#4A4740" }}>{request.reply}</p>
                             </div>
                           ) : request.status === 'pending' && (
                             replyingToRequest === request.id ? (
@@ -1682,7 +1678,7 @@ export default function DashboardCoach() {
                                   value={replyMessage}
                                   onChange={(e) => setReplyMessage(e.target.value)}
                                   className="w-full px-4 py-2 rounded-xl focus:outline-none focus:ring-2"
-                                  style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                                  style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                                   data-testid={`input-reply-${request.id}`}
                                 />
                                 <div className="flex gap-2">
@@ -1690,7 +1686,7 @@ export default function DashboardCoach() {
                                     variant="outline"
                                     size="sm"
                                     className="rounded-xl"
-                                    style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
+                                    style={{ borderColor: "#E8E8E8", color: "#4A4740" }}
                                     onClick={() => {
                                       setReplyingToRequest(null);
                                       setReplyMessage("");
@@ -1701,7 +1697,7 @@ export default function DashboardCoach() {
                                   <Button
                                     size="sm"
                                     className="rounded-full"
-                                    style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                                    style={{ backgroundColor: "#1D6A5A", color: "#FFFFFF", border: "none" }}
                                     onClick={() => handleReplyToRequest(request.id)}
                                     disabled={sendingReply || !replyMessage.trim()}
                                     data-testid={`button-send-reply-${request.id}`}
@@ -1720,7 +1716,7 @@ export default function DashboardCoach() {
                                 variant="outline"
                                 size="sm"
                                 className="rounded-xl"
-                                style={{ borderColor: "rgba(255,107,92,0.3)", color: "#FF6B5C" }}
+                                style={{ borderColor: "rgba(255,107,92,0.3)", color: "#1D6A5A" }}
                                 onClick={() => setReplyingToRequest(request.id)}
                                 data-testid={`button-reply-${request.id}`}
                               >
@@ -1737,7 +1733,7 @@ export default function DashboardCoach() {
                   <Card className="text-center py-8 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                     <CardContent>
                       <MessageSquare className="h-12 w-12 mx-auto mb-4" style={{ color: "#E8E8E8" }} />
-                      <p style={{ color: "#8A8A8A" }}>No contact requests yet. When entrepreneurs reach out, their messages will appear here.</p>
+                      <p style={{ color: "#8C8880" }}>No contact requests yet. When entrepreneurs reach out, their messages will appear here.</p>
                     </CardContent>
                   </Card>
                 )}
@@ -1745,12 +1741,12 @@ export default function DashboardCoach() {
 
               {/* Clients Section */}
               <div>
-                <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>My Clients</h2>
-                <p className="mb-4" style={{ color: "#8A8A8A" }}>Entrepreneurs who have purchased your coaching services.</p>
+                <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontWeight: 600, fontSize: 22, color: "#1A1814", marginBottom: 6 }}>My Clients</h2>
+                <p className="mb-4" style={{ color: "#8C8880" }}>Entrepreneurs who have purchased your coaching services.</p>
 
                 {loadingClients ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#FF6B5C" }} />
+                  <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#1D6A5A" }} />
                 </div>
               ) : coachClients.length > 0 ? (
                 <div className="space-y-4">
@@ -1765,14 +1761,14 @@ export default function DashboardCoach() {
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-semibold" style={{ color: "#0D566C" }}>{client.name}</p>
-                              <div className="flex items-center gap-2 text-sm" style={{ color: "#8A8A8A" }}>
+                              <p className="font-semibold" style={{ color: "#1A1814" }}>{client.name}</p>
+                              <div className="flex items-center gap-2 text-sm" style={{ color: "#8C8880" }}>
                                 <Mail className="h-4 w-4" />
                                 {client.email}
                               </div>
                             </div>
                           </div>
-                          <Badge style={client.status === "active" ? { backgroundColor: "#16a34a", color: "#FFFFFF" } : { backgroundColor: "#8A8A8A", color: "#FFFFFF" }}>
+                          <Badge style={client.status === "active" ? { backgroundColor: "#16a34a", color: "#FFFFFF" } : { backgroundColor: "#8C8880", color: "#FFFFFF" }}>
                             {client.status}
                           </Badge>
                         </div>
@@ -1784,8 +1780,8 @@ export default function DashboardCoach() {
                 <Card className="text-center py-12 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                   <CardContent>
                     <Users className="h-16 w-16 mx-auto mb-4" style={{ color: "#E8E8E8" }} />
-                    <h3 className="text-lg font-semibold mb-2" style={{ color: "#4A4A4A" }}>No Entrepreneurs Yet</h3>
-                    <p style={{ color: "#8A8A8A" }}>When entrepreneurs purchase your coaching services, they will appear here.</p>
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: "#4A4740" }}>No Entrepreneurs Yet</h3>
+                    <p style={{ color: "#8C8880" }}>When entrepreneurs purchase your coaching services, they will appear here.</p>
                   </CardContent>
                 </Card>
               )}
@@ -1796,55 +1792,55 @@ export default function DashboardCoach() {
           {/* Earnings Tab */}
           {activeTab === "earnings" && (
             <div>
-              <h1 className="text-3xl font-display font-bold mb-2" style={{ color: "#0D566C" }}>Earnings</h1>
-              <p className="mb-8" style={{ color: "#8A8A8A" }}>Track your earnings and commission history.</p>
+              <h1 style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontWeight: 600, fontSize: 26, color: "#1A1814", marginBottom: 6 }}>Earnings</h1>
+              <p className="mb-8" style={{ color: "#8C8880" }}>Track your earnings and commission history.</p>
 
               {loadingTransactions ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#FF6B5C" }} />
+                  <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#1D6A5A" }} />
                 </div>
               ) : (
               <>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <Card className="border-l-4 border-l-green-500 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium" style={{ color: "#8A8A8A" }}>Total Earnings</CardTitle>
+                    <CardTitle className="text-sm font-medium" style={{ color: "#8C8880" }}>Total Earnings</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold" style={{ color: "#16a34a" }}>
                       ${transactions.reduce((sum, t) => sum + t.netEarnings, 0).toFixed(2)}
                     </div>
-                    <p className="text-xs mt-1" style={{ color: "#8A8A8A" }}>After 20% commission</p>
+                    <p className="text-xs mt-1" style={{ color: "#8C8880" }}>After 20% commission</p>
                   </CardContent>
                 </Card>
 
                 <Card className="border-l-4 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)", borderLeftColor: "#F5C542" }}>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium" style={{ color: "#8A8A8A" }}>Total Revenue</CardTitle>
+                    <CardTitle className="text-sm font-medium" style={{ color: "#8C8880" }}>Total Revenue</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold" style={{ color: "#F5C542" }}>
                       ${transactions.reduce((sum, t) => sum + t.amount, 0).toFixed(2)}
                     </div>
-                    <p className="text-xs mt-1" style={{ color: "#8A8A8A" }}>Before commission</p>
+                    <p className="text-xs mt-1" style={{ color: "#8C8880" }}>Before commission</p>
                   </CardContent>
                 </Card>
 
-                <Card className="border-l-4 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)", borderLeftColor: "#0D566C" }}>
+                <Card className="border-l-4 rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)", borderLeftColor: "#1D6A5A" }}>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium" style={{ color: "#8A8A8A" }}>Total Sessions</CardTitle>
+                    <CardTitle className="text-sm font-medium" style={{ color: "#8C8880" }}>Total Sessions</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold" style={{ color: "#0D566C" }}>{transactions.length}</div>
-                    <p className="text-xs mt-1" style={{ color: "#8A8A8A" }}>Completed transactions</p>
+                    <div className="text-2xl font-bold" style={{ color: "#1A1814" }}>{transactions.length}</div>
+                    <p className="text-xs mt-1" style={{ color: "#8C8880" }}>Completed transactions</p>
                   </CardContent>
                 </Card>
               </div>
 
               <Card className="rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#0D566C" }}>
-                    <DollarSign className="h-5 w-5" style={{ color: "#FF6B5C" }} />
+                  <CardTitle className="text-lg flex items-center gap-2" style={{ color: "#1A1814" }}>
+                    <DollarSign className="h-5 w-5" style={{ color: "#1D6A5A" }} />
                     Transaction History
                   </CardTitle>
                 </CardHeader>
@@ -1854,28 +1850,28 @@ export default function DashboardCoach() {
                       <table className="w-full">
                         <thead>
                           <tr style={{ borderBottom: "1px solid #E8E8E8" }}>
-                            <th className="text-left py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Date</th>
-                            <th className="text-left py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Client</th>
-                            <th className="text-left py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Type</th>
-                            <th className="text-right py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Amount</th>
-                            <th className="text-right py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Commission (20%)</th>
-                            <th className="text-right py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Your Earnings</th>
-                            <th className="text-center py-3 px-4 text-sm font-semibold" style={{ color: "#8A8A8A" }}>Status</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold" style={{ color: "#8C8880" }}>Date</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold" style={{ color: "#8C8880" }}>Client</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold" style={{ color: "#8C8880" }}>Type</th>
+                            <th className="text-right py-3 px-4 text-sm font-semibold" style={{ color: "#8C8880" }}>Amount</th>
+                            <th className="text-right py-3 px-4 text-sm font-semibold" style={{ color: "#8C8880" }}>Commission (20%)</th>
+                            <th className="text-right py-3 px-4 text-sm font-semibold" style={{ color: "#8C8880" }}>Your Earnings</th>
+                            <th className="text-center py-3 px-4 text-sm font-semibold" style={{ color: "#8C8880" }}>Status</th>
                           </tr>
                         </thead>
                         <tbody>
                           {transactions.map((tx) => (
                             <tr key={tx.id} style={{ borderBottom: "1px solid #F3F3F3" }}>
-                              <td className="py-3 px-4 text-sm" style={{ color: "#4A4A4A" }}>
+                              <td className="py-3 px-4 text-sm" style={{ color: "#4A4740" }}>
                                 {new Date(tx.date).toLocaleDateString()}
                               </td>
-                              <td className="py-3 px-4 text-sm" style={{ color: "#4A4A4A" }}>{tx.clientName}</td>
-                              <td className="py-3 px-4 text-sm" style={{ color: "#4A4A4A" }}>{tx.type}</td>
-                              <td className="py-3 px-4 text-sm text-right" style={{ color: "#4A4A4A" }}>${tx.amount.toFixed(2)}</td>
+                              <td className="py-3 px-4 text-sm" style={{ color: "#4A4740" }}>{tx.clientName}</td>
+                              <td className="py-3 px-4 text-sm" style={{ color: "#4A4740" }}>{tx.type}</td>
+                              <td className="py-3 px-4 text-sm text-right" style={{ color: "#4A4740" }}>${tx.amount.toFixed(2)}</td>
                               <td className="py-3 px-4 text-sm text-right text-red-600">-${tx.commission.toFixed(2)}</td>
                               <td className="py-3 px-4 text-sm text-right font-semibold" style={{ color: "#16a34a" }}>${tx.netEarnings.toFixed(2)}</td>
                               <td className="py-3 px-4 text-center">
-                                <Badge style={tx.status === "completed" ? { backgroundColor: "#16a34a", color: "#FFFFFF" } : tx.status === "pending" ? { backgroundColor: "#F5C542", color: "#FFFFFF" } : { backgroundColor: "#8A8A8A", color: "#FFFFFF" }}>
+                                <Badge style={tx.status === "completed" ? { backgroundColor: "#16a34a", color: "#FFFFFF" } : tx.status === "pending" ? { backgroundColor: "#F5C542", color: "#FFFFFF" } : { backgroundColor: "#8C8880", color: "#FFFFFF" }}>
                                   {tx.status}
                                 </Badge>
                               </td>
@@ -1887,16 +1883,16 @@ export default function DashboardCoach() {
                   ) : (
                     <div className="text-center py-12">
                       <DollarSign className="h-16 w-16 mx-auto mb-4" style={{ color: "#E8E8E8" }} />
-                      <h3 className="text-lg font-semibold mb-2" style={{ color: "#4A4A4A" }}>No Transactions Yet</h3>
-                      <p style={{ color: "#8A8A8A" }}>When you start earning from coaching sessions, your transaction history will appear here.</p>
+                      <h3 className="text-lg font-semibold mb-2" style={{ color: "#4A4740" }}>No Transactions Yet</h3>
+                      <p style={{ color: "#8C8880" }}>When you start earning from coaching sessions, your transaction history will appear here.</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
               <div className="mt-8 p-6 rounded-2xl" style={{ backgroundColor: "rgba(13,86,108,0.05)", border: "1px solid rgba(13,86,108,0.15)" }}>
-                <h3 className="font-semibold mb-2" style={{ color: "#0D566C" }}>Revenue Share Model</h3>
-                <p className="text-sm" style={{ color: "#4A4A4A" }}>You keep 80% of every transaction. TouchConnectPro handles payments and takes a 20% commission for platform services.</p>
+                <h3 className="font-semibold mb-2" style={{ color: "#1A1814" }}>Revenue Share Model</h3>
+                <p className="text-sm" style={{ color: "#4A4740" }}>You keep 80% of every transaction. TouchConnectPro handles payments and takes a 20% commission for platform services.</p>
               </div>
               </>
               )}
@@ -1906,13 +1902,13 @@ export default function DashboardCoach() {
           {/* Agreements Tab */}
           {activeTab === "agreements" && (
             <div>
-              <h2 className="text-2xl font-bold mb-6" style={{ color: "#0D566C" }}>My Agreements</h2>
+              <h2 className="text-2xl font-bold mb-6" style={{ color: "#1A1814" }}>My Agreements</h2>
               {profile?.email && <MyAgreements userEmail={profile.email} />}
               
               {/* Cancellation Section */}
               <div className="mt-12 pt-6" style={{ borderTop: "1px solid #E8E8E8" }}>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: "#4A4A4A" }}>Cancel Coach Partnership</h3>
-                <p className="text-sm mb-4" style={{ color: "#8A8A8A" }}>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: "#4A4740" }}>Cancel Coach Partnership</h3>
+                <p className="text-sm mb-4" style={{ color: "#8C8880" }}>
                   If you wish to end your partnership with TouchConnectPro, please submit a cancellation request.
                 </p>
                 <Button 
@@ -1937,17 +1933,17 @@ export default function DashboardCoach() {
               <CardTitle className="text-red-600">Cancel Coach Partnership</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm" style={{ color: "#8A8A8A" }}>
+              <p className="text-sm" style={{ color: "#8C8880" }}>
                 We're sorry to see you go. Please let us know why you'd like to end your partnership.
               </p>
               <div>
-                <label className="text-sm font-medium mb-2 block" style={{ color: "#4A4A4A" }}>Reason for cancellation</label>
+                <label className="text-sm font-medium mb-2 block" style={{ color: "#4A4740" }}>Reason for cancellation</label>
                 <textarea
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
                   placeholder="Please share your reason..."
                   className="w-full min-h-[100px] p-3 rounded-xl resize-y"
-                  style={{ backgroundColor: "#F3F3F3", borderColor: "#E8E8E8", color: "#4A4A4A", border: "1px solid #E8E8E8" }}
+                  style={{ backgroundColor: "#F3F3F3", borderColor: "#E8E8E8", color: "#4A4740", border: "1px solid #E8E8E8" }}
                   data-testid="input-cancel-reason"
                 />
               </div>
@@ -1955,7 +1951,7 @@ export default function DashboardCoach() {
                 <Button 
                   variant="outline" 
                   className="rounded-xl"
-                  style={{ borderColor: "#E8E8E8", color: "#4A4A4A" }}
+                  style={{ borderColor: "#E8E8E8", color: "#4A4740" }}
                   onClick={() => {
                     setShowCancelModal(false);
                     setCancelReason("");
@@ -2021,7 +2017,7 @@ export default function DashboardCoach() {
       {needsAgreement && !checkingAgreement && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col rounded-2xl" style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", boxShadow: "0 2px 12px rgba(224,224,224,0.6)" }}>
-            <CardHeader style={{ background: "linear-gradient(to right, #0D566C, #FF6B5C)", color: "#FFFFFF" }}>
+            <CardHeader style={{ background: "#1A1814", color: "#FAF8F3" }}>
               <CardTitle className="flex items-center gap-2">
                 <ClipboardCheck className="h-5 w-5" />
                 Coach Agreement Required
@@ -2037,7 +2033,7 @@ export default function DashboardCoach() {
                 
                 <div className="rounded-lg max-h-[40vh] overflow-y-auto" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E8E8E8" }}>
                   <div className="p-4">
-                    <pre className="whitespace-pre-wrap text-sm font-sans leading-relaxed" style={{ color: "#4A4A4A" }}>
+                    <pre className="whitespace-pre-wrap text-sm font-sans leading-relaxed" style={{ color: "#4A4740" }}>
                       {COACH_CONTRACT}
                     </pre>
                   </div>
@@ -2052,7 +2048,7 @@ export default function DashboardCoach() {
                     className="mt-1"
                     data-testid="checkbox-agree"
                   />
-                  <label htmlFor="agree-checkbox" className="text-sm" style={{ color: "#4A4A4A" }}>
+                  <label htmlFor="agree-checkbox" className="text-sm" style={{ color: "#4A4740" }}>
                     I have read and agree to the TouchConnectPro Coach Agreement. I understand and accept all terms and conditions.
                   </label>
                 </div>
@@ -2062,7 +2058,7 @@ export default function DashboardCoach() {
               <Button
                 disabled={!agreementCheckboxChecked || acceptingAgreement}
                 className="rounded-full"
-                style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                style={{ backgroundColor: "#1D6A5A", color: "#FFFFFF", border: "none" }}
                 onClick={async () => {
                   setAcceptingAgreement(true);
                   try {
