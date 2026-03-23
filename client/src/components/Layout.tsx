@@ -19,6 +19,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { href: "/insights", label: "Startup Radar", testId: "nav-insights" },
     { href: "/founder-focus", label: "Focus Score", testId: "nav-founder-focus" },
     { href: "/qa", label: "Q&A", testId: "nav-qa" },
+    { href: "/become-coach", label: "Become a Specialist", testId: "nav-become-specialist" },
   ];
 
   return (

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specialist Platform Agreement - TouchConnectPro</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #FAF8F3;
+    --ink: #1A1814;
+    --ink-soft: #4A4740;
+    --ink-muted: #8C8880;
+    --gold: #C49A3C;
+    --gold-pale: #FAF3E0;
+    --teal: #1D6A5A;
+    --teal-light: #E4F0ED;
+    --border: rgba(26,24,20,0.12);
+    --border-soft: rgba(26,24,20,0.07);
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --radius: 4px;
+    --radius-lg: 10px;
+  }
+  body {
+    font-family: var(--sans);
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-back {
+    font-size: 13px;
+    color: var(--ink-muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s;
+  }
+  .nav-back:hover { color: var(--ink); }
+
+  .page-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 72px 2rem 100px;
+  }
+
+  .doc-header {
+    margin-bottom: 56px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .doc-eyebrow {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: var(--teal-light);
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+  .doc-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(30px, 4vw, 44px);
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  .doc-header h1 em { font-style: italic; color: var(--gold); }
+  .doc-meta { font-size: 13px; color: var(--ink-muted); margin-bottom: 20px; }
+  .doc-summary {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.75;
+    padding: 20px 22px;
+    background: var(--gold-pale);
+    border-radius: var(--radius-lg);
+    border-left: 3px solid var(--gold);
+  }
+
+  .doc-section { margin-bottom: 48px; }
+  .section-num {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .doc-section h2 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+  .doc-section p {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.8;
+    margin-bottom: 14px;
+  }
+  .doc-section p:last-child { margin-bottom: 0; }
+
+  .divider { height: 1px; background: var(--border-soft); margin: 48px 0; }
+
+  .doc-list {
+    list-style: none;
+    margin: 12px 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .doc-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  .doc-list li::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+    margin-top: 8px;
+  }
+
+  .highlight-box {
+    background: var(--teal-light);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    margin: 16px 0;
+  }
+  .highlight-box p {
+    font-size: 14px;
+    color: var(--teal);
+    line-height: 1.65;
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .warning-box {
+    background: #FEF6EC;
+    border: 1px solid rgba(196,154,60,0.2);
+    border-left: 3px solid var(--gold);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    margin: 16px 0;
+  }
+  .warning-box p {
+    font-size: 14px;
+    color: #7A5C1E;
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  .revenue-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .revenue-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 16px;
+    text-align: center;
+  }
+  .revenue-card .r-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .revenue-card .r-value {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 300;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .revenue-card .r-sub { font-size: 11px; color: var(--ink-muted); margin-top: 4px; }
+
+  .contact-block {
+    background: var(--ink);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-top: 48px;
+  }
+  .contact-block h2 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--cream);
+    margin-bottom: 10px;
+  }
+  .contact-block p { font-size: 14px; color: rgba(250,248,243,0.55); line-height: 1.7; margin-bottom: 14px; }
+  .contact-email {
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gold);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(196,154,60,0.3);
+    padding-bottom: 1px;
+    transition: border-color 0.15s;
+  }
+  .contact-email:hover { border-color: var(--gold); }
+
+  .footer-wrap {
+    border-top: 1px solid var(--border-soft);
+    padding: 40px 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .footer-logo { font-family: var(--serif); font-size: 15px; color: var(--ink-muted); }
+  .footer-logo span { color: var(--gold); }
+  .footer-wrap p { font-size: 12px; color: var(--ink-muted); }
+
+  @media (max-width: 600px) {
+    .revenue-cards { grid-template-columns: 1fr; }
+    .footer-wrap { flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Touch<span>Connect</span>Pro</a>
+  <a href="join-specialist.html" class="nav-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Join as a specialist
+  </a>
+</nav>
+
+<div class="page-wrap">
+
+  <div class="doc-header">
+    <span class="doc-eyebrow">Legal</span>
+    <h1>Specialist Platform <em>Agreement</em></h1>
+    <p class="doc-meta">Last updated: March 23, 2026 &nbsp;&middot;&nbsp; Touch Equity Partners LLC</p>
+    <div class="doc-summary">
+      This agreement governs your participation as a specialist on TouchConnectPro. It covers your status as an independent contractor, how revenue sharing works, your obligations to clients and the platform, and what happens when the relationship ends.
+    </div>
+  </div>
+
+  <!-- 1 -->
+  <div class="doc-section">
+    <span class="section-num">Section 01</span>
+    <h2>Purpose of the platform</h2>
+    <p>TouchConnectPro is a technology platform that connects early-stage founders with specialist advisors in accounting, ERP systems, financial reporting, legal structuring, marketing, product, and pitch preparation. The platform uses a diagnostic tool to identify each founder's specific gap and routes them to the specialist best positioned to help.</p>
+    <p>Touch Equity Partners LLC operates the platform and facilitates introductions and payments. It does not provide advisory services directly and does not supervise, direct, or control the services you offer as a specialist.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 2 -->
+  <div class="doc-section">
+    <span class="section-num">Section 02</span>
+    <h2>Your status as an independent contractor</h2>
+    <p>You acknowledge and agree that:</p>
+    <ul class="doc-list">
+      <li>You act as an independent contractor and not as an employee, partner, agent, or representative of Touch Equity Partners LLC.</li>
+      <li>Nothing in this agreement creates an employment relationship, fiduciary duty, agency, or partnership.</li>
+      <li>You have no authority to bind or represent Touch Equity Partners LLC or TouchConnectPro.</li>
+      <li>You are solely responsible for how you deliver your services, including your methods, materials, and outcomes.</li>
+    </ul>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 3 -->
+  <div class="doc-section">
+    <span class="section-num">Section 03</span>
+    <h2>Non-exclusivity</h2>
+    <p>This agreement is non-exclusive. You may offer advisory or consulting services through other platforms or independently. Touch Equity Partners LLC may engage other specialists in the same or overlapping areas. No minimum volume of work, clients, or income is guaranteed. Your participation on TouchConnectPro does not restrict your ability to conduct business elsewhere, subject to the non-circumvention obligations in Section 09.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 4 -->
+  <div class="doc-section">
+    <span class="section-num">Section 04</span>
+    <h2>Your advisory services</h2>
+    <p>You acknowledge and agree that:</p>
+    <ul class="doc-list">
+      <li>You are solely responsible for the content, quality, delivery, and outcomes of your advisory services.</li>
+      <li>You must provide accurate, truthful, and complete information regarding your qualifications, services, availability, and pricing.</li>
+      <li>You will not make false, misleading, or unsubstantiated claims to founders or clients.</li>
+      <li>TouchConnectPro makes no representations or guarantees regarding client acquisition, income, or business outcomes for you or the founders you work with.</li>
+    </ul>
+    <div class="warning-box">
+      <p>Advisory services provided through TouchConnectPro do not constitute regulated legal, financial, medical, or professional advice unless you are explicitly licensed to provide such services and clearly communicate that to the client.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 5 -->
+  <div class="doc-section">
+    <span class="section-num">Section 05</span>
+    <h2>Payments and revenue sharing</h2>
+    <p>Payments for advisory services are processed through Stripe. TouchConnectPro facilitates payments on your behalf under the following structure:</p>
+    <div class="revenue-cards">
+      <div class="revenue-card">
+        <span class="r-label">Your share</span>
+        <div class="r-value">80%</div>
+        <div class="r-sub">of every engagement</div>
+      </div>
+      <div class="revenue-card">
+        <span class="r-label">Platform fee</span>
+        <div class="r-value">20%</div>
+        <div class="r-sub">retained by TouchConnectPro</div>
+      </div>
+      <div class="revenue-card">
+        <span class="r-label">Listing cost</span>
+        <div class="r-value">$0</div>
+        <div class="r-sub">no charge to be listed</div>
+      </div>
+    </div>
+    <ul class="doc-list">
+      <li>The 80% allocation is calculated net of any applicable Stripe processing fees.</li>
+      <li>The 20% platform fee is non-refundable.</li>
+      <li>Payout timing and methods are subject to Stripe's terms and technical constraints.</li>
+      <li>Touch Equity Partners LLC is not responsible for Stripe-related delays, errors, chargebacks, or failures.</li>
+      <li>You are solely responsible for all taxes, filings, and reporting obligations related to your earnings.</li>
+    </ul>
+    <div class="highlight-box">
+      <p>We only earn when you do. There is no subscription fee and no charge to be listed as a specialist on the platform.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 6 -->
+  <div class="doc-section">
+    <span class="section-num">Section 06</span>
+    <h2>Platform use and conduct</h2>
+    <p>You agree to use TouchConnectPro in a professional, ethical, and lawful manner. Specifically, you agree to:</p>
+    <ul class="doc-list">
+      <li>Maintain appropriate standards of conduct with founders and other users at all times.</li>
+      <li>Refrain from harassment, discrimination, or abusive behavior of any kind.</li>
+      <li>Not attempt to bypass or circumvent the platform's payment systems for clients introduced through the platform.</li>
+    </ul>
+    <p>Touch Equity Partners LLC reserves the right to suspend or terminate your access for violations of this agreement.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 7 -->
+  <div class="doc-section">
+    <span class="section-num">Section 07</span>
+    <h2>Confidentiality</h2>
+    <p>During your participation on the platform, you may receive access to confidential information relating to founders and their businesses, TouchConnectPro operations, tools, processes, pricing, and data, and non-public platform features or strategies.</p>
+    <p>You agree to keep all confidential information strictly confidential, use it solely for providing services through the platform, and not disclose it to any third party without prior written consent. These obligations survive termination of this agreement.</p>
+    <p>Confidential information does not include information that is publicly available through no fault of your own or independently obtained without breach of this agreement.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 8 -->
+  <div class="doc-section">
+    <span class="section-num">Section 08</span>
+    <h2>Intellectual property</h2>
+    <p>You retain ownership of advisory materials and content you create. You grant Touch Equity Partners LLC a non-exclusive, worldwide, royalty-free license to use, display, and promote your name, profile, and related materials solely for platform operation, marketing, and promotion.</p>
+    <p>All rights, title, and interest in the platform, software, branding, and infrastructure remain the exclusive property of Touch Equity Partners LLC.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 9 -->
+  <div class="doc-section">
+    <span class="section-num">Section 09</span>
+    <h2>Platform protection and non-circumvention</h2>
+    <p>For founders introduced to you through TouchConnectPro, you agree not to solicit, redirect, or move those founders off-platform for the purpose of avoiding platform fees during an active engagement.</p>
+    <p>This obligation applies only to relationships initiated through the platform. It does not apply to founders or clients you had a documented relationship with prior to joining TouchConnectPro.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 10 -->
+  <div class="doc-section">
+    <span class="section-num">Section 10</span>
+    <h2>Disclaimers</h2>
+    <ul class="doc-list">
+      <li>TouchConnectPro does not evaluate, certify, or endorse specialists.</li>
+      <li>Advisory services provided through the platform do not constitute regulated legal, medical, financial, or professional advice unless explicitly stated and legally permitted.</li>
+      <li>Founders remain solely responsible for their own decisions and actions.</li>
+    </ul>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 11 -->
+  <div class="doc-section">
+    <span class="section-num">Section 11</span>
+    <h2>Limitation of liability</h2>
+    <p>To the maximum extent permitted by applicable law, Touch Equity Partners LLC shall not be liable for indirect, incidental, consequential, or special damages arising from your participation on the platform. The total aggregate liability of Touch Equity Partners LLC shall not exceed the platform fees retained from your engagements during the twelve months preceding any claim.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 12 -->
+  <div class="doc-section">
+    <span class="section-num">Section 12</span>
+    <h2>Indemnification</h2>
+    <p>You agree to indemnify, defend, and hold harmless Touch Equity Partners LLC from any claims, damages, losses, liabilities, or expenses arising from your advisory services, your interactions with founders or clients, your breach of this agreement, or any violation of applicable laws or regulations.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 13 -->
+  <div class="doc-section">
+    <span class="section-num">Section 13</span>
+    <h2>Termination</h2>
+    <p>Either party may terminate this agreement at any time. Upon termination, your profile may be removed from the platform. Outstanding payments for completed services will be processed in accordance with platform and Stripe policies.</p>
+    <p>Sections relating to confidentiality, payments, intellectual property, limitation of liability, and indemnification survive termination.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 14 -->
+  <div class="doc-section">
+    <span class="section-num">Section 14</span>
+    <h2>Modifications</h2>
+    <p>Touch Equity Partners LLC may update this agreement from time to time. Continued use of the platform after changes are posted constitutes acceptance of the updated agreement. For significant changes, we will notify registered specialists by email before they take effect.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 15 -->
+  <div class="doc-section">
+    <span class="section-num">Section 15</span>
+    <h2>Governing law</h2>
+    <p>This agreement shall be governed by and construed in accordance with the laws of the State of California, without regard to conflict of law principles.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 16 -->
+  <div class="doc-section">
+    <span class="section-num">Section 16</span>
+    <h2>Acceptance and electronic signature</h2>
+    <p>By selecting the checkbox labeled "I agree to the Specialist Platform Agreement" and submitting your registration, you confirm your intent to be legally bound by this agreement, consent to electronic contracting, and acknowledge that this action constitutes your legal electronic signature.</p>
+    <div class="highlight-box">
+      <p>You must be at least 18 years old and legally authorized to enter into contracts to register as a specialist on TouchConnectPro.</p>
+    </div>
+  </div>
+
+  <div class="contact-block">
+    <h2>Questions about this agreement?</h2>
+    <p>If anything here is unclear or you have a question about a specific situation, reach out directly. We respond to every message.</p>
+    <a href="mailto:hello@touchconnectpro.com" class="contact-email">hello@touchconnectpro.com</a>
+    <p style="margin-top:14px; margin-bottom:0;">Touch Equity Partners LLC &nbsp;&middot;&nbsp; Operator of TouchConnectPro</p>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-wrap">
+    <span class="footer-logo">Touch<span>Connect</span>Pro</span>
+    <p>© 2026 TouchConnectPro. Built for founders who mean business.</p>
+  </div>
+</footer>
+
+</body>
+</html>

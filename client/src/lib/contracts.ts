@@ -1,181 +1,138 @@
-export const CONTRACT_VERSION = "2026-02-01 v2";
+export const CONTRACT_VERSION = "2026-03-23 v3";
 
 export const COACH_CONTRACT = `TouchConnectPro
-Coach Platform Agreement
+Specialist Platform Agreement
 
-Last Updated: February 1, 2026
+Last Updated: March 23, 2026 · Touch Equity Partners LLC
 
-This Coach Platform Agreement ("Agreement") is entered into between Touch Equity Partners LLC, a limited liability company ("Company", "we", "us", or "our"), which operates the TouchConnectPro platform ("TouchConnectPro" or the "Platform"), and the individual or entity registering as a coach ("Coach", "you", or "your").
+This agreement governs your participation as a specialist on TouchConnectPro. It covers your status as an independent contractor, how revenue sharing works, your obligations to clients and the platform, and what happens when the relationship ends.
 
-By registering as a Coach on TouchConnectPro, you acknowledge that you have read, understood, and agree to be legally bound by this Agreement.
+Section 01 — Purpose of the Platform
 
-1. Purpose of the Platform
+TouchConnectPro is a technology platform that connects early-stage founders with specialist advisors in accounting, ERP systems, financial reporting, legal structuring, marketing, product, and pitch preparation. The platform uses a diagnostic tool to identify each founder's specific gap and routes them to the specialist best positioned to help.
 
-TouchConnectPro is a technology platform that facilitates connections between entrepreneurs, mentors, coaches, and investors. The Platform provides tools for discovery, communication, scheduling, and payment facilitation.
+Touch Equity Partners LLC operates the platform and facilitates introductions and payments. It does not provide advisory services directly and does not supervise, direct, or control the services you offer as a specialist.
 
-Touch Equity Partners LLC does not provide coaching services and does not supervise, direct, or control the coaching services offered by Coaches.
-
-2. Coach Relationship and Status
+Section 02 — Your Status as an Independent Contractor
 
 You acknowledge and agree that:
 
-• You act as an independent contractor and not as an employee, partner, agent, joint venturer, or representative of the Company
+• You act as an independent contractor and not as an employee, partner, agent, or representative of Touch Equity Partners LLC.
 
-• Nothing in this Agreement creates an employment relationship, fiduciary duty, agency, or partnership
+• Nothing in this agreement creates an employment relationship, fiduciary duty, agency, or partnership.
 
-• You have no authority to bind or represent Touch Equity Partners LLC or TouchConnectPro
+• You have no authority to bind or represent Touch Equity Partners LLC or TouchConnectPro.
 
-• You are solely responsible for how you deliver your services, including methods, materials, and outcomes
+• You are solely responsible for how you deliver your services, including your methods, materials, and outcomes.
 
-3. Non-Exclusivity
+Section 03 — Non-Exclusivity
 
-This Agreement is non-exclusive.
+This agreement is non-exclusive. You may offer advisory or consulting services through other platforms or independently. Touch Equity Partners LLC may engage other specialists in the same or overlapping areas. No minimum volume of work, clients, or income is guaranteed. Your participation on TouchConnectPro does not restrict your ability to conduct business elsewhere, subject to the non-circumvention obligations in Section 09.
 
-• You may offer coaching or consulting services through other platforms or independently
-
-• Touch Equity Partners LLC may engage other coaches, mentors, or experts
-
-• No minimum volume of work, clients, or income is guaranteed
-
-• Your participation on TouchConnectPro does not restrict your ability to conduct business elsewhere, subject to the non-circumvention obligations in Section 9.
-
-4. Coaching Services
+Section 04 — Your Advisory Services
 
 You acknowledge and agree that:
 
-• You are solely responsible for the content, quality, delivery, and outcomes of your coaching services
+• You are solely responsible for the content, quality, delivery, and outcomes of your advisory services.
 
-• You must provide accurate, truthful, and complete information regarding your qualifications, services, availability, and pricing
+• You must provide accurate, truthful, and complete information regarding your qualifications, services, availability, and pricing.
 
-• You will not make false, misleading, or unsubstantiated claims to clients
+• You will not make false, misleading, or unsubstantiated claims to founders or clients.
 
-• TouchConnectPro makes no representations or guarantees regarding client acquisition, income, business success, or outcomes.
+• TouchConnectPro makes no representations or guarantees regarding client acquisition, income, or business outcomes for you or the founders you work with.
 
-5. Payments, Revenue Share, and Fees
+Advisory services provided through TouchConnectPro do not constitute regulated legal, financial, medical, or professional advice unless you are explicitly licensed to provide such services and clearly communicate that to the client.
 
-• Payments for coaching services are processed through Stripe, a third-party payment processor
+Section 05 — Payments and Revenue Sharing
 
-• TouchConnectPro facilitates payments on behalf of the Coach
+Payments for advisory services are processed through Stripe. TouchConnectPro facilitates payments on your behalf under the following structure:
 
-• Eighty percent (80%) of the amount paid by the client, net of applicable Stripe processing fees if any, is allocated to the Coach
+• Your share: 80% of every engagement
+• Platform fee: 20% retained by TouchConnectPro
+• Listing cost: $0 — no charge to be listed
 
-• Twenty percent (20%) is retained by Touch Equity Partners LLC as a non-refundable platform service fee
+• The 80% allocation is calculated net of any applicable Stripe processing fees.
 
-• Payout timing and methods are subject to Stripe's terms, policies, and technical constraints
+• The 20% platform fee is non-refundable.
 
-• Touch Equity Partners LLC is not responsible for Stripe-related delays, errors, chargebacks, or failures
+• Payout timing and methods are subject to Stripe's terms and technical constraints.
 
-• You are solely responsible for all taxes, filings, and reporting obligations related to your earnings
+• Touch Equity Partners LLC is not responsible for Stripe-related delays, errors, chargebacks, or failures.
 
-6. Platform Use and Conduct
+• You are solely responsible for all taxes, filings, and reporting obligations related to your earnings.
 
-You agree to:
+We only earn when you do. There is no subscription fee and no charge to be listed as a specialist on the platform.
 
-• Use the Platform in a professional, ethical, and lawful manner
+Section 06 — Platform Use and Conduct
 
-• Maintain appropriate standards of conduct with clients and other users
+You agree to use TouchConnectPro in a professional, ethical, and lawful manner. Specifically, you agree to:
 
-• Refrain from harassment, discrimination, or abusive behavior
+• Maintain appropriate standards of conduct with founders and other users at all times.
 
-• Not attempt to bypass or circumvent the Platform's payment systems for clients introduced through the Platform
+• Refrain from harassment, discrimination, or abusive behavior of any kind.
 
-Touch Equity Partners LLC reserves the right to suspend or terminate access for violations of this Agreement.
+• Not attempt to bypass or circumvent the platform's payment systems for clients introduced through the platform.
 
-7. Confidentiality
+Touch Equity Partners LLC reserves the right to suspend or terminate your access for violations of this agreement.
 
-During your participation on the Platform, you may receive access to confidential or proprietary information relating to:
+Section 07 — Confidentiality
 
-• Clients and their businesses
+During your participation on the platform, you may receive access to confidential information relating to founders and their businesses, TouchConnectPro operations, tools, processes, pricing, and data, and non-public platform features or strategies.
 
-• TouchConnectPro operations, tools, processes, pricing, and data
+You agree to keep all confidential information strictly confidential, use it solely for providing services through the platform, and not disclose it to any third party without prior written consent. These obligations survive termination of this agreement.
 
-• Non-public platform features, strategies, or materials
+Confidential information does not include information that is publicly available through no fault of your own or independently obtained without breach of this agreement.
 
-You agree to:
+Section 08 — Intellectual Property
 
-• Keep all confidential information strictly confidential
+You retain ownership of advisory materials and content you create. You grant Touch Equity Partners LLC a non-exclusive, worldwide, royalty-free license to use, display, and promote your name, profile, and related materials solely for platform operation, marketing, and promotion.
 
-• Use such information solely for providing services through the Platform
+All rights, title, and interest in the platform, software, branding, and infrastructure remain the exclusive property of Touch Equity Partners LLC.
 
-• Not disclose confidential information to any third party without prior written consent
+Section 09 — Platform Protection and Non-Circumvention
 
-These confidentiality obligations survive termination of this Agreement.
+For founders introduced to you through TouchConnectPro, you agree not to solicit, redirect, or move those founders off-platform for the purpose of avoiding platform fees during an active engagement.
 
-Confidential information does not include information that is publicly available through no fault of your own or independently obtained without breach of this Agreement.
+This obligation applies only to relationships initiated through the platform. It does not apply to founders or clients you had a documented relationship with prior to joining TouchConnectPro.
 
-8. Intellectual Property
+Section 10 — Disclaimers
 
-• You retain ownership of coaching materials and content you create
+• TouchConnectPro does not evaluate, certify, or endorse specialists.
 
-• You grant Touch Equity Partners LLC a non-exclusive, worldwide, royalty-free license to use, display, and promote your name, profile, and related materials solely for Platform operation, marketing, and promotion
+• Advisory services provided through the platform do not constitute regulated legal, medical, financial, or professional advice unless explicitly stated and legally permitted.
 
-• All rights, title, and interest in the Platform, software, branding, and infrastructure remain the exclusive property of Touch Equity Partners LLC
+• Founders remain solely responsible for their own decisions and actions.
 
-9. Platform Protection and Non-Circumvention
+Section 11 — Limitation of Liability
 
-For clients introduced to you through TouchConnectPro:
+To the maximum extent permitted by applicable law, Touch Equity Partners LLC shall not be liable for indirect, incidental, consequential, or special damages arising from your participation on the platform. The total aggregate liability of Touch Equity Partners LLC shall not exceed the platform fees retained from your engagements during the twelve months preceding any claim.
 
-• You agree not to solicit, redirect, or move such clients off-platform for the purpose of avoiding Platform fees during an active engagement
+Section 12 — Indemnification
 
-• This obligation applies only to relationships initiated through the Platform
+You agree to indemnify, defend, and hold harmless Touch Equity Partners LLC from any claims, damages, losses, liabilities, or expenses arising from your advisory services, your interactions with founders or clients, your breach of this agreement, or any violation of applicable laws or regulations.
 
-• This restriction does not apply to clients you had a documented relationship with prior to joining TouchConnectPro
+Section 13 — Termination
 
-10. Disclaimers
+Either party may terminate this agreement at any time. Upon termination, your profile may be removed from the platform. Outstanding payments for completed services will be processed in accordance with platform and Stripe policies.
 
-• TouchConnectPro does not evaluate, certify, or endorse Coaches
+Sections relating to confidentiality, payments, intellectual property, limitation of liability, and indemnification survive termination.
 
-• Coaching services do not constitute legal, medical, financial, or professional advice unless explicitly stated and legally permitted
+Section 14 — Modifications
 
-• Clients remain solely responsible for their decisions and actions
+Touch Equity Partners LLC may update this agreement from time to time. Continued use of the platform after changes are posted constitutes acceptance of the updated agreement. For significant changes, we will notify registered specialists by email before they take effect.
 
-11. Limitation of Liability
+Section 15 — Governing Law
 
-To the maximum extent permitted by law:
+This agreement shall be governed by and construed in accordance with the laws of the State of California, without regard to conflict of law principles.
 
-• Touch Equity Partners LLC shall not be liable for indirect, incidental, consequential, or special damages
+Section 16 — Acceptance and Electronic Signature
 
-• The total aggregate liability of Touch Equity Partners LLC shall not exceed the platform fees retained from the Coach during the twelve (12) months preceding the claim
+By selecting the checkbox labeled "I agree to the Specialist Platform Agreement" and submitting your registration, you confirm your intent to be legally bound by this agreement, consent to electronic contracting, and acknowledge that this action constitutes your legal electronic signature.
 
-12. Indemnification
+You must be at least 18 years old and legally authorized to enter into contracts to register as a specialist on TouchConnectPro.
 
-You agree to indemnify, defend, and hold harmless Touch Equity Partners LLC from any claims, damages, losses, liabilities, or expenses arising from:
-
-• Your coaching services
-
-• Your interactions with clients
-
-• Your breach of this Agreement
-
-• Any violation of applicable laws or regulations
-
-13. Termination
-
-• Either party may terminate this Agreement at any time
-
-• Upon termination, your profile may be removed from the Platform
-
-• Outstanding payments for completed services will be processed in accordance with Platform and Stripe policies
-
-• Sections relating to confidentiality, payments, intellectual property, limitation of liability, and indemnification shall survive termination.
-
-14. Modifications
-
-Touch Equity Partners LLC may update this Agreement from time to time. Continued use of the Platform after changes constitutes acceptance of the updated Agreement.
-
-15. Governing Law
-
-This Agreement shall be governed by and construed in accordance with the laws of the State of California, without regard to conflict-of-law principles.
-
-16. Acceptance and Electronic Signature
-
-By selecting the checkbox labeled "I agree to the Coach Platform Agreement" and submitting the registration form, you:
-
-• Confirm your intent to be legally bound
-
-• Consent to electronic contracting
-
-• Acknowledge that this action constitutes your legal electronic signature`;
+Questions? Contact us at hello@touchconnectpro.com
+Touch Equity Partners LLC · Operator of TouchConnectPro`;
 
 export const MENTOR_CONTRACT = `TouchConnectPro
 Mentor Platform Agreement

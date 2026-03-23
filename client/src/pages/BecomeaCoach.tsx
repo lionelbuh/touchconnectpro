@@ -218,10 +218,10 @@ export default function BecomeaCoach() {
           </DialogHeader>
           <div className="space-y-4 py-6">
             <p className="text-center text-lg text-slate-700 dark:text-slate-300">
-              Your coach application has been received.
+              Your specialist application has been received.
             </p>
             <p className="text-center text-base text-slate-600 dark:text-slate-400">
-              Our team will review your application and get back to you within <strong>24-48 hours</strong>. We look forward to having you join the TouchConnectPro coaching team!
+              Our team will review your application and get back to you within <strong>24-48 hours</strong>. We look forward to having you join the TouchConnectPro specialist network!
             </p>
           </div>
           <Button
@@ -239,13 +239,13 @@ export default function BecomeaCoach() {
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
             <Badge variant="secondary" className="mb-6 px-6 py-3 text-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 border-cyan-500/30">
-              <Star className="inline-block mr-2 h-4 w-4" /> Join Our Coach Network
+              <Star className="inline-block mr-2 h-4 w-4" /> Join Our Specialist Network
             </Badge>
             <h1 className="text-4xl md:text-5xl font-display font-bold mb-6 text-slate-900 dark:text-white">
-              Become a Coach on TouchConnectPro
+              Become a Specialist on TouchConnectPro
             </h1>
             <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed">
-              Share your expertise. Teach what you know. Earn by helping founders grow.
+              Share your expertise. Advise founders. Earn by helping businesses grow.
             </p>
           </div>
         </div>
@@ -258,10 +258,10 @@ export default function BecomeaCoach() {
           <Card className="mb-12 -mt-8 border-cyan-200 dark:border-cyan-900/30 bg-cyan-50 dark:bg-cyan-950/20">
             <CardContent className="p-10">
               <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
-                TouchConnectPro is building a network of experienced professionals offering specialized courses to entrepreneurs who need practical, real-world guidance. Mentors support founders through their journey — and coaches provide the paid skills training they need to move faster and wiser.
+                TouchConnectPro is building a network of specialist advisors — accountants, legal professionals, marketers, product experts, and pitch coaches — matched to founders based on their diagnostic results.
               </p>
               <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed mt-2">
-                As a coach, you turn your experience into structured knowledge entrepreneurs can learn from today.
+                As a specialist, you bring targeted expertise to founders who already know what gap they need to fill. No cold pitching. No guesswork. Just focused, valuable work.
               </p>
             </CardContent>
           </Card>
@@ -297,17 +297,17 @@ export default function BecomeaCoach() {
 
           {/* What You'll Do */}
           <div className="mb-16">
-            <h2 className="text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">What You'll Do as a Coach</h2>
+            <h2 className="text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">What You'll Do as a Specialist</h2>
             <p className="text-lg text-slate-600 dark:text-slate-400 mb-8">
-              As a TouchConnectPro Coach, you will:
+              As a TouchConnectPro Specialist, you will:
             </p>
             <div className="space-y-4">
               {[
-                { icon: "💼", title: "Offer paid lessons, workshops, or structured courses" },
+                { icon: "💼", title: "Offer paid advisory sessions, workshops, or structured engagements" },
                 { icon: "📈", title: "Set your own pricing and availability" },
-                { icon: "📝", title: "Receive a public coaching profile so entrepreneurs can book you" },
-                { icon: "🤝", title: "Benefit from mentor referrals who guide founders internally" },
-                { icon: "📅", title: "Decide how many sessions you want to run — total flexibility" }
+                { icon: "📝", title: "Receive a public specialist profile so founders can reach you directly" },
+                { icon: "🤝", title: "Receive matched introductions based on founder diagnostic results" },
+                { icon: "📅", title: "Decide how many engagements you take on — total flexibility" }
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800">
                   <span className="text-2xl">{item.icon}</span>
@@ -318,10 +318,10 @@ export default function BecomeaCoach() {
             <Card className="mt-8 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
               <CardContent className="p-6">
                 <p className="text-slate-700 dark:text-slate-300 text-lg">
-                  Entrepreneurs browse the coach catalog, compare expertise, and book you directly based on need and mentor recommendation.
+                  Founders browse specialist profiles, compare expertise, and reach out based on their diagnostic gap — pre-qualified before they ever contact you.
                 </p>
                 <p className="text-slate-700 dark:text-slate-300 text-lg font-semibold mt-3">
-                  You teach — we bring you students.
+                  You advise — we bring you the right founders.
                 </p>
               </CardContent>
             </Card>
@@ -353,14 +353,14 @@ export default function BecomeaCoach() {
 
           {/* Why Coach */}
           <div className="mb-16">
-            <h2 className="text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">Why Coach With TouchConnectPro?</h2>
+            <h2 className="text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">Why Partner With TouchConnectPro?</h2>
             <div className="grid md:grid-cols-2 gap-6">
               {[
-                "Earn money while sharing valuable skills",
-                "No client chasing — founders come to you",
-                "Build your reputation as a trusted expert",
-                "Teach real entrepreneurs building real businesses",
-                "Experience personal and professional growth through impact"
+                "Earn revenue from your expertise with no upfront cost",
+                "No cold outreach — founders are matched to you by gap",
+                "Build your reputation as a trusted specialist",
+                "Work with pre-qualified founders who know what they need",
+                "Flexible engagements — take on as much or as little as you want"
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800">
                   <Check className="h-6 w-6 text-cyan-500 shrink-0 mt-1" />
@@ -392,21 +392,21 @@ export default function BecomeaCoach() {
           {/* CTA Section */}
           {!showForm ? (
             <div className="bg-gradient-to-r from-cyan-900/50 to-slate-900/50 rounded-2xl p-12 text-center border border-cyan-500/30">
-              <h2 className="text-3xl font-display font-bold mb-6 text-white">Ready to Become a Coach?</h2>
+              <h2 className="text-3xl font-display font-bold mb-6 text-white">Ready to Become a Specialist?</h2>
               <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
-                If you want to teach what you know, support entrepreneurs, and get paid on your terms, we'd love to learn more about you.
+                If you have deep expertise in any area founders need — accounting, legal, marketing, product, pitch — we'd love to learn more about you.
               </p>
               <p className="text-slate-600 dark:text-slate-500 mb-8">
-                We will review your profile and notify you when your expertise matches coaching needs within the platform.
+                We review every application. You'll hear back within a week.
               </p>
               <Button size="lg" className="h-14 px-10 text-lg rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold" onClick={() => setShowForm(true)} data-testid="button-apply-coach">
-                Apply to Become a Coach <ArrowRight className="ml-2 h-5 w-5" />
+                Apply to Join as a Specialist <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
           ) : (
             <Card className="border-cyan-200 dark:border-cyan-900/30 bg-white dark:bg-slate-900">
               <CardContent className="p-12">
-                <h2 className="text-3xl font-display font-bold mb-2 text-slate-900 dark:text-white">Complete Your Coach Profile</h2>
+                <h2 className="text-3xl font-display font-bold mb-2 text-slate-900 dark:text-white">Complete Your Specialist Profile</h2>
                 <p className="text-muted-foreground mb-8">Tell us about your expertise. Our team will review and contact you within 48 hours.</p>
 
                 {submitted ? (
@@ -459,11 +459,11 @@ export default function BecomeaCoach() {
                         name="bio"
                         value={formData.bio}
                         onChange={handleInputChange}
-                        placeholder="Tell entrepreneurs about yourself, your background, and what makes you a great coach. This will be displayed on your public profile."
+                        placeholder="Tell entrepreneurs about yourself, your background, and what makes you a great specialist. This will be displayed on your public profile."
                         className="bg-slate-50 dark:bg-slate-800/50 min-h-[120px]"
                         data-testid="input-coach-bio"
                       />
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">This bio will be visible to entrepreneurs browsing coaches</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">This bio will be visible to entrepreneurs browsing specialists</p>
                     </div>
 
                     <div>
@@ -661,7 +661,7 @@ export default function BecomeaCoach() {
                     <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
                       <div className="flex items-center gap-2 mb-4">
                         <FileText className="h-5 w-5 text-cyan-600" />
-                        <label className="text-sm font-semibold text-slate-900 dark:text-white">Coach Platform Agreement *</label>
+                        <label className="text-sm font-semibold text-slate-900 dark:text-white">Specialist Platform Agreement *</label>
                       </div>
                       <ScrollArea className="h-64 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
                         <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans leading-relaxed">
@@ -679,7 +679,7 @@ export default function BecomeaCoach() {
                           htmlFor="contract-agreement"
                           className="text-sm text-slate-700 dark:text-slate-300 cursor-pointer leading-relaxed"
                         >
-                          I have read and agree to the <span className="font-semibold text-cyan-600 dark:text-cyan-400">Coach Platform Agreement</span>
+                          I have read and agree to the <span className="font-semibold text-cyan-600 dark:text-cyan-400">Specialist Platform Agreement</span>
                         </label>
                       </div>
                     </div>
