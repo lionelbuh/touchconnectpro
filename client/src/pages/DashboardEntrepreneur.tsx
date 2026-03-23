@@ -2005,53 +2005,88 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
 
  if (showAgreementGate) {
   return (
-   <div className="flex min-h-[calc(100vh-4rem)] bg-[#FAF9F7] items-center justify-center p-4">
-    <div className="bg-white rounded-2xl shadow-lg max-w-2xl w-full p-8">
-     <div className="text-center mb-6">
-      <div className="h-16 w-16 bg-[#0D566C] rounded-full flex items-center justify-center mx-auto mb-4">
-       <ClipboardList className="h-8 w-8 text-white" />
-      </div>
-      <h2 className="text-2xl font-bold text-[#0D566C]" data-testid="text-agreement-title">Welcome to TouchConnectPro</h2>
-      <p className="text-[#8A8A8A] mt-2">Before you get started, please review and accept our membership agreement.</p>
+   <div style={{ minHeight: "calc(100vh - 4rem)", background: "#FAF8F3", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div style={{ background: "white", border: "1px solid rgba(26,24,20,0.12)", borderRadius: 10, maxWidth: 640, width: "100%", padding: "40px 36px" }}>
+
+     {/* Header */}
+     <div style={{ marginBottom: 28 }}>
+      <span style={{ display: "inline-block", fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "#1D6A5A", background: "#E4F0ED", padding: "4px 12px", borderRadius: 100, marginBottom: 16 }}>One-time step</span>
+      <h2 style={{ fontFamily: "Georgia, serif", fontSize: 26, fontWeight: 300, color: "#1A1814", lineHeight: 1.2, marginBottom: 8 }} data-testid="text-agreement-title">
+        Welcome to <em style={{ fontStyle: "italic", color: "#C49A3C" }}>TouchConnectPro</em>
+      </h2>
+      <p style={{ fontSize: 14, color: "#8C8880", lineHeight: 1.6, margin: 0 }}>
+        Before you access your dashboard, please review and accept the membership agreement below. This is a one-time step.
+      </p>
      </div>
 
-     <div className="border border-[#E8E8E8] rounded-xl mb-6">
+     {/* Summary box */}
+     <div style={{ background: "#FAF3E0", border: "1px solid rgba(196,154,60,0.2)", borderLeft: "3px solid #C49A3C", borderRadius: 8, padding: "14px 18px", marginBottom: 20 }}>
+      <p style={{ fontSize: 13, color: "#4A4740", lineHeight: 1.65, margin: 0 }}>
+        This agreement covers your use of the platform as a founder or member. It is written to be clear, not to hide anything. By accepting, you confirm you have read it.
+      </p>
+     </div>
+
+     {/* Contract toggle */}
+     <div style={{ border: "1px solid rgba(26,24,20,0.12)", borderRadius: 8, marginBottom: 20, overflow: "hidden" }}>
       <button
        onClick={() => setShowContractText(!showContractText)}
-       className="w-full flex items-center justify-between p-4 text-sm font-medium text-[#0D566C] hover:bg-[#FAF9F7] rounded-xl transition-colors"
+       style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", fontSize: 13, fontWeight: 500, color: "#1A1814", background: showContractText ? "#FAF8F3" : "white", border: "none", cursor: "pointer", fontFamily: "inherit", transition: "background 0.15s" }}
        data-testid="button-toggle-agreement"
       >
        <span>{hasPaid ? "Entrepreneur Membership Agreement" : "Community Free Membership Agreement"}</span>
-       <span>{showContractText ? "▲" : "▼"}</span>
+       <span style={{ fontSize: 10, color: "#8C8880" }}>{showContractText ? "▲ collapse" : "▼ read"}</span>
       </button>
       {showContractText && (
-       <div className="px-4 pb-4 max-h-60 overflow-y-auto">
-        <pre className="text-xs text-[#4A4A4A] whitespace-pre-wrap font-sans leading-relaxed">{hasPaid ? ENTREPRENEUR_CONTRACT : COMMUNITY_FREE_CONTRACT}</pre>
+       <div style={{ borderTop: "1px solid rgba(26,24,20,0.07)", padding: "0 18px 18px", maxHeight: 240, overflowY: "auto" }}>
+        <pre style={{ fontSize: 12, color: "#4A4740", whiteSpace: "pre-wrap", fontFamily: "inherit", lineHeight: 1.7, marginTop: 14 }}>{hasPaid ? ENTREPRENEUR_CONTRACT : COMMUNITY_FREE_CONTRACT}</pre>
        </div>
       )}
      </div>
 
-     <label className="flex items-start gap-3 mb-6 cursor-pointer" data-testid="label-agree-contract">
+     {/* View full page link */}
+     <p style={{ fontSize: 12, color: "#8C8880", marginBottom: 20 }}>
+      You can also view the full{" "}
+      <a href="/member-agreement" target="_blank" rel="noopener noreferrer" style={{ color: "#1D6A5A", textDecoration: "none", borderBottom: "1px solid rgba(29,106,90,0.3)" }}>
+       Member Agreement page
+      </a>
+      {" "}for a more readable version.
+     </p>
+
+     {/* Checkbox */}
+     <label style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 24, cursor: "pointer" }} data-testid="label-agree-contract">
       <input
        type="checkbox"
        checked={agreedToContract}
        onChange={(e) => setAgreedToContract(e.target.checked)}
-       className="mt-1 h-4 w-4 rounded border-[#E8E8E8] text-[#0D566C] focus:ring-[#0D566C]"
+       style={{ marginTop: 2, width: 16, height: 16, accentColor: "#1D6A5A", flexShrink: 0 }}
        data-testid="checkbox-agree-contract"
       />
-      <span className="text-sm text-[#4A4A4A]">
-       I have read and agree to the <button onClick={() => setShowContractText(true)} className="text-[#0D566C] underline font-semibold">{hasPaid ? "Entrepreneur Membership Agreement" : "Community Free Membership Agreement"}</button>. I understand this constitutes my legal electronic signature.
+      <span style={{ fontSize: 13, color: "#4A4740", lineHeight: 1.6 }}>
+       I have read and agree to the{" "}
+       <button
+        type="button"
+        onClick={() => setShowContractText(true)}
+        style={{ color: "#1D6A5A", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", fontFamily: "inherit", fontSize: 13, fontWeight: 500 }}
+       >
+        {hasPaid ? "Entrepreneur Membership Agreement" : "Community Free Membership Agreement"}
+       </button>
+       . I understand this constitutes my legal electronic signature.
       </span>
      </label>
 
-     <Button
+     {/* Accept button */}
+     <button
       onClick={handleAcceptAgreement}
       disabled={!agreedToContract || savingAgreement}
-      className="w-full bg-[#0D566C] hover:bg-[#0a4557] text-white rounded-full py-3 text-base font-semibold"
+      style={{ width: "100%", background: agreedToContract && !savingAgreement ? "#1A1814" : "rgba(26,24,20,0.25)", color: "#FAF8F3", fontSize: 14, fontWeight: 500, padding: "14px 0", borderRadius: 4, border: "none", cursor: agreedToContract && !savingAgreement ? "pointer" : "not-allowed", fontFamily: "inherit", transition: "background 0.15s" }}
+      onMouseEnter={e => { if (agreedToContract && !savingAgreement) e.currentTarget.style.background = "#1D6A5A"; }}
+      onMouseLeave={e => { if (agreedToContract && !savingAgreement) e.currentTarget.style.background = "#1A1814"; }}
       data-testid="button-accept-agreement"
      >
-      {savingAgreement ? "Saving..." : "Accept & Continue to Dashboard"}
-     </Button>
+      {savingAgreement ? "Saving your agreement..." : "Accept & continue to dashboard →"}
+     </button>
+
+     <p style={{ textAlign: "center", fontSize: 11, color: "#8C8880", marginTop: 14 }}>Touch Equity Partners LLC · touchconnectpro.com</p>
     </div>
    </div>
   );
