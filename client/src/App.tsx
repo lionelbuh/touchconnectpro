@@ -22,6 +22,7 @@ import BecomeaEntrepreneur from "@/pages/BecomeaEntrepreneur";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import CookiePolicy from "@/pages/CookiePolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import MemberAgreement from "@/pages/MemberAgreement";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import Login from "@/pages/Login";
 import AdminLogin from "@/pages/AdminLogin";
@@ -76,6 +77,7 @@ function Router() {
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/cookie-policy" component={CookiePolicy} />
         <Route path="/terms-of-service" component={TermsOfService} />
+        <Route path="/member-agreement" component={MemberAgreement} />
         <Route path="/login" component={Login} />
         <Route path="/admin-login" component={AdminLogin} />
         <Route path="/set-password" component={SetPassword} />

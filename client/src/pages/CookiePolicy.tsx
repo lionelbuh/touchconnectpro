@@ -1,149 +1,149 @@
-import { Cookie, Mail } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Link } from "wouter";
+const C = {
+  cream: "#FAF8F3",
+  ink: "#1A1814",
+  inkSoft: "#4A4740",
+  inkMuted: "#8C8880",
+  gold: "#C49A3C",
+  goldPale: "#FAF3E0",
+  teal: "#1D6A5A",
+  tealLight: "#E4F0ED",
+  border: "rgba(26,24,20,0.12)",
+  borderSoft: "rgba(26,24,20,0.07)",
+};
+
+const Section = ({ num, title, children }: { num: string; title: string; children: React.ReactNode }) => (
+  <div style={{ marginBottom: 48 }}>
+    <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: C.inkMuted, marginBottom: 8, display: "block" }}>{num}</span>
+    <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, fontWeight: 400, color: C.ink, marginBottom: 16, lineHeight: 1.3 }}>{title}</h2>
+    {children}
+  </div>
+);
+
+const P = ({ children }: { children: React.ReactNode }) => (
+  <p style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.8, marginBottom: 14 }}>{children}</p>
+);
+
+const Divider = () => <div style={{ height: 1, background: C.borderSoft, margin: "48px 0" }} />;
+
+const DocList = ({ items }: { items: string[] }) => (
+  <ul style={{ listStyle: "none", margin: "12px 0 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+    {items.map((item, i) => (
+      <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 15, color: C.inkSoft, lineHeight: 1.6 }}>
+        <span style={{ width: 5, height: 5, borderRadius: "50%", background: C.gold, flexShrink: 0, marginTop: 8, display: "inline-block" }} />
+        {item}
+      </li>
+    ))}
+  </ul>
+);
+
+const cookieCards = [
+  {
+    name: "Essential cookies",
+    status: "Always active",
+    statusColor: C.teal,
+    statusBg: C.tealLight,
+    desc: "These cookies are required for TouchConnectPro to function. Without them, you cannot log in, your session cannot be maintained, and basic security features would not work. They cannot be turned off.",
+    examples: ["User authentication", "Session management", "Security and fraud prevention", "Dashboard access"],
+  },
+  {
+    name: "Analytics cookies",
+    status: "Your choice",
+    statusColor: "#7A5C1E",
+    statusBg: C.goldPale,
+    desc: "We use Google Analytics to understand which parts of the platform are most useful to founders and where we can improve. These cookies collect anonymized information only: pages visited, time spent, and general device and browser type. They are never linked to your personal account or your Focus Score results. Analytics cookies are off by default and only activated if you explicitly accept them.",
+    examples: ["Pages visited", "Time on page", "Device and browser type", "Country-level location"],
+  },
+];
 
 export default function CookiePolicy() {
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
-      <section className="py-16 bg-gradient-to-b from-slate-900/20 to-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto">
-            <div className="flex justify-center mb-4">
-              <Cookie className="h-12 w-12 text-cyan-600" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 text-slate-900 dark:text-white">
-              Cookie Policy
-            </h1>
-            <p className="text-lg text-slate-600 dark:text-slate-400 mb-2">
-              Last updated: February 1, 2026
-            </p>
-            <p className="text-slate-600 dark:text-slate-400">
-              TouchConnectPro is a website and service operated by Touch Equity Partners LLC.
-            </p>
+    <div style={{ backgroundColor: C.cream, minHeight: "100vh" }} data-testid="page-cookie-policy">
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "72px 2rem 100px" }}>
+
+        <div style={{ marginBottom: 56, paddingBottom: 40, borderBottom: `1px solid ${C.borderSoft}` }}>
+          <span style={{ display: "inline-block", fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", color: C.teal, background: C.tealLight, padding: "5px 14px", borderRadius: 100, marginBottom: 20 }}>Legal</span>
+          <h1 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(30px,4vw,44px)", fontWeight: 300, color: C.ink, lineHeight: 1.15, letterSpacing: "-0.02em", marginBottom: 16 }}>
+            Cookie <em style={{ fontStyle: "italic", color: C.gold }}>Policy</em>
+          </h1>
+          <p style={{ fontSize: 13, color: C.inkMuted, marginBottom: 20 }}>Last updated: March 1, 2026 &nbsp;·&nbsp; Touch Equity Partners LLC</p>
+          <div style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.75, padding: "20px 22px", background: C.goldPale, borderRadius: 10, borderLeft: `3px solid ${C.gold}` }}>
+            The short version: we use two types of cookies. Essential ones keep the platform running and cannot be turned off. Analytics ones help us understand how founders use the site and are off by default until you say yes.
           </div>
         </div>
-      </section>
 
-      <section className="py-16">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <div className="space-y-8">
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">1. What are cookies?</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  Cookies are small text files stored on your device when you visit a website. They help websites function properly and understand how users interact with them.
-                </p>
-              </CardContent>
-            </Card>
+        <Section num="Section 01" title="What cookies are">
+          <P>Cookies are small text files that a website stores on your device when you visit. They serve different purposes depending on the type: some are essential for the site to work at all, others collect anonymized information about how the site is used to help improve it.</P>
+          <P>TouchConnectPro uses a minimal set of cookies. We do not use advertising cookies, retargeting cookies, or any tracking technology designed to follow you across other websites.</P>
+        </Section>
 
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">2. Cookies we use</h2>
-                
-                <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3">a. Essential cookies (always active)</h3>
-                  <p className="text-slate-700 dark:text-slate-300 mb-3">These cookies are required for the website to function:</p>
-                  <ul className="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300 ml-2">
-                    <li>User authentication and login</li>
-                    <li>Security and fraud prevention</li>
-                    <li>Session management</li>
-                  </ul>
-                  <p className="text-green-700 dark:text-green-400 mt-3 text-sm font-medium">
-                    These cookies do not require consent.
-                  </p>
+        <Divider />
+
+        <Section num="Section 02" title="The cookies we use">
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, margin: "16px 0" }}>
+            {cookieCards.map(card => (
+              <div key={card.name} style={{ background: "white", border: `1px solid ${C.border}`, borderRadius: 10, padding: "22px 24px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 500, color: C.ink }}>{card.name}</h3>
+                  <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 10px", borderRadius: 100, color: card.statusColor, background: card.statusBg }}>{card.status}</span>
                 </div>
-
-                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3">b. Analytics cookies (optional)</h3>
-                  <p className="text-slate-700 dark:text-slate-300 mb-3">
-                    We use Google Analytics to understand how visitors use TouchConnectPro. These cookies may collect:
-                  </p>
-                  <ul className="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300 ml-2">
-                    <li>Pages visited</li>
-                    <li>Time spent on pages</li>
-                    <li>Device and browser information</li>
-                  </ul>
-                  <p className="text-amber-700 dark:text-amber-400 mt-3 text-sm font-medium">
-                    Analytics cookies are disabled by default and only activated if you give consent.
-                  </p>
+                <p style={{ fontSize: 13, color: C.inkMuted, lineHeight: 1.65, marginBottom: 12 }}>{card.desc}</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
+                  {card.examples.map(ex => (
+                    <span key={ex} style={{ fontSize: 11, color: C.inkSoft, background: C.cream, border: `1px solid ${C.borderSoft}`, padding: "3px 10px", borderRadius: 100 }}>{ex}</span>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">3. How we collect consent</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  When you first visit TouchConnectPro, you see a cookie banner that lets you:
-                </p>
-                <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2 mb-4">
-                  <li>Accept analytics cookies</li>
-                  <li>Reject analytics cookies</li>
-                </ul>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  You can use the website even if you reject analytics cookies.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">4. Managing your preferences</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">You can:</p>
-                <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 ml-2 mb-4">
-                  <li>Withdraw or change your consent at any time using the "Cookie Settings" link in our footer</li>
-                  <li>Clear cookies through your browser settings</li>
-                </ul>
-                <button 
-                  onClick={() => window.openCookieSettings?.()} 
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors text-sm font-medium"
-                >
-                  <Cookie className="h-4 w-4" />
-                  Open Cookie Settings
-                </button>
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">5. Third-party cookies</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  Analytics cookies are provided by Google Analytics. We do not use advertising or marketing cookies at this time.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-4 text-slate-900 dark:text-white">6. Changes to this policy</h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  We may update this Cookie Policy from time to time. Any changes will be posted on this page.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-display font-bold mb-6 text-slate-900 dark:text-white flex items-center gap-2">
-                  <Mail className="h-6 w-6" /> 7. Contact
-                </h2>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                  If you have questions about this Cookie Policy, contact us at:
-                </p>
-                <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                  hello@touchconnectpro.com
-                </p>
-              </CardContent>
-            </Card>
-
-            <div className="text-center pt-4">
-              <Link href="/privacy-policy" className="text-cyan-600 hover:underline">
-                View our Privacy Policy
-              </Link>
-            </div>
+              </div>
+            ))}
           </div>
+          <div style={{ background: C.tealLight, borderRadius: 10, padding: "18px 22px", margin: "16px 0" }}>
+            <p style={{ fontSize: 14, color: C.teal, lineHeight: 1.65, margin: 0, fontWeight: 500 }}>We do not use advertising cookies, marketing pixels, or any cookies designed to track your activity outside of TouchConnectPro.</p>
+          </div>
+        </Section>
+
+        <Divider />
+
+        <Section num="Section 03" title="How we collect your consent">
+          <P>When you first visit TouchConnectPro, a cookie banner gives you a clear choice: accept analytics cookies or decline them. The platform works fully either way. Your preference is saved so you are not asked again on future visits.</P>
+          <P>If you close the banner without choosing, analytics cookies stay off until you actively accept them.</P>
+        </Section>
+
+        <Divider />
+
+        <Section num="Section 04" title="Managing your preferences">
+          <P>You can change your cookie preferences at any time in two ways:</P>
+          <DocList items={["Use the Cookie Settings link in the footer of any page to update your choice directly.", "Clear cookies from your browser settings. This resets your preference and the banner will appear again on your next visit."]} />
+          <button
+            onClick={() => (window as any).openCookieSettings?.()}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.ink, color: C.cream, fontSize: 13, fontWeight: 500, padding: "11px 22px", borderRadius: 4, border: "none", cursor: "pointer", fontFamily: "inherit", marginTop: 8 }}
+            onMouseEnter={e => (e.currentTarget.style.background = C.teal)}
+            onMouseLeave={e => (e.currentTarget.style.background = C.ink)}
+            data-testid="button-cookie-settings-inline"
+          >
+            Open cookie settings
+          </button>
+        </Section>
+
+        <Divider />
+
+        <Section num="Section 05" title="Third-party cookies">
+          <P>The only third-party cookies on TouchConnectPro come from Google Analytics, and only when you have consented. Google Analytics operates under its own privacy framework. You can read more at <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" style={{ color: C.teal, textDecoration: "none", borderBottom: `1px solid rgba(29,106,90,0.3)` }}>policies.google.com/privacy</a>.</P>
+          <P>We do not allow any other third-party cookies on this site.</P>
+        </Section>
+
+        <Divider />
+
+        <Section num="Section 06" title="Changes to this policy">
+          <P>If we change how we use cookies, we will update this page and revise the date at the top. For changes that affect your consent, we will notify account holders by email and present the cookie banner again so you can review your preferences.</P>
+        </Section>
+
+        <div style={{ background: C.ink, borderRadius: 10, padding: 32, marginTop: 48 }}>
+          <h2 style={{ fontFamily: "Georgia, serif", fontSize: 20, fontWeight: 300, color: C.cream, marginBottom: 10 }}>Questions about cookies?</h2>
+          <p style={{ fontSize: 14, color: "rgba(250,248,243,0.55)", lineHeight: 1.7, marginBottom: 16 }}>If anything here is unclear or you want to know more about how we handle your data, reach out directly.</p>
+          <a href="mailto:hello@touchconnectpro.com" style={{ display: "inline-block", fontSize: 14, fontWeight: 500, color: C.gold, textDecoration: "none", borderBottom: `1px solid rgba(196,154,60,0.3)`, paddingBottom: 1 }}>hello@touchconnectpro.com</a>
+          <p style={{ marginTop: 14, marginBottom: 0, fontSize: 14, color: "rgba(250,248,243,0.55)" }}>Touch Equity Partners LLC</p>
         </div>
-      </section>
+
+      </div>
     </div>
   );
 }

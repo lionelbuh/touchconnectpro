@@ -51,6 +51,8 @@ The platform adopts a component-based, responsive, and mobile-first design. It i
 -   **Ask a Mentor (Community Questions)**: Entrepreneurs can submit questions for mentor guidance. Admins can generate, review, and send AI-prepared answers. Admins can also initiate contact with community members directly via the "Contact a Community Member" form, which sends a message + email notification. Admin-initiated messages display as "Message from Your Mentor Team" on the entrepreneur side, with an "Admin Initiated" badge on the admin side. The admin-initiate endpoint is protected by admin session token verification.
 -   **Insights Knowledge Hub**: A section for SEO-optimized articles on startup guidance, acting as a topical authority.
 -   **Last Connected Tracking**: Tracks user login timestamps (`last_login_at` column) across all role tables (ideas, coach_applications, mentor_applications, investor_applications, trial_users). Displayed in Admin Dashboard for entrepreneurs and coaches. Authenticated via Supabase JWT. Requires `supabase_migrations/add_last_login_at.sql` to be run in Supabase SQL Editor.
+-   **New Design System**: All public/legal pages use a unified design language: `#FAF8F3` cream bg, `#1A1814` ink, `#4A4740` ink-soft, `#C49A3C` gold, `#1D6A5A` teal, `#E4F0ED` teal-light, `#FAF3E0` gold-pale. Georgia/serif for headings. Applied to: PrivacyPolicy, CookiePolicy, TermsOfService, MemberAgreement, HowItWorks, Insights pages.
+-   **Member Agreement Page**: Standalone route at `/member-agreement` with 14 numbered sections matching the legal design system. Separate from the embedded contract text in `client/src/lib/contracts.ts` used in the dashboard gate flow.
 
 ## External Dependencies
 
