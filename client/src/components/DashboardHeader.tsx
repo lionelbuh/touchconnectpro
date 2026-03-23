@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LogOut, Home, BookOpen, BarChart3, HelpCircle, Menu, X } from "lucide-react";
+import { LogOut, Home, BookOpen, HelpCircle, Menu, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -35,7 +35,6 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
   const navLinks = [
     { href: "/", label: "Home", icon: Home },
     { href: "/how-it-works", label: "How It Works", icon: BookOpen },
-    { href: "/pricing", label: "Pricing", icon: BarChart3 },
     { href: "/qa", label: "Q&A", icon: HelpCircle }
   ];
 

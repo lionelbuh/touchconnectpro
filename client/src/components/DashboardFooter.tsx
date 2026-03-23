@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Home, BookOpen, BarChart3, HelpCircle } from "lucide-react";
+import { Home, BookOpen, HelpCircle } from "lucide-react";
 import { useLocation } from "wouter";
 
 export function DashboardFooter() {
@@ -8,7 +8,6 @@ export function DashboardFooter() {
   const navLinks = [
     { href: "/", label: "Home", icon: Home },
     { href: "/how-it-works", label: "How It Works", icon: BookOpen },
-    { href: "/pricing", label: "Pricing", icon: BarChart3 },
     { href: "/qa", label: "Q&A", icon: HelpCircle }
   ];
 

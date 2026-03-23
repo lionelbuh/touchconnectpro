@@ -10,7 +10,6 @@ import Home from "@/pages/Home";
 import IdeaSubmit from "@/pages/IdeaSubmit";
 import Dashboard from "@/pages/Dashboard";
 import MentorDirectory from "@/pages/MentorDirectory";
-import Pricing from "@/pages/Pricing";
 import QA from "@/pages/QA";
 import HowItWorks from "@/pages/HowItWorks";
 import ComingSoon from "@/pages/ComingSoon";
@@ -66,7 +65,6 @@ function Router() {
         <Route path="/coming-soon" component={ComingSoon} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/mentors" component={MentorDirectory} />
-        <Route path="/pricing" component={Pricing} />
         <Route path="/qa" component={QA} />
         <Route path="/how-it-works" component={HowItWorks} />
         <Route path="/become-entrepreneur" component={BecomeaEntrepreneur} />
