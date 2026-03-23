@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, ArrowLeft, Target, Compass, DollarSign, Settings, Rocket, CheckCircle, Loader2, Zap, Clock, Users, Briefcase, Lightbulb, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, CheckCircle, Users, Target, Zap } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   SEGMENTATION_QUESTION,
@@ -19,28 +18,51 @@ import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { getSupabase } from "@/lib/supabase";
 
-const categoryIcons: Record<Category, React.ReactNode> = {
-  Strategy: <Compass className="h-6 w-6" />,
-  Sales: <DollarSign className="h-6 w-6" />,
-  Operations: <Settings className="h-6 w-6" />,
-  Execution: <Rocket className="h-6 w-6" />,
+const C = {
+  cream: "#FAF8F3",
+  ink: "#1A1814",
+  inkSoft: "#4A4740",
+  inkMuted: "#8C8880",
+  gold: "#C49A3C",
+  goldPale: "#FAF3E0",
+  teal: "#1D6A5A",
+  tealLight: "#E4F0ED",
+  border: "rgba(26,24,20,0.12)",
+  borderSoft: "rgba(26,24,20,0.07)",
 };
 
-const categoryAccentColors: Record<Category, string> = {
+const categoryColors: Record<Category, string> = {
   Strategy: "#4B3F72",
-  Sales: "#0D566C",
-  Operations: "#F5C542",
-  Execution: "#FF6B5C",
+  Sales: "#1D6A5A",
+  Operations: "#7A5C1E",
+  Execution: "#8C3A2A",
 };
-
-const segmentIcons = [
-  <Rocket className="h-6 w-6" />,
-  <Briefcase className="h-6 w-6" />,
-  <Lightbulb className="h-6 w-6" />,
-  <Compass className="h-6 w-6" />,
-];
 
 type Phase = "landing" | "segmentation" | "quiz" | "contact" | "results" | "community-signup";
+
+/* ── Shared Shell ── */
+function QuizShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ backgroundColor: C.cream, minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "48px 20px 80px" }}>
+      {children}
+    </div>
+  );
+}
+
+/* ── Progress Bar ── */
+function ProgressBar({ value, label, count }: { value: number; label?: string; count?: string }) {
+  return (
+    <div style={{ width: "100%", maxWidth: 620, marginBottom: 48 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        {label && <span style={{ fontSize: 12, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: C.inkMuted }}>{label}</span>}
+        {count && <span style={{ fontFamily: "Georgia, serif", fontSize: 13, color: C.inkMuted }}>{count}</span>}
+      </div>
+      <div style={{ height: 3, background: C.borderSoft, borderRadius: 100, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${value}%`, background: C.teal, borderRadius: 100, transition: "width 0.5s ease" }} />
+      </div>
+    </div>
+  );
+}
 
 export default function FounderFocusScore() {
   const [, navigate] = useLocation();
@@ -106,15 +128,12 @@ export default function FounderFocusScore() {
             trackLabel: TRACK_LABELS[selectedTrack!],
           }),
         });
-      } catch (e) {
-      }
+      } catch (e) {}
     }
   };
 
   const handlePrevious = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-    }
+    if (currentQuestion > 0) setCurrentQuestion(currentQuestion - 1);
   };
 
   const handleCommunitySignup = async () => {
@@ -136,17 +155,10 @@ export default function FounderFocusScore() {
       const res = await fetch(`${API_BASE_URL}/api/community/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: signupEmail,
-          name: signupName,
-          password: signupPassword,
-          quizResult: result,
-        }),
+        body: JSON.stringify({ email: signupEmail, name: signupName, password: signupPassword, quizResult: result }),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create account");
-
       setAccountCreated(true);
       toast.success("Account created! You can now log in to your dashboard.");
     } catch (err: any) {
@@ -159,65 +171,58 @@ export default function FounderFocusScore() {
   // ── Landing ──
   if (phase === "landing") {
     return (
-      <div className="flex flex-col">
-        <section className="pt-20 pb-12 md:pt-24 md:pb-16" style={{ backgroundColor: "#FAF9F7" }}>
-          <div className="container px-4 mx-auto max-w-3xl text-center">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-snug tracking-tight mb-5" style={{ color: "#0D566C" }} data-testid="text-quiz-title">
-              Founder Focus Score
+      <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
+        <QuizShell>
+          <div className="intro-screen" style={{ width: "100%", maxWidth: 580, textAlign: "center", animation: "slideIn 0.4s ease" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", color: C.teal, background: C.tealLight, padding: "6px 14px", borderRadius: 100, marginBottom: 28 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.teal, display: "inline-block" }} />
+              Free diagnostic
+            </div>
+            <h1 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(32px,5vw,48px)", fontWeight: 300, lineHeight: 1.1, letterSpacing: "-0.02em", color: C.ink, marginBottom: 20 }} data-testid="text-quiz-title">
+              Discover your biggest <em style={{ fontStyle: "italic", color: C.gold }}>growth blocker</em>
             </h1>
-            <p className="text-xl md:text-2xl font-display font-medium mb-4" style={{ color: "#4B3F72" }}>
-              Discover your biggest growth blocker in under five minutes.
+            <p style={{ fontSize: 16, color: C.inkSoft, lineHeight: 1.75, marginBottom: 40, maxWidth: 460, marginLeft: "auto", marginRight: "auto" }}>
+              Answer 8 questions based on your profile and get a plain-language diagnosis of what is holding you back — plus one concrete action to take this week.
             </p>
-            <p className="text-lg max-w-2xl mx-auto leading-relaxed mb-10" style={{ color: "#4A4A4A" }}>
-              Answer 8 personalized questions based on your profile and get a clear diagnosis of what is holding you back, plus one concrete step to move forward this week.
-            </p>
-
-            <div className="grid grid-cols-3 gap-4 max-w-md mx-auto mb-12">
-              {[
-                { icon: <Clock className="h-5 w-5" style={{ color: "#F5C542" }} />, label: "5 minutes" },
-                { icon: <Target className="h-5 w-5" style={{ color: "#F5C542" }} />, label: "Personalized" },
-                { icon: <Zap className="h-5 w-5" style={{ color: "#F5C542" }} />, label: "No signup required" },
-              ].map((item, i) => (
-                <div key={i} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white" style={{ boxShadow: "0 2px 12px rgba(224,224,224,0.5)" }}>
-                  {item.icon}
-                  <span className="text-sm font-medium" style={{ color: "#4A4A4A" }}>{item.label}</span>
-                </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 40 }}>
+              {["5 minutes", "Personalized", "No sign-up needed"].map((label, i) => (
+                <span key={i} style={{ fontSize: 12, color: C.inkSoft, background: "white", border: `1px solid ${C.border}`, padding: "7px 16px", borderRadius: 100, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: C.teal, display: "inline-block" }} />
+                  {label}
+                </span>
               ))}
             </div>
-
-            <Button
-              size="lg"
-              className="h-14 px-10 text-lg font-semibold rounded-full shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-[1.03] active:scale-[0.98]"
-              style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+            <button
               onClick={() => setPhase("segmentation")}
+              style={{ display: "inline-block", background: C.ink, color: C.cream, fontSize: 15, fontWeight: 500, padding: "16px 40px", borderRadius: 4, border: "none", cursor: "pointer", fontFamily: "inherit", transition: "background 0.15s, transform 0.1s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = C.teal; e.currentTarget.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = C.ink; e.currentTarget.style.transform = "translateY(0)"; }}
               data-testid="button-start-quiz"
             >
-              Start the diagnostic <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+              Start the diagnostic →
+            </button>
+            <p style={{ marginTop: 16, fontSize: 12, color: C.inkMuted }}>No credit card. No commitment.</p>
           </div>
-        </section>
 
-        <section className="py-16 md:py-20" style={{ backgroundColor: "#F3F3F3" }}>
-          <div className="container px-4 mx-auto max-w-4xl">
-            <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-12" style={{ color: "#0D566C" }}>How it works</h2>
-            <div className="grid md:grid-cols-4 gap-8">
+          {/* How it works strip */}
+          <div style={{ width: "100%", maxWidth: 620, marginTop: 72, borderTop: `1px solid ${C.borderSoft}`, paddingTop: 48 }}>
+            <span style={{ display: "block", fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: C.inkMuted, marginBottom: 32, textAlign: "center" }}>How it works</span>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24 }}>
               {[
-                { num: "1", title: "Tell us", desc: "Select the profile that best describes you." },
-                { num: "2", title: "Answer", desc: "Respond to 8 short, personalized questions about your current challenges." },
-                { num: "3", title: "Discover", desc: "See your primary blocker across four key areas of growth." },
-                { num: "4", title: "Act", desc: "Receive one clear action step to take this week." },
-              ].map((step) => (
-                <div key={step.num} className="text-center">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 font-bold" style={{ backgroundColor: "rgba(245,197,66,0.2)", color: "#0D566C" }}>
-                    {step.num}
-                  </div>
-                  <h3 className="font-bold mb-2" style={{ color: "#0D566C" }}>{step.title}</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: "#4A4A4A" }}>{step.desc}</p>
+                { num: "01", title: "Tell us", desc: "Select the profile that best describes you." },
+                { num: "02", title: "Answer", desc: "8 short, honest questions about your situation." },
+                { num: "03", title: "Discover", desc: "See your primary growth blocker across four areas." },
+                { num: "04", title: "Act", desc: "One concrete step to take this week." },
+              ].map(step => (
+                <div key={step.num} style={{ textAlign: "center" }}>
+                  <span style={{ fontFamily: "Georgia, serif", fontSize: 20, fontWeight: 300, color: C.gold, display: "block", marginBottom: 8 }}>{step.num}</span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: C.ink, display: "block", marginBottom: 4 }}>{step.title}</span>
+                  <span style={{ fontSize: 12, color: C.inkMuted, lineHeight: 1.5 }}>{step.desc}</span>
                 </div>
               ))}
             </div>
           </div>
-        </section>
+        </QuizShell>
       </div>
     );
   }
@@ -225,57 +230,47 @@ export default function FounderFocusScore() {
   // ── Segmentation ──
   if (phase === "segmentation") {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#FAF9F7" }}>
-        <div className="container mx-auto px-4 py-12 flex-1 flex flex-col max-w-3xl">
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium" style={{ color: "#8A8A8A" }}>Getting started</span>
-              <span className="text-sm font-medium" style={{ color: "#0D566C" }}>Step 1 of 2</span>
-            </div>
-            <div className="w-full h-2 rounded-full" style={{ backgroundColor: "#E8E8E8" }}>
-              <div className="h-2 rounded-full transition-all duration-500" style={{ width: "5%", backgroundColor: "#FF6B5C" }} />
-            </div>
-          </div>
-
-          <div className="flex-1 flex flex-col justify-center">
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-10 leading-tight text-center" style={{ color: "#0D566C" }} data-testid="text-segmentation-question">
+      <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
+        <QuizShell>
+          <ProgressBar value={5} label="Getting started" count="Step 1 of 2" />
+          <div style={{ width: "100%", maxWidth: 620, animation: "slideIn 0.3s ease" }}>
+            <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: C.teal, marginBottom: 16, display: "block" }}>Your situation</span>
+            <h2 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(22px,4vw,30px)", fontWeight: 300, lineHeight: 1.25, color: C.ink, letterSpacing: "-0.01em", marginBottom: 8 }} data-testid="text-segmentation-question">
               {SEGMENTATION_QUESTION.question}
             </h2>
+            <p style={{ fontSize: 14, color: C.inkMuted, lineHeight: 1.6, marginBottom: 32 }}>Be honest. There is no wrong answer and your result depends on accuracy.</p>
 
-            <div className="space-y-4 mb-10">
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 32 }}>
               {SEGMENTATION_QUESTION.options.map((option, i) => (
                 <button
                   key={i}
-                  className="w-full text-left p-5 rounded-xl border-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md bg-white"
-                  style={{ borderColor: "#E8E8E8" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#FF6B5C"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E8E8E8"; }}
                   onClick={() => handleSegmentSelect(i)}
+                  style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "18px 20px", background: "white", border: `1px solid ${C.border}`, borderRadius: 10, cursor: "pointer", textAlign: "left", fontFamily: "inherit", transition: "border-color 0.15s, transform 0.1s", width: "100%" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(26,24,20,0.3)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = "translateY(0)"; }}
                   data-testid={`button-segment-${i}`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(245,197,66,0.15)", color: "#F5C542" }}>
-                      {segmentIcons[i]}
-                    </div>
-                    <span className="text-lg font-medium" style={{ color: "#4A4A4A" }}>{option.text}</span>
+                  <div style={{ width: 26, height: 26, borderRadius: "50%", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500, color: C.inkMuted, flexShrink: 0, marginTop: 1, background: C.cream }}>
+                    {String.fromCharCode(65 + i)}
                   </div>
+                  <span style={{ fontSize: 15, fontWeight: 500, color: C.ink, lineHeight: 1.4 }}>{option.text}</span>
                 </button>
               ))}
             </div>
 
-            <div className="flex items-center justify-start">
-              <Button
-                variant="ghost"
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
+              <button
                 onClick={() => setPhase("landing")}
-                className="font-medium"
-                style={{ color: "#8A8A8A" }}
+                style={{ fontSize: 13, color: C.inkMuted, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "10px 0", transition: "color 0.15s", display: "flex", alignItems: "center", gap: 6 }}
+                onMouseEnter={e => (e.currentTarget.style.color = C.ink)}
+                onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}
                 data-testid="button-back-landing"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back
-              </Button>
+                ← Back
+              </button>
             </div>
           </div>
-        </div>
+        </QuizShell>
       </div>
     );
   }
@@ -287,89 +282,71 @@ export default function FounderFocusScore() {
     const selectedAnswer = answers[currentQuestion];
 
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#FAF9F7" }}>
-        <div className="container mx-auto px-4 py-12 flex-1 flex flex-col max-w-3xl">
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: "rgba(13,86,108,0.08)", color: "#0D566C" }}>
-                  {TRACK_LABELS[selectedTrack]}
-                </span>
-                <span className="text-sm font-medium" style={{ color: "#8A8A8A" }}>Question {currentQuestion + 1} of {questions.length}</span>
-              </div>
-              <span className="text-sm font-medium" style={{ color: "#0D566C" }}>{Math.round(progress)}%</span>
-            </div>
-            <div className="w-full h-2 rounded-full" style={{ backgroundColor: "#E8E8E8" }}>
-              <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%`, backgroundColor: "#FF6B5C" }} />
-            </div>
-          </div>
+      <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
+        <QuizShell>
+          <ProgressBar
+            value={progress}
+            label={TRACK_LABELS[selectedTrack]}
+            count={`${currentQuestion + 1} / ${questions.length}`}
+          />
 
-          <div className="flex-1 flex flex-col justify-center">
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-10 leading-tight" style={{ color: "#0D566C" }} data-testid={`text-question-${currentQuestion}`}>
+          <div style={{ width: "100%", maxWidth: 620, animation: "slideIn 0.3s ease" }}>
+            <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: C.teal, marginBottom: 16, display: "block" }}>
+              Question {currentQuestion + 1}
+            </span>
+            <h2 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(22px,4vw,30px)", fontWeight: 300, lineHeight: 1.25, color: C.ink, letterSpacing: "-0.01em", marginBottom: 32 }} data-testid={`text-question-${currentQuestion}`}>
               {question.question}
             </h2>
 
-            <div className="space-y-4 mb-10">
-              {question.answers.map((answer, i) => (
-                <button
-                  key={i}
-                  className="w-full text-left p-5 rounded-xl border-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                  style={{
-                    backgroundColor: selectedAnswer === i ? "rgba(255,107,92,0.06)" : "#FFFFFF",
-                    borderColor: selectedAnswer === i ? "#FF6B5C" : "#E8E8E8",
-                  }}
-                  onMouseEnter={(e) => { if (selectedAnswer !== i) e.currentTarget.style.borderColor = "#FF6B5C"; }}
-                  onMouseLeave={(e) => { if (selectedAnswer !== i) e.currentTarget.style.borderColor = "#E8E8E8"; }}
-                  onClick={() => handleAnswer(i)}
-                  data-testid={`button-answer-${currentQuestion}-${i}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                      style={{
-                        backgroundColor: selectedAnswer === i ? "#FF6B5C" : "rgba(13,86,108,0.08)",
-                        color: selectedAnswer === i ? "#FFFFFF" : "#0D566C",
-                      }}
-                    >
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 32 }}>
+              {question.answers.map((answer, i) => {
+                const isSelected = selectedAnswer === i;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => handleAnswer(i)}
+                    style={{
+                      display: "flex", alignItems: "flex-start", gap: 14, padding: "18px 20px",
+                      background: isSelected ? C.tealLight : "white",
+                      border: `1px solid ${isSelected ? C.teal : C.border}`,
+                      borderRadius: 10, cursor: "pointer", textAlign: "left", fontFamily: "inherit",
+                      transition: "border-color 0.15s, background 0.15s, transform 0.1s", width: "100%",
+                    }}
+                    onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = "rgba(26,24,20,0.3)"; e.currentTarget.style.transform = "translateY(-1px)"; } }}
+                    onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = "translateY(0)"; } }}
+                    data-testid={`button-answer-${currentQuestion}-${i}`}
+                  >
+                    <div style={{ width: 26, height: 26, borderRadius: "50%", border: `1px solid ${isSelected ? C.teal : C.border}`, background: isSelected ? C.teal : C.cream, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500, color: isSelected ? "white" : C.inkMuted, flexShrink: 0, marginTop: 1, transition: "all 0.15s" }}>
                       {String.fromCharCode(65 + i)}
                     </div>
-                    <span className="text-lg" style={{ color: "#4A4A4A" }}>{answer.text}</span>
-                  </div>
-                </button>
-              ))}
+                    <span style={{ fontSize: 15, fontWeight: 500, color: C.ink, lineHeight: 1.4 }}>{answer.text}</span>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="flex items-center justify-between">
-              <Button
-                variant="ghost"
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <button
                 onClick={() => {
-                  if (currentQuestion === 0) {
-                    setPhase("segmentation");
-                  } else {
-                    handlePrevious();
-                  }
+                  if (currentQuestion === 0) setPhase("segmentation");
+                  else handlePrevious();
                 }}
-                className="font-medium"
-                style={{ color: "#8A8A8A" }}
+                style={{ fontSize: 13, color: C.inkMuted, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "10px 0", transition: "color 0.15s", display: "flex", alignItems: "center", gap: 6 }}
+                onMouseEnter={e => (e.currentTarget.style.color = C.ink)}
+                onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}
                 data-testid="button-previous"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" /> {currentQuestion === 0 ? "Change Profile" : "Previous"}
-              </Button>
-              <div className="flex gap-1.5">
+                ← {currentQuestion === 0 ? "Change profile" : "Previous"}
+              </button>
+              <div style={{ display: "flex", gap: 6 }}>
                 {questions.map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-2.5 h-2.5 rounded-full transition-colors"
-                    style={{
-                      backgroundColor: i === currentQuestion ? "#FF6B5C" : answers[i] >= 0 ? "rgba(255,107,92,0.4)" : "#E8E8E8",
-                    }}
-                  />
+                  <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: i === currentQuestion ? C.teal : answers[i] >= 0 ? "rgba(29,106,90,0.35)" : C.borderSoft, transition: "background 0.2s" }} />
                 ))}
               </div>
-              <div className="w-24" />
+              <div style={{ width: 80 }} />
             </div>
           </div>
-        </div>
+        </QuizShell>
       </div>
     );
   }
@@ -385,14 +362,8 @@ export default function FounderFocusScore() {
           const res = await fetch(`${API_BASE_URL}/api/community/auto-signup`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: contactEmail.trim(),
-              name: contactName.trim(),
-              quizResult: result,
-              clientPassword: clientTempPassword,
-            }),
+            body: JSON.stringify({ email: contactEmail.trim(), name: contactName.trim(), quizResult: result, clientPassword: clientTempPassword }),
           });
-
           const data = await res.json();
           console.log("[AUTO SIGNUP] Response status:", res.status, "data keys:", Object.keys(data));
           if (res.ok) {
@@ -404,31 +375,21 @@ export default function FounderFocusScore() {
                 console.error("[AUTO LOGIN] Supabase client not available");
               } else {
                 console.log("[AUTO LOGIN] Attempting sign-in for:", normalizedEmail);
-                const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({
-                  email: normalizedEmail,
-                  password: loginPassword,
-                });
+                const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({ email: normalizedEmail, password: loginPassword });
                 console.log("[AUTO LOGIN] Result:", signInError ? signInError.message : "success", "session:", !!signInData?.session);
                 if (!signInError && signInData?.session) {
                   console.log("[AUTO LOGIN] Success! Redirecting to dashboard...");
                   toast.success("Welcome! Taking you to your dashboard...");
-                  setTimeout(() => {
-                    window.location.href = "/dashboard-entrepreneur";
-                  }, 500);
+                  setTimeout(() => { window.location.href = "/dashboard-entrepreneur"; }, 500);
                   return;
                 }
                 if (signInError) {
                   console.log("[AUTO LOGIN] Retrying with clientPassword...");
-                  const { data: retryData, error: retryError } = await supabaseClient.auth.signInWithPassword({
-                    email: normalizedEmail,
-                    password: clientTempPassword,
-                  });
+                  const { data: retryData, error: retryError } = await supabaseClient.auth.signInWithPassword({ email: normalizedEmail, password: clientTempPassword });
                   if (!retryError && retryData?.session) {
                     console.log("[AUTO LOGIN] Retry success! Redirecting...");
                     toast.success("Welcome! Taking you to your dashboard...");
-                    setTimeout(() => {
-                      window.location.href = "/dashboard-entrepreneur";
-                    }, 500);
+                    setTimeout(() => { window.location.href = "/dashboard-entrepreneur"; }, 500);
                     return;
                   }
                   console.error("[AUTO LOGIN] Retry also failed:", retryError?.message);
@@ -455,88 +416,67 @@ export default function FounderFocusScore() {
     };
 
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#FAF9F7" }}>
-        <div className="container mx-auto px-4 py-12 flex-1 flex flex-col max-w-3xl">
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: "rgba(13,86,108,0.08)", color: "#0D566C" }}>
-                  Almost Done
-                </span>
-                <span className="text-sm font-medium" style={{ color: "#8A8A8A" }}>Last Step</span>
-              </div>
-              <span className="text-sm font-medium" style={{ color: "#0D566C" }}>100%</span>
-            </div>
-            <div className="w-full h-2 rounded-full" style={{ backgroundColor: "#E8E8E8" }}>
-              <div className="h-2 rounded-full transition-all duration-500" style={{ width: "100%", backgroundColor: "#FF6B5C" }} />
-            </div>
-          </div>
-
-          <div className="flex-1 flex flex-col justify-center">
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-4 leading-tight" style={{ color: "#0D566C" }} data-testid="text-contact-title">
+      <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
+        <QuizShell>
+          <ProgressBar value={100} label="Almost done" count="Last step" />
+          <div style={{ width: "100%", maxWidth: 620, animation: "slideIn 0.3s ease" }}>
+            <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: C.teal, marginBottom: 16, display: "block" }}>Your results</span>
+            <h2 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(22px,4vw,30px)", fontWeight: 300, lineHeight: 1.25, color: C.ink, letterSpacing: "-0.01em", marginBottom: 8 }} data-testid="text-contact-title">
               Where should we send your results?
             </h2>
-            <p className="text-lg mb-10" style={{ color: "#8A8A8A" }}>
-              Enter your details below so we can save your Founder Focus Score and set up your free dashboard.
+            <p style={{ fontSize: 14, color: C.inkMuted, lineHeight: 1.6, marginBottom: 32 }}>
+              Enter your details below and we will save your Founder Focus Score and set up your free dashboard. Or skip to see results now.
             </p>
 
-            <div className="space-y-4 mb-10 max-w-lg">
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 32, maxWidth: 480 }}>
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: "#4A4A4A" }}>Full Name</label>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: C.ink, marginBottom: 6 }}>Full name</label>
                 <Input
                   placeholder="Your full name"
                   value={contactName}
-                  onChange={(e) => setContactName(e.target.value)}
+                  onChange={e => setContactName(e.target.value)}
                   autoComplete="name"
-                  className="h-12 rounded-xl text-base"
-                  style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A" }}
+                  style={{ background: "white", borderColor: C.border, color: C.ink, height: 48, borderRadius: 4 }}
                   data-testid="input-contact-name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: "#4A4A4A" }}>Email Address</label>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: C.ink, marginBottom: 6 }}>Email address</label>
                 <Input
                   type="email"
                   placeholder="Your email address"
                   value={contactEmail}
-                  onChange={(e) => setContactEmail(e.target.value)}
+                  onChange={e => setContactEmail(e.target.value)}
                   autoComplete="email"
-                  className="h-12 rounded-xl text-base"
-                  style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E8E8", color: "#4A4A4A" }}
+                  style={{ background: "white", borderColor: C.border, color: C.ink, height: 48, borderRadius: 4 }}
                   data-testid="input-contact-email"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setPhase("quiz");
-                  setCurrentQuestion(questions.length - 1);
-                }}
-                className="font-medium"
-                style={{ color: "#8A8A8A" }}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <button
+                onClick={() => { setPhase("quiz"); setCurrentQuestion(questions.length - 1); }}
+                style={{ fontSize: 13, color: C.inkMuted, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "10px 0", transition: "color 0.15s" }}
+                onMouseEnter={e => (e.currentTarget.style.color = C.ink)}
+                onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}
                 data-testid="button-back-to-quiz"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back
-              </Button>
-              <Button
+                ← Back
+              </button>
+              <button
                 onClick={handleSeeResults}
                 disabled={isAutoCreating}
-                className="rounded-full px-8 h-12 font-semibold transition-all duration-200 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
-                style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
+                style={{ background: C.ink, color: C.cream, fontSize: 14, fontWeight: 500, padding: "13px 32px", borderRadius: 4, border: "none", cursor: isAutoCreating ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: isAutoCreating ? 0.7 : 1, display: "flex", alignItems: "center", gap: 8, transition: "background 0.15s, transform 0.1s" }}
+                onMouseEnter={e => { if (!isAutoCreating) { e.currentTarget.style.background = C.teal; e.currentTarget.style.transform = "translateY(-1px)"; } }}
+                onMouseLeave={e => { e.currentTarget.style.background = C.ink; e.currentTarget.style.transform = "translateY(0)"; }}
                 data-testid="button-see-results"
               >
-                {isAutoCreating ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Setting up...</>
-                ) : (
-                  <>See My Results <ArrowRight className="ml-2 h-5 w-5" /></>
-                )}
-              </Button>
+                {isAutoCreating ? <><Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} /> Setting up...</> : <>See my results <ArrowRight style={{ width: 16, height: 16 }} /></>}
+              </button>
             </div>
           </div>
-        </div>
+        </QuizShell>
       </div>
     );
   }
@@ -545,258 +485,193 @@ export default function FounderFocusScore() {
   if (phase === "results" && result && selectedTrack) {
     const trackBlocker = TRACK_BLOCKER_INFO[selectedTrack][result.primaryBlocker];
     const blocker = trackBlocker || BLOCKER_INFO[result.primaryBlocker];
+    const blockerColor = categoryColors[result.primaryBlocker] || C.teal;
+
+    const getBarColor = (pct: number) => pct >= 60 ? C.teal : pct >= 35 ? C.gold : "#C97B5A";
 
     return (
-      <div className="flex flex-col">
-        {/* Results Header */}
-        <section className="pt-28 pb-12 md:pt-36 md:pb-16" style={{ backgroundColor: "#FAF9F7" }}>
-          <div className="container px-4 mx-auto max-w-4xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-wider mb-3 inline-block px-4 py-1.5 rounded-full" style={{ backgroundColor: "rgba(13,86,108,0.08)", color: "#0D566C" }}>
-              Your Results
-            </p>
-            <h1 className="text-3xl md:text-4xl font-display font-bold mb-3" style={{ color: "#0D566C" }} data-testid="text-results-title">
-              Your Founder Focus Score
-            </h1>
-            <p className="text-sm" style={{ color: "#8A8A8A" }}>
-              Track: <span className="font-medium" style={{ color: "#4B3F72" }}>{TRACK_LABELS[selectedTrack]}</span>
-            </p>
-          </div>
-        </section>
-
-        {/* Score + Blocker Cards */}
-        <section className="pb-12" style={{ backgroundColor: "#FAF9F7" }}>
-          <div className="container px-4 mx-auto max-w-4xl">
-            <div className="grid md:grid-cols-2 gap-8 mb-12">
-              {/* Score Circle */}
-              <div className="bg-white rounded-2xl p-8 text-center" style={{ boxShadow: "0 2px 16px rgba(224,224,224,0.5)" }}>
-                <div className="relative w-36 h-36 mx-auto mb-6">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="42" fill="none" stroke="#E8E8E8" strokeWidth="8" />
-                    <circle
-                      cx="50" cy="50" r="42" fill="none"
-                      stroke="#FF6B5C" strokeWidth="8"
-                      strokeLinecap="round"
-                      strokeDasharray={`${(result.totalScore / 100) * 264} 264`}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-4xl font-display font-bold" style={{ color: "#0D566C" }} data-testid="text-score-value">{result.totalScore}</span>
-                  </div>
-                </div>
-                <p className="text-sm font-medium" style={{ color: "#8A8A8A" }}>
-                  {result.totalScore >= 80 ? "Strong foundation" : result.totalScore >= 60 ? "Solid but blocked" : "High friction"}
-                </p>
-              </div>
-
-              {/* Primary Blocker */}
-              <div className="rounded-2xl p-8 text-center flex flex-col justify-center" style={{ backgroundColor: categoryAccentColors[result.primaryBlocker] }}>
-                <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-4 text-white">
-                  {categoryIcons[result.primaryBlocker]}
-                </div>
-                <p className="text-white/70 text-sm uppercase tracking-wider mb-2">Primary Blocker</p>
-                <h2 className="text-2xl font-display font-bold text-white" data-testid="text-primary-blocker">{blocker.title}</h2>
-              </div>
+      <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
+        <QuizShell>
+          <div style={{ width: "100%", maxWidth: 660, animation: "slideIn 0.4s ease" }}>
+            {/* Header */}
+            <div style={{ textAlign: "center", marginBottom: 40 }}>
+              <span style={{ display: "inline-block", fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: C.teal, background: C.tealLight, padding: "5px 14px", borderRadius: 100, marginBottom: 20 }}>Your results</span>
+              <h2 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(26px,4vw,38px)", fontWeight: 300, color: C.ink, lineHeight: 1.2, marginBottom: 8 }} data-testid="text-results-title">
+                Your Founder <em style={{ fontStyle: "italic", color: C.gold }}>Focus Score</em>
+              </h2>
+              <p style={{ fontSize: 13, color: C.inkMuted }}>Track: <span style={{ fontWeight: 500, color: C.inkSoft }}>{TRACK_LABELS[selectedTrack]}</span></p>
             </div>
-          </div>
-        </section>
 
-        {/* What This Means */}
-        <section className="py-12" style={{ backgroundColor: "#F3F3F3" }}>
-          <div className="container px-4 mx-auto max-w-4xl">
-            <div className="bg-white rounded-2xl p-8" style={{ boxShadow: "0 2px 16px rgba(224,224,224,0.5)" }}>
-              <h3 className="text-xl font-display font-bold mb-4" style={{ color: "#0D566C" }}>What This Means</h3>
-              <p className="leading-relaxed mb-6" style={{ color: "#4A4A4A" }} data-testid="text-blocker-explanation">{blocker.explanation}</p>
-              <div className="p-5 rounded-xl" style={{ backgroundColor: "rgba(245,197,66,0.1)", border: "1px solid rgba(245,197,66,0.3)" }}>
-                <div className="flex items-start gap-3">
-                  <Target className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "#F5C542" }} />
-                  <div>
-                    <p className="font-bold mb-1" style={{ color: "#0D566C" }}>Your Next Action</p>
-                    <p className="text-sm" style={{ color: "#4A4A4A" }} data-testid="text-next-action">{blocker.action}</p>
-                  </div>
+            {/* Dark score card */}
+            <div style={{ background: C.ink, borderRadius: 10, padding: "36px 40px", marginBottom: 20, display: "grid", gridTemplateColumns: "140px 1fr", gap: 40, alignItems: "center" }}>
+              <div style={{ textAlign: "center", borderRight: "1px solid rgba(255,255,255,0.1)", paddingRight: 40 }}>
+                <div style={{ fontFamily: "Georgia, serif", fontSize: 64, fontWeight: 300, color: C.cream, lineHeight: 1, letterSpacing: "-0.03em" }} data-testid="text-score-value">
+                  {result.totalScore}<span style={{ fontSize: 20, color: "rgba(250,248,243,0.35)" }}>/100</span>
                 </div>
+                <span style={{ display: "inline-block", fontSize: 10, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: C.gold, background: "rgba(196,154,60,0.15)", padding: "3px 10px", borderRadius: 100, marginTop: 10 }}>
+                  {result.totalScore >= 80 ? "Strong foundation" : result.totalScore >= 60 ? "Solid, but blocked" : "High friction"}
+                </span>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Score Breakdown */}
-        <section className="py-12" style={{ backgroundColor: "#F3F3F3" }}>
-          <div className="container px-4 mx-auto max-w-4xl">
-            <div className="bg-white rounded-2xl p-8" style={{ boxShadow: "0 2px 16px rgba(224,224,224,0.5)" }}>
-              <h3 className="text-xl font-display font-bold mb-6" style={{ color: "#0D566C" }}>Score Breakdown</h3>
-              <div className="space-y-5">
-                {result.categoryResults.map((cat) => (
-                  <div key={cat.category}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span style={{ color: categoryAccentColors[cat.category] }}>{categoryIcons[cat.category]}</span>
-                        <span className="font-medium" style={{ color: "#0D566C" }}>{cat.category}</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {result.categoryResults.map(cat => {
+                  const pct = cat.percentage;
+                  return (
+                    <div key={cat.category}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "rgba(250,248,243,0.5)", marginBottom: 5 }}>
+                        <span>{cat.category}</span>
+                        <span style={{ color: "rgba(250,248,243,0.8)", fontWeight: 500 }}>{Math.round(pct)}%</span>
                       </div>
-                      <span className="text-sm" style={{ color: "#8A8A8A" }}>{cat.score} pts</span>
+                      <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 100, overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${Math.max(pct, 5)}%`, background: getBarColor(pct), borderRadius: 100, transition: "width 1s ease 0.3s" }} />
+                      </div>
                     </div>
-                    <div className="w-full h-2.5 rounded-full" style={{ backgroundColor: "#E8E8E8" }}>
-                      <div
-                        className="h-2.5 rounded-full transition-all duration-700"
-                        style={{ width: `${Math.max(cat.percentage, 5)}%`, backgroundColor: categoryAccentColors[cat.category] }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
-          </div>
-        </section>
 
-        {autoAccountCreated ? (
-          <section className="py-16 md:py-20" style={{ backgroundColor: "#0D566C" }}>
-            <div className="container px-4 mx-auto max-w-3xl">
-              <div className="text-center">
-                <div className="max-w-md mx-auto rounded-xl p-8" style={{ backgroundColor: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }} data-testid="text-auto-signup-success">
-                  <CheckCircle className="h-12 w-12 mx-auto mb-4" style={{ color: "#F5C542" }} />
-                  <h4 className="text-xl font-display font-bold text-white mb-3">Your Dashboard Is Almost Ready!</h4>
-                  <p className="text-sm mb-2" style={{ color: "rgba(255,255,255,0.8)" }}>
-                    We've sent an email to <span className="font-semibold text-white">{contactEmail}</span> with a link to set your password.
-                  </p>
-                  <div className="rounded-lg p-4 mb-4" style={{ backgroundColor: "rgba(245,197,66,0.15)", border: "1px solid rgba(245,197,66,0.3)" }}>
-                    <p className="text-sm font-semibold text-white mb-1">Next step:</p>
-                    <p className="text-sm" style={{ color: "rgba(255,255,255,0.9)" }}>
-                      Open the email from TouchConnectPro and click <strong>"Set Your Password & Log In"</strong> to create your password and access your dashboard.
-                    </p>
-                  </div>
-                  <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.5)" }}>
-                    Check your inbox (and spam folder) for the email.
-                  </p>
-                </div>
-              </div>
+            {/* Diagnosis */}
+            <div style={{ background: "white", border: `1px solid ${C.border}`, borderRadius: 10, padding: 28, marginBottom: 16 }}>
+              <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: C.inkMuted, marginBottom: 12, display: "block" }}>Your diagnosis</span>
+              <p style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.75 }} data-testid="text-blocker-explanation">{blocker.explanation}</p>
             </div>
-          </section>
-        ) : (
-          <section className="py-16 md:py-20" style={{ backgroundColor: "#0D566C" }}>
-            <div className="container px-4 mx-auto max-w-3xl">
-              <div className="text-center">
-                <Users className="h-10 w-10 mx-auto mb-4" style={{ color: "#F5C542" }} />
-                <h3 className="text-2xl md:text-3xl font-display font-bold text-white mb-3" data-testid="text-community-cta">
-                  Join the Free Entrepreneur Community
-                </h3>
-                <p className="mb-8 max-w-xl mx-auto leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>
-                  Sign up with your email and password to unlock your dashboard. Access clarity and focus tools, priority-setting exercises, and connect with coaches and other founders to accelerate your next steps.
+
+            {/* Primary Blocker */}
+            <div style={{ background: "white", border: `1px solid ${C.border}`, borderRadius: 10, padding: 28, marginBottom: 16, borderLeft: `4px solid ${blockerColor}` }}>
+              <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: C.inkMuted, marginBottom: 8, display: "block" }}>Primary blocker</span>
+              <h3 style={{ fontSize: 18, fontFamily: "Georgia, serif", fontWeight: 400, color: C.ink, marginBottom: 0 }} data-testid="text-primary-blocker">{blocker.title}</h3>
+            </div>
+
+            {/* Next step */}
+            <div style={{ background: C.goldPale, border: `1px solid rgba(196,154,60,0.25)`, borderRadius: 10, padding: "24px 28px", marginBottom: 32, borderLeft: `4px solid ${C.gold}` }}>
+              <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: C.gold, marginBottom: 10, display: "block" }}>Your concrete next step this week</span>
+              <p style={{ fontSize: 15, color: C.ink, lineHeight: 1.7, fontWeight: 500, margin: 0 }} data-testid="text-next-action">{blocker.action}</p>
+            </div>
+
+            {/* CTA */}
+            {autoAccountCreated ? (
+              <div style={{ background: C.tealLight, border: `1px solid rgba(29,106,90,0.2)`, borderRadius: 10, padding: 32, textAlign: "center" }} data-testid="text-auto-signup-success">
+                <CheckCircle style={{ width: 40, height: 40, color: C.teal, margin: "0 auto 16px" }} />
+                <h4 style={{ fontFamily: "Georgia, serif", fontSize: 20, fontWeight: 400, color: C.ink, marginBottom: 12 }}>Your dashboard is almost ready</h4>
+                <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.7, marginBottom: 16 }}>
+                  We've sent an email to <strong>{contactEmail}</strong> with a link to set your password.
                 </p>
-                <div className="grid grid-cols-3 gap-3 max-w-md mx-auto mb-8">
-                  {[
-                    { label: "Focus tools", icon: <Target className="h-4 w-4" /> },
-                    { label: "Coach access", icon: <CheckCircle className="h-4 w-4" /> },
-                    { label: "100% free", icon: <Zap className="h-4 w-4" /> },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-1.5 text-xs rounded-lg px-3 py-2 justify-center" style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }}>
-                      {item.icon}
-                      {item.label}
-                    </div>
-                  ))}
+                <div style={{ background: C.goldPale, border: `1px solid rgba(196,154,60,0.2)`, borderRadius: 8, padding: "14px 18px", marginBottom: 16 }}>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: C.ink, marginBottom: 4 }}>Next step</p>
+                  <p style={{ fontSize: 13, color: C.inkSoft, margin: 0 }}>Open the email from TouchConnectPro and click <strong>"Set Your Password & Log In"</strong> to access your dashboard.</p>
                 </div>
+                <p style={{ fontSize: 12, color: C.inkMuted }}>Check your inbox and spam folder.</p>
+              </div>
+            ) : (
+              <div style={{ background: C.ink, borderRadius: 10, padding: 40 }}>
+                <div style={{ textAlign: "center", marginBottom: 28 }}>
+                  <Users style={{ width: 32, height: 32, color: C.gold, margin: "0 auto 12px" }} />
+                  <h3 style={{ fontFamily: "Georgia, serif", fontSize: 22, fontWeight: 300, color: C.cream, marginBottom: 10 }} data-testid="text-community-cta">
+                    Save your results. <em style={{ fontStyle: "italic", color: C.gold }}>It's free.</em>
+                  </h3>
+                  <p style={{ fontSize: 14, color: "rgba(250,248,243,0.55)", lineHeight: 1.7, maxWidth: 420, margin: "0 auto 24px" }}>
+                    Create a free account to access your personal dashboard, track your score over time, and connect with specialist advisors.
+                  </p>
+                  <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 28 }}>
+                    {["Score saved to dashboard", "Coach access", "100% free"].map((label, i) => (
+                      <span key={i} style={{ fontSize: 12, color: "rgba(250,248,243,0.6)", background: "rgba(255,255,255,0.08)", padding: "5px 14px", borderRadius: 100, display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ width: 4, height: 4, borderRadius: "50%", background: C.gold, display: "inline-block" }} />
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
                 {!accountCreated ? (
-                  <form className="max-w-md mx-auto space-y-3" onSubmit={(e) => { e.preventDefault(); handleCommunitySignup(); }} autoComplete="off">
+                  <form onSubmit={e => { e.preventDefault(); handleCommunitySignup(); }} style={{ maxWidth: 420, margin: "0 auto", display: "flex", flexDirection: "column", gap: 12 }}>
                     <Input
                       name="signup-name"
-                      id="signup-name"
                       placeholder="Your full name"
                       value={signupName}
-                      onChange={(e) => setSignupName(e.target.value)}
+                      onChange={e => setSignupName(e.target.value)}
                       autoComplete="name"
-                      className="h-12 rounded-xl border-white/20 text-white placeholder:text-white/40"
-                      style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                      style={{ height: 48, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "white", borderRadius: 4 }}
                       data-testid="input-signup-name"
                     />
                     <Input
                       name="signup-email"
-                      id="signup-email"
                       type="email"
                       placeholder="Your email address"
                       value={signupEmail}
-                      onChange={(e) => setSignupEmail(e.target.value)}
+                      onChange={e => setSignupEmail(e.target.value)}
                       autoComplete="email"
-                      className="h-12 rounded-xl border-white/20 text-white placeholder:text-white/40"
-                      style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                      style={{ height: 48, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "white", borderRadius: 4 }}
                       data-testid="input-signup-email"
                     />
                     <Input
                       name="signup-password"
-                      id="signup-password"
                       type="password"
                       placeholder="Choose a password (min 6 characters)"
                       value={signupPassword}
-                      onChange={(e) => setSignupPassword(e.target.value)}
+                      onChange={e => setSignupPassword(e.target.value)}
                       autoComplete="new-password"
-                      className="h-12 rounded-xl border-white/20 text-white placeholder:text-white/40"
-                      style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                      style={{ height: 48, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "white", borderRadius: 4 }}
                       data-testid="input-signup-password"
                     />
-                    <div className="text-left">
-                      <label className="flex items-start gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={agreedToContract}
-                          onChange={(e) => setAgreedToContract(e.target.checked)}
-                          className="mt-1 h-4 w-4 rounded"
-                          style={{ accentColor: "#FF6B5C" }}
-                          data-testid="checkbox-agree-contract"
-                        />
-                        <span className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
-                          I agree to the{" "}
-                          <button
-                            type="button"
-                            onClick={() => setShowContractText(!showContractText)}
-                            className="underline transition-colors"
-                            style={{ color: "#F5C542" }}
-                            data-testid="button-view-contract"
-                          >
-                            Community Free Membership Agreement
-                          </button>
-                        </span>
-                      </label>
-                      {showContractText && (
-                        <div className="mt-3 max-h-48 overflow-y-auto rounded-lg p-4 text-xs whitespace-pre-wrap" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
-                          {COMMUNITY_FREE_CONTRACT}
-                        </div>
-                      )}
-                    </div>
-                    <Button
+                    <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={agreedToContract}
+                        onChange={e => setAgreedToContract(e.target.checked)}
+                        style={{ marginTop: 2, accentColor: C.gold }}
+                        data-testid="checkbox-agree-contract"
+                      />
+                      <span style={{ fontSize: 13, color: "rgba(250,248,243,0.7)", lineHeight: 1.5 }}>
+                        I agree to the{" "}
+                        <button type="button" onClick={() => setShowContractText(!showContractText)} style={{ color: C.gold, background: "none", border: "none", cursor: "pointer", textDecoration: "underline", fontFamily: "inherit", fontSize: 13 }} data-testid="button-view-contract">
+                          Community Free Membership Agreement
+                        </button>
+                      </span>
+                    </label>
+                    {showContractText && (
+                      <div style={{ maxHeight: 192, overflowY: "auto", borderRadius: 6, padding: 16, fontSize: 12, whiteSpace: "pre-wrap", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(250,248,243,0.55)" }}>
+                        {COMMUNITY_FREE_CONTRACT}
+                      </div>
+                    )}
+                    <button
                       type="submit"
-                      size="lg"
-                      className="w-full h-12 font-semibold rounded-full transition-all duration-200 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
-                      style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
                       disabled={isCreatingAccount}
+                      style={{ height: 48, background: C.gold, color: C.ink, fontSize: 14, fontWeight: 600, borderRadius: 4, border: "none", cursor: isCreatingAccount ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: isCreatingAccount ? 0.7 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "background 0.15s" }}
+                      onMouseEnter={e => { if (!isCreatingAccount) e.currentTarget.style.background = "#D4AA4C"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = C.gold; }}
                       data-testid="button-join-community"
                     >
-                      {isCreatingAccount ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating your account...</>
-                      ) : (
-                        <>Join the Community — Free <ArrowRight className="ml-2 h-5 w-5" /></>
-                      )}
-                    </Button>
-                    <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.5)" }}>No credit card required. No commitment.</p>
+                      {isCreatingAccount ? <><Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} /> Creating account...</> : <>Join the community — free <ArrowRight style={{ width: 16, height: 16 }} /></>}
+                    </button>
+                    <p style={{ textAlign: "center", fontSize: 12, color: "rgba(250,248,243,0.4)", margin: 0 }}>No credit card. No commitment.</p>
                   </form>
                 ) : (
-                  <div className="max-w-md mx-auto rounded-xl p-6" style={{ backgroundColor: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }} data-testid="text-signup-success">
-                    <CheckCircle className="h-10 w-10 mx-auto mb-3" style={{ color: "#F5C542" }} />
-                    <h4 className="text-lg font-bold text-white mb-2">Welcome to the Community!</h4>
-                    <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.8)" }}>
-                      Your account is ready. Log in to access your entrepreneur dashboard.
-                    </p>
+                  <div style={{ textAlign: "center", padding: 32, background: "rgba(255,255,255,0.06)", borderRadius: 10 }} data-testid="text-signup-success">
+                    <CheckCircle style={{ width: 36, height: 36, color: C.gold, margin: "0 auto 12px" }} />
+                    <h4 style={{ fontFamily: "Georgia, serif", fontSize: 18, fontWeight: 400, color: C.cream, marginBottom: 10 }}>Welcome to the community</h4>
+                    <p style={{ fontSize: 14, color: "rgba(250,248,243,0.6)", marginBottom: 20 }}>Your account is ready. Log in to access your entrepreneur dashboard.</p>
                     <Link href="/login">
-                      <Button
-                        className="rounded-full font-semibold transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
-                        style={{ backgroundColor: "#FF6B5C", color: "#FFFFFF", border: "none" }}
-                        data-testid="button-go-to-login"
-                      >
-                        Go to Login <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
+                      <button style={{ background: C.gold, color: C.ink, fontSize: 14, fontWeight: 600, padding: "12px 28px", borderRadius: 4, border: "none", cursor: "pointer", fontFamily: "inherit" }} data-testid="button-go-to-login">
+                        Go to login →
+                      </button>
                     </Link>
                   </div>
                 )}
               </div>
+            )}
+
+            <div style={{ textAlign: "center", paddingTop: 24 }}>
+              <button
+                onClick={() => { setPhase("landing"); setAnswers(new Array(8).fill(-1)); setSelectedTrack(null); setResult(null); setAutoAccountCreated(false); setAccountCreated(false); }}
+                style={{ fontSize: 12, color: C.inkMuted, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", textDecoration: "underline", transition: "color 0.15s" }}
+                onMouseEnter={e => (e.currentTarget.style.color = C.ink)}
+                onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}
+              >
+                Retake the quiz
+              </button>
             </div>
-          </section>
-        )}
+          </div>
+        </QuizShell>
       </div>
     );
   }
