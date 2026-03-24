@@ -126,6 +126,7 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
  const [agreedToContract, setAgreedToContract] = useState(false);
  const [showContractText, setShowContractText] = useState(false);
  const [savingAgreement, setSavingAgreement] = useState(false);
+ const [agreementAcceptedAt, setAgreementAcceptedAt] = useState<string | null>(null);
  const [businessPlanData, setBusinessPlanData] = useState<any>({
   executiveSummary: "",
   problemStatement: "",
@@ -711,6 +712,8 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
      const data = await res.json();
      if (!data.hasAccepted) {
       setShowAgreementGate(true);
+     } else if (data.acceptedAt) {
+      setAgreementAcceptedAt(data.acceptedAt);
      }
     }
    } catch (err) {
@@ -1679,6 +1682,7 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
     return;
    }
    toast.success("Agreement accepted!");
+   setAgreementAcceptedAt(new Date().toISOString());
    setShowAgreementGate(false);
   } catch (err) {
    console.error("[DASHBOARD] Agreement acceptance error:", err);
@@ -2285,6 +2289,17 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
        })}
       </nav>
      </div>
+     {/* Agreement stamp */}
+     {agreementAcceptedAt && (
+      <div style={{ padding: "10px 16px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+       <p style={{ fontSize: 10, color: "rgba(250,248,243,0.28)", lineHeight: 1.5, margin: 0 }}>
+        Agreement signed
+       </p>
+       <p style={{ fontSize: 10, color: "rgba(250,248,243,0.4)", margin: 0 }} data-testid="text-agreement-accepted-at">
+        {new Date(agreementAcceptedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+       </p>
+      </div>
+     )}
      {/* Sign out */}
      <div style={{ padding: "14px 12px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
       <button
