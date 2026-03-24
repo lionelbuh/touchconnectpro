@@ -440,6 +440,120 @@ app.post("/api/ai/generate-draft-plan", async (req, res) => {
   }
 });
 
+// Helper: Monday of current week as YYYY-MM-DD
+function getMondayOfCurrentWeek() {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday.toISOString().split('T')[0];
+}
+
+// Weekly Priorities: GET — fetch or lazy-generate for current week
+app.get("/api/weekly-priorities/:email", async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email);
+    const { data: idea, error } = await supabase
+      .from("ideas")
+      .select("*")
+      .ilike("entrepreneur_email", email)
+      .single();
+
+    if (error || !idea) return res.status(404).json({ error: "Entrepreneur not found" });
+
+    const mondayKey = getMondayOfCurrentWeek();
+    const stored = idea.data?.weeklyPriorities;
+
+    if (stored && stored.weekStart === mondayKey && Array.isArray(stored.priorities) && stored.priorities.length === 5) {
+      return res.json(stored);
+    }
+
+    const openai = getOpenAI();
+    if (!openai) return res.status(503).json({ error: "AI not configured" });
+
+    const focusScore = idea.data?.focusScore;
+    const snapshot = idea.data?.founderSnapshot;
+    const snapshotSummary = idea.data?.snapshotSummary;
+
+    const score = focusScore?.totalScore || focusScore?.overallScore || 0;
+    const blocker = focusScore?.primaryBlocker || "";
+    const categories = focusScore?.categoryResults || [];
+    const lowestCat = categories.length > 0
+      ? [...categories].sort((a, b) => a.percentage - b.percentage)[0]
+      : null;
+
+    const contextLines = [
+      snapshot?.building && `Building: ${snapshot.building}`,
+      snapshotSummary?.stage && `Stage: ${snapshotSummary.stage}`,
+      snapshot?.targetCustomer && `Target customer: ${snapshot.targetCustomer}`,
+      snapshotSummary?.mainChallenge && `Main challenge: ${snapshotSummary.mainChallenge}`,
+      score && `Focus Score: ${score}/100`,
+      blocker && `Weakest area: ${blocker}`,
+      lowestCat && `Lowest scoring area: ${lowestCat.category} at ${lowestCat.percentage}%`,
+    ].filter(Boolean).join("\n");
+
+    const context = contextLines || "A founder in early stages building a new business";
+
+    const aiResponse = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a startup mentor generating weekly action items for a founder. Generate exactly 5 short, specific, actionable priorities for this week. Each must be a concrete action starting with a verb, under 12 words, achievable within one week. Vary the types of actions across strategy, customer, product, and execution. Format as a JSON object with key \"priorities\" containing an array of exactly 5 strings." },
+        { role: "user", content: `Founder context:\n${context}\n\nGenerate 5 weekly priorities. Return ONLY valid JSON: {"priorities": ["...", "...", "...", "...", "..."]}` }
+      ],
+      temperature: 0.8,
+      response_format: { type: "json_object" }
+    });
+
+    const aiContent = aiResponse.choices[0]?.message?.content;
+    if (!aiContent) throw new Error("No AI response");
+    const parsed = JSON.parse(aiContent);
+    const priorities = (parsed.priorities || []).slice(0, 5);
+
+    const weeklyPriorities = {
+      weekStart: mondayKey,
+      priorities,
+      selected: [],
+      generatedAt: new Date().toISOString()
+    };
+
+    const updatedData = { ...idea.data, weeklyPriorities };
+    await supabase.from("ideas").update({ data: updatedData }).eq("id", idea.id);
+
+    return res.json(weeklyPriorities);
+  } catch (err) {
+    console.error("[WEEKLY PRIORITIES GET] Error:", err.message);
+    return res.status(500).json({ error: "Failed to get weekly priorities" });
+  }
+});
+
+// Weekly Priorities: POST — save selected priorities
+app.post("/api/weekly-priorities/:email/select", async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email);
+    const { selected } = req.body;
+
+    const { data: idea, error } = await supabase
+      .from("ideas")
+      .select("*")
+      .ilike("entrepreneur_email", email)
+      .single();
+
+    if (error || !idea) return res.status(404).json({ error: "Entrepreneur not found" });
+
+    const existingWeekly = idea.data?.weeklyPriorities || {};
+    const weeklyPriorities = { ...existingWeekly, selected };
+    const updatedData = { ...idea.data, weeklyPriorities };
+
+    await supabase.from("ideas").update({ data: updatedData }).eq("id", idea.id);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("[WEEKLY PRIORITIES SELECT] Error:", err.message);
+    return res.status(500).json({ error: "Failed to save selection" });
+  }
+});
+
 // AI: Generate meeting questions from business plan
 app.post("/api/ai/generate-questions", async (req, res) => {
   console.log("[AI GENERATE QUESTIONS] Processing request...");

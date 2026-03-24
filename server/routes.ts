@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import crypto from "crypto";
-import { rephraseAnswers, generateBusinessPlan, generateMeetingQuestions, generateMentorDraftResponse, generateDraftPlan } from "./aiService";
+import { rephraseAnswers, generateBusinessPlan, generateMeetingQuestions, generateMentorDraftResponse, generateDraftPlan, generateWeeklyPriorities } from "./aiService";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "buhler.lionel+admin@gmail.com";
 
@@ -867,6 +867,90 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("[AI DRAFT PLAN ERROR]:", error.message);
       return res.status(500).json({ error: "Failed to generate draft plan" });
+    }
+  });
+
+  // Helper: get Monday of current week as YYYY-MM-DD
+  function getMondayOfCurrentWeek(): string {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diff);
+    monday.setHours(0, 0, 0, 0);
+    return monday.toISOString().split('T')[0];
+  }
+
+  // Weekly Priorities: GET — fetch or lazy-generate for current week
+  app.get("/api/weekly-priorities/:email", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) return res.status(500).json({ error: "Database not configured" });
+
+      const email = decodeURIComponent(req.params.email);
+      const { data: idea, error } = await (client
+        .from("ideas")
+        .select("*")
+        .ilike("entrepreneur_email", email)
+        .single() as any);
+
+      if (error || !idea) return res.status(404).json({ error: "Entrepreneur not found" });
+
+      const mondayKey = getMondayOfCurrentWeek();
+      const stored = idea.data?.weeklyPriorities;
+
+      if (stored && stored.weekStart === mondayKey && Array.isArray(stored.priorities) && stored.priorities.length === 5) {
+        return res.json(stored);
+      }
+
+      const focusScore = idea.data?.focusScore;
+      const snapshot = idea.data?.founderSnapshot;
+      const snapshotSummary = idea.data?.snapshotSummary;
+
+      const priorities = await generateWeeklyPriorities({ focusScore, snapshot, snapshotSummary });
+      const weeklyPriorities = {
+        weekStart: mondayKey,
+        priorities,
+        selected: [],
+        generatedAt: new Date().toISOString()
+      };
+
+      const updatedData = { ...idea.data, weeklyPriorities };
+      await (client.from("ideas").update({ data: updatedData } as any).eq("id", idea.id) as any);
+
+      return res.json(weeklyPriorities);
+    } catch (err: any) {
+      console.error("[WEEKLY PRIORITIES GET] Error:", err.message);
+      return res.status(500).json({ error: "Failed to get weekly priorities" });
+    }
+  });
+
+  // Weekly Priorities: POST — save selected priorities
+  app.post("/api/weekly-priorities/:email/select", async (req, res) => {
+    try {
+      const client = getSupabaseClient();
+      if (!client) return res.status(500).json({ error: "Database not configured" });
+
+      const email = decodeURIComponent(req.params.email);
+      const { selected } = req.body;
+
+      const { data: idea, error } = await (client
+        .from("ideas")
+        .select("*")
+        .ilike("entrepreneur_email", email)
+        .single() as any);
+
+      if (error || !idea) return res.status(404).json({ error: "Entrepreneur not found" });
+
+      const existingWeekly = idea.data?.weeklyPriorities || {};
+      const weeklyPriorities = { ...existingWeekly, selected };
+      const updatedData = { ...idea.data, weeklyPriorities };
+
+      await (client.from("ideas").update({ data: updatedData } as any).eq("id", idea.id) as any);
+      return res.json({ ok: true });
+    } catch (err: any) {
+      console.error("[WEEKLY PRIORITIES SELECT] Error:", err.message);
+      return res.status(500).json({ error: "Failed to save selection" });
     }
   });
 

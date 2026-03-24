@@ -448,3 +448,54 @@ Return ONLY valid JSON.`
 
   return JSON.parse(content) as DraftPlanOutput;
 }
+
+export interface WeeklyPrioritiesInput {
+  focusScore?: any;
+  snapshot?: any;
+  snapshotSummary?: any;
+}
+
+export async function generateWeeklyPriorities(input: WeeklyPrioritiesInput): Promise<string[]> {
+  const { focusScore, snapshot, snapshotSummary } = input;
+  const score = focusScore?.totalScore || focusScore?.overallScore || 0;
+  const blocker = focusScore?.primaryBlocker || "";
+  const categories: any[] = focusScore?.categoryResults || [];
+  const lowestCat = categories.length > 0
+    ? [...categories].sort((a, b) => a.percentage - b.percentage)[0]
+    : null;
+
+  const contextLines = [
+    snapshot?.building && `Building: ${snapshot.building}`,
+    snapshotSummary?.stage && `Stage: ${snapshotSummary.stage}`,
+    snapshot?.targetCustomer && `Target customer: ${snapshot.targetCustomer}`,
+    snapshotSummary?.mainChallenge && `Main challenge: ${snapshotSummary.mainChallenge}`,
+    score && `Focus Score: ${score}/100`,
+    blocker && `Weakest area: ${blocker}`,
+    lowestCat && `Lowest scoring area: ${lowestCat.category} at ${lowestCat.percentage}%`,
+  ].filter(Boolean).join("\n");
+
+  const context = contextLines || "A founder in early stages building a new business";
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content: `You are a startup mentor generating weekly action items for a founder. Generate exactly 5 short, specific, actionable priorities for this week. Each must be a concrete action starting with a verb, under 12 words, achievable within one week. Vary the types of actions across strategy, customer, product, and execution. Format as a JSON object with key "priorities" containing an array of exactly 5 strings.`
+      },
+      {
+        role: "user",
+        content: `Founder context:\n${context}\n\nGenerate 5 weekly priorities. Return ONLY valid JSON: {"priorities": ["...", "...", "...", "...", "..."]}`
+      }
+    ],
+    temperature: 0.8,
+    response_format: { type: "json_object" }
+  });
+
+  const content = response.choices[0]?.message?.content;
+  if (!content) throw new Error("No AI response for weekly priorities");
+
+  const parsed = JSON.parse(content);
+  const priorities = parsed.priorities || [];
+  return priorities.slice(0, 5);
+}

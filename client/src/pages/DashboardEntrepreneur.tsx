@@ -14,7 +14,6 @@ import { getSupabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { ENTREPRENEUR_CONTRACT, ENTREPRENEUR_CONTRACT_VERSION, COMMUNITY_FREE_CONTRACT, COMMUNITY_FREE_CONTRACT_VERSION } from "@/lib/contracts";
-import { BLOCKER_INFO, type Category } from "@/lib/founderFocusData";
 
 // Helper to format UTC timestamps from database to PST
 const formatToPST = (timestamp: string | Date) => {
@@ -171,6 +170,12 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
  const [threadReplyAttachments, setThreadReplyAttachments] = useState<Record<number, {name: string; type: string; url: string}[]>>({});
  const [uploadingFile, setUploadingFile] = useState(false);
  const [readThreadEntryCounts, setReadThreadEntryCounts] = useState<Record<string, number>>({});
+
+ const [weeklyPriorities, setWeeklyPriorities] = useState<string[]>([]);
+ const [weeklyPendingSelection, setWeeklyPendingSelection] = useState<number[]>([]);
+ const [weeklyConfirmed, setWeeklyConfirmed] = useState(false);
+ const [weeklyLoading, setWeeklyLoading] = useState(false);
+ const [weeklyWeekStart, setWeeklyWeekStart] = useState<string>("");
  
  // One-time contact request state
  const [showContactModal, setShowContactModal] = useState(false);
@@ -943,6 +948,47 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
    toast.error("Failed to generate draft plan. Please try again.");
   } finally {
    setIsGeneratingDraft(false);
+  }
+ };
+
+ // Fetch weekly priorities (lazy-generate on first visit of the week)
+ useEffect(() => {
+  if (!userEmail || !isPreApproved) return;
+  const fetchWeeklyPriorities = async () => {
+   setWeeklyLoading(true);
+   try {
+    const res = await fetch(`${API_BASE_URL}/api/weekly-priorities/${encodeURIComponent(userEmail)}`);
+    if (res.ok) {
+     const data = await res.json();
+     setWeeklyPriorities(data.priorities || []);
+     setWeeklyWeekStart(data.weekStart || "");
+     if (data.selected && data.selected.length > 0) {
+      setWeeklyPendingSelection(data.selected);
+      setWeeklyConfirmed(true);
+     }
+    }
+   } catch (err) {
+    console.error("Error fetching weekly priorities:", err);
+   } finally {
+    setWeeklyLoading(false);
+   }
+  };
+  fetchWeeklyPriorities();
+ }, [userEmail, isPreApproved]);
+
+ const handleConfirmPriorities = async () => {
+  if (weeklyPendingSelection.length !== 3 || !userEmail) return;
+  try {
+   await fetch(`${API_BASE_URL}/api/weekly-priorities/${encodeURIComponent(userEmail)}/select`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ selected: weeklyPendingSelection })
+   });
+   setWeeklyConfirmed(true);
+   toast.success("Your 3 priorities are set for this week!");
+  } catch (err) {
+   console.error("Error saving priorities:", err);
+   toast.error("Could not save priorities. Please try again.");
   }
  };
 
@@ -2308,745 +2354,171 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
           </CardContent>
          </Card>
         )}
-        {/* Phase 1: Welcome Card — Pre-Snapshot (Coach-focused) */}
-        {isPreApproved && !hasPaid && !ideaSubmitted && !founderSnapshot && (
-         <Card className="mb-6 border-[#0D566C]/20 bg-white shadow-md" data-testid="card-welcome-pre-snapshot">
-          <CardContent className="pt-6 pb-6">
-           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 mt-0.5">
-             <GraduationCap className="h-8 w-8 text-[#0D566C]" />
-            </div>
-            <div className="flex-1">
-             <p className="text-xs font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">Welcome to TouchConnectPro</p>
-             <h3 className="text-xl font-bold text-[#0D566C] mb-1" data-testid="text-community-welcome">Find your coach — it's free</h3>
-             <Badge className="bg-[#0D566C]/10 text-[#0D566C] border-none mb-3">Free plan</Badge>
-             <p className="text-[#4A4A4A] mb-4">Browse real coaches matched to your industry and stage. No commitment — just explore who's here. Some coaches offer free quick calls, so you can get a feel before deciding anything.</p>
-             <div className="flex flex-wrap gap-3">
-             <Button 
-              className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full"
-              onClick={() => setActiveTab("coaches")}
-              data-testid="button-browse-coaches"
-             >
-              <GraduationCap className="mr-2 h-4 w-4" />
-              Browse coaches
-             </Button>
-             <Button 
-              className="bg-green-600 hover:bg-green-700 text-white rounded-full"
-              onClick={() => { setFreeIntroCallFilter(true); setActiveTab("coaches"); }}
-              data-testid="button-free-intro-call-overview"
-             >
-              🎁 Free Intro Call
-             </Button>
-             </div>
-             <p className="text-sm text-[#8A8A8A] mt-4">Want better matches? <button className="text-[#0D566C] font-semibold underline cursor-pointer" onClick={() => { setShowSnapshotForm(true); setTimeout(() => { const el = document.getElementById('snapshot-form-section'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100); }} data-testid="link-submit-idea">Complete your Founder Snapshot</button> — takes 4 minutes and helps us show you the most relevant coaches.</p>
-             <div className="mt-4">
-              <div className="flex items-center gap-2 mb-1">
-               <span className="text-xs font-medium text-[#8A8A8A]">0% — Snapshot not started</span>
-              </div>
-              <Progress value={0} className="h-2" />
-             </div>
-             <p className="text-xs text-[#8A8A8A] mt-3 italic">Your community is already active — scroll down to see what other founders are working on.</p>
-            </div>
-           </div>
-          </CardContent>
-         </Card>
-        )}
-
-        {/* Phase 1: Snapshot Result Card — Post-Snapshot, Pre-Idea */}
-        {isPreApproved && !hasPaid && founderSnapshot && !ideaSubmitted && !showBuilderMode && (
-         <Card className="mb-6 border-[#0D566C]/20 bg-white shadow-md" data-testid="card-snapshot-result">
-          <CardContent className="pt-6 pb-6">
-           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 mt-0.5">
-             <CheckCircle className="h-8 w-8 text-emerald-500" />
-            </div>
-            <div className="flex-1">
-             <p className="text-xs font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">Founder Snapshot</p>
-             <div className="flex items-center gap-2 mb-3">
-              <Badge className="bg-[#0D566C] text-white">{snapshotSummary?.stage || founderSnapshot.stage || "Stage 1"}</Badge>
-              <Badge variant="outline" className="border-emerald-500 text-emerald-600">Completed</Badge>
-             </div>
-             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-              <div className="bg-[#0D566C]/5 rounded-lg p-3 text-center">
-               <p className="text-[10px] uppercase tracking-wider text-[#8A8A8A] mb-1">Stage</p>
-               <Badge className="bg-[#0D566C] text-white" data-testid="badge-snapshot-stage">
-                {snapshotSummary?.stage || founderSnapshot.stage || "—"}
-               </Badge>
-              </div>
-              <div className="bg-[#FF6B5C]/5 rounded-lg p-3 text-center">
-               <p className="text-[10px] uppercase tracking-wider text-[#8A8A8A] mb-1">Challenge</p>
-               <Badge className="bg-[#FF6B5C] text-white" data-testid="badge-snapshot-challenge">
-                {snapshotSummary?.mainChallenge || "—"}
-               </Badge>
-              </div>
-              <div className="bg-purple-50 rounded-lg p-3 text-center">
-               <p className="text-[10px] uppercase tracking-wider text-[#8A8A8A] mb-1">90-Day Goal</p>
-               <p className="text-sm font-semibold text-purple-700" data-testid="text-snapshot-goal">
-                {snapshotSummary?.ninetyDayGoal || founderSnapshot.ninetyDayGoal || "—"}
-               </p>
+        {/* Focus Score + Weekly Priorities — All approved entrepreneurs */}
+        {isPreApproved && (() => {
+         const focusScoreData = entrepreneurData?.data?.focusScore;
+         const score = focusScoreData ? (focusScoreData.totalScore || focusScoreData.overallScore || 0) : null;
+         const scoreColor = score === null ? "#8C8880" : score >= 70 ? "#1D6A5A" : score >= 40 ? "#C49A3C" : "#C97B5A";
+         const scoreBg = score === null ? "#F0EDE6" : score >= 70 ? "#E4F0ED" : score >= 40 ? "#FAF3E0" : "#FDEEE8";
+         const scoreLabel = score === null ? "Not taken yet" : score >= 70 ? "Strong foundation" : score >= 40 ? "Room to grow" : "Needs attention";
+         const categoryResults: any[] = focusScoreData?.categoryResults || [];
+         const displayCategories = [...categoryResults].sort((a: any, b: any) => b.percentage - a.percentage).slice(0, 3);
+         const lowestCat = categoryResults.length > 0 ? [...categoryResults].sort((a: any, b: any) => a.percentage - b.percentage)[0] : null;
+         const insight = score === null
+          ? "Take the Founder Focus Score quiz to unlock your personalized weekly priorities."
+          : lowestCat
+          ? `Your weakest area is "${lowestCat.category}" — this week's priorities help you close that gap.`
+          : "Your priorities are tailored to your stage and current momentum.";
+         const handleToggle = (idx: number) => {
+          if (weeklyConfirmed) return;
+          setWeeklyPendingSelection(prev => {
+           if (prev.includes(idx)) return prev.filter(i => i !== idx);
+           if (prev.length >= 3) return prev;
+           return [...prev, idx];
+          });
+         };
+         return (
+          <Card className="mb-6 overflow-hidden" style={{ border: "1px solid #E8E4DC", background: "#FAFAF7" }} data-testid="card-focus-weekly">
+           {/* TOP: Focus Score */}
+           <div className="px-6 pt-6 pb-5">
+            <div className="flex items-start gap-4">
+             <div className="relative w-20 h-20 flex-shrink-0">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+               <circle cx="50" cy="50" r="42" fill="none" stroke="#E8E4DC" strokeWidth="8" />
+               {score !== null && (
+                <circle cx="50" cy="50" r="42" fill="none" stroke={scoreColor} strokeWidth="8"
+                 strokeLinecap="round"
+                 strokeDasharray={`${(score / 100) * 264} 264`}
+                />
+               )}
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+               {score !== null ? (
+                <span className="text-2xl font-bold" style={{ color: scoreColor }} data-testid="text-focus-score-value">{score}</span>
+               ) : (
+                <span className="text-[10px] text-center leading-tight" style={{ color: "#8C8880" }}>No<br/>score</span>
+               )}
               </div>
              </div>
-
-             {!builderModeDraft && (
-              <div className="bg-[#FAF9F7] border border-[#E8E8E8] rounded-lg p-4 mb-4">
-               <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wider mb-2">What to do next</p>
-               <p className="text-sm text-[#4A4A4A] mb-3">Your next step: browse a few coach profiles — see who's working in your space. There's no commitment, and some offer free quick calls. The more you explore, the better your matches get.</p>
+             <div className="flex-1 min-w-0">
+              <div className="flex items-center flex-wrap gap-2 mb-1">
+               <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#8C8880" }}>Founder Focus Score</span>
+               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: scoreBg, color: scoreColor }}>{scoreLabel}</span>
+              </div>
+              <p className="text-sm leading-snug mb-3" style={{ color: "#4A4740" }}>{insight}</p>
+              {displayCategories.length > 0 && (
                <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                 <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                 <span className="text-sm text-emerald-700 line-through">Complete your Founder Snapshot</span>
-                </div>
-                <div className="flex items-center gap-2">
-                 {coachViewCount >= 2 ? (
-                  <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                 ) : (
-                  <Circle className="h-4 w-4 text-[#C0C0C0] flex-shrink-0" />
-                 )}
-                 <span className={`text-sm ${coachViewCount >= 2 ? "text-emerald-700 line-through" : "text-[#4A4A4A]"}`}>
-                  Browse 2 coach profiles {coachViewCount > 0 && coachViewCount < 2 ? `(${coachViewCount}/2)` : ""}
-                 </span>
-                </div>
-                <div className="flex items-center gap-2">
-                 {isDayTwoReturn ? (
-                  <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                 ) : (
-                  <Circle className="h-4 w-4 text-[#C0C0C0] flex-shrink-0" />
-                 )}
-                 <span className={`text-sm ${isDayTwoReturn ? "text-emerald-700 line-through" : "text-[#4A4A4A]"}`}>
-                  Come back tomorrow to unlock your free business plan
-                 </span>
-                </div>
+                {displayCategories.map((cat: any) => {
+                 const barColor = cat.percentage >= 70 ? "#1D6A5A" : cat.percentage >= 40 ? "#C49A3C" : "#C97B5A";
+                 return (
+                  <div key={cat.category}>
+                   <div className="flex justify-between mb-0.5">
+                    <span className="text-xs font-medium" style={{ color: "#4A4740" }}>{cat.category}</span>
+                    <span className="text-xs" style={{ color: "#8C8880" }}>{cat.percentage}%</span>
+                   </div>
+                   <div className="w-full rounded-full h-1.5" style={{ background: "#E8E4DC" }}>
+                    <div className="h-1.5 rounded-full" style={{ width: `${Math.max(cat.percentage, 5)}%`, background: barColor }} />
+                   </div>
+                  </div>
+                 );
+                })}
                </div>
-              </div>
+              )}
+              {!focusScoreData && (
+               <a href="/founder-focus" className="mt-2 inline-block text-xs font-semibold underline" style={{ color: "#1D6A5A" }} data-testid="link-take-focus-quiz">
+                Take the Founder Focus Quiz →
+               </a>
+              )}
+             </div>
+            </div>
+           </div>
+           <div style={{ height: 1, background: "#E8E4DC", margin: "0 24px" }} />
+           {/* BOTTOM: Weekly Priorities */}
+           <div className="px-6 py-5">
+            <div className="flex items-center justify-between mb-3">
+             <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#8C8880" }}>This Week's Priorities</p>
+             {weeklyWeekStart && (
+              <span className="text-[10px]" style={{ color: "#8C8880" }}>
+               Week of {new Date(weeklyWeekStart + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
              )}
-
-             <div className="flex flex-wrap gap-3">
-             <Button 
-              className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full"
-              onClick={() => setActiveTab("coaches")}
-              data-testid="button-view-matched-coaches"
-             >
-              <GraduationCap className="mr-2 h-4 w-4" />
-              Browse coaches
-             </Button>
-             <Button 
-              className="bg-green-600 hover:bg-green-700 text-white rounded-full"
-              onClick={() => { setFreeIntroCallFilter(true); setActiveTab("coaches"); }}
-              data-testid="button-free-intro-call-post-snapshot"
-             >
-              🎁 Free Intro Call
-             </Button>
+            </div>
+            {weeklyLoading ? (
+             <div className="flex items-center gap-2 py-3">
+              <Loader2 className="h-4 w-4 animate-spin" style={{ color: "#1D6A5A" }} />
+              <span className="text-sm" style={{ color: "#8C8880" }}>Generating your priorities…</span>
              </div>
-            </div>
-           </div>
-          </CardContent>
-         </Card>
-        )}
-
-        {/* Phase 2: Builder Mode Prompt — shown when engagement trigger fires */}
-        {isPreApproved && !hasPaid && founderSnapshot && !ideaSubmitted && showBuilderPrompt && !showBuilderMode && !builderModeDraft && (
-         <Card className="mb-6 border-amber-300 bg-amber-50 shadow-md" data-testid="card-builder-prompt">
-          <CardContent className="pt-6 pb-6">
-           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 mt-0.5">
-             <Lightbulb className="h-8 w-8 text-amber-500" />
-            </div>
-            <div className="flex-1">
-             <h3 className="text-lg font-bold text-amber-900 mb-2">Ready to build your plan?</h3>
-             <p className="text-amber-800 mb-4">
-              You mentioned you're building <span className="font-semibold">{founderSnapshot.building || "your idea"}</span> — want us to draft a business plan around that? Takes 5 minutes, and our AI does the heavy lifting.
-             </p>
-             <div className="flex items-center gap-3">
-              <Button 
-               className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full"
-               onClick={() => { setShowBuilderMode(true); setShowBuilderPrompt(false); }}
-               data-testid="button-build-my-plan"
-              >
-               <Rocket className="mr-2 h-4 w-4" />
-               Build my plan
-              </Button>
-              <Button 
-               variant="ghost"
-               className="text-amber-700 hover:text-amber-900"
-               onClick={dismissBuilderPrompt}
-               data-testid="button-dismiss-builder"
-              >
-               Maybe later
-              </Button>
-             </div>
-            </div>
-           </div>
-          </CardContent>
-         </Card>
-        )}
-
-        {/* Phase 3: Builder Mode — AI drafts business plan */}
-        {isPreApproved && !hasPaid && founderSnapshot && !ideaSubmitted && showBuilderMode && !builderModeDraft && (
-         <Card className="mb-6 border-[#0D566C]/30 bg-white shadow-lg" data-testid="card-builder-mode">
-          <CardContent className="pt-6 pb-6">
-           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 mt-0.5">
-             <FileText className="h-8 w-8 text-[#0D566C]" />
-            </div>
-            <div className="flex-1">
-             <h3 className="text-xl font-bold text-[#0D566C] mb-3">Let's draft your business plan</h3>
-             {!builderConfirmed ? (
+            ) : weeklyPriorities.length > 0 ? (
+             weeklyConfirmed ? (
               <div>
-               <div className="bg-[#F3F3F3] rounded-lg p-4 mb-4">
-                <p className="text-[#4A4A4A]">
-                 Based on your Snapshot, it sounds like you're building <span className="font-semibold text-[#0D566C]">{founderSnapshot.building || "your idea"}</span> for <span className="font-semibold text-[#0D566C]">{founderSnapshot.targetCustomer || "your target customers"}</span>. Is that right? Let me draft a quick business summary you can refine.
-                </p>
+               <p className="text-xs mb-3" style={{ color: "#8C8880" }}>Your 3 confirmed priorities this week:</p>
+               <div className="space-y-2">
+                {weeklyPendingSelection.map((idx) => (
+                 <div key={idx} className="flex items-start gap-3 py-2.5 px-3 rounded-xl" style={{ background: "#E4F0ED" }}>
+                  <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: "#1D6A5A" }} />
+                  <p className="text-sm font-medium" style={{ color: "#1A1814" }}>{weeklyPriorities[idx]}</p>
+                 </div>
+                ))}
                </div>
-               <div className="flex items-center gap-3">
-                <Button 
-                 className="bg-[#0D566C] hover:bg-[#0a4557] text-white rounded-full"
-                 onClick={() => { setBuilderConfirmed(true); handleGenerateDraftPlan(); }}
-                 data-testid="button-confirm-builder"
-                >
-                 <Check className="mr-2 h-4 w-4" />
-                 Yes, draft my plan
-                </Button>
-                <Button 
-                 variant="ghost"
-                 className="text-[#8A8A8A]"
-                 onClick={() => { setShowBuilderMode(false); }}
-                 data-testid="button-cancel-builder"
-                >
-                 Go back
-                </Button>
-               </div>
+               <button
+                className="mt-3 text-xs underline"
+                style={{ color: "#8C8880" }}
+                onClick={() => setWeeklyConfirmed(false)}
+                data-testid="button-change-priorities"
+               >
+                Change selection
+               </button>
               </div>
              ) : (
-              <div className="flex flex-col items-center justify-center py-8">
-               <Loader2 className="h-12 w-12 animate-spin text-[#FF6B5C] mb-4" />
-               <p className="text-[#0D566C] font-semibold">Our AI is drafting your business plan...</p>
-               <p className="text-sm text-[#8A8A8A] mt-1">This usually takes about 15–30 seconds.</p>
-              </div>
-             )}
-            </div>
-           </div>
-          </CardContent>
-         </Card>
-        )}
-
-        {/* Phase 3: Draft Plan Result */}
-        {isPreApproved && !hasPaid && founderSnapshot && !ideaSubmitted && builderModeDraft && (
-         <Card className="mb-6 border-emerald-300 bg-white shadow-md" data-testid="card-draft-plan">
-          <CardContent className="pt-6 pb-6">
-           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 mt-0.5">
-             <FileText className="h-8 w-8 text-emerald-500" />
-            </div>
-            <div className="flex-1">
-             <h3 className="text-xl font-bold text-[#0D566C] mb-1">Your Draft Business Plan</h3>
-             <p className="text-sm text-[#8A8A8A] mb-4">Here's a quick plan based on your Snapshot. You can refine this later with a mentor.</p>
-             <div className="space-y-3">
-              {[
-               { key: "problem", label: "Problem", icon: "🔍" },
-               { key: "solution", label: "Solution", icon: "💡" },
-               { key: "targetCustomer", label: "Target Customer", icon: "🎯" },
-               { key: "uniqueValue", label: "Unique Value", icon: "⭐" },
-               { key: "ninetyDayGoal", label: "90-Day Goal", icon: "📅" },
-               { key: "keyRisks", label: "Key Risks", icon: "⚠️" }
-              ].map((section) => (
-               <div key={section.key} className="bg-[#FAF9F7] rounded-lg p-4 border border-[#E8E8E8]">
-                <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wider mb-1">{section.icon} {section.label}</p>
-                <p className="text-[#4A4A4A] text-sm whitespace-pre-wrap" data-testid={`text-draft-${section.key}`}>
-                 {builderModeDraft[section.key] || "—"}
-                </p>
+              <div>
+               <p className="text-xs mb-3" style={{ color: "#8C8880" }}>Pick exactly 3 to focus on this week ({weeklyPendingSelection.length}/3 selected)</p>
+               <div className="space-y-2">
+                {weeklyPriorities.map((priority, idx) => {
+                 const isSelected = weeklyPendingSelection.includes(idx);
+                 const isDisabled = !isSelected && weeklyPendingSelection.length >= 3;
+                 return (
+                  <button
+                   key={idx}
+                   onClick={() => handleToggle(idx)}
+                   disabled={isDisabled}
+                   className="w-full flex items-start gap-3 py-2.5 px-3 rounded-xl text-left transition-all"
+                   style={{
+                    background: isSelected ? "#E4F0ED" : "#F0EDE6",
+                    opacity: isDisabled ? 0.4 : 1,
+                    border: `1.5px solid ${isSelected ? "#1D6A5A" : "transparent"}`
+                   }}
+                   data-testid={`priority-item-${idx}`}
+                  >
+                   <div className="flex-shrink-0 mt-0.5 w-4 h-4 rounded-full flex items-center justify-center border"
+                    style={{ borderColor: isSelected ? "#1D6A5A" : "#8C8880", background: isSelected ? "#1D6A5A" : "transparent" }}>
+                    {isSelected && <Check className="h-2.5 w-2.5 text-white" />}
+                   </div>
+                   <p className="text-sm" style={{ color: "#1A1814" }}>{priority}</p>
+                  </button>
+                 );
+                })}
                </div>
-              ))}
-             </div>
-             <div className="mt-4 flex items-center gap-3">
-              <a 
-               href={`/become-entrepreneur?name=${encodeURIComponent(profileData.fullName || "")}&email=${encodeURIComponent(profileData.email || "")}`}
-               data-testid="link-full-blueprint"
-              >
-               <Button variant="outline" className="rounded-full border-[#0D566C] text-[#0D566C]">
-                <Lightbulb className="mr-2 h-4 w-4" />
-                Complete Full Founder Blueprint
+               <Button
+                className="mt-4 w-full rounded-xl text-sm font-semibold border-0"
+                style={{
+                 background: weeklyPendingSelection.length === 3 ? "#1D6A5A" : "#E8E4DC",
+                 color: weeklyPendingSelection.length === 3 ? "white" : "#8C8880"
+                }}
+                disabled={weeklyPendingSelection.length !== 3}
+                onClick={handleConfirmPriorities}
+                data-testid="button-confirm-priorities"
+               >
+                Confirm my 3 priorities
                </Button>
-              </a>
-             </div>
-            </div>
-           </div>
-          </CardContent>
-         </Card>
-        )}
-
-        {/* Phase 3: Upgrade Nudge — only after draft plan is generated */}
-        {isPreApproved && !hasPaid && builderModeDraft && showUpgradeNudge && !ideaSubmitted && (
-         <Card className="mb-6 border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 shadow-md" data-testid="card-upgrade-nudge">
-          <CardContent className="pt-6 pb-6">
-           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 mt-0.5">
-             <Star className="h-8 w-8 text-purple-500" />
-            </div>
-            <div className="flex-1">
-             <h3 className="text-lg font-bold text-purple-900 mb-2">Your plan is ready. Want a dedicated mentor to help you execute it?</h3>
-             <p className="text-purple-800 mb-4">
-              Get paired with a real mentor who specializes in your stage and challenge area — for just $9.99/month.
-             </p>
-             <div className="flex items-center gap-3">
-              <Button
-               type="button"
-               onClick={() => handleUpgradeClick()}
-               disabled={isSubscribing}
-               className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md rounded-full"
-               data-testid="button-upgrade-founders-circle-overview"
-              >
-               <Rocket className="mr-2 h-4 w-4" />
-               {isSubscribing ? "Redirecting to payment..." : "Get a Mentor — $9.99/mo"}
-              </Button>
-              <Button 
-               variant="ghost"
-               className="text-purple-600"
-               onClick={() => setShowUpgradeNudge(false)}
-               data-testid="button-dismiss-upgrade"
-              >
-               Not now
-              </Button>
-             </div>
-            </div>
-           </div>
-          </CardContent>
-         </Card>
-        )}
-
-        {/* Idea Submitted card (post full blueprint) */}
-        {isPreApproved && !hasPaid && ideaSubmitted && (
-         <Card className="mb-6 border-[#E8E8E8] bg-[#F3F3F3]">
-          <CardContent className="pt-6 pb-6">
-           <div className="flex items-start gap-4">
-            <CheckCircle className="h-6 w-6 text-[#FF6B5C] flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-             <h3 className="text-lg font-semibold text-[#0D566C] mb-1">Idea Submitted - Explore Your Dashboard</h3>
-             <p className="text-[#0D566C] mb-4">Your idea has been submitted! You can now explore coaches, refine your business plan, and connect with the community.</p>
-             <div className="flex flex-wrap gap-3">
-              <Button 
-               className="bg-[#FF6B5C] hover:bg-[#e55a4d] text-white rounded-full"
-               onClick={() => setActiveTab("coaches")}
-               data-testid="button-browse-coaches-idea-submitted"
-              >
-               <GraduationCap className="mr-2 h-4 w-4" />
-               Browse coaches
-              </Button>
-              <Button 
-               className="bg-green-600 hover:bg-green-700 text-white rounded-full"
-               onClick={() => { setFreeIntroCallFilter(true); setActiveTab("coaches"); }}
-               data-testid="button-free-intro-call-idea-submitted"
-              >
-               🎁 Free Intro Call
-              </Button>
-             </div>
-            </div>
-           </div>
-          </CardContent>
-         </Card>
-        )}
-        
-        {isPreApproved && hasPaid && (
-         <Card className="mb-6 border-emerald-300 bg-emerald-50">
-          <CardContent className="pt-6 pb-6">
-           <div className="flex items-start gap-4">
-            <CheckCircle className="h-6 w-6 text-emerald-500 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-             <h3 className="text-lg font-semibold text-emerald-800 mb-1">Payment Received - Awaiting Mentor Assignment</h3>
-             <p className="text-emerald-700">Thank you for your payment! Your membership is now active. Our team will review your business plan and add your idea to a mentor's portfolio. You will be notified once a mentor has been assigned to guide you on your entrepreneurial journey.</p>
-            </div>
-           </div>
-          </CardContent>
-         </Card>
-        )}
-
-        {needsIntakeData && (
-         <Card className="mb-6 border-l-4 border-l-[#F5C542]" data-testid="card-needs-complete">
-          <CardContent className="pt-6 pb-4">
-           <div className="flex items-center gap-2 mb-2">
-            <CheckCircle className="h-5 w-5 text-[#F5C542]" />
-            <span className="text-sm font-semibold text-[#0D566C]">Needs Submitted</span>
-           </div>
-           <div className="flex flex-wrap gap-2">
-            {needsIntakeData.needs.map((need, i) => (
-             <span key={i} className="text-xs bg-[#FFF8E5] text-[#0D566C] px-3 py-1 rounded-full border border-[#F5C542]/30">{need}</span>
-            ))}
-           </div>
-          </CardContent>
-         </Card>
-        )}
-
-        {/* Smart Founder Snapshot Form */}
-        {showSnapshotForm && !founderSnapshot && (
-         <Card id="snapshot-form-section" className="mb-6 border-l-4 border-l-[#4B3F72]" data-testid="card-snapshot-form">
-          <CardHeader>
-           <CardTitle className="flex items-center gap-2 text-[#0D566C]">
-            <Target className="h-5 w-5 text-[#4B3F72]" />
-            Smart Founder Snapshot
-           </CardTitle>
-           <CardDescription>Answer a few quick questions so we can understand your business, goals, and needs. This takes about 4 minutes.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-           <div>
-            <label className="block text-sm font-semibold text-[#0D566C] mb-2">1. What are you building? *</label>
-            <input
-             type="text"
-             placeholder="e.g. A platform that helps freelancers manage their invoices (or 'Still figuring it out')"
-             value={snapshotAnswers.building}
-             onChange={(e) => setSnapshotAnswers(prev => ({ ...prev, building: e.target.value }))}
-             className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30"
-             data-testid="input-snapshot-building"
-            />
-           </div>
-           <div>
-            <label className="block text-sm font-semibold text-[#0D566C] mb-2">2. What stage are you at? *</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-             {[
-              { value: "exploring", label: "Exploring / Not Sure Yet" },
-              { value: "just-an-idea", label: "Just an Idea" },
-              { value: "mvp-or-prototype", label: "MVP / Prototype" },
-              { value: "website-live", label: "Website Live" },
-              { value: "paying-clients", label: "Paying Clients" },
-              { value: "recurring-revenue", label: "Generating Recurring Revenue" }
-             ].map((opt) => (
-              <button
-               key={opt.value}
-               onClick={() => setSnapshotAnswers(prev => ({ ...prev, stage: opt.value }))}
-               className={`p-3 rounded-xl border text-left text-sm font-medium transition-all ${
-                snapshotAnswers.stage === opt.value
-                 ? "border-[#4B3F72] bg-[#F3F0FA] text-[#0D566C]"
-                 : "border-[#E8E8E8] bg-white text-[#0D566C] hover:border-[#4B3F72]/50"
-               }`}
-               data-testid={`button-stage-${opt.value}`}
-              >
-               {snapshotAnswers.stage === opt.value ? <CheckCircle className="inline h-4 w-4 mr-2 text-[#4B3F72]" /> : <Circle className="inline h-4 w-4 mr-2 text-[#C0C0C0]" />}
-               {opt.label}
-              </button>
-             ))}
-            </div>
-           </div>
-           <div>
-            <label className="block text-sm font-semibold text-[#0D566C] mb-2">3. Who is your target customer? *</label>
-            <input
-             type="text"
-             placeholder="e.g. Small business owners, college students, busy parents"
-             value={snapshotAnswers.targetCustomer}
-             onChange={(e) => setSnapshotAnswers(prev => ({ ...prev, targetCustomer: e.target.value }))}
-             className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30"
-             data-testid="input-snapshot-customer"
-            />
-           </div>
-           <div>
-            <label className="block text-sm font-semibold text-[#0D566C] mb-2">4. What's your biggest blocker right now? *</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-             {[
-              { value: "clarity-positioning", label: "Clarity on Positioning" },
-              { value: "get-customers", label: "Getting Customers" },
-              { value: "structure-offer", label: "Structuring My Offer" },
-              { value: "focus-execution", label: "Focus & Execution" },
-              { value: "funding-finance", label: "Funding / Financial Structure" },
-              { value: "no-idea-yet", label: "I Don't Have an Idea Yet" },
-              { value: "need-income-fast", label: "I Need to Generate Income Fast" },
-              { value: "overwhelmed", label: "Feeling Overwhelmed" },
-              { value: "other", label: "Other" }
-             ].map((opt) => (
-              <button
-               key={opt.value}
-               onClick={() => setSnapshotAnswers(prev => ({ ...prev, biggestBlocker: opt.value }))}
-               className={`p-3 rounded-xl border text-left text-sm font-medium transition-all ${
-                snapshotAnswers.biggestBlocker === opt.value
-                 ? "border-[#4B3F72] bg-[#F3F0FA] text-[#0D566C]"
-                 : "border-[#E8E8E8] bg-white text-[#0D566C] hover:border-[#4B3F72]/50"
-               }`}
-               data-testid={`button-blocker-${opt.value}`}
-              >
-               {snapshotAnswers.biggestBlocker === opt.value ? <CheckCircle className="inline h-4 w-4 mr-2 text-[#4B3F72]" /> : <Circle className="inline h-4 w-4 mr-2 text-[#C0C0C0]" />}
-               {opt.label}
-              </button>
-             ))}
-            </div>
-            {snapshotAnswers.biggestBlocker === "other" && (
-             <input
-              type="text"
-              placeholder="Please describe..."
-              value={snapshotAnswers.blockerOther}
-              onChange={(e) => setSnapshotAnswers(prev => ({ ...prev, blockerOther: e.target.value }))}
-              className="w-full mt-2 p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30"
-              data-testid="input-blocker-other"
-             />
+              </div>
+             )
+            ) : !focusScoreData ? (
+             <p className="text-sm py-1" style={{ color: "#8C8880" }}>Complete your <a href="/founder-focus" className="underline font-medium" style={{ color: "#1D6A5A" }}>Founder Focus quiz</a> to unlock AI-generated weekly priorities.</p>
+            ) : (
+             <p className="text-sm py-1" style={{ color: "#8C8880" }}>Could not load priorities. Please refresh.</p>
             )}
            </div>
-           <div>
-            <label className="block text-sm font-semibold text-[#0D566C] mb-2">5. Where are you in terms of traction? *</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-             {[
-              { value: "no-validation", label: "No Validation Yet" },
-              { value: "researching", label: "Researching Ideas & Markets" },
-              { value: "early-feedback", label: "Early Feedback from Potential Users" },
-              { value: "beta-users", label: "Beta Users" },
-              { value: "first-paying", label: "First Paying Clients" },
-              { value: "growing-revenue", label: "Growing Revenue" }
-             ].map((opt) => (
-              <button
-               key={opt.value}
-               onClick={() => setSnapshotAnswers(prev => ({ ...prev, traction: opt.value }))}
-               className={`p-3 rounded-xl border text-left text-sm font-medium transition-all ${
-                snapshotAnswers.traction === opt.value
-                 ? "border-[#4B3F72] bg-[#F3F0FA] text-[#0D566C]"
-                 : "border-[#E8E8E8] bg-white text-[#0D566C] hover:border-[#4B3F72]/50"
-               }`}
-               data-testid={`button-traction-${opt.value}`}
-              >
-               {snapshotAnswers.traction === opt.value ? <CheckCircle className="inline h-4 w-4 mr-2 text-[#4B3F72]" /> : <Circle className="inline h-4 w-4 mr-2 text-[#C0C0C0]" />}
-               {opt.label}
-              </button>
-             ))}
-            </div>
-           </div>
-           <div>
-            <label className="block text-sm font-semibold text-[#0D566C] mb-2">6. What's your #1 goal for the next 90 days? *</label>
-            <textarea
-             placeholder="e.g. Launch my MVP, get my first 10 customers, find a viable business idea, start earning income..."
-             value={snapshotAnswers.ninetyDayGoal}
-             onChange={(e) => setSnapshotAnswers(prev => ({ ...prev, ninetyDayGoal: e.target.value }))}
-             rows={3}
-             className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30 resize-none"
-             data-testid="input-snapshot-goal"
-            />
-           </div>
-           <div>
-            <label className="block text-sm font-semibold text-[#0D566C] mb-2">7. What do you need help with? (Select all that apply) *</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-             {[
-              "I need help clarifying my idea",
-              "I need to figure out what business to start",
-              "I want to find a co-founder",
-              "I need funding guidance",
-              "I want coaching or mentorship",
-              "I need help with my pitch deck",
-              "I want to connect with other founders",
-              "I need help with product development",
-              "I need to start earning income quickly",
-              "Other"
-             ].map((option) => (
-              <button
-               key={option}
-               onClick={() => setNeedsSelected(prev => prev.includes(option) ? prev.filter(n => n !== option) : [...prev, option])}
-               className={`p-3 rounded-xl border text-left text-sm font-medium transition-all ${
-                needsSelected.includes(option)
-                 ? "border-[#4B3F72] bg-[#F3F0FA] text-[#0D566C]"
-                 : "border-[#E8E8E8] bg-white text-[#0D566C] hover:border-[#4B3F72]/50"
-               }`}
-               data-testid={`button-need-${option.toLowerCase().replace(/\s+/g, "-")}`}
-              >
-               <span className="flex items-center gap-2">
-                {needsSelected.includes(option) ? <CheckCircle className="inline h-4 w-4 text-[#4B3F72]" /> : <Circle className="inline h-4 w-4 text-[#C0C0C0]" />}
-                {option}
-               </span>
-              </button>
-             ))}
-            </div>
-            {needsSelected.includes("Other") && (
-             <input
-              type="text"
-              placeholder="Please specify..."
-              value={needsOtherText}
-              onChange={(e) => setNeedsOtherText(e.target.value)}
-              className="w-full mt-2 p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30"
-              data-testid="input-need-other"
-             />
-            )}
-           </div>
-           <div>
-            <label className="block text-sm font-semibold text-[#0D566C] mb-2">Anything else you'd like to share?</label>
-            <textarea
-             placeholder="Optional — tell us anything else that might help us guide you better"
-             value={needsMessage}
-             onChange={(e) => setNeedsMessage(e.target.value)}
-             rows={2}
-             className="w-full p-3 border border-[#E8E8E8] rounded-xl bg-white text-[#0D566C] placeholder:text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4B3F72]/30 resize-none"
-             data-testid="input-needs-message"
-            />
-           </div>
-           <div className="flex gap-3">
-            <Button 
-             onClick={handleSaveSnapshot} 
-             disabled={savingSnapshot} 
-             className="bg-[#4B3F72] hover:bg-[#3d3360] text-white rounded-full"
-             data-testid="button-save-snapshot"
-            >
-             {savingSnapshot ? "Saving..." : "Complete Snapshot"}
-            </Button>
-            <Button 
-             variant="outline" 
-             onClick={() => setShowSnapshotForm(false)} 
-             className="border-[#E8E8E8] text-[#8A8A8A] rounded-full"
-             data-testid="button-cancel-snapshot"
-            >
-             Cancel
-            </Button>
-           </div>
-          </CardContent>
-         </Card>
-        )}
-
-        {/* Snapshot Summary */}
-        {snapshotSummary && (
-         <Card className="mb-6 border-l-4 border-l-[#4B3F72]" data-testid="card-snapshot-summary">
-          <CardHeader>
-           <CardTitle className="flex items-center gap-2 text-[#0D566C]">
-            <Target className="h-5 w-5 text-[#4B3F72]" />
-            Your Founder Snapshot
-           </CardTitle>
-          </CardHeader>
-          <CardContent>
-           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-            <div className="bg-[#F3F0FA] rounded-xl p-4">
-             <p className="text-xs text-[#8A8A8A] mb-1">Stage</p>
-             <p className="text-sm font-semibold text-[#0D566C]" data-testid="text-snapshot-stage">{snapshotSummary.stage}</p>
-            </div>
-            <div className="bg-[#FFF5F4] rounded-xl p-4">
-             <p className="text-xs text-[#8A8A8A] mb-1">Main Challenge</p>
-             <p className="text-sm font-semibold text-[#0D566C]" data-testid="text-snapshot-challenge">{snapshotSummary.mainChallenge}</p>
-            </div>
-            <div className="bg-[#FFF8E5] rounded-xl p-4">
-             <p className="text-xs text-[#8A8A8A] mb-1">Traction</p>
-             <p className="text-sm font-semibold text-[#0D566C]" data-testid="text-snapshot-traction">{snapshotSummary.traction}</p>
-            </div>
-           </div>
-           {snapshotSummary.ninetyDayGoal && (
-            <div className="bg-[#F5F9FA] rounded-xl p-4 mb-4">
-             <p className="text-xs text-[#8A8A8A] mb-1">90-Day Goal</p>
-             <p className="text-sm text-[#0D566C]" data-testid="text-snapshot-goal">{snapshotSummary.ninetyDayGoal}</p>
-            </div>
-           )}
-           {snapshotSummary.focusSteps && snapshotSummary.focusSteps.length > 0 && (
-            <div>
-             <p className="text-xs font-semibold text-[#8A8A8A] mb-2 uppercase tracking-wide">Recommended Next Steps</p>
-             <div className="space-y-2">
-              {snapshotSummary.focusSteps.map((step: string, i: number) => (
-               <div key={i} className="flex items-start gap-2">
-                <div className="w-5 h-5 rounded-full bg-[#4B3F72] text-white text-xs flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</div>
-                <p className="text-sm text-[#0D566C]">{step}</p>
-               </div>
-              ))}
-             </div>
-            </div>
-           )}
-          </CardContent>
-         </Card>
-        )}
-
-        {isPreApproved && focusScoreData && (() => {
-         const score = focusScoreData.totalScore || focusScoreData.overallScore || 0;
-         const blocker = focusScoreData.primaryBlocker as Category;
-         const blockerInfo = blocker ? BLOCKER_INFO[blocker] : null;
-         const scoreLabel = score >= 80 ? "Strong foundation" : score >= 60 ? "Solid but blocked" : "High friction";
-         const scoreColor = score >= 80 ? "text-emerald-600" : score >= 60 ? "text-amber-600" : "text-red-600";
-         const scoreBg = score >= 80 ? "bg-emerald-100" : score >= 60 ? "bg-amber-100" : "bg-red-100";
-         const categoryColors: Record<string, string> = {
-          Strategy: "from-indigo-500 to-indigo-600",
-          Sales: "from-emerald-500 to-emerald-600",
-          Operations: "from-amber-500 to-amber-600",
-          Execution: "from-[#FF6B5C] to-[#e55a4d]",
-         };
-         const categoryTextColors: Record<string, string> = {
-          Strategy: "text-indigo-600",
-          Sales: "text-emerald-600",
-          Operations: "text-amber-600",
-          Execution: "text-[#FF6B5C]",
-         };
-
-         return (
-         <Card className="mb-6 border-l-4 border-l-purple-500" data-testid="card-focus-score">
-          <CardHeader>
-           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-purple-600" />
-            Your Founder Focus Score
-           </CardTitle>
-          </CardHeader>
-          <CardContent>
-           <div className="flex items-center gap-4 mb-5">
-            <div className="relative w-20 h-20 flex-shrink-0">
-             <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="8" className="text-[#C0C0C0]" />
-              <circle
-               cx="50" cy="50" r="42" fill="none"
-               stroke="url(#dashScoreGradient)" strokeWidth="8"
-               strokeLinecap="round"
-               strokeDasharray={`${(score / 100) * 264} 264`}
-              />
-              <defs>
-               <linearGradient id="dashScoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#06b6d4" />
-                <stop offset="100%" stopColor="#8b5cf6" />
-               </linearGradient>
-              </defs>
-             </svg>
-             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-2xl font-bold text-purple-600" data-testid="text-focus-score-value">{score}</span>
-             </div>
-            </div>
-            <div className="flex-1">
-             <div className="flex items-center gap-2 mb-1">
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${scoreBg} ${scoreColor}`}>{scoreLabel}</span>
-             </div>
-             <p className="text-sm font-medium text-[#0D566C]" data-testid="text-primary-focus">
-              {blocker ? `Primary Focus: ${blocker}` : "Focus Score Complete"}
-             </p>
-             <p className="text-xs text-[#8A8A8A]">Based on your diagnostic quiz responses</p>
-            </div>
-           </div>
-
-           {focusScoreData.categoryResults && focusScoreData.categoryResults.length > 0 && (
-            <div className="space-y-3 mb-5">
-             <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wider">Score Breakdown</p>
-             {focusScoreData.categoryResults.map((cat: any) => (
-              <div key={cat.category} data-testid={`score-breakdown-${cat.category}`}>
-               <div className="flex items-center justify-between mb-1">
-                <span className={`text-sm font-medium ${categoryTextColors[cat.category] || "text-[#0D566C]"}`}>{cat.category}</span>
-                <span className="text-xs text-[#8A8A8A]">{cat.score} pts ({cat.percentage}%)</span>
-               </div>
-               <div className="w-full bg-[#E8E8E8] rounded-full h-2">
-                <div
-                 className={`h-2 rounded-full bg-gradient-to-r ${categoryColors[cat.category] || "from-purple-500 to-purple-600"}`}
-                 style={{ width: `${Math.max(cat.percentage, 5)}%` }}
-                />
-               </div>
-              </div>
-             ))}
-            </div>
-           )}
-
-           {!focusScoreData.categoryResults && focusScoreData.categories && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-             {Object.entries(focusScoreData.categories).map(([category, data]: [string, any]) => (
-              <div key={category} className="bg-purple-50 rounded-lg p-3 text-center">
-               <p className="text-xs text-[#8A8A8A] mb-1">{category}</p>
-               <p className="text-lg font-bold text-purple-600">{data.score || data}</p>
-              </div>
-             ))}
-            </div>
-           )}
-
-           {blockerInfo && (
-            <div className="space-y-3">
-             <div className="bg-[#FAF9F7] rounded-lg p-4">
-              <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wider mb-2">What This Means</p>
-              <p className="text-sm text-[#8A8A8A] leading-relaxed" data-testid="text-blocker-explanation">{blockerInfo.explanation}</p>
-             </div>
-             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <div className="flex items-start gap-2">
-               <Target className="h-4 w-4 text-purple-600 flex-shrink-0 mt-0.5" />
-               <div>
-                <p className="text-xs font-semibold text-purple-700 mb-1">Your Next Action</p>
-                <p className="text-sm text-purple-600" data-testid="text-next-action">{blockerInfo.action}</p>
-               </div>
-              </div>
-             </div>
-            </div>
-           )}
-          </CardContent>
-         </Card>
+          </Card>
          );
         })()}
 
