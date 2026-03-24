@@ -2447,9 +2447,14 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
                 })}
                </div>
               )}
-              {!focusScoreData && (
+              {!focusScoreData ? (
                <a href="/founder-focus" className="mt-2 inline-block text-xs font-semibold underline" style={{ color: "#1D6A5A" }} data-testid="link-take-focus-quiz">
                 Take the Founder Focus Quiz →
+               </a>
+              ) : (
+               <a href="/founder-focus" className="mt-3 inline-flex items-center gap-1 text-xs font-medium" style={{ color: "#8C8880" }} data-testid="link-retake-focus-quiz">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Retake quiz
                </a>
               )}
              </div>
