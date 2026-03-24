@@ -9962,7 +9962,7 @@ app.post("/api/community/auto-signup", async (req, res) => {
       return res.status(500).json({ error: "Database not configured" });
     }
 
-    const { email, name, quizResult, clientPassword } = req.body;
+    const { email, name, quizResult, quizAnswers, clientPassword } = req.body;
     if (!email || !name) {
       return res.status(400).json({ error: "Name and email are required" });
     }
@@ -10001,13 +10001,17 @@ app.post("/api/community/auto-signup", async (req, res) => {
       return res.status(400).json({ error: authError.message });
     }
 
+    const initialData = {};
+    if (quizResult) initialData.focusScore = quizResult;
+    if (quizAnswers) initialData.quizAnswers = quizAnswers;
+
     const { data: ideaData, error: ideaError } = await supabase
       .from("ideas")
       .insert({
         status: "pre-approved",
         entrepreneur_email: normalizedEmail,
         entrepreneur_name: name,
-        data: quizResult ? { focusScore: quizResult } : {},
+        data: initialData,
         business_plan: {},
         linkedin_profile: "",
         user_id: authData?.user?.id || null,
@@ -10179,7 +10183,7 @@ app.post("/api/community/signup", async (req, res) => {
       return res.status(500).json({ error: "Database not configured" });
     }
 
-    const { email, name, password, quizResult } = req.body;
+    const { email, name, password, quizResult, quizAnswers } = req.body;
     if (!email || !name || !password) {
       return res.status(400).json({ error: "Name, email, and password are required" });
     }
@@ -10221,6 +10225,10 @@ app.post("/api/community/signup", async (req, res) => {
       return res.status(400).json({ error: authError.message });
     }
 
+    const signupData = {};
+    if (quizResult) signupData.focusScore = quizResult;
+    if (quizAnswers) signupData.quizAnswers = quizAnswers;
+
     // Insert into ideas table with pre-approved status
     const { data: ideaData, error: ideaError } = await supabase
       .from("ideas")
@@ -10228,7 +10236,7 @@ app.post("/api/community/signup", async (req, res) => {
         status: "pre-approved",
         entrepreneur_email: normalizedEmail,
         entrepreneur_name: name,
-        data: quizResult ? { focusScore: quizResult } : {},
+        data: signupData,
         business_plan: {},
         linkedin_profile: "",
         user_id: authData?.user?.id || null,

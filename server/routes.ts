@@ -9350,7 +9350,7 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
         return res.status(500).json({ error: "Database not configured" });
       }
 
-      const { email, name, quizResult, clientPassword } = req.body;
+      const { email, name, quizResult, quizAnswers, clientPassword } = req.body;
       if (!email || !name) {
         return res.status(400).json({ error: "Name and email are required" });
       }
@@ -9389,13 +9389,17 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
         return res.status(400).json({ error: authError.message });
       }
 
+      const initialData: Record<string, any> = {};
+      if (quizResult) initialData.focusScore = quizResult;
+      if (quizAnswers) initialData.quizAnswers = quizAnswers;
+
       const { data: ideaData, error: ideaError } = await (client
         .from("ideas")
         .insert({
           status: "pre-approved",
           entrepreneur_email: normalizedEmail,
           entrepreneur_name: name,
-          data: quizResult ? { focusScore: quizResult } : {},
+          data: initialData,
           business_plan: {},
           linkedin_profile: "",
           user_id: authData?.user?.id || null,
@@ -9569,7 +9573,7 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
         return res.status(500).json({ error: "Database not configured" });
       }
 
-      const { email, name, password, quizResult } = req.body;
+      const { email, name, password, quizResult, quizAnswers } = req.body;
       if (!email || !name || !password) {
         return res.status(400).json({ error: "Name, email, and password are required" });
       }
@@ -9611,6 +9615,10 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
         return res.status(400).json({ error: authError.message });
       }
 
+      const signupData: Record<string, any> = {};
+      if (quizResult) signupData.focusScore = quizResult;
+      if (quizAnswers) signupData.quizAnswers = quizAnswers;
+
       // Insert into ideas table with pre-approved status
       const { data: ideaData, error: ideaError } = await (client
         .from("ideas")
@@ -9618,7 +9626,7 @@ CREATE POLICY "Allow service role full access" ON public.cancellation_requests
           status: "pre-approved",
           entrepreneur_email: normalizedEmail,
           entrepreneur_name: name,
-          data: quizResult ? { focusScore: quizResult } : {},
+          data: signupData,
           business_plan: {},
           linkedin_profile: "",
           user_id: authData?.user?.id || null,
