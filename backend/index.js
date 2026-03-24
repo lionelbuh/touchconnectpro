@@ -135,6 +135,51 @@ app.post("/api/founder-focus-completed", async (req, res) => {
 });
 
 // ============================================
+// FOCUS SCORE UPDATE (logged-in retake)
+// ============================================
+app.post("/api/focus-score/update", async (req, res) => {
+  console.log("[FOCUS SCORE UPDATE] Updating existing user score");
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: "Database not configured" });
+    }
+    const { email, quizResult, quizAnswers } = req.body;
+    if (!email || !quizResult) {
+      return res.status(400).json({ error: "email and quizResult are required" });
+    }
+    const normalizedEmail = email.toLowerCase().trim();
+    const { data: existing, error: fetchError } = await supabase
+      .from("ideas")
+      .select("id, data")
+      .eq("entrepreneur_email", normalizedEmail)
+      .limit(1);
+    if (fetchError || !existing || existing.length === 0) {
+      return res.status(404).json({ error: "No account found for this email" });
+    }
+    const currentData = existing[0].data || {};
+    const updatedData = {
+      ...currentData,
+      focusScore: quizResult,
+      quizAnswers: quizAnswers || currentData.quizAnswers,
+      weeklyPriorities: null,
+    };
+    const { error: updateError } = await supabase
+      .from("ideas")
+      .update({ data: updatedData })
+      .eq("id", existing[0].id);
+    if (updateError) {
+      console.error("[FOCUS SCORE UPDATE] Update error:", updateError);
+      return res.status(400).json({ error: updateError.message });
+    }
+    console.log("[FOCUS SCORE UPDATE] Updated for:", normalizedEmail);
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("[FOCUS SCORE UPDATE] Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
 // SEO ENDPOINTS
 // ============================================
 
