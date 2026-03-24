@@ -294,6 +294,7 @@ export default function AdminDashboard() {
  const [investorApplications, setInvestorApplications] = useState<InvestorApplication[]>([]);
  const [isRefreshingInvestors, setIsRefreshingInvestors] = useState(false);
  const [entrepreneurApplications, setEntrepreneurApplications] = useState<EntrepreneurApplication[]>([]);
+ const [entrepreneurContractMap, setEntrepreneurContractMap] = useState<Record<string, string>>({});
  const [approvedMentors, setApprovedMentors] = useState<any[]>([]);
  const [approvedCoaches, setApprovedCoaches] = useState<any[]>([]);
  const [approvedInvestors, setApprovedInvestors] = useState<any[]>([]);
@@ -581,6 +582,25 @@ export default function AdminDashboard() {
  }
  } catch (err) {
  console.error("=== ADMIN FETCH ERROR ===", err);
+ }
+
+ // Fetch entrepreneur contract acceptances to show agreement dates
+ try {
+ const contractRes = await fetch(`${API_BASE_URL}/api/contract-acceptances?role=entrepreneur`);
+ if (contractRes.ok) {
+  const contractData = await contractRes.json();
+  if (Array.isArray(contractData)) {
+   const cmap: Record<string, string> = {};
+   contractData.forEach((c: any) => {
+    if (c.email && c.accepted_at && !cmap[c.email.toLowerCase()]) {
+     cmap[c.email.toLowerCase()] = c.accepted_at;
+    }
+   });
+   setEntrepreneurContractMap(cmap);
+  }
+ }
+ } catch (err) {
+ console.error("Error fetching entrepreneur contracts:", err);
  }
 
  // Fetch all mentor assignments to show badges
@@ -2150,6 +2170,12 @@ export default function AdminDashboard() {
  <p className="">{app.email}</p>
  </div>
  <div>
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">Agreement Signed</p>
+ <p className={entrepreneurContractMap[app.email?.toLowerCase()] ? "text-[#1D6A5A] font-medium" : "text-[#C0C0C0]"} data-testid={`text-agreement-signed-${app.id}`}>
+  {entrepreneurContractMap[app.email?.toLowerCase()] ? new Date(entrepreneurContractMap[app.email.toLowerCase()]).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Not yet signed"}
+ </p>
+ </div>
+ <div>
  <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">LinkedIn</p>
  {app.linkedin ? (
  <a href={app.linkedin.startsWith('http') ? app.linkedin : `https://${app.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-[#FF6B5C] hover:text-[#e55a4d] truncate block">
@@ -2534,6 +2560,12 @@ export default function AdminDashboard() {
  <div>
  <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">Joined On</p>
  <p className=" text-xs">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
+ </div>
+ <div>
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">Agreement Signed</p>
+ <p className={entrepreneurContractMap[app.email?.toLowerCase()] ? "text-[#1D6A5A] font-medium text-xs" : "text-[#C0C0C0] text-xs"} data-testid={`text-agreement-signed-community-${app.id}`}>
+  {entrepreneurContractMap[app.email?.toLowerCase()] ? new Date(entrepreneurContractMap[app.email.toLowerCase()]).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Not yet signed"}
+ </p>
  </div>
  </div>
  {/* Idea Proposal Section for Community Members */}
@@ -3696,6 +3728,12 @@ export default function AdminDashboard() {
  <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">Last Connected</p>
  <p className={app.last_login_at ? "" : "text-[#C0C0C0]"} data-testid={`text-entrepreneur-last-login-${app.id}`}>
  {app.last_login_at ? new Date(app.last_login_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Never"}
+ </p>
+ </div>
+ <div>
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">Agreement Signed</p>
+ <p className={entrepreneurContractMap[app.email?.toLowerCase()] ? "text-[#1D6A5A] font-medium" : "text-[#C0C0C0]"} data-testid={`text-agreement-signed-member-${app.id}`}>
+  {entrepreneurContractMap[app.email?.toLowerCase()] ? new Date(entrepreneurContractMap[app.email.toLowerCase()]).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Not yet signed"}
  </p>
  </div>
  <div>

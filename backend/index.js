@@ -9266,7 +9266,6 @@ app.get("/api/contract-acceptances/check-entrepreneur-agreement/:email", async (
       .select("*")
       .eq("email", email.toLowerCase())
       .eq("role", "entrepreneur")
-      .eq("contract_version", "2026-02-17 v1")
       .order("accepted_at", { ascending: false })
       .limit(1);
 
@@ -9277,7 +9276,11 @@ app.get("/api/contract-acceptances/check-entrepreneur-agreement/:email", async (
 
     const hasAccepted = data && data.length > 0;
     console.log("[CHECK ENTREPRENEUR AGREEMENT] Has accepted:", hasAccepted);
-    return res.json({ hasAccepted });
+    return res.json({
+      hasAccepted,
+      acceptedAt: hasAccepted ? data[0].accepted_at : null,
+      contractVersion: hasAccepted ? data[0].contract_version : null
+    });
   } catch (error) {
     console.error("[CHECK ENTREPRENEUR AGREEMENT] Error:", error.message);
     return res.status(500).json({ error: error.message });
