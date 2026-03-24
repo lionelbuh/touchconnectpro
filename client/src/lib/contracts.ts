@@ -567,144 +567,151 @@ By selecting the checkbox labeled "I agree to the Entrepreneur Membership Agreem
 
 • You acknowledge that this constitutes your legal electronic signature`;
 
-export const COMMUNITY_FREE_CONTRACT_VERSION = "2026-02-17 v1";
+export const COMMUNITY_FREE_CONTRACT_VERSION = "2026-03-01 v2";
 
 export const COMMUNITY_FREE_CONTRACT = `TouchConnectPro
+Member Agreement
 
-Community Free Membership Agreement
+Last updated: March 1, 2026 · Touch Equity Partners LLC
 
-Last Updated: February 17, 2026
+This agreement covers your use of TouchConnectPro as a founder or member. By creating an account or using the platform, you confirm you have read and agree to what follows. It is written to be clear, not to hide anything.
 
-This Membership Agreement ("Agreement") is entered into between Touch Equity Partners LLC, a limited liability company ("Company", "we", "us", or "our"), which operates the TouchConnectPro platform ("TouchConnectPro" or the "Platform"), and the individual registering as a member ("Member", "you", or "your").
+────────────────────────────────────────
 
-By registering for the Community Free membership and using the Platform, you acknowledge that you have read, understood, and agree to be legally bound by this Agreement.
+Section 01 — Who this agreement is between
 
-1. Purpose of the Platform
+This Member Agreement is between Touch Equity Partners LLC ("Company", "we", "us", "our"), operator of TouchConnectPro at touchconnectpro.com, and you, the individual registering as a member ("Member", "you", "your").
 
-TouchConnectPro provides a technology platform that facilitates connections between entrepreneurs, mentors, coaches, and other founders. The Platform offers tools for
+By creating a free account, taking the Founder Focus Score, or engaging with any part of the platform, you confirm that you have read this agreement and agree to be bound by it. If you do not agree, please do not use the platform.
 
-Accessing clarity and focus tools
+────────────────────────────────────────
 
-Building and refining business ideas and plans
+Section 02 — What this platform is and what it is not
 
-Participating in open coaching sessions
+TouchConnectPro is a business advisory platform for early-stage founders. It provides a free diagnostic tool, a personal dashboard, and direct access to specialist advisors with expertise in accounting systems, ERP selection, financial reporting, and fractional CFO work.
 
-Connecting with the founder community
+What we do: Help founders identify financial and operational gaps and connect them with specialist guidance to address those gaps.
 
-Accessing resources for business growth, strategy, and learning
+What we do not do: Provide legal advice, medical advice, psychological support, therapy, regulated financial advice, or investment brokerage services.
 
-Note: Touch Equity Partners LLC does not guarantee funding, business outcomes, or coaching results. The Platform is a support and guidance service only.
+Important: Advisory conversations on this platform cover business, accounting, financial systems, and operational topics only. TouchConnectPro is not a therapy, mental health, or personal support service. Nothing communicated through the platform constitutes regulated financial advice, legal counsel, medical advice, or any other licensed professional service. All decisions remain yours.
 
-2. Membership
+────────────────────────────────────────
 
-Membership for the Community Free begins immediately upon registration
+Section 03 — Your account
 
-No payment or approval is required for Community Free access
+Your free account gives you access to your Founder Focus Score history, your personal dashboard, weekly focus questions generated from your results, and the ability to message a specialist directly.
 
-Community Free members have access to shared coaching sessions and the community network. Dedicated one on one mentorship is only available for paid membership tiers
+• You must provide accurate information when creating your account.
+• You are responsible for keeping your login credentials secure.
+• You are responsible for all activity that takes place under your account.
+• You must be at least 18 years old to create an account.
 
-You may cancel your membership at any time from your account. Cancellation stops all future activity under your profile, but you may remain in the community as long as your account is active
+You may delete your account at any time by contacting us at hello@touchconnectpro.com. Deletion removes your personal data within a reasonable period, in line with our Privacy Policy.
 
-3. Account Responsibility
+────────────────────────────────────────
 
-You must provide accurate and complete information when creating your account
+Section 04 — How you agree to use the platform
 
-You are responsible for maintaining the security of your login credentials
+You agree to use TouchConnectPro for legitimate business purposes only. Specifically, you agree to:
 
-You are responsible for all activity that occurs under your account
+• Use the platform professionally and in good faith
+• Provide honest information in your diagnostic responses and messages
+• Treat specialist advisors with respect in all communications
+• Not attempt to circumvent the platform to solicit services outside of it in a way that violates this agreement
+• Not use the platform for any unlawful purpose
 
-You agree not to share your login credentials or allow unauthorized use of your account
+We reserve the right to suspend or terminate access for violations of this agreement or behavior that we determine is harmful to the platform or its users.
 
-4. Use of the Platform
+────────────────────────────────────────
 
-You agree to
+Section 05 — Use of AI tools
 
-Use the Platform professionally, ethically, and lawfully
+TouchConnectPro uses AI tools to generate your weekly focus questions and to support certain platform features. By using the platform, you acknowledge that:
 
-Respect mentors, coaches, and other users
+• Your quiz responses and account information may be processed by AI tools to generate personalized content in your dashboard.
+• AI-generated outputs, including weekly questions and diagnostic summaries, are suggestions only. They are not a substitute for professional judgment.
+• You should not submit confidential business information, personal identification data, or sensitive financial details that you would not want processed by an AI system.
+• Touch Equity Partners LLC does not claim ownership of content you submit. You retain ownership of your inputs.
 
-Avoid harassment, discrimination, or abusive behavior
+Note: AI outputs on this platform are starting points for reflection, not final answers. You remain fully responsible for how you act on any AI-generated content.
 
-Not circumvent the Platform to contact mentors, coaches, or users outside the system in a way that violates policies
+────────────────────────────────────────
 
-Touch Equity Partners LLC reserves the right to suspend or terminate your access for violations of this Agreement
+Section 06 — Confidentiality
 
-5. Intellectual Property
+Conversations between you and a specialist advisor on this platform are treated as confidential. We do not share the content of your messages with third parties except as required to operate the platform or comply with the law.
 
-All content, software, branding, guides, templates, and digital assets on TouchConnectPro are owned by Touch Equity Partners LLC
+Equally, if a specialist shares non-public information with you in the course of an advisory engagement, you agree not to disclose or use that information outside the context of your work together on this platform.
 
-You may not reproduce, copy, distribute, or create derivative works for commercial purposes without prior written consent
+────────────────────────────────────────
 
-Materials you create on the Platform for example business documents and pitch decks remain your property, but you grant Touch Equity Partners LLC a non exclusive, worldwide, royalty free license to display or use them solely for Platform operation and promotion
+Section 07 — Intellectual property
 
-6. Confidentiality
+All branding, software, diagnostic tools, frameworks, content, and materials on TouchConnectPro are owned by Touch Equity Partners LLC. You may not copy, reproduce, or use them for commercial purposes without written permission.
 
-Any non public information shared with you by mentors, coaches, or other users is confidential
+Content you create or submit through the platform, such as your quiz answers and messages, remains yours. You grant Touch Equity Partners LLC a limited, non-exclusive license to process and display that content solely to provide the services described in this agreement.
 
-You agree not to disclose or use this information outside of the Platform except as necessary for your engagement with the Platform
+────────────────────────────────────────
 
-7. Use of AI Tools
+Section 08 — No guarantee of outcomes
 
-By submitting content, forms, or communications through the Platform, you acknowledge and agree that
+TouchConnectPro provides guidance, diagnostic tools, and access to specialist advisors. It does not guarantee any particular business result, financial improvement, funding outcome, or operational change.
 
-TouchConnectPro may process your submissions using AI tools, including language models for example OpenAI, to assist with drafting or improving text
+Specialist advisors on this platform provide practical guidance based on experience. Their input does not constitute regulated financial advice, legal advice, accounting certification, or any other licensed professional service. You are responsible for verifying the suitability of any guidance for your specific circumstances and for all decisions you make as a result.
 
-Your content may be temporarily processed, stored, or analyzed by AI tools to provide services
+Results depend on your execution, your specific situation, and factors outside anyone's control. Using this platform does not guarantee any particular outcome for your business.
 
-Touch Equity Partners LLC does not claim ownership of content you submit, but the Platform may retain AI generated outputs as part of your account or project
+────────────────────────────────────────
 
-You should not submit confidential or sensitive information that you do not want to be processed by AI tools
+Section 09 — Limitation of liability
 
-AI generated outputs are suggestions only. You remain responsible for reviewing and using them appropriately
+To the maximum extent permitted by applicable law, Touch Equity Partners LLC is not liable for:
 
-8. Disclaimers
+• Business losses, financial outcomes, or decisions made based on platform content or advisory conversations
+• Indirect, incidental, or consequential damages of any kind
+• Interruptions to platform access due to technical issues or maintenance
+• Actions or outcomes resulting from your use of AI-generated content
+• Personal, emotional, or psychological harm of any nature
 
-TouchConnectPro is a guidance platform. Results, funding, or outcomes are not guaranteed
+For free account holders, total liability shall not exceed zero, as no fee has been paid. For paid engagements, total liability shall not exceed the amount paid for the specific service in question.
 
-Mentors and coaches are independent contractors. Touch Equity Partners LLC does not supervise, direct, or guarantee their services
+────────────────────────────────────────
 
-Coaching or mentorship does not constitute legal, financial, medical, or professional advice
+Section 10 — Indemnification
 
-9. Limitation of Liability
+You agree to indemnify and hold harmless Touch Equity Partners LLC from any claims, losses, liabilities, or expenses arising from your use of the platform, your violation of this agreement, or your interactions with specialist advisors or other users.
 
-To the maximum extent permitted by law
+────────────────────────────────────────
 
-Touch Equity Partners LLC is not liable for indirect, incidental, consequential, or special damages arising from your use of the Platform
+Section 11 — Termination
 
-Total liability shall not exceed the value of services you have received as a Community Free member, which is zero
+Either party may terminate this agreement at any time. You may close your account by contacting us. We may suspend or terminate your access if you violate this agreement or use the platform in a way that is harmful or unlawful.
 
-10. Indemnification
+Sections covering intellectual property, confidentiality, limitation of liability, and indemnification survive termination.
 
-You agree to indemnify, defend, and hold harmless Touch Equity Partners LLC from any claims, losses, liabilities, damages, or expenses arising from
+────────────────────────────────────────
 
-Your use of the Platform
+Section 12 — Changes to this agreement
 
-Your interactions with mentors, coaches, or other users
+We may update this agreement as the platform evolves. The current version is always available on this page with an updated date. For significant changes, we will notify account holders by email before changes take effect. Continued use of the platform after an update means you accept the revised agreement.
 
-Your violation of this Agreement or applicable laws
+────────────────────────────────────────
 
-11. Termination
+Section 13 — Governing law
 
-Either party may terminate this Agreement at any time
+This agreement is governed by the laws of the State of California, without regard to conflict of law principles. Any disputes arising from this agreement shall be resolved in the courts of California unless otherwise agreed in writing.
 
-Upon termination, your access to the Platform will end
+────────────────────────────────────────
 
-Sections related to intellectual property, confidentiality, liability, and indemnification survive termination
+Section 14 — Electronic acceptance
 
-12. Modifications
+By creating an account or using TouchConnectPro, you confirm that you have read and understood this agreement and consent to be legally bound by it. This constitutes your electronic signature and acceptance of these terms.
 
-Touch Equity Partners LLC may update this Agreement from time to time. Continued use of the Platform after changes constitutes acceptance of the revised Agreement
+You must be at least 18 years old to use this platform. By accepting, you confirm you meet this requirement.
 
-13. Governing Law
+────────────────────────────────────────
 
-This Agreement shall be governed by and construed in accordance with the laws of the State of California, without regard to conflict of law principles
-
-14. Acceptance and Electronic Signature
-
-By registering for the Community Free membership and submitting your registration
-
-You confirm your intent to be legally bound
-
-You consent to electronic contracting
-
-You acknowledge that this constitutes your legal electronic signature`;
+Questions about this agreement?
+Contact us at hello@touchconnectpro.com
+Touch Equity Partners LLC · Operator of TouchConnectPro`;
