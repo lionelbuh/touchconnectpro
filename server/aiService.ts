@@ -457,12 +457,13 @@ export interface WeeklyPrioritiesInput {
 
 export async function generateWeeklyPriorities(input: WeeklyPrioritiesInput): Promise<string[]> {
   const { focusScore, snapshot, snapshotSummary } = input;
-  const score = focusScore?.totalScore || focusScore?.overallScore || 0;
-  const blocker = focusScore?.primaryBlocker || "";
-  const categories: any[] = focusScore?.categoryResults || [];
-  const lowestCat = categories.length > 0
-    ? [...categories].sort((a, b) => a.percentage - b.percentage)[0]
-    : null;
+  const score = focusScore?.total ?? 0;
+  const diagnosisLabel = focusScore?.diagnosis?.label || "";
+  const minDim = focusScore?.minDim || "";
+  const raw = focusScore?.raw as Record<string, number> | undefined;
+  const dimLabels: Record<string, string> = { clarity: "Clarity", finance: "Finance", ops: "Operations" };
+  const lowestDimLabel = minDim ? (dimLabels[minDim] || minDim) : "";
+  const lowestDimScore = raw && minDim ? raw[minDim] : null;
 
   const contextLines = [
     snapshot?.building && `Building: ${snapshot.building}`,
@@ -470,8 +471,8 @@ export async function generateWeeklyPriorities(input: WeeklyPrioritiesInput): Pr
     snapshot?.targetCustomer && `Target customer: ${snapshot.targetCustomer}`,
     snapshotSummary?.mainChallenge && `Main challenge: ${snapshotSummary.mainChallenge}`,
     score && `Focus Score: ${score}/100`,
-    blocker && `Weakest area: ${blocker}`,
-    lowestCat && `Lowest scoring area: ${lowestCat.category} at ${lowestCat.percentage}%`,
+    diagnosisLabel && `Key gap: ${diagnosisLabel}`,
+    lowestDimLabel && lowestDimScore !== null && `Lowest scoring area: ${lowestDimLabel} at ${lowestDimScore}%`,
   ].filter(Boolean).join("\n");
 
   const context = contextLines || "A founder in early stages building a new business";

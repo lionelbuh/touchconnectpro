@@ -477,12 +477,13 @@ app.get("/api/weekly-priorities/:email", async (req, res) => {
     const snapshot = idea.data?.founderSnapshot;
     const snapshotSummary = idea.data?.snapshotSummary;
 
-    const score = focusScore?.totalScore || focusScore?.overallScore || 0;
-    const blocker = focusScore?.primaryBlocker || "";
-    const categories = focusScore?.categoryResults || [];
-    const lowestCat = categories.length > 0
-      ? [...categories].sort((a, b) => a.percentage - b.percentage)[0]
-      : null;
+    const score = focusScore?.total ?? 0;
+    const diagnosisLabel = focusScore?.diagnosis?.label || "";
+    const minDim = focusScore?.minDim || "";
+    const raw = focusScore?.raw || {};
+    const dimLabels = { clarity: "Clarity", finance: "Finance", ops: "Operations" };
+    const lowestDimLabel = minDim ? (dimLabels[minDim] || minDim) : "";
+    const lowestDimScore = minDim && raw[minDim] !== undefined ? raw[minDim] : null;
 
     const contextLines = [
       snapshot?.building && `Building: ${snapshot.building}`,
@@ -490,8 +491,8 @@ app.get("/api/weekly-priorities/:email", async (req, res) => {
       snapshot?.targetCustomer && `Target customer: ${snapshot.targetCustomer}`,
       snapshotSummary?.mainChallenge && `Main challenge: ${snapshotSummary.mainChallenge}`,
       score && `Focus Score: ${score}/100`,
-      blocker && `Weakest area: ${blocker}`,
-      lowestCat && `Lowest scoring area: ${lowestCat.category} at ${lowestCat.percentage}%`,
+      diagnosisLabel && `Key gap: ${diagnosisLabel}`,
+      lowestDimLabel && lowestDimScore !== null && `Lowest scoring area: ${lowestDimLabel} at ${lowestDimScore}%`,
     ].filter(Boolean).join("\n");
 
     const context = contextLines || "A founder in early stages building a new business";

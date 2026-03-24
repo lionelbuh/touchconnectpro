@@ -2357,15 +2357,23 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
         {/* Focus Score + Weekly Priorities — All approved entrepreneurs */}
         {isPreApproved && (() => {
          const focusScoreData = entrepreneurData?.data?.focusScore;
-         const score = focusScoreData ? (focusScoreData.totalScore || focusScoreData.overallScore || 0) : null;
+         const score = focusScoreData ? (focusScoreData.total ?? 0) : null;
          const scoreColor = score === null ? "#8C8880" : score >= 70 ? "#1D6A5A" : score >= 40 ? "#C49A3C" : "#C97B5A";
          const scoreBg = score === null ? "#F0EDE6" : score >= 70 ? "#E4F0ED" : score >= 40 ? "#FAF3E0" : "#FDEEE8";
          const scoreLabel = score === null ? "Not taken yet" : score >= 70 ? "Strong foundation" : score >= 40 ? "Room to grow" : "Needs attention";
-         const categoryResults: any[] = focusScoreData?.categoryResults || [];
-         const displayCategories = [...categoryResults].sort((a: any, b: any) => b.percentage - a.percentage).slice(0, 3);
-         const lowestCat = categoryResults.length > 0 ? [...categoryResults].sort((a: any, b: any) => a.percentage - b.percentage)[0] : null;
+         const dimLabels: Record<string, string> = { clarity: "Clarity", finance: "Finance", ops: "Operations" };
+         const categoryResults = focusScoreData?.raw
+           ? Object.entries(focusScoreData.raw).map(([key, val]) => ({
+               category: dimLabels[key] || key,
+               percentage: val as number,
+             }))
+           : [];
+         const displayCategories = [...categoryResults].sort((a, b) => b.percentage - a.percentage);
+         const lowestCat = categoryResults.length > 0 ? [...categoryResults].sort((a, b) => a.percentage - b.percentage)[0] : null;
          const insight = score === null
           ? "Take the Founder Focus Score quiz to unlock your personalized weekly priorities."
+          : focusScoreData?.diagnosis?.label
+          ? `${focusScoreData.diagnosis.label} — this week's priorities help you close that gap.`
           : lowestCat
           ? `Your weakest area is "${lowestCat.category}" — this week's priorities help you close that gap.`
           : "Your priorities are tailored to your stage and current momentum.";
