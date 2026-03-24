@@ -144,7 +144,7 @@ export default function FounderFocusScore() {
         const res = await fetch(`${API_BASE_URL}/api/community/auto-signup`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: contactEmail.trim(), name: contactName.trim(), quizResult: result, clientPassword: clientTempPassword }),
+          body: JSON.stringify({ email: contactEmail.trim(), name: contactName.trim(), quizResult: result, quizAnswers: answers, clientPassword: clientTempPassword }),
         });
         const data = await res.json();
         if (res.ok) {

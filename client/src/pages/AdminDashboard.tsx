@@ -12,6 +12,7 @@ import { API_BASE_URL } from "@/config";
 import { toast } from "sonner";
 import { IDEA_PROPOSAL_QUESTIONS } from "@/lib/constants";
 import { Switch } from "@/components/ui/switch";
+import { QUESTIONS as FOCUS_QUESTIONS } from "@/lib/founderFocusData";
 
 // Helper to format UTC timestamps from database to PST
 const formatToPST = (timestamp: string | Date) => {
@@ -314,6 +315,7 @@ export default function AdminDashboard() {
  const [expandedProposal, setExpandedProposal] = useState<{[key: string]: boolean}>({});
  const [expandedBusinessPlan, setExpandedBusinessPlan] = useState<{[key: string]: boolean}>({});
  const [expandedQuestions, setExpandedQuestions] = useState<{[key: string]: boolean}>({});
+ const [expandedFocusScore, setExpandedFocusScore] = useState<{[key: string]: boolean}>({});
  const [generatingQuestions, setGeneratingQuestions] = useState<{[key: string]: boolean}>({});
  const [portfolioForApp, setPortfolioForApp] = useState<{[key: string]: string}>({});
  const [searchTerm, setSearchTerm] = useState("");
@@ -2309,6 +2311,77 @@ export default function AdminDashboard() {
  </div>
  )}
 
+ {/* Focus Score & Weekly Priorities Section */}
+ {(app.focusScore || app.weeklyPriorities) && (
+ <div className="border-t border-[#E8E8E8] pt-4">
+ <Button
+ variant="ghost"
+ className="w-full justify-start text-[#1D6A5A] hover:text-[#1D6A5A] font-semibold"
+ onClick={() => setExpandedFocusScore(prev => ({ ...prev, [app.id]: !prev[app.id] }))}
+ data-testid={`button-toggle-focusscore-${actualIdx}`}
+ >
+ {expandedFocusScore[app.id] ? "▼" : "▶"} Focus Score & Weekly Priorities
+ {app.focusScore && <span className="ml-2 text-xs font-normal text-[#8A8A8A]">Score: {app.focusScore.total ?? "—"}/100</span>}
+ </Button>
+ {expandedFocusScore[app.id] && (
+ <div className="mt-3 space-y-4 max-h-[600px] overflow-y-auto p-4 rounded bg-[#E4F0ED]/30">
+ {app.focusScore && (
+ <div className="space-y-2">
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wide">Score Summary</p>
+ <div className="grid grid-cols-3 gap-2">
+ {[{ label: "Clarity", val: app.focusScore.raw?.clarity }, { label: "Finance", val: app.focusScore.raw?.finance }, { label: "Operations", val: app.focusScore.raw?.ops }].map(({ label, val }) => (
+ <div key={label} className="bg-white rounded p-2 text-center border border-[#E8E8E8]">
+ <p className="text-xs text-[#8A8A8A]">{label}</p>
+ <p className="text-lg font-bold text-[#1D6A5A]">{val ?? "—"}</p>
+ </div>
+ ))}
+ </div>
+ <div className="bg-white rounded p-3 border border-[#E8E8E8]">
+ <p className="text-xs text-[#8A8A8A] mb-1">Total Score</p>
+ <p className="text-xl font-bold" style={{ color: (app.focusScore.total ?? 0) >= 70 ? "#1D6A5A" : (app.focusScore.total ?? 0) >= 40 ? "#C49A3C" : "#C97B5A" }}>{app.focusScore.total ?? "—"}/100</p>
+ {app.focusScore.diagnosis?.label && <p className="text-xs text-[#4A4740] mt-1"><span className="font-medium">Gap: </span>{app.focusScore.diagnosis.label}</p>}
+ {app.focusScore.diagnosis?.text && <p className="text-xs text-[#8A8A8A] mt-1 leading-relaxed">{app.focusScore.diagnosis.text}</p>}
+ </div>
+ </div>
+ )}
+ {app.quizAnswers && (
+ <div className="space-y-2">
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wide">Quiz Answers (8 Questions)</p>
+ {FOCUS_QUESTIONS.map((q, qi) => {
+ const answerOption = q.options.find(o => o.value === app.quizAnswers[q.id]);
+ return (
+ <div key={q.id} className="bg-white rounded p-3 border border-[#E8E8E8] text-sm">
+ <p className="font-medium text-[#1A1814] text-xs">{qi + 1}. {q.text}</p>
+ {answerOption ? (
+ <p className="text-[#4A4740] mt-1"><span className="font-semibold text-[#1D6A5A]">{answerOption.letter}.</span> {answerOption.label}<span className="text-[#8A8A8A] ml-1 text-xs">— {answerOption.sub}</span></p>
+ ) : <p className="text-[#8A8A8A] mt-1 italic text-xs">Not answered</p>}
+ </div>
+ );
+ })}
+ </div>
+ )}
+ {app.weeklyPriorities && Array.isArray(app.weeklyPriorities.priorities) && (
+ <div className="space-y-2">
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wide">Weekly Priorities{app.weeklyPriorities.weekStart && <span className="ml-2 font-normal normal-case text-[#8A8A8A]">Week of {app.weeklyPriorities.weekStart}</span>}</p>
+ {app.weeklyPriorities.priorities.map((priority: string, pi: number) => {
+ const isSelected = Array.isArray(app.weeklyPriorities.selected) && app.weeklyPriorities.selected.includes(pi);
+ return (
+ <div key={pi} className={`rounded p-3 border text-sm flex items-start gap-2 ${isSelected ? "bg-[#1D6A5A]/10 border-[#1D6A5A]/30" : "bg-white border-[#E8E8E8]"}`}>
+ <span className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${isSelected ? "bg-[#1D6A5A] text-white" : "bg-[#E8E8E8] text-[#8A8A8A]"}`}>{pi + 1}</span>
+ <p className={`leading-relaxed ${isSelected ? "text-[#1A1814] font-medium" : "text-[#4A4740]"}`}>{priority}</p>
+ {isSelected && <span className="ml-auto text-xs text-[#1D6A5A] font-semibold flex-shrink-0">Selected</span>}
+ </div>
+ );
+ })}
+ {Array.isArray(app.weeklyPriorities.selected) && app.weeklyPriorities.selected.length === 0 && <p className="text-xs text-[#8A8A8A] italic">User has not selected priorities yet.</p>}
+ </div>
+ )}
+ {!app.quizAnswers && app.focusScore && <p className="text-xs text-[#8A8A8A] italic">Quiz answer details not available (answers save from new signups onward).</p>}
+ </div>
+ )}
+ </div>
+ )}
+
  {/* AI Meeting Questions Section */}
  <div className="border-t border-[#E8E8E8] pt-4">
  <div className="flex items-center justify-between mb-2">
@@ -2583,6 +2656,103 @@ export default function AdminDashboard() {
    <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.keyRisks || 'N/A'}</p>
   </div>
   </div>
+ )}
+ </div>
+ )}
+
+ {/* Focus Score & Weekly Priorities Section for Community Members */}
+ {(app.focusScore || app.weeklyPriorities) && (
+ <div className="border-t border-[#E8E8E8] pt-4">
+ <Button
+ variant="ghost"
+ className="w-full justify-start text-[#1D6A5A] hover:text-[#1D6A5A] font-semibold"
+ onClick={() => setExpandedFocusScore(prev => ({ ...prev, [`preapproved-${app.id}`]: !prev[`preapproved-${app.id}`] }))}
+ data-testid={`button-toggle-focusscore-preapproved-${actualIdx}`}
+ >
+ {expandedFocusScore[`preapproved-${app.id}`] ? "▼" : "▶"} Focus Score & Weekly Priorities
+ {app.focusScore && <span className="ml-2 text-xs font-normal text-[#8A8A8A]">Score: {app.focusScore.total ?? "—"}/100</span>}
+ </Button>
+ {expandedFocusScore[`preapproved-${app.id}`] && (
+ <div className="mt-3 space-y-4 max-h-[600px] overflow-y-auto p-4 rounded bg-[#E4F0ED]/30">
+ {/* Score summary */}
+ {app.focusScore && (
+ <div className="space-y-2">
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wide">Score Summary</p>
+ <div className="grid grid-cols-3 gap-2">
+ {[
+ { label: "Clarity", val: app.focusScore.raw?.clarity },
+ { label: "Finance", val: app.focusScore.raw?.finance },
+ { label: "Operations", val: app.focusScore.raw?.ops },
+ ].map(({ label, val }) => (
+ <div key={label} className="bg-white rounded p-2 text-center border border-[#E8E8E8]">
+ <p className="text-xs text-[#8A8A8A]">{label}</p>
+ <p className="text-lg font-bold text-[#1D6A5A]">{val ?? "—"}</p>
+ </div>
+ ))}
+ </div>
+ <div className="bg-white rounded p-3 border border-[#E8E8E8]">
+ <p className="text-xs text-[#8A8A8A] mb-1">Total Score</p>
+ <p className="text-xl font-bold" style={{ color: (app.focusScore.total ?? 0) >= 70 ? "#1D6A5A" : (app.focusScore.total ?? 0) >= 40 ? "#C49A3C" : "#C97B5A" }}>
+ {app.focusScore.total ?? "—"}/100
+ </p>
+ {app.focusScore.diagnosis?.label && (
+ <p className="text-xs text-[#4A4740] mt-1"><span className="font-medium">Gap: </span>{app.focusScore.diagnosis.label}</p>
+ )}
+ {app.focusScore.diagnosis?.text && (
+ <p className="text-xs text-[#8A8A8A] mt-1 leading-relaxed">{app.focusScore.diagnosis.text}</p>
+ )}
+ </div>
+ </div>
+ )}
+ {/* Quiz answers */}
+ {app.quizAnswers && (
+ <div className="space-y-2">
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wide">Quiz Answers (8 Questions)</p>
+ {FOCUS_QUESTIONS.map((q, qi) => {
+ const answerValue = app.quizAnswers[q.id];
+ const answerOption = q.options.find(o => o.value === answerValue);
+ return (
+ <div key={q.id} className="bg-white rounded p-3 border border-[#E8E8E8] text-sm">
+ <p className="font-medium text-[#1A1814] text-xs">{qi + 1}. {q.text}</p>
+ {answerOption ? (
+ <p className="text-[#4A4740] mt-1">
+ <span className="font-semibold text-[#1D6A5A]">{answerOption.letter}.</span> {answerOption.label}
+ <span className="text-[#8A8A8A] ml-1 text-xs">— {answerOption.sub}</span>
+ </p>
+ ) : (
+ <p className="text-[#8A8A8A] mt-1 italic text-xs">Not answered</p>
+ )}
+ </div>
+ );
+ })}
+ </div>
+ )}
+ {/* Weekly priorities */}
+ {app.weeklyPriorities && Array.isArray(app.weeklyPriorities.priorities) && (
+ <div className="space-y-2">
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wide">
+ Weekly Priorities
+ {app.weeklyPriorities.weekStart && <span className="ml-2 font-normal normal-case text-[#8A8A8A]">Week of {app.weeklyPriorities.weekStart}</span>}
+ </p>
+ {app.weeklyPriorities.priorities.map((priority: string, pi: number) => {
+ const isSelected = Array.isArray(app.weeklyPriorities.selected) && app.weeklyPriorities.selected.includes(pi);
+ return (
+ <div key={pi} className={`rounded p-3 border text-sm flex items-start gap-2 ${isSelected ? "bg-[#1D6A5A]/10 border-[#1D6A5A]/30" : "bg-white border-[#E8E8E8]"}`}>
+ <span className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${isSelected ? "bg-[#1D6A5A] text-white" : "bg-[#E8E8E8] text-[#8A8A8A]"}`}>{pi + 1}</span>
+ <p className={`leading-relaxed ${isSelected ? "text-[#1A1814] font-medium" : "text-[#4A4740]"}`}>{priority}</p>
+ {isSelected && <span className="ml-auto text-xs text-[#1D6A5A] font-semibold flex-shrink-0">Selected</span>}
+ </div>
+ );
+ })}
+ {Array.isArray(app.weeklyPriorities.selected) && app.weeklyPriorities.selected.length === 0 && (
+ <p className="text-xs text-[#8A8A8A] italic">User has not selected priorities yet.</p>
+ )}
+ </div>
+ )}
+ {!app.quizAnswers && !app.weeklyPriorities && app.focusScore && (
+ <p className="text-xs text-[#8A8A8A] italic">Quiz answer details not available for this user (answers save from new signups onward).</p>
+ )}
+ </div>
  )}
  </div>
  )}
@@ -3702,6 +3872,77 @@ export default function AdminDashboard() {
    <p className="text-[#8A8A8A] mt-1 text-xs leading-relaxed">{app.builderDraftPlan.keyRisks || 'N/A'}</p>
   </div>
   </div>
+ )}
+ </div>
+ )}
+
+ {/* Focus Score & Weekly Priorities Section for Members Tab */}
+ {(app.focusScore || app.weeklyPriorities) && (
+ <div className="border-t border-[#E8E8E8] pt-4">
+ <Button
+ variant="ghost"
+ className="w-full justify-start text-[#1D6A5A] hover:text-[#1D6A5A] font-semibold"
+ onClick={() => setExpandedFocusScore(prev => ({ ...prev, [`member-${app.id}`]: !prev[`member-${app.id}`] }))}
+ data-testid={`button-toggle-focusscore-member-${idx}`}
+ >
+ {expandedFocusScore[`member-${app.id}`] ? "▼" : "▶"} Focus Score & Weekly Priorities
+ {app.focusScore && <span className="ml-2 text-xs font-normal text-[#8A8A8A]">Score: {app.focusScore.total ?? "—"}/100</span>}
+ </Button>
+ {expandedFocusScore[`member-${app.id}`] && (
+ <div className="mt-3 space-y-4 max-h-[600px] overflow-y-auto p-4 rounded bg-[#E4F0ED]/30">
+ {app.focusScore && (
+ <div className="space-y-2">
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wide">Score Summary</p>
+ <div className="grid grid-cols-3 gap-2">
+ {[{ label: "Clarity", val: app.focusScore.raw?.clarity }, { label: "Finance", val: app.focusScore.raw?.finance }, { label: "Operations", val: app.focusScore.raw?.ops }].map(({ label, val }) => (
+ <div key={label} className="bg-white rounded p-2 text-center border border-[#E8E8E8]">
+ <p className="text-xs text-[#8A8A8A]">{label}</p>
+ <p className="text-lg font-bold text-[#1D6A5A]">{val ?? "—"}</p>
+ </div>
+ ))}
+ </div>
+ <div className="bg-white rounded p-3 border border-[#E8E8E8]">
+ <p className="text-xs text-[#8A8A8A] mb-1">Total Score</p>
+ <p className="text-xl font-bold" style={{ color: (app.focusScore.total ?? 0) >= 70 ? "#1D6A5A" : (app.focusScore.total ?? 0) >= 40 ? "#C49A3C" : "#C97B5A" }}>{app.focusScore.total ?? "—"}/100</p>
+ {app.focusScore.diagnosis?.label && <p className="text-xs text-[#4A4740] mt-1"><span className="font-medium">Gap: </span>{app.focusScore.diagnosis.label}</p>}
+ {app.focusScore.diagnosis?.text && <p className="text-xs text-[#8A8A8A] mt-1 leading-relaxed">{app.focusScore.diagnosis.text}</p>}
+ </div>
+ </div>
+ )}
+ {app.quizAnswers && (
+ <div className="space-y-2">
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wide">Quiz Answers (8 Questions)</p>
+ {FOCUS_QUESTIONS.map((q, qi) => {
+ const answerOption = q.options.find(o => o.value === app.quizAnswers[q.id]);
+ return (
+ <div key={q.id} className="bg-white rounded p-3 border border-[#E8E8E8] text-sm">
+ <p className="font-medium text-[#1A1814] text-xs">{qi + 1}. {q.text}</p>
+ {answerOption ? (
+ <p className="text-[#4A4740] mt-1"><span className="font-semibold text-[#1D6A5A]">{answerOption.letter}.</span> {answerOption.label}<span className="text-[#8A8A8A] ml-1 text-xs">— {answerOption.sub}</span></p>
+ ) : <p className="text-[#8A8A8A] mt-1 italic text-xs">Not answered</p>}
+ </div>
+ );
+ })}
+ </div>
+ )}
+ {app.weeklyPriorities && Array.isArray(app.weeklyPriorities.priorities) && (
+ <div className="space-y-2">
+ <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wide">Weekly Priorities{app.weeklyPriorities.weekStart && <span className="ml-2 font-normal normal-case text-[#8A8A8A]">Week of {app.weeklyPriorities.weekStart}</span>}</p>
+ {app.weeklyPriorities.priorities.map((priority: string, pi: number) => {
+ const isSelected = Array.isArray(app.weeklyPriorities.selected) && app.weeklyPriorities.selected.includes(pi);
+ return (
+ <div key={pi} className={`rounded p-3 border text-sm flex items-start gap-2 ${isSelected ? "bg-[#1D6A5A]/10 border-[#1D6A5A]/30" : "bg-white border-[#E8E8E8]"}`}>
+ <span className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${isSelected ? "bg-[#1D6A5A] text-white" : "bg-[#E8E8E8] text-[#8A8A8A]"}`}>{pi + 1}</span>
+ <p className={`leading-relaxed ${isSelected ? "text-[#1A1814] font-medium" : "text-[#4A4740]"}`}>{priority}</p>
+ {isSelected && <span className="ml-auto text-xs text-[#1D6A5A] font-semibold flex-shrink-0">Selected</span>}
+ </div>
+ );
+ })}
+ {Array.isArray(app.weeklyPriorities.selected) && app.weeklyPriorities.selected.length === 0 && <p className="text-xs text-[#8A8A8A] italic">User has not selected priorities yet.</p>}
+ </div>
+ )}
+ {!app.quizAnswers && app.focusScore && <p className="text-xs text-[#8A8A8A] italic">Quiz answer details not available (answers save from new signups onward).</p>}
+ </div>
  )}
  </div>
  )}
