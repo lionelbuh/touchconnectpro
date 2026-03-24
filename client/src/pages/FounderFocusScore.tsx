@@ -64,8 +64,32 @@ export default function FounderFocusScore() {
   const [autoAccountCreated, setAutoAccountCreated] = useState(false);
   const [isAutoCreating, setIsAutoCreating] = useState(false);
 
+  // Logged-in retake state
+  const [loggedInEmail, setLoggedInEmail] = useState<string | null>(null);
+  const [loggedInName, setLoggedInName] = useState<string | null>(null);
+  const [retakeSaved, setRetakeSaved] = useState(false);
+  const [retakeSaving, setRetakeSaving] = useState(false);
+
   const prevPhaseRef = useRef<Phase>("landing");
   const prevQRef = useRef(0);
+
+  // Check for logged-in session on mount — skip contact step for retakes
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const supabaseClient = await getSupabase();
+        if (!supabaseClient) return;
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session?.user?.email) {
+          setLoggedInEmail(session.user.email);
+          setLoggedInName(session.user.user_metadata?.full_name || null);
+        }
+      } catch (e) {
+        // silent — unauthenticated visitors just take the normal path
+      }
+    };
+    checkSession();
+  }, []);
 
   useEffect(() => {
     if (phase !== prevPhaseRef.current || currentQuestion !== prevQRef.current) {
@@ -96,7 +120,7 @@ export default function FounderFocusScore() {
     });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const q = QUESTIONS[currentQuestion];
     if (!answers[q.id]) return;
     if (currentQuestion < QUESTIONS.length - 1) {
@@ -104,6 +128,27 @@ export default function FounderFocusScore() {
     } else {
       const quizResult = computeResults(scores, answers);
       setResult(quizResult);
+
+      // If the user is logged in (retake), skip the contact step and save directly
+      if (loggedInEmail) {
+        setRetakeSaving(true);
+        try {
+          await fetch(`${API_BASE_URL}/api/focus-score/update`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: loggedInEmail, quizResult, quizAnswers: answers }),
+          });
+          setRetakeSaved(true);
+          toast.success("Your score has been updated!");
+        } catch (e) {
+          console.error("[RETAKE SAVE] Error saving score:", e);
+        } finally {
+          setRetakeSaving(false);
+        }
+        setPhase("results");
+        return;
+      }
+
       setPhase("contact");
       try {
         fetch(`${API_BASE_URL}/api/founder-focus-completed`, {
@@ -214,6 +259,7 @@ export default function FounderFocusScore() {
     setSignupName("");
     setSignupEmail("");
     setSignupPassword("");
+    setRetakeSaved(false);
   };
 
   // ── Landing ──
@@ -454,8 +500,35 @@ export default function FounderFocusScore() {
               <p style={{ fontSize: 15, color: C.ink, lineHeight: 1.7, fontWeight: 500, margin: 0 }} data-testid="text-next-action">{result.nextStep}</p>
             </div>
 
+            {/* Logged-in retake: show save confirmation and back button */}
+            {loggedInEmail ? (
+              <div style={{ background: C.tealLight, border: `1px solid rgba(29,106,90,0.2)`, borderRadius: 10, padding: 32, textAlign: "center" }} data-testid="text-retake-saved">
+                {retakeSaving ? (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, color: C.teal }}>
+                    <Loader2 style={{ width: 20, height: 20, animation: "spin 1s linear infinite" }} />
+                    <span style={{ fontSize: 14, fontWeight: 500 }}>Saving your updated score...</span>
+                  </div>
+                ) : (
+                  <>
+                    <CheckCircle style={{ width: 40, height: 40, color: C.teal, margin: "0 auto 16px" }} />
+                    <h4 style={{ fontFamily: "Georgia, serif", fontSize: 20, fontWeight: 400, color: C.ink, marginBottom: 10 }}>
+                      Score updated {loggedInName ? `for ${loggedInName.split(" ")[0]}` : ""}
+                    </h4>
+                    <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.7, marginBottom: 24 }}>
+                      Your new results have been saved to your dashboard. Weekly priorities will refresh on your next login.
+                    </p>
+                    <a href="/dashboard-entrepreneur">
+                      <button style={{ background: C.teal, color: "#FAF8F3", fontSize: 14, fontWeight: 500, padding: "13px 28px", borderRadius: 4, border: "none", cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 8 }} data-testid="button-back-to-dashboard">
+                        Back to dashboard <ArrowRight style={{ width: 15, height: 15 }} />
+                      </button>
+                    </a>
+                  </>
+                )}
+              </div>
+            ) : null}
+
             {/* Community signup CTA */}
-            {autoAccountCreated ? (
+            {!loggedInEmail && autoAccountCreated ? (
               <div style={{ background: C.tealLight, border: `1px solid rgba(29,106,90,0.2)`, borderRadius: 10, padding: 32, textAlign: "center" }} data-testid="text-auto-signup-success">
                 <CheckCircle style={{ width: 40, height: 40, color: C.teal, margin: "0 auto 16px" }} />
                 <h4 style={{ fontFamily: "Georgia, serif", fontSize: 20, fontWeight: 400, color: C.ink, marginBottom: 12 }}>Your dashboard is almost ready</h4>
@@ -468,7 +541,7 @@ export default function FounderFocusScore() {
                 </div>
                 <p style={{ fontSize: 12, color: C.inkMuted }}>Check your inbox and spam folder.</p>
               </div>
-            ) : (
+            ) : !loggedInEmail ? (
               <div style={{ background: C.ink, borderRadius: 10, padding: 40 }}>
                 <div style={{ textAlign: "center", marginBottom: 28 }}>
                   <Users style={{ width: 32, height: 32, color: C.gold, margin: "0 auto 12px" }} />
@@ -529,7 +602,7 @@ export default function FounderFocusScore() {
                   </div>
                 )}
               </div>
-            )}
+            ) : null}
 
             <div style={{ textAlign: "center", paddingTop: 24 }}>
               <button onClick={resetQuiz} style={{ fontSize: 12, color: C.inkMuted, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", textDecoration: "underline", transition: "color 0.15s" }}
