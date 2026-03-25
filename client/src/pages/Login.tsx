@@ -164,7 +164,14 @@ export default function Login() {
 
   if (userRole) {
     return (
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: "100vh" }}>
+      <div className="login-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: "100vh" }}>
+        <style>{`
+          @media (max-width: 768px) {
+            .login-grid { grid-template-columns: 1fr !important; }
+            .login-left-panel { display: none !important; }
+            .login-right-panel { padding: 40px 24px !important; }
+          }
+        `}</style>
         <LeftPanel />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "48px 40px", backgroundColor: C.cream }}>
           <div style={{ width: "100%", maxWidth: 380 }}>
@@ -215,7 +222,7 @@ export default function Login() {
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: "100vh" }}>
+    <div className="login-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: "100vh" }}>
       <style>{`
         @media (max-width: 768px) {
           .login-grid { grid-template-columns: 1fr !important; }

@@ -67,6 +67,44 @@ const services = [
 export default function HowItWorks() {
   return (
     <div style={{ backgroundColor: C.cream }} data-testid="page-how-it-works">
+      <style>{`
+        .hiw-step-row {
+          display: grid;
+          grid-template-columns: 200px 1fr;
+          border-top: 1px solid rgba(26,24,20,0.07);
+          padding: 56px 0;
+        }
+        .hiw-step-left { padding-right: 48px; padding-top: 4px; }
+        .hiw-step-right { padding-left: 48px; border-left: 1px solid rgba(26,24,20,0.07); }
+        .hiw-services-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1px;
+          background: rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        @media (max-width: 700px) {
+          .hiw-step-row {
+            grid-template-columns: 1fr;
+            padding: 36px 0;
+          }
+          .hiw-step-left {
+            padding-right: 0;
+            padding-bottom: 24px;
+          }
+          .hiw-step-right {
+            padding-left: 0;
+            border-left: none;
+            border-top: 1px solid rgba(26,24,20,0.07);
+            padding-top: 24px;
+          }
+          .hiw-services-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
 
       {/* Page Header */}
       <div style={{ maxWidth: 700, margin: "0 auto", padding: "48px 2rem 52px", textAlign: "center" }}>
@@ -87,16 +125,17 @@ export default function HowItWorks() {
         {steps.map((step, i) => (
           <div
             key={i}
-            style={{ display: "grid", gridTemplateColumns: "200px 1fr", borderTop: `1px solid ${C.borderSoft}`, padding: "56px 0", ...(i === steps.length - 1 ? { borderBottom: `1px solid ${C.borderSoft}` } : {}) }}
+            className="hiw-step-row"
+            style={{ ...(i === steps.length - 1 ? { borderBottom: `1px solid ${C.borderSoft}` } : {}) }}
             data-testid={`step-block-${i}`}
           >
-            <div style={{ paddingRight: 48, paddingTop: 4 }}>
+            <div className="hiw-step-left">
               <span style={{ fontFamily: "Georgia, serif", fontSize: 11, fontWeight: 400, letterSpacing: "0.1em", textTransform: "uppercase", color: C.inkMuted, marginBottom: 10, display: "block" }}>{step.num}</span>
               <div style={{ fontFamily: "Georgia, serif", fontSize: 28, fontWeight: 300, color: C.ink, lineHeight: 1.2, letterSpacing: "-0.01em" }}>
                 {step.phase[0]}<em style={{ fontStyle: "italic", color: C.gold }}>{step.phase[1]}</em>{step.phase[2] || ""}
               </div>
             </div>
-            <div style={{ paddingLeft: 48, borderLeft: `1px solid ${C.borderSoft}` }}>
+            <div className="hiw-step-right">
               <span style={{ display: "inline-block", fontSize: 11, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 100, marginBottom: 20, ...step.tagStyle }}>{step.tag}</span>
               <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, fontWeight: 400, color: C.ink, marginBottom: 12, lineHeight: 1.3 }}>{step.title}</h2>
               <p style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.75, marginBottom: 24 }}>{step.desc}</p>
@@ -131,7 +170,7 @@ export default function HowItWorks() {
           <p style={{ fontSize: 15, color: "rgba(250,248,243,0.5)", maxWidth: 520, lineHeight: 1.7, marginBottom: 48 }}>
             Every engagement is scoped to your situation. No fixed packages, no upsells. Three types of work, priced by what you need.
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, overflow: "hidden" }}>
+          <div className="hiw-services-grid">
             {services.map((s, i) => (
               <div key={i} style={{ padding: "32px 28px", background: C.ink }} data-testid={`service-card-${i}`}>
                 <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: C.gold, marginBottom: 14, display: "block" }}>{s.label}</span>
