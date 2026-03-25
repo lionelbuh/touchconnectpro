@@ -70,6 +70,50 @@ export default function Insights() {
 
   return (
     <div style={{ backgroundColor: C.cream, minHeight: "100vh" }} data-testid="page-insights">
+      <style>{`
+        .insights-featured {
+          background: #1A1814;
+          border-radius: 10px;
+          padding: 52px 56px;
+          display: grid;
+          grid-template-columns: 1fr 320px;
+          gap: 64px;
+          align-items: center;
+        }
+        .insights-featured-sidebar {
+          border-left: 1px solid rgba(255,255,255,0.1);
+          padding-left: 48px;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+        .insights-articles-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 24px;
+        }
+        @media (max-width: 900px) {
+          .insights-articles-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        @media (max-width: 640px) {
+          .insights-featured {
+            grid-template-columns: 1fr;
+            padding: 32px 24px;
+            gap: 32px;
+          }
+          .insights-featured-sidebar {
+            border-left: none;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-left: 0;
+            padding-top: 24px;
+          }
+          .insights-articles-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
 
       {/* Page Header */}
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "48px 2rem 48px" }}>
@@ -108,10 +152,7 @@ export default function Insights() {
       {/* Featured Article */}
       {featured && (activeFilter === "All topics" || activeFilter === "Accounting basics") && (
         <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 2rem 56px" }}>
-          <div style={{
-            background: C.ink, borderRadius: 10, padding: "52px 56px",
-            display: "grid", gridTemplateColumns: "1fr 320px", gap: 64, alignItems: "center",
-          }} data-testid="card-featured-article">
+          <div className="insights-featured" data-testid="card-featured-article">
             <div>
               <span style={{ display: "inline-block", fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: C.gold, background: "rgba(196,154,60,0.15)", padding: "4px 12px", borderRadius: 100, marginBottom: 20 }}>
                 Featured
@@ -132,7 +173,7 @@ export default function Insights() {
                 </span>
               </Link>
             </div>
-            <div style={{ borderLeft: "1px solid rgba(255,255,255,0.1)", paddingLeft: 48, display: "flex", flexDirection: "column", gap: 24 }}>
+            <div className="insights-featured-sidebar">
               {[
                 { label: "Topic", value: "Accounting basics" },
                 { label: "Best for", value: featured.bestFor || "" },
@@ -165,7 +206,7 @@ export default function Insights() {
               <span style={{ display: "block", fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkMuted, marginBottom: 24, paddingBottom: 16, borderBottom: `1px solid ${C.borderSoft}` }}>
                 {sec.label}
               </span>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+              <div className="insights-articles-grid">
                 {sectionArticles.map(article => {
                   const tc = TOPIC_COLORS[article.audienceTag] || { color: C.inkMuted, bg: "#F1EFE8" };
                   return (
