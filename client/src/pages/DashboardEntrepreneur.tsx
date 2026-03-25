@@ -4127,23 +4127,7 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
       )}
 
       {/* Profile Tab */}
-      {activeTab === "profile" && isPreApproved && !ideaSubmitted && !founderSnapshot && (
-       <div className="text-center py-16">
-        <User className="h-16 w-16 text-[#4B3F72] mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-[#0D566C] mb-3">Complete Your Founder Snapshot First</h2>
-        <p className="text-[#8A8A8A] mb-6 max-w-md mx-auto">Your profile will become available after completing your Founder Snapshot.</p>
-        <Button 
-         className="bg-[#4B3F72] hover:bg-[#3d3360] text-white rounded-full" 
-         onClick={() => { setActiveTab("overview"); setShowSnapshotForm(true); }}
-         data-testid="button-submit-idea-profile-tab"
-        >
-         <Target className="mr-2 h-4 w-4" />
-         Start Founder Snapshot
-        </Button>
-       </div>
-      )}
-
-      {activeTab === "profile" && !(isPreApproved && !ideaSubmitted && !founderSnapshot) && (
+      {activeTab === "profile" && (
        <div>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 sm:mb-8">
          <div>
