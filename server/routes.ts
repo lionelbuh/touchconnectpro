@@ -7930,14 +7930,12 @@ CREATE POLICY "Allow service role full access on mentor_questions" ON public.men
       }
 
       const { email } = req.params;
-      const CURRENT_COACH_AGREEMENT_VERSION = "2026-02-01 v2";
 
       const { data, error } = await (client
         .from("contract_acceptances")
         .select("*")
         .eq("email", email.toLowerCase())
         .eq("role", "coach")
-        .eq("contract_version", CURRENT_COACH_AGREEMENT_VERSION)
         .order("accepted_at", { ascending: false })
         .limit(1) as any);
 
@@ -7947,8 +7945,12 @@ CREATE POLICY "Allow service role full access on mentor_questions" ON public.men
       }
 
       const hasAccepted = data && data.length > 0;
-      console.log("[CHECK COACH AGREEMENT] Has accepted:", hasAccepted);
-      return res.json({ hasAccepted });
+      console.log("[CHECK COACH AGREEMENT] Has accepted:", hasAccepted, data?.[0]?.contract_version);
+      return res.json({
+        hasAccepted,
+        acceptedAt: hasAccepted ? data[0].accepted_at : null,
+        contractVersion: hasAccepted ? data[0].contract_version : null,
+      });
     } catch (error: any) {
       console.error("[CHECK COACH AGREEMENT] Error:", error.message);
       return res.status(500).json({ error: error.message });
