@@ -2447,6 +2447,18 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
                 })}
                </div>
               )}
+              {focusScoreData?.diagnosis?.text && (
+               <div className="mt-4 pt-4" style={{ borderTop: "1px solid #E8E4DC" }}>
+                <span className="text-[10px] font-semibold uppercase tracking-wider block mb-1.5" style={{ color: "#8C8880" }}>Your diagnosis</span>
+                <p className="text-xs leading-relaxed" style={{ color: "#4A4740" }} data-testid="text-dashboard-diagnosis">{focusScoreData.diagnosis.text}</p>
+               </div>
+              )}
+              {focusScoreData?.nextStep && (
+               <div className="mt-3 rounded-md px-3 py-2.5" style={{ background: "#E4F0ED" }}>
+                <span className="text-[10px] font-semibold uppercase tracking-wider block mb-1" style={{ color: "#1D6A5A" }}>Your next step</span>
+                <p className="text-xs leading-relaxed font-medium" style={{ color: "#1A1814" }} data-testid="text-dashboard-next-step">{focusScoreData.nextStep}</p>
+               </div>
+              )}
               {!focusScoreData ? (
                <a href="/founder-focus" className="mt-2 inline-block text-xs font-semibold underline" style={{ color: "#1D6A5A" }} data-testid="link-take-focus-quiz">
                 Take the Founder Focus Quiz →
