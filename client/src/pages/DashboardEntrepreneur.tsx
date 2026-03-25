@@ -143,7 +143,7 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
  const [profileData, setProfileData] = useState({
   email: "entrepreneur@touchconnectpro.com",
   fullName: "John Entrepreneur",
-  country: "United States",
+  country: "",
   bio: "",
   linkedIn: "",
   website: "",
@@ -4236,21 +4236,32 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
             <label className="text-sm font-semibold text-[#0D566C] mb-2 block">Country</label>
             <Input
              value={profileData.country}
-             disabled
-             className="bg-[#F3F3F3] text-[#8A8A8A] cursor-not-allowed rounded-xl"
+             onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
+             placeholder="e.g. United States"
+             className="bg-[#FAF9F7]"
              data-testid="input-profile-country"
             />
-            <p className="text-xs text-[#8A8A8A] mt-1">Contact admin to change your country</p>
            </div>
 
            <div>
-            <label className="text-sm font-semibold text-[#0D566C] mb-2 block">About the entrepreneur</label>
-            <textarea
-             value={profileData.bio}
-             onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
-             placeholder="Tell us about yourself..."
-             className="w-full min-h-[100px] p-3 rounded-lg border border-[#E8E8E8] bg-[#FAF9F7] text-[#4A4A4A] resize-y"
-             data-testid="input-profile-bio"
+            <label className="text-sm font-semibold text-[#0D566C] mb-2 block">LinkedIn</label>
+            <Input
+             value={profileData.linkedIn}
+             onChange={(e) => setProfileData({ ...profileData, linkedIn: e.target.value })}
+             placeholder="https://linkedin.com/in/yourprofile"
+             className="bg-[#FAF9F7]"
+             data-testid="input-profile-linkedin"
+            />
+           </div>
+
+           <div>
+            <label className="text-sm font-semibold text-[#0D566C] mb-2 block">Website</label>
+            <Input
+             value={profileData.website}
+             onChange={(e) => setProfileData({ ...profileData, website: e.target.value })}
+             placeholder="https://yourwebsite.com"
+             className="bg-[#FAF9F7]"
+             data-testid="input-profile-website"
             />
            </div>
 
@@ -4276,7 +4287,8 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
                 body: JSON.stringify({
                  fullName: profileData.fullName,
                  country: profileData.country,
-                 bio: profileData.bio,
+                 linkedIn: profileData.linkedIn,
+                 website: profileData.website,
                  profileImage: profileData.profileImage
                 })
                });
@@ -4329,7 +4341,7 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
               </div>
               <div>
                <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">Country</p>
-               <p className="text-[#0D566C]">{profileData.country}</p>
+               <p className="text-[#0D566C]">{profileData.country || "—"}</p>
               </div>
               <div>
                <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-1">LinkedIn</p>
@@ -4353,13 +4365,6 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
               </div>
              </div>
             </div>
-           </CardContent>
-          </Card>
-
-          <Card className="border-[#E8E8E8]">
-           <CardContent className="pt-6">
-            <p className="text-xs font-semibold text-[#8A8A8A] uppercase mb-2">About the entrepreneur</p>
-            <p className="text-[#0D566C]">{profileData.bio || "—"}</p>
            </CardContent>
           </Card>
 
