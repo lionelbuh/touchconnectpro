@@ -692,7 +692,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
               Your application has been submitted successfully.
             </p>
             <p className="text-center text-base text-slate-600 dark:text-slate-400">
-              Our team will review your idea and business plan within <strong>24-48 hours</strong>. Once approved and you've completed your subscription, you can log in to your full dashboard and connect with mentors and coaches!
+              Our team will review your idea and business plan within <strong>24-48 hours</strong>. Once approved and you've completed your subscription, you can log in to your full dashboard and connect with Fractional CFO specialists!
             </p>
           </div>
           <Button
@@ -716,7 +716,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
               Submit Your Startup Idea
             </h1>
             <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed">
-              Share your vision and get matched with mentors, coaches, and investors who can help you succeed.
+              Share your vision and get matched with Fractional CFO specialists who can help you succeed.
             </p>
           </div>
         </div>
@@ -729,7 +729,7 @@ ${businessPlanDraft.metrics.map((m: string) => `- ${m}`).join('\n')}
           <Card className="mb-12 -mt-8 border-emerald-200 dark:border-emerald-900/30 bg-emerald-50 dark:bg-emerald-950/20">
             <CardContent className="p-10">
               <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
-                TouchConnectPro connects ambitious entrepreneurs with experienced mentors, coaches, and investors. Submit your idea, refine your business plan, and, once approved, join a growing community focused on execution, feedback, and growth.
+                TouchConnectPro connects ambitious entrepreneurs with experienced Fractional CFO specialists. Submit your idea, refine your business plan, and, once approved, join a growing community focused on execution, feedback, and growth.
               </p>
             </CardContent>
           </Card>

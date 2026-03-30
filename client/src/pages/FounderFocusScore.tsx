@@ -549,10 +549,10 @@ export default function FounderFocusScore() {
                     Save your results. <em style={{ fontStyle: "italic", color: C.gold }}>It&apos;s free.</em>
                   </h3>
                   <p style={{ fontSize: 14, color: "rgba(250,248,243,0.55)", lineHeight: 1.7, maxWidth: 420, margin: "0 auto 24px" }}>
-                    Create a free account to access your personal dashboard, track your score over time, and connect with specialist advisors.
+                    Create a free account to access your personal dashboard, track your score over time, and connect with Fractional CFO advisors.
                   </p>
                   <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" as const, marginBottom: 28 }}>
-                    {["Score saved to dashboard", "Coach access", "100% free"].map((label, i) => (
+                    {["Score saved to dashboard", "CFO access", "100% free"].map((label, i) => (
                       <span key={i} style={{ fontSize: 12, color: "rgba(250,248,243,0.6)", background: "rgba(255,255,255,0.08)", padding: "5px 14px", borderRadius: 100, display: "flex", alignItems: "center", gap: 6 }}>
                         <span style={{ width: 4, height: 4, borderRadius: "50%", background: C.gold, display: "inline-block" }} />
                         {label}

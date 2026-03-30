@@ -2256,7 +2256,6 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
       <nav style={{ padding: "4px 0" }}>
        {([
         { id: "overview", label: "Overview", icon: <LayoutDashboard size={15} />, testId: "button-overview-tab", badge: null as React.ReactNode },
-        { id: "coaches", label: "Specialists", icon: <GraduationCap size={15} />, testId: "button-coaches-tab", badge: null as React.ReactNode },
         { id: "purchases", label: "My Purchases", icon: <ShoppingCart size={15} />, testId: "button-purchases-tab", badge: coachPurchases.length > 0 ? coachPurchases.length : null as any },
         { id: "profile", label: "Profile", icon: <User size={15} />, testId: "button-profile-tab", badge: null as React.ReactNode },
        ] as { id: string; label: string; icon: React.ReactNode; testId: string; badge: React.ReactNode }[]).map((item) => {
@@ -2751,23 +2750,6 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
          </Card>
         )}
 
-        {/* Quick Links */}
-        <Card className="border-l-4 border-l-[#1D6A5A] cursor-pointer hover:shadow-md transition-shadow" onClick={() => setActiveTab("coaches")}>
-         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-           <GraduationCap className="h-5 w-5" style={{ color: "#1D6A5A" }} />
-           Browse Available Specialists
-          </CardTitle>
-          <CardDescription className="text-xs leading-relaxed">Explore our community of specialists ready to help you with strategy, marketing, fundraising, and more.</CardDescription>
-         </CardHeader>
-         <CardContent>
-          <div className="flex items-center justify-end">
-           <Button variant="outline" style={{ borderColor: "#1D6A5A", color: "#1D6A5A" }} data-testid="button-view-coaches">
-            See Specialist Profiles <ChevronRight className="ml-1 h-4 w-4" />
-           </Button>
-          </div>
-         </CardContent>
-        </Card>
        </div>
       )}
 
