@@ -472,7 +472,7 @@ function LeftPanel() {
           Know exactly where your <em style={{ fontStyle: "italic", color: "#C49A3C" }}>financial foundation</em> stands
         </h1>
         <p style={{ fontSize: 15, color: "rgba(250,248,243,0.5)", lineHeight: 1.75, maxWidth: 360, marginBottom: 40 }}>
-          Your Focus Score, weekly action questions, and direct access to a specialist. All in one place.
+          Your Focus Score, weekly action questions, and direct access to a Fractional CFO specialist. All in one place.
         </p>
 
         {/* Score preview */}

@@ -20,8 +20,9 @@ const steps = [
     tag: "Free, no sign-up needed",
     tagStyle: { color: C.teal, background: C.tealLight },
     title: "Find out exactly where your financial foundation stands",
-    desc: "Answer 8 honest questions about your startup. You get an instant breakdown across three dimensions: business clarity, financial structure, and operational readiness. No vague results. A plain-language picture of what is working and what is not.",
-    points: ["See your blind spots before they cost you", "Understand which financial gap to fix first", "Get a personalized snapshot of your startup's real state"],
+    desc: "Answer 8 honest questions about your business: your accounting setup, cash visibility, reporting readiness, and operational structure. Takes 5 minutes. Results are instant and free to keep.",
+    desc2: null as string | null,
+    points: ["Scored across three dimensions: financial structure, business clarity, and operational readiness", "Plain-language diagnosis of your biggest gap right now", "One concrete next step matched to your situation"],
     cardTitle: "Takes 5 minutes",
     cardDesc: "Results are instant and yours to keep. No email required to see your score.",
     cardIcon: (
@@ -33,25 +34,27 @@ const steps = [
     phase: ["See your ", "dashboard"],
     tag: "Free account",
     tagStyle: { color: C.teal, background: C.tealLight },
-    title: "Your score becomes a personal action plan",
-    desc: "Once you create a free account, your dashboard tracks your Focus Score over time, shows you the specific gaps to address, and surfaces the right resources based on where you actually are. Not a generic checklist. A starting point built around your answers.",
-    points: ["Score breakdown across clarity, financial structure, and operations", "Plain-language interpretation of what each gap means for your growth", "A clear first step to take, matched to your situation"],
+    title: "Your score becomes a weekly financial action plan",
+    desc: "Create a free account and your dashboard tracks your Focus Score over time, shows the specific financial gaps holding you back, and generates three AI-powered weekly priorities tailored to your results. Refreshed every Monday. No generic advice.",
+    desc2: null as string | null,
+    points: ["Score breakdown across financial structure, clarity, and operational readiness", "Weekly priorities built from your diagnostic answers, not a standard checklist", "See your quiz answers and identified gaps at a glance"],
     cardTitle: "Your dashboard is free, always",
-    cardDesc: "Track your progress and revisit your score as your startup evolves. No expiry.",
+    cardDesc: "Retake the score as your situation evolves. Your history stays on file.",
     cardIcon: (
       <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke={C.teal} strokeWidth={1.5}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 17h7M17 14v7"/></svg>
     ),
   },
   {
     num: "Step 03",
-    phase: ["Chat with a ", "specialist"],
+    phase: ["Work with a ", "Fractional CFO"],
     tag: "Online, at your own pace",
     tagStyle: { color: "#7A5C1E", background: C.goldPale, border: `1px solid rgba(196,154,60,0.25)` },
-    title: "Get real answers to your specific situation",
-    desc: "When your dashboard surfaces a gap you want to address, you can reach out directly to a specialist online. Ask your questions, share your context, and get guidance that is specific to your business. No generic advice, no waiting rooms.",
-    points: ["Ask anything about your financial or operational situation", "Get practical, specific guidance based on your actual gaps", "No pressure to commit to anything until it feels right"],
+    title: "Fix the financial gaps with someone who has done it before",
+    desc: "When your dashboard surfaces a gap you want to address, you can message a Fractional CFO specialist directly. Share your situation, ask your questions, and get specific guidance on what to fix and in what order. No generic frameworks. No waiting rooms.",
+    desc2: "If it makes sense to work together beyond the conversation, the engagement is scoped to your actual problem: setting up your accounting, building your reporting structure, selecting the right software, or providing ongoing CFO-level oversight every month.",
+    points: ["Talk to someone who has built financial foundations for businesses at your stage", "Get a clear picture of what needs fixing and how long it will take", "No pressure to commit until you are confident it is the right fit"],
     cardTitle: "Human, not automated",
-    cardDesc: "You are talking to a specialist who has read your score and understands your context before you say a word.",
+    cardDesc: "The specialist reads your Focus Score before responding. You start mid-conversation, not from scratch.",
     cardIcon: (
       <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke={C.teal} strokeWidth={1.5}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
     ),
@@ -59,9 +62,9 @@ const steps = [
 ];
 
 const services = [
-  { label: "One-time", title: "Advisory session", desc: "One focused call with a clear output. A diagnosis, a decision framework, or a specific action plan for your most pressing financial question." },
-  { label: "Project-based", title: "Build your foundation", desc: "Accounting system setup, ERP selection and implementation, financial reporting structure. Scoped to your situation, delivered in weeks." },
-  { label: "Ongoing", title: "Fractional CFO", desc: "A specialist in your corner every month. Financial oversight, reporting, and strategic guidance without the full-time hire." },
+  { label: "One-time", title: "Financial diagnostic session", desc: "One focused session with a clear output. A diagnosis of your financial setup, a decision framework for your next move, or a prioritised action plan for the most pressing gap in your numbers." },
+  { label: "Project-based", title: "Build your financial foundation", desc: "Accounting system setup, ERP selection and implementation, P&L and Balance Sheet structure, cash flow model, deferred revenue schedule. Scoped to your situation, delivered in weeks, not months." },
+  { label: "Ongoing", title: "Fractional CFO", desc: "A CFO-level specialist in your corner every month. Financial reporting, cash flow oversight, budget vs actuals, investor-ready numbers, and strategic financial guidance without the full-time hire." },
 ];
 
 export default function HowItWorks() {
@@ -113,10 +116,10 @@ export default function HowItWorks() {
           How it works
         </div>
         <h1 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(34px,5vw,52px)", fontWeight: 300, lineHeight: 1.1, letterSpacing: "-0.02em", color: C.ink, marginBottom: 20 }} data-testid="text-hiw-headline">
-          From first question to <em style={{ fontStyle: "italic", color: C.gold }}>real financial clarity</em>
+          From diagnostic to <em style={{ fontStyle: "italic", color: C.gold }}>Fractional CFO</em> in three steps
         </h1>
         <p style={{ fontSize: 17, color: C.inkSoft, lineHeight: 1.7, maxWidth: 520, margin: "0 auto" }}>
-          Three steps. No membership required to start. You only go further if it makes sense for your situation.
+          Start with a free score. See exactly where your financial foundation is weak. Then decide if you want help fixing it.
         </p>
       </div>
 
@@ -138,7 +141,8 @@ export default function HowItWorks() {
             <div className="hiw-step-right">
               <span style={{ display: "inline-block", fontSize: 11, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 100, marginBottom: 20, ...step.tagStyle }}>{step.tag}</span>
               <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, fontWeight: 400, color: C.ink, marginBottom: 12, lineHeight: 1.3 }}>{step.title}</h2>
-              <p style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.75, marginBottom: 24 }}>{step.desc}</p>
+              <p style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.75, marginBottom: step.desc2 ? 16 : 24 }}>{step.desc}</p>
+              {step.desc2 && <p style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.75, marginBottom: 24 }}>{step.desc2}</p>}
               <ul style={{ listStyle: "none", marginBottom: 28, display: "flex", flexDirection: "column", gap: 10 }}>
                 {step.points.map((pt, j) => (
                   <li key={j} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: C.inkSoft, lineHeight: 1.5 }}>
@@ -165,10 +169,10 @@ export default function HowItWorks() {
       <section style={{ backgroundColor: C.ink, padding: "80px 2rem" }} data-testid="section-services">
         <div style={{ maxWidth: 860, margin: "0 auto" }}>
           <h2 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(26px,4vw,38px)", fontWeight: 300, color: C.cream, marginBottom: 12, lineHeight: 1.2 }}>
-            What working together <em style={{ fontStyle: "italic", color: C.gold }}>actually looks like</em>
+            What Fractional CFO work <em style={{ fontStyle: "italic", color: C.gold }}>actually looks like</em>
           </h2>
           <p style={{ fontSize: 15, color: "rgba(250,248,243,0.5)", maxWidth: 520, lineHeight: 1.7, marginBottom: 48 }}>
-            Every engagement is scoped to your situation. No fixed packages, no upsells. Three types of work, priced by what you need.
+            Every engagement is scoped to your situation. No fixed packages. Three types of work depending on where you are and what you need most.
           </p>
           <div className="hiw-services-grid">
             {services.map((s, i) => (
@@ -186,10 +190,10 @@ export default function HowItWorks() {
       <section style={{ background: C.goldPale, borderTop: `1px solid rgba(196,154,60,0.2)`, padding: "80px 2rem", textAlign: "center" }} data-testid="section-hiw-cta">
         <div style={{ maxWidth: 580, margin: "0 auto" }}>
           <h2 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(28px,4vw,40px)", fontWeight: 300, color: C.ink, lineHeight: 1.2, marginBottom: 16 }}>
-            Start with your score. <em style={{ fontStyle: "italic" }}>Everything else follows.</em>
+            Start with your score. <em style={{ fontStyle: "italic" }}>Your CFO conversation follows.</em>
           </h2>
           <p style={{ fontSize: 16, color: C.inkSoft, marginBottom: 36, lineHeight: 1.7 }}>
-            Five minutes to find out where your financial foundation actually stands. Free, no sign-up required to start.
+            Five minutes to find out where your financial foundation actually stands. Free, no sign-up required. If the gaps are real, we can talk about fixing them.
           </p>
           <Link href="/founder-focus" data-testid="button-hiw-cta">
             <span

@@ -35,7 +35,7 @@ const steps = [
   {
     num: "3",
     title: "Match with the right advisor",
-    desc: "Based on your gaps, we surface coaches and mentors who specialize in exactly what you need — not generic startup advice.",
+    desc: "Based on your gaps, we surface Fractional CFO specialists who address exactly what you need — not generic startup advice.",
     tag: "Free first call available",
   },
   {
