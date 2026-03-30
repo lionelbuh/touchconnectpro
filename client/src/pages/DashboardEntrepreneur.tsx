@@ -2256,7 +2256,6 @@ const [freeIntroCallFilter, setFreeIntroCallFilter] = useState(false);
       <nav style={{ padding: "4px 0" }}>
        {([
         { id: "overview", label: "Overview", icon: <LayoutDashboard size={15} />, testId: "button-overview-tab", badge: null as React.ReactNode },
-        { id: "purchases", label: "My Purchases", icon: <ShoppingCart size={15} />, testId: "button-purchases-tab", badge: coachPurchases.length > 0 ? coachPurchases.length : null as any },
         { id: "profile", label: "Profile", icon: <User size={15} />, testId: "button-profile-tab", badge: null as React.ReactNode },
        ] as { id: string; label: string; icon: React.ReactNode; testId: string; badge: React.ReactNode }[]).map((item) => {
         const isActive = activeTab === item.id;
