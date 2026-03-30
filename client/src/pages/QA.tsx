@@ -115,18 +115,20 @@ const faqSections = [
     ],
   },
   {
-    title: "Mentors, coaches & pricing",
+    title: "Pricing & working together",
     items: [
       {
-        question: "How does the mentor and coach approval process work?",
+        question: "How does working with a Fractional CFO on the platform work?",
         answer: [
-          "After completing onboarding, your profile is shared with relevant mentors. If a mentor accepts your project, you will be approved to join their portfolio. That is when billing begins. Until then, there is no charge.",
+          "It starts with your Founder Focus Score. Once your gaps are visible, you can message a Fractional CFO specialist directly from your dashboard. They review your score before responding, so you start mid-conversation with context already shared.",
+          "From there, you agree on the scope of work together — a single focused session, a defined project, or ongoing monthly oversight. There is no pressure to commit to anything until it feels right.",
         ],
       },
       {
-        question: "Are coaching sessions included in the membership fee?",
+        question: "What does a Fractional CFO engagement typically cost?",
         answer: [
-          "Membership includes full access to the platform, community, and mentor onboarding. Specialist coaching sessions are paid separately, with each expert setting their own price based on experience and expertise.",
+          "Pricing depends on the type of engagement. A one-time diagnostic session is the simplest entry point. Project-based work — such as setting up accounting systems, building a financial reporting structure, or selecting the right software — is scoped and quoted based on what is needed.",
+          "Ongoing fractional CFO retainers vary by the level of involvement required each month. All pricing is discussed directly with the specialist before any commitment is made. No credit card required to start a conversation.",
         ],
       },
       {
@@ -136,15 +138,10 @@ const faqSections = [
         ],
       },
       {
-        question: "What if I need specialized help — legal, tech, or finance?",
+        question: "What kinds of financial problems does a Fractional CFO help with?",
         answer: [
-          "TouchConnectPro connects you with specialist coaches across finance, marketing, engineering, and legal. Coaches set their own session rates. You pay the coach directly through the platform, and we keep a 20% fee to sustain the platform.",
-        ],
-      },
-      {
-        question: "Does TouchConnectPro support funding or investment?",
-        answer: [
-          "We do not fund startups directly, but we connect you with mentors and investors who may be open to funding once your idea reaches the right level of clarity and readiness. We also help you prepare a strong pitch and refine your business story.",
+          "The most common areas are accounting system setup and cleanup, software and ERP selection, financial reporting structure, cash flow visibility, P&L and balance sheet hygiene, and budget-versus-actuals tracking.",
+          "Beyond structure, a Fractional CFO can also support fundraising preparation, investor-ready financial statements, and strategic financial planning for the next 12 to 24 months.",
         ],
       },
     ],
